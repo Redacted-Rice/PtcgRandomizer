@@ -1,0 +1,20 @@
+**/bin/
+/configs/
+*.gbc
+*.sav
+*.sgm
+*.log.txt
+*.seed.txt
+*.bps
+*.exe
+
+# Eclipse files
+*.settings
+*.project
+*.classpath
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
