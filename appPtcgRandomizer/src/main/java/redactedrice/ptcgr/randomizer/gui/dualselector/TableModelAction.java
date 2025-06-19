@@ -13,10 +13,8 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 public class TableModelAction extends AbstractTableModel
 {
 	static public enum Columns {
-	    ID(0),
-	    ACTION(1),
-	    DESCRIPTION(2),
-	    CONFIG(3);
+	    NAME(0),
+	    CONFIG(1);
 
 	    private final int value;
 
@@ -42,10 +40,8 @@ public class TableModelAction extends AbstractTableModel
 	private static final long serialVersionUID = 1L;
 	
 	private static final String[] COLUMN_HEADERS = {
-			"Id", "Action", "Description", "Config"
+			"Action", "Config"
 	};
-	public static final int DESCRIPTION_COLUMN = 2;
-	public static final int CONFIG_COLUMN = 3;
 	
 	List<Action> data;
 	
@@ -78,12 +74,10 @@ public class TableModelAction extends AbstractTableModel
 	{
 		if (data.get(rowIndex) != null)
 		{
-			switch (columnIndex)
+			switch (Columns.fromValue(columnIndex))
 			{
-				case 0: return data.get(rowIndex).getId();
-				case 1: return data.get(rowIndex).getName();
-				case 2: return data.get(rowIndex).getDescription();
-				case CONFIG_COLUMN: return data.get(rowIndex).numConfigs();
+				case NAME: return data.get(rowIndex).getName();
+				case CONFIG: return data.get(rowIndex).numConfigs();
 				default: return "ERROR";
 			}
 		}
@@ -112,6 +106,11 @@ public class TableModelAction extends AbstractTableModel
     	}
     	return null;
     }
+	
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return column == Columns.CONFIG.getValue(); // Enable editing for the button column
+    }
     
     public Action getRow(int index)
     {
@@ -128,6 +127,10 @@ public class TableModelAction extends AbstractTableModel
 		// Account for the last empty row
 		// end is exclusive
 		return data.subList(0, data.size() - 1);
+	}
+
+	public String getRowDescription(int row) {
+		return data.get(row).getDescription();
 	}
 	
 	public Action removeRow(int index)

@@ -19,7 +19,7 @@ public class DualTableSelector extends JPanel {
 
         // Table Models
         TableModelActionList listModel = new TableModelActionList(actions);
-        TableModelAction selectedModel = new TableModelActionsSelected();
+        TableModelAction selectedModel = new TableModelAction();
         // temp
         listModel.setRowsByCategory(ActionCategories.CATEGORY_ALL);
 

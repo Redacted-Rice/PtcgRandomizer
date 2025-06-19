@@ -4,7 +4,11 @@ import javax.swing.DropMode;
 import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelAction.Columns;
+
 public class ActionTable extends JTable {
+	private static final long serialVersionUID = 1L;
+	
 	public ActionTable(ActionTableModel actionsModel) {
 		setDropMode(DropMode.INSERT_ROWS);
 		setDragEnabled(true);
@@ -17,7 +21,8 @@ public class ActionTable extends JTable {
 		getColumnModel().getColumn(1).setPreferredWidth(120);
 		getColumnModel().getColumn(2).setPreferredWidth(300);
 		
-        getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
-        getColumnModel().getColumn(3).setCellEditor(new ButtonEditor(this));
+	    ButtonCellRenderer renderer = new ButtonCellRenderer("Edit");
+        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
+        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellEditor(new ButtonCellClickHandler(renderer));
 	}
 }
