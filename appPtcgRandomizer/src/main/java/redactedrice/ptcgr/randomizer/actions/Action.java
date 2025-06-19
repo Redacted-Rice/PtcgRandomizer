@@ -34,7 +34,17 @@ public abstract class Action {
 		this.configs = new HashMap<>();
 	}
 	
-	abstract public void Perform(Rom rom); 
+	protected Action(Action toCopy) {
+		this.id = toCopy.id;
+		this.category = toCopy.category;
+		this.subcategory = toCopy.subcategory;
+		this.nameLambda = toCopy.nameLambda;
+		this.descriptionLambda = toCopy.descriptionLambda;
+		this.configs = new HashMap<>(configs); 
+	}
+
+	public abstract Action copy();
+	public abstract void perform(Rom rom); 
 	
 	public void addConfig(String name, DynamicConfig<?> config) {
 		configs.put(name, config);
