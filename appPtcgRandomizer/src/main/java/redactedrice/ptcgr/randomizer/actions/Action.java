@@ -40,7 +40,7 @@ public abstract class Action {
 		this.subcategory = toCopy.subcategory;
 		this.nameLambda = toCopy.nameLambda;
 		this.descriptionLambda = toCopy.descriptionLambda;
-		this.configs = new HashMap<>(configs); 
+		this.configs = new HashMap<>(toCopy.configs); 
 	}
 
 	public abstract Action copy();

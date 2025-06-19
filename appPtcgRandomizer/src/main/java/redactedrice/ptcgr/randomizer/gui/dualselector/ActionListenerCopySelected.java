@@ -23,7 +23,7 @@ public class ActionListenerCopySelected implements ActionListener {
         int[] selectedRows = fromTable.getSelectedRows();
         for (int row : selectedRows) {
             Action action = fromModel.getRow(row);
-            toModel.addRow(action.copy());
+            toModel.appendRow(action.copy());
         }
     }
 }

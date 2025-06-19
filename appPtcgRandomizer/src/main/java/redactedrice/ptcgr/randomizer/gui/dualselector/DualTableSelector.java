@@ -1,7 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.actions.ActionCategories;
@@ -25,7 +24,7 @@ public class DualTableSelector extends JPanel {
         listModel.setRowsByCategory(ActionCategories.CATEGORY_ALL);
 
         JTable listTable = new JTableActionList(listModel, selectedModel);
-        JTable selectedTable = new JTableActionsSelected(selectedModel);
+        JTableActionsSelected selectedTable = new JTableActionsSelected(selectedModel);
 
         // Wrap tables in scroll panes
         JScrollPane leftScrollPane = new JScrollPane(listTable);
@@ -35,10 +34,10 @@ public class DualTableSelector extends JPanel {
         rightScrollPane.setPreferredSize(new Dimension(250, 300));
 
         JButton moveUpButton = new JButton("Move Up");
-        moveUpButton.addActionListener(e -> moveRow(selectedTable, selectedModel, -1));
+        moveUpButton.addActionListener(e -> selectedTable.moveSelectedRow(-1));
 
         JButton moveDownButton = new JButton("Move Down");
-        moveDownButton.addActionListener(e -> moveRow(selectedTable, selectedModel, 1));
+        moveDownButton.addActionListener(e -> selectedTable.moveSelectedRow(1));
 
         // Layout
 	     // Create a combo box (drop-down) as before…
@@ -149,15 +148,5 @@ public class DualTableSelector extends JPanel {
 	     add(topPanel, BorderLayout.NORTH);
 	     add(columnsPanel, BorderLayout.CENTER);
         setVisible(true);
-    }
-
-    private void moveRow(JTable table, AbstractTableModel model, int direction) {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow != -1 && selectedRow + direction >= 0 && selectedRow + direction < model.getRowCount()) {
-            Object temp = model.getValueAt(selectedRow, 0);
-            model.setValueAt(model.getValueAt(selectedRow + direction, 0), selectedRow, 0);
-            model.setValueAt(temp, selectedRow + direction, 0);
-            table.setRowSelectionInterval(selectedRow + direction, selectedRow + direction);
-        }
     }
 }
