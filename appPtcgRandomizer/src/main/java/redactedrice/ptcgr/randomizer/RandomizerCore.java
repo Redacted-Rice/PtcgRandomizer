@@ -118,7 +118,7 @@ public class RandomizerCore
 		
 		for (Action action : actions)
 		{
-			action.Perform(romData);
+			action.perform(romData);
 		}
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy

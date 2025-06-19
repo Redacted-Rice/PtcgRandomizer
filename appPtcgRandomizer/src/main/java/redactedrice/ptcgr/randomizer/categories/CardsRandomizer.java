@@ -33,8 +33,10 @@ public class CardsRandomizer
 	public static void addActions(ActionBank actionBank, Logger logger) 
 	{
 		actionBank.add(new CardsLogAction(
-				ActionCategories.CATEGORY_CARDS, "Log Card Info", 
-				"Log info related to card randomizations", logger, TypeToPrint.MONSTERS,
+				ActionCategories.CATEGORY_CARDS, 
+				configs -> "Log Card Info", 
+				configs -> "Log info related to card randomizations", 
+				logger, TypeToPrint.MONSTERS,
 				new ColumnFormat(Column.C_NAME, "-"), new ColumnFormat(Column.C_TYPE_SHORT, ""), 
 				new ColumnFormat(Column.MC_HP, ""), new ColumnFormat(Column.MC_PREV_EVO, "-"), 
 				new ColumnFormat(Column.MC_EVO_ID, ""), new ColumnFormat(Column.MC_MAX_EVO_STAGE, "")));

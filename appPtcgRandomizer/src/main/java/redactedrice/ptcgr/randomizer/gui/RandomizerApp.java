@@ -39,6 +39,7 @@ import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.Settings.*;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionCategories;
+import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
 
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
@@ -487,7 +488,7 @@ public class RandomizerApp {
 		actionsPanel.add(scrollPane_1);
 		
 
-		JPanel dualPanel = new DualTableSelector();
+		JPanel dualPanel = new DualTableSelector(randomizer.getActionBank());
 		movesEffectsTab.addTab("Dual", null, dualPanel, null);
 		
 		table = new ActionTable(actionsModel);

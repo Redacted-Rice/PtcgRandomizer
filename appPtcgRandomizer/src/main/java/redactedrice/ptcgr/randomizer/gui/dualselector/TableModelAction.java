@@ -1,17 +1,15 @@
-package redactedrice.ptcgr.randomizer.gui;
+package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
-import redactedrice.ptcgr.randomizer.actions.ActionBank;
 
 // TODO: Split between tables?
-public class ActionTableModel extends AbstractTableModel
+public class TableModelAction extends AbstractTableModel
 {
 	static public enum Columns {
 	    ID(0),
@@ -49,18 +47,11 @@ public class ActionTableModel extends AbstractTableModel
 	public static final int CONFIG_COLUMN = 3;
 	
 	List<Action> data;
-	private ActionBank actionBank;
 	
-	public ActionTableModel(ActionBank actionBank)
+	public TableModelAction()
 	{
 		data = new ArrayList<>();
 		data.add(null);
-		this.actionBank = actionBank;
-	}
-	
-	public ActionBank getActionBank()
-	{
-		return actionBank;
 	}
 
 	@Override
@@ -93,12 +84,7 @@ public class ActionTableModel extends AbstractTableModel
 		{
 			return "";
 		}
-	}    
-	
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return column == CONFIG_COLUMN; // Enable editing for the button column
-    }
+	}
 	
 	@Override
     public Class<?> getColumnClass(int column) 
@@ -157,11 +143,6 @@ public class ActionTableModel extends AbstractTableModel
 		}
 	}
 	
-	public void insertRowById(int index, int id)
-	{
-		insertRow(index, actionBank.get(id));
-	}
-	
 	public void insertRow(int index, Action a)
 	{
 		// if its the null index or further, set it to the last index
@@ -176,17 +157,5 @@ public class ActionTableModel extends AbstractTableModel
 	public void addRow(Action a)
 	{
 		insertRow(0, a);
-	}
-	
-	public void setRows(Collection<Action> actionBank)
-	{
-		data.clear();
-		data.addAll(actionBank);
-		fireTableDataChanged();
-	}
-
-	public void setRowsByCategory(String category) 
-	{
-		setRows(actionBank.get(category));
 	}
 }

@@ -8,8 +8,8 @@ import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.NonMonsterCard;
-import redactedrice.ptcgr.randomizer.MonsterCardRandomizerWrapper;
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.actions.StringLambda;
 import redactedrice.ptcgr.rom.Rom;
 
 public class CardsLogAction extends Action 
@@ -78,16 +78,28 @@ public class CardsLogAction extends Action
 		}
 	}
 	
-	public CardsLogAction(String category, String name, String description, Logger log, TypeToPrint toPrint, ColumnFormat... columnFormats)
+	public CardsLogAction(String category, StringLambda name, StringLambda description, Logger log, TypeToPrint toPrint, ColumnFormat... columnFormats)
 	{
 		super(category, name, description);
 		this.log = log;
 		this.toPrint = toPrint;
 		this.columnFormats = columnFormats;
 	}
+
+	public CardsLogAction(CardsLogAction toCopy) {
+		super(toCopy);
+		this.log = toCopy.log;
+		this.toPrint = toCopy.toPrint;
+		this.columnFormats = toCopy.columnFormats;
+	}
+
+	@Override
+	public Action copy() {
+		return new CardsLogAction(this);
+	}
 	
 	@Override
-	public void Perform(Rom rom)
+	public void perform(Rom rom)
 	{
 		Supplier<Stream<MonsterCard>> mcs = () -> rom.allCards.cards().monsterCards().stream();
 		
