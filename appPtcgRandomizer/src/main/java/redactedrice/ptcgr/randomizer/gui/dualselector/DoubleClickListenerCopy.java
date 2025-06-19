@@ -24,7 +24,7 @@ public class DoubleClickListenerCopy extends MouseAdapter {
             int row = fromTable.rowAtPoint(e.getPoint());
             if (row >= 0) {
                 Action action = fromModel.getRow(row);
-                toModel.addRow(action.copy());
+                toModel.appendRow(action.copy());
             }
         }
     }
