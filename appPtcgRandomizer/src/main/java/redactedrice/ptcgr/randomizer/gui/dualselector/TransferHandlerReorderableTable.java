@@ -20,7 +20,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
     protected Transferable createTransferable(JComponent c) {
         int[] selected = table.getSelectedRows();
         List<Integer> indices = Arrays.stream(selected).boxed().toList();
-        return new RowTransferable(indices);
+        return new TransferableRows(indices);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
 
     @Override
     public boolean canImport(TransferSupport support) {
-        return support.isDrop() && support.isDataFlavorSupported(RowTransferable.FLAVOR);
+        return support.isDrop() && support.isDataFlavorSupported(TransferableRows.FLAVOR);
     }   
     
     @Override
@@ -40,7 +40,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
             int dropIndex = dl.getRow();
 
             @SuppressWarnings("unchecked")
-            List<Integer> fromIndices = (List<Integer>) support.getTransferable().getTransferData(RowTransferable.FLAVOR);
+            List<Integer> fromIndices = (List<Integer>) support.getTransferable().getTransferData(TransferableRows.FLAVOR);
 
             ((TableModelAction) table.getModel()).reorderRows(fromIndices, dropIndex);
             return true;

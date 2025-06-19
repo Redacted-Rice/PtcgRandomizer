@@ -5,11 +5,11 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.List;
 
-public class RowTransferable implements Transferable {
+public class TransferableRows implements Transferable {
     public static final DataFlavor FLAVOR = new DataFlavor(List.class, "List of Row Indices");
     private final List<Integer> indices;
 
-    public RowTransferable(List<Integer> indices) {
+    public TransferableRows(List<Integer> indices) {
         this.indices = indices;
     }
 

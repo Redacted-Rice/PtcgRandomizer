@@ -18,12 +18,12 @@ public class DualTableSelector extends JPanel {
         setLayout(new BorderLayout());
 
         // Table Models
-        TableModelActionList listModel = new TableModelActionList(actions);
-        TableModelAction selectedModel = new TableModelAction();
+        TableModelActionsList listModel = new TableModelActionsList(actions);
+        TableModelAction selectedModel = new TableModelActionSelected();
         // temp
         listModel.setRowsByCategory(ActionCategories.CATEGORY_ALL);
 
-        JTable listTable = new JTableActionList(listModel, selectedModel);
+        JTable listTable = new JTableActionsList(listModel, selectedModel);
         JTableActionsSelected selectedTable = new JTableActionsSelected(selectedModel);
 
         // Wrap tables in scroll panes

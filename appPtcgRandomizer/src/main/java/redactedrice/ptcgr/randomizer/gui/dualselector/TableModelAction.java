@@ -48,7 +48,6 @@ public class TableModelAction extends AbstractTableModel
 	public TableModelAction()
 	{
 		data = new ArrayList<>();
-		data.add(null);
 	}
 
 	@Override
@@ -60,7 +59,7 @@ public class TableModelAction extends AbstractTableModel
 	
 	public int getDataRowCount()
 	{
-		return data.size() - 1;
+		return getRowCount();
 	}
 
 	@Override
@@ -72,19 +71,16 @@ public class TableModelAction extends AbstractTableModel
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) 
 	{
-		if (data.get(rowIndex) != null)
+		if (rowIndex < getDataRowCount())
 		{
 			switch (Columns.fromValue(columnIndex))
 			{
 				case NAME: return data.get(rowIndex).getName();
 				case CONFIG: return data.get(rowIndex).numConfigs();
-				default: return "ERROR";
+				default: return "";
 			}
 		}
-		else
-		{
-			return "";
-		}
+		return "";
 	}
 	
 	@Override
@@ -114,8 +110,7 @@ public class TableModelAction extends AbstractTableModel
     
     public Action getRow(int index)
     {
-    	// Last row shouldn't be accessed
-		if (index < data.size() - 1)
+		if (index < getDataRowCount())
 		{
 			return data.get(index);
 		}
@@ -124,19 +119,20 @@ public class TableModelAction extends AbstractTableModel
 	
 	public List<Action> getRows()
 	{
-		// Account for the last empty row
-		// end is exclusive
-		return data.subList(0, data.size() - 1);
+		return data.subList(0, getDataRowCount());
 	}
 
 	public String getRowDescription(int row) {
-		return data.get(row).getDescription();
+		if (row < getDataRowCount()) {
+			return getRow(row).getDescription();
+		}
+		return "";
 	}
 	
 	public Action removeRow(int index)
 	{
 		// Guard removing the last empty row
-		if (index < data.size() - 1)
+		if (index < getDataRowCount())
 		{
 			Action a = data.remove(index);
 	        fireTableRowsDeleted(index, index);
@@ -152,8 +148,7 @@ public class TableModelAction extends AbstractTableModel
 			Arrays.sort(indecies); 
 			for (int i = indecies.length - 1; i >=0; i--)
 			{
-				// Guard removing the last empty row
-				if (indecies[i] != data.size() - 1)
+				if (indecies[i] < getDataRowCount())
 				{
 					data.remove(indecies[i]);
 				} 
@@ -165,10 +160,9 @@ public class TableModelAction extends AbstractTableModel
 	public void insertRow(int index, Action a)
 	{
 		if (a != null) {
-			// if its the null index or further, set it to the last index
-			if (index >= data.size())
+			if (index >= getDataRowCount())
 			{
-				index = data.size() - 1;
+				index = getDataRowCount();
 			}
 			data.add(index, a);
 	        fireTableRowsInserted(index, index);
@@ -177,12 +171,11 @@ public class TableModelAction extends AbstractTableModel
 	
 	public void appendRow(Action a)
 	{
-		insertRow(data.size(), a);
+		insertRow(getDataRowCount(), a);
 	}
 	
     public void reorderRow(int from, int to) {
-    	// Guard reordering the empty last row
-        if (from != to && from != data.size() - 1) {
+        if (from != to && from < getDataRowCount()) {
             Action obj = removeRow(from);
             insertRow(to, obj);
             fireTableDataChanged();
@@ -193,7 +186,7 @@ public class TableModelAction extends AbstractTableModel
         List<Action> moving = new ArrayList<>();
         // Get rows before shifting indices
         for (int i = 0; i < fromIndices.size(); i++) {
-        	if (i == data.size() - 1) {
+        	if (i >= getDataRowCount()) {
         		fromIndices.remove(i);
         		i--;
         	} else {

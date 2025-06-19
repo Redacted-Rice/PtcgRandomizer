@@ -5,11 +5,11 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JTable;
 
-public class DoubleClickListenerRemove extends MouseAdapter {
+public class MouseAdapterDoubleClickRemove extends MouseAdapter {
     private final JTable table;
     private final TableModelAction model;
 
-    public DoubleClickListenerRemove(JTable table, TableModelAction model) {
+    public MouseAdapterDoubleClickRemove(JTable table, TableModelAction model) {
         this.table = table;
         this.model = model;
     }

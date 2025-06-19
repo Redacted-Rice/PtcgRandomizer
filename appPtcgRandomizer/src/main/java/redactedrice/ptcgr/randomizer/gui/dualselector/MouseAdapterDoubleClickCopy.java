@@ -7,12 +7,12 @@ import javax.swing.JTable;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 
-public class DoubleClickListenerCopy extends MouseAdapter {
+public class MouseAdapterDoubleClickCopy extends MouseAdapter {
     private final JTable fromTable;
     private final TableModelAction fromModel;
     private final TableModelAction toModel;
 
-    public DoubleClickListenerCopy(JTable fromTable, TableModelAction fromModel, TableModelAction toModel) {
+    public MouseAdapterDoubleClickCopy(JTable fromTable, TableModelAction fromModel, TableModelAction toModel) {
         this.fromTable = fromTable;
         this.fromModel = fromModel;
         this.toModel = toModel;

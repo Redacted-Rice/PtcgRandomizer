@@ -5,7 +5,7 @@ import redactedrice.ptcgr.randomizer.gui.ButtonCellClickHandler;
 import redactedrice.ptcgr.randomizer.gui.ButtonCellRenderer;
 import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelAction.Columns;
 
-public class JTableActionsSelected extends JTableHoverToolTip {
+public class JTableActionsSelected extends JTableActionHoverToolTip {
 
 	private static final long serialVersionUID = 1L;
 	private final TableModelAction model;
@@ -16,7 +16,7 @@ public class JTableActionsSelected extends JTableHoverToolTip {
 
         setTransferHandler(new TransferHandlerReorderableTable(this));
         setDragEnabled(true);
-        addMouseListener(new DoubleClickListenerRemove(this, model));
+        addMouseListener(new MouseAdapterDoubleClickRemove(this, model));
 
         setRowHeight(20);
 		getColumnModel().getColumn(Columns.NAME.getValue()).setPreferredWidth(200);

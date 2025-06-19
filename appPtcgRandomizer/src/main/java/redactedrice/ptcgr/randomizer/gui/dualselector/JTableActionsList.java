@@ -7,15 +7,15 @@ import redactedrice.ptcgr.randomizer.gui.ButtonCellClickHandler;
 import redactedrice.ptcgr.randomizer.gui.ButtonCellRenderer;
 import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelAction.Columns;
 
-public class JTableActionList extends JTableHoverToolTip {
+public class JTableActionsList extends JTableActionHoverToolTip {
 
 	private static final long serialVersionUID = 1L;
 
-	public JTableActionList(TableModelAction listModel, TableModelAction selectedModel) {
+	public JTableActionsList(TableModelAction listModel, TableModelAction selectedModel) {
 		super(listModel);
 
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        addMouseListener(new DoubleClickListenerCopy(this, listModel, selectedModel));
+        addMouseListener(new MouseAdapterDoubleClickCopy(this, listModel, selectedModel));
 
         setRowHeight(18);
 		getColumnModel().getColumn(Columns.NAME.getValue()).setPreferredWidth(200);

@@ -5,11 +5,11 @@ import java.util.Collection;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 
-public class TableModelActionList extends TableModelAction {
+public class TableModelActionsList extends TableModelAction {
 	private static final long serialVersionUID = 1L;
 	private final ActionBank actionBank;
 
-	TableModelActionList(ActionBank actionBank) {
+	TableModelActionsList(ActionBank actionBank) {
         super();
 		this.actionBank = actionBank;
     }
