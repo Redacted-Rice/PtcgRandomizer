@@ -4,15 +4,14 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
-import javax.swing.table.AbstractTableModel;
 
-public class JTableHoverToolTip extends JTable {
+public abstract class JTableHoverToolTip extends JTable {
 	private static final long serialVersionUID = 1L;
-	private final int tipColumn;
+	private final TableModelAction model;
 	
-    public JTableHoverToolTip(AbstractTableModel model, int tipColumn) {
+    public JTableHoverToolTip(TableModelAction model) {
         super(model);
-        this.tipColumn = tipColumn;
+        this.model = model;
 		setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
     }
 
@@ -20,12 +19,8 @@ public class JTableHoverToolTip extends JTable {
     public String getToolTipText(MouseEvent event) {
         int row = rowAtPoint(event.getPoint());
         if (row >= 0) {
-            return "Details: " + getValueAt(row, tipColumn); 
+            return "Details: " + model.getRowDescription(row); 
         }
         return null;
-    }
-    
-    public void moveRow() {
-    	
     }
 }

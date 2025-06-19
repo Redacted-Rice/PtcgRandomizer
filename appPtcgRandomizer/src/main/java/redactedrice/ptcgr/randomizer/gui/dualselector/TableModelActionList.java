@@ -13,11 +13,6 @@ public class TableModelActionList extends TableModelAction {
         super();
 		this.actionBank = actionBank;
     }
-
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return false;
-    }
 	
 	public ActionBank getActionBank()
 	{

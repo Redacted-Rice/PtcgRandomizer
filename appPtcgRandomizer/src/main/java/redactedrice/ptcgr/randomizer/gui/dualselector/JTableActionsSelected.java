@@ -1,18 +1,33 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 
+import redactedrice.ptcgr.randomizer.gui.ButtonCellClickHandler;
+import redactedrice.ptcgr.randomizer.gui.ButtonCellRenderer;
+import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelAction.Columns;
+
 public class JTableActionsSelected extends JTableHoverToolTip {
 
 	private static final long serialVersionUID = 1L;
 	private final TableModelAction model;
 
 	public JTableActionsSelected(TableModelAction model) {
-		super(model, TableModelAction.Columns.DESCRIPTION.getValue());
+		super(model);
 		this.model = model;
 
         setTransferHandler(new TransferHandlerReorderableTable(this));
         setDragEnabled(true);
         addMouseListener(new DoubleClickListenerRemove(this, model));
+
+        setRowHeight(20);
+		getColumnModel().getColumn(Columns.NAME.getValue()).setPreferredWidth(200);
+		getColumnModel().getColumn(Columns.NAME.getValue()).setMinWidth(100);
+		getColumnModel().getColumn(Columns.CONFIG.getValue()).setPreferredWidth(70);
+		getColumnModel().getColumn(Columns.CONFIG.getValue()).setMinWidth(60);
+		getColumnModel().getColumn(Columns.CONFIG.getValue()).setMaxWidth(80);
+		
+	    ButtonCellRenderer renderer = new ButtonCellRenderer("Edit");
+        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
+        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellEditor(new ButtonCellClickHandler(renderer));
 	}
 	
     public void moveSelectedRow(int direction) {
