@@ -7,9 +7,9 @@ import javax.swing.JTable;
 
 public class MouseAdapterDoubleClickRemove extends MouseAdapter {
     private final JTable table;
-    private final TableModelAction model;
+    private final TableModelActions model;
 
-    public MouseAdapterDoubleClickRemove(JTable table, TableModelAction model) {
+    public MouseAdapterDoubleClickRemove(JTable table, TableModelActions model) {
         this.table = table;
         this.model = model;
     }

@@ -1,27 +1,34 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
-import javax.swing.*;
+import java.util.List;
 
+import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.actions.ActionCategories;
 
+import javax.swing.*;
 import java.awt.*;
+
 
 public class DualTableSelector extends JPanel {
 	private static final long serialVersionUID = 1L;
-
+	private final TableModelActions selectedModel;
+	
 	public DualTableSelector(ActionBank actions) {
+        selectedModel = new TableModelActionSelected();
         createUI(actions);
     }
+	
+	public List<Action> getSelectedActions() {
+		return selectedModel.getRows();
+	}
 
     private void createUI(ActionBank actions) {
         setLayout(new BorderLayout());
 
         // Table Models
         TableModelActionsList listModel = new TableModelActionsList(actions);
-        TableModelAction selectedModel = new TableModelActionSelected();
-        // temp
-        listModel.setRowsByCategory(ActionCategories.CATEGORY_ALL);
+        // selectedModel already set
 
         JTable listTable = new JTableActionsList(listModel, selectedModel);
         JTableActionsSelected selectedTable = new JTableActionsSelected(selectedModel);
@@ -40,11 +47,18 @@ public class DualTableSelector extends JPanel {
         moveDownButton.addActionListener(e -> selectedTable.moveSelectedRow(1));
 
         // Layout
-	     // Create a combo box (drop-down) as before…
-	     JComboBox<String> leftComboBox = new JComboBox<>(new String[] { "Option 1", "Option 2", "Option 3" });
+        // Create a combo box (drop-down) as before…
+	    JComboBox<String> categoryComboBox = new JComboBox<>();
+		for (String category : ActionCategories.getCategoriesWithAll())
+		{
+			categoryComboBox.addItem(category);
+		}	     
+		categoryComboBox.addActionListener(new ActionListenerCategoryChanged(listModel));
+		categoryComboBox.setSelectedIndex(0);
+	     
 	     // Wrap it in a panel that centers it (using FlowLayout with CENTER)
 	     JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-	     topLeftPanel.add(leftComboBox);
+	     topLeftPanel.add(categoryComboBox);
 	     // Create a top panel and add the combo to its WEST so it aligns with the left table column
 	     JPanel topPanel = new JPanel(new BorderLayout());
 	     topPanel.add(topLeftPanel, BorderLayout.WEST);

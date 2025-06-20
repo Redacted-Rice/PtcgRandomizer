@@ -9,10 +9,10 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 
 public class ActionListenerCopySelected implements ActionListener {
     private final JTable fromTable;
-    private final TableModelAction fromModel;
-    private final TableModelAction toModel;
+    private final TableModelActions fromModel;
+    private final TableModelActions toModel;
 
-    public ActionListenerCopySelected(JTable leftTable, TableModelAction leftModel, TableModelAction rightModel) {
+    public ActionListenerCopySelected(JTable leftTable, TableModelActions leftModel, TableModelActions rightModel) {
         this.fromTable = leftTable;
         this.fromModel = leftModel;
         this.toModel = rightModel;

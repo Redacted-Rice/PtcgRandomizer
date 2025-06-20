@@ -1,16 +1,14 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 
-import redactedrice.ptcgr.randomizer.gui.ButtonCellClickHandler;
-import redactedrice.ptcgr.randomizer.gui.ButtonCellRenderer;
-import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelAction.Columns;
+import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelActions.Columns;
 
-public class JTableActionsSelected extends JTableActionHoverToolTip {
+public class JTableActionsSelected extends JTableActionsHoverToolTip {
 
 	private static final long serialVersionUID = 1L;
-	private final TableModelAction model;
+	private final TableModelActions model;
 
-	public JTableActionsSelected(TableModelAction model) {
+	public JTableActionsSelected(TableModelActions model) {
 		super(model);
 		this.model = model;
 
