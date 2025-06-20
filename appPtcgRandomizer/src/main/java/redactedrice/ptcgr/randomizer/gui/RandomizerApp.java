@@ -437,7 +437,7 @@ public class RandomizerApp {
 		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);		
 
 		JPanel dualPanel = new DualTableSelector(randomizer.getActionBank());
-		movesEffectsTab.addTab("Dual", null, dualPanel, null);
+		movesEffectsTab.addTab("Advanced", null, dualPanel, null);
 	}
 
 	private Settings createSettingsFromState() 
