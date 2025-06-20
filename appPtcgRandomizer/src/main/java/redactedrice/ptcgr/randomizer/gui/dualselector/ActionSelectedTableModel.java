@@ -1,11 +1,11 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 
-public class TableModelActionSelected extends TableModelActions
+public class ActionSelectedTableModel extends ActionsTableModel
 {
 	private static final long serialVersionUID = 1L;
 	
-	public TableModelActionSelected()
+	public ActionSelectedTableModel()
 	{
 		data.add(null);
 	}

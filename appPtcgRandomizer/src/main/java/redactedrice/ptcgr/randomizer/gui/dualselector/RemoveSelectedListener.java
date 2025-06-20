@@ -5,11 +5,11 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JTable;
 
-public class ActionListenerRemoveSelected implements ActionListener {
+public class RemoveSelectedListener implements ActionListener {
     private final JTable table;
-    private final TableModelActions model;
+    private final ActionsTableModel model;
 
-    public ActionListenerRemoveSelected(JTable rightTable, TableModelActions rightModel) {
+    public RemoveSelectedListener(JTable rightTable, ActionsTableModel rightModel) {
         this.table = rightTable;
         this.model = rightModel;
     }

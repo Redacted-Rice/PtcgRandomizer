@@ -4,12 +4,12 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 
-public class ButtonCellClickHandler extends AbstractCellEditor implements TableCellEditor {
+public class ButtonCellClickedEditor extends AbstractCellEditor implements TableCellEditor {
 	private static final long serialVersionUID = 1L;
 	private final ButtonCellRenderer renderer;
     private Object cellValue;
 
-    public ButtonCellClickHandler(ButtonCellRenderer renderer) {
+    public ButtonCellClickedEditor(ButtonCellRenderer renderer) {
         this.renderer = renderer;
     }
 
