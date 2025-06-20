@@ -10,8 +10,8 @@ import javax.swing.SwingConstants;
 import redactedrice.ptcgr.randomizer.actions.Action;
 
 
-public class ButtonCellWindow implements ActionListener {	
-	public ButtonCellWindow(Action action) {
+public class ButtonCellClickedListener implements ActionListener {	
+	public ButtonCellClickedListener(Action action) {
 		actionPerformed(null);
 	}
 	

@@ -7,12 +7,12 @@ import javax.swing.JTable;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 
-public class ActionListenerCopySelected implements ActionListener {
+public class CopySelectedListener implements ActionListener {
     private final JTable fromTable;
-    private final TableModelActions fromModel;
-    private final TableModelActions toModel;
+    private final ActionsTableModel fromModel;
+    private final ActionsTableModel toModel;
 
-    public ActionListenerCopySelected(JTable leftTable, TableModelActions leftModel, TableModelActions rightModel) {
+    public CopySelectedListener(JTable leftTable, ActionsTableModel leftModel, ActionsTableModel rightModel) {
         this.fromTable = leftTable;
         this.fromModel = leftModel;
         this.toModel = rightModel;

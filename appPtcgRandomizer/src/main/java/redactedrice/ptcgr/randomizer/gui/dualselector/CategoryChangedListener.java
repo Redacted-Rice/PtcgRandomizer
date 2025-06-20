@@ -5,11 +5,11 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 
-public class ActionListenerCategoryChanged implements ActionListener 
+public class CategoryChangedListener implements ActionListener 
 {
-	private TableModelActionsList toUpdate;
+	private ActionsListTableModel toUpdate;
 	
-	public ActionListenerCategoryChanged(TableModelActionsList toUpdate)
+	public CategoryChangedListener(ActionsListTableModel toUpdate)
 	{
 		this.toUpdate = toUpdate;
 	}

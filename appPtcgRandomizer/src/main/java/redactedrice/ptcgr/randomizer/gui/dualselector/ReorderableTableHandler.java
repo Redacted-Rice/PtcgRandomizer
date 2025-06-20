@@ -8,11 +8,11 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.TransferHandler;
 
-public class TransferHandlerReorderableTable extends TransferHandler {
+public class ReorderableTableHandler extends TransferHandler {
 	private static final long serialVersionUID = 1L;
 	private final JTable table;
 
-    public TransferHandlerReorderableTable(JTable table) {
+    public ReorderableTableHandler(JTable table) {
         this.table = table;
     }
 
@@ -20,7 +20,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
     protected Transferable createTransferable(JComponent c) {
         int[] selected = table.getSelectedRows();
         List<Integer> indices = Arrays.stream(selected).boxed().toList();
-        return new TransferableRows(indices);
+        return new RowsTransferable(indices);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
 
     @Override
     public boolean canImport(TransferSupport support) {
-        return support.isDrop() && support.isDataFlavorSupported(TransferableRows.FLAVOR);
+        return support.isDrop() && support.isDataFlavorSupported(RowsTransferable.FLAVOR);
     }   
     
     @Override
@@ -40,9 +40,9 @@ public class TransferHandlerReorderableTable extends TransferHandler {
             int dropIndex = dl.getRow();
 
             @SuppressWarnings("unchecked")
-            List<Integer> fromIndices = (List<Integer>) support.getTransferable().getTransferData(TransferableRows.FLAVOR);
+            List<Integer> fromIndices = (List<Integer>) support.getTransferable().getTransferData(RowsTransferable.FLAVOR);
 
-            ((TableModelActions) table.getModel()).reorderRows(fromIndices, dropIndex);
+            ((ActionsTableModel) table.getModel()).reorderRows(fromIndices, dropIndex);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

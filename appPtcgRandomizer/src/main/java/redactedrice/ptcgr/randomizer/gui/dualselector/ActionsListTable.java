@@ -3,17 +3,17 @@ package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import javax.swing.*;
 
-import redactedrice.ptcgr.randomizer.gui.dualselector.TableModelActions.Columns;
+import redactedrice.ptcgr.randomizer.gui.dualselector.ActionsTableModel.Columns;
 
-public class JTableActionsList extends JTableActionsHoverToolTip {
+public class ActionsListTable extends ActionsHoverToolTipTable {
 
 	private static final long serialVersionUID = 1L;
 
-	public JTableActionsList(TableModelActions listModel, TableModelActions selectedModel) {
+	public ActionsListTable(ActionsTableModel listModel, ActionsTableModel selectedModel) {
 		super(listModel);
 
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        addMouseListener(new MouseAdapterDoubleClickCopy(this, listModel, selectedModel));
+        addMouseListener(new DoubleClickCopy(this, listModel, selectedModel));
 
         setRowHeight(18);
 		getColumnModel().getColumn(Columns.NAME.getValue()).setPreferredWidth(200);
@@ -24,6 +24,6 @@ public class JTableActionsList extends JTableActionsHoverToolTip {
 		
 	    ButtonCellRenderer renderer = new ButtonCellRenderer("View");
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
-        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellEditor(new ButtonCellClickHandler(renderer));
+        getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellEditor(new ButtonCellClickedEditor(renderer));
 	}
 }

@@ -10,7 +10,7 @@ import javax.swing.table.AbstractTableModel;
 import redactedrice.ptcgr.randomizer.actions.Action;
 
 // TODO: Split between tables?
-public class TableModelActions extends AbstractTableModel
+public class ActionsTableModel extends AbstractTableModel
 {
 	static public enum Columns {
 	    NAME(0),
@@ -45,7 +45,7 @@ public class TableModelActions extends AbstractTableModel
 	
 	List<Action> data;
 	
-	public TableModelActions()
+	public ActionsTableModel()
 	{
 		data = new ArrayList<>();
 	}

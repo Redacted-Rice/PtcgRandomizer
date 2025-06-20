@@ -12,10 +12,10 @@ import java.awt.*;
 
 public class DualTableSelector extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final TableModelActions selectedModel;
+	private final ActionsTableModel selectedModel;
 	
 	public DualTableSelector(ActionBank actions) {
-        selectedModel = new TableModelActionSelected();
+        selectedModel = new ActionSelectedTableModel();
         createUI(actions);
     }
 	
@@ -27,11 +27,11 @@ public class DualTableSelector extends JPanel {
         setLayout(new BorderLayout());
 
         // Table Models
-        TableModelActionsList listModel = new TableModelActionsList(actions);
+        ActionsListTableModel listModel = new ActionsListTableModel(actions);
         // selectedModel already set
 
-        JTable listTable = new JTableActionsList(listModel, selectedModel);
-        JTableActionsSelected selectedTable = new JTableActionsSelected(selectedModel);
+        JTable listTable = new ActionsListTable(listModel, selectedModel);
+        ActionsSelectedTable selectedTable = new ActionsSelectedTable(selectedModel);
 
         // Wrap tables in scroll panes
         JScrollPane leftScrollPane = new JScrollPane(listTable);
@@ -53,7 +53,7 @@ public class DualTableSelector extends JPanel {
 		{
 			categoryComboBox.addItem(category);
 		}	     
-		categoryComboBox.addActionListener(new ActionListenerCategoryChanged(listModel));
+		categoryComboBox.addActionListener(new CategoryChangedListener(listModel));
 		categoryComboBox.setSelectedIndex(0);
 	     
 	     // Wrap it in a panel that centers it (using FlowLayout with CENTER)
@@ -68,10 +68,10 @@ public class DualTableSelector extends JPanel {
 	     leftPanel.add(leftScrollPane, BorderLayout.CENTER);
 	
          JButton addButton = new JButton("Add Selected");
-         addButton.addActionListener(new ActionListenerCopySelected(listTable, listModel, selectedModel));
+         addButton.addActionListener(new CopySelectedListener(listTable, listModel, selectedModel));
          
          JButton removeButton = new JButton("Remove Selected");
-         removeButton.addActionListener(new ActionListenerRemoveSelected(selectedTable, selectedModel));
+         removeButton.addActionListener(new RemoveSelectedListener(selectedTable, selectedModel));
 	     
 	     // 1. Compute the maximum preferred width for both buttons.
 	     Dimension addPref = addButton.getPreferredSize();

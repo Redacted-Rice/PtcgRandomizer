@@ -17,7 +17,7 @@ public class ButtonCellRenderer implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (value instanceof Number && ((Number) value).intValue() > 0) {
             JButton button = new JButton(value != null ? text : "");
-            button.addActionListener(e -> new ButtonCellWindow(((TableModelActions)table.getModel()).getRow(row)));
+            button.addActionListener(e -> new ButtonCellClickedListener(((ActionsTableModel)table.getModel()).getRow(row)));
             return button;
         }
         return new JPanel(); // Empty cell if value <= 0 or null
