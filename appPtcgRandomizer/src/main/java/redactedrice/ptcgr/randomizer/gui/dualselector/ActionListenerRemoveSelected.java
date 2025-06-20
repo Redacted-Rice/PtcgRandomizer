@@ -7,9 +7,9 @@ import javax.swing.JTable;
 
 public class ActionListenerRemoveSelected implements ActionListener {
     private final JTable table;
-    private final TableModelAction model;
+    private final TableModelActions model;
 
-    public ActionListenerRemoveSelected(JTable rightTable, TableModelAction rightModel) {
+    public ActionListenerRemoveSelected(JTable rightTable, TableModelActions rightModel) {
         this.table = rightTable;
         this.model = rightModel;
     }
@@ -41,8 +41,8 @@ public class ActionListenerRemoveSelected implements ActionListener {
             }
 
             // If the table isn’t empty, set the selection.
-            if (model.getRowCount() > 0) {
-                newSelection = Math.min(newSelection, model.getRowCount() - 1);
+            if (model.getDataRowCount() > 0) {
+                newSelection = Math.min(newSelection, model.getDataRowCount() - 1);
                 table.setRowSelectionInterval(newSelection, newSelection);
             }
         }

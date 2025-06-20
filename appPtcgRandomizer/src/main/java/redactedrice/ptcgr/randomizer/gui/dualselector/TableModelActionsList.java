@@ -5,7 +5,7 @@ import java.util.Collection;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 
-public class TableModelActionsList extends TableModelAction {
+public class TableModelActionsList extends TableModelActions {
 	private static final long serialVersionUID = 1L;
 	private final ActionBank actionBank;
 

@@ -5,11 +5,11 @@ import java.awt.event.MouseEvent;
 import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
 
-public abstract class JTableActionHoverToolTip extends JTable {
+public abstract class JTableActionsHoverToolTip extends JTable {
 	private static final long serialVersionUID = 1L;
-	private final TableModelAction model;
+	private final TableModelActions model;
 	
-    public JTableActionHoverToolTip(TableModelAction model) {
+    public JTableActionsHoverToolTip(TableModelActions model) {
         super(model);
         this.model = model;
 		setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));

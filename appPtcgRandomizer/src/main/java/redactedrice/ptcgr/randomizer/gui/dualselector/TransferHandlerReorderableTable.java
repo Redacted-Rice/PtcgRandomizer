@@ -42,7 +42,7 @@ public class TransferHandlerReorderableTable extends TransferHandler {
             @SuppressWarnings("unchecked")
             List<Integer> fromIndices = (List<Integer>) support.getTransferable().getTransferData(TransferableRows.FLAVOR);
 
-            ((TableModelAction) table.getModel()).reorderRows(fromIndices, dropIndex);
+            ((TableModelActions) table.getModel()).reorderRows(fromIndices, dropIndex);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

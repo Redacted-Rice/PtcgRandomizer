@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui;
+package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;

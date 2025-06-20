@@ -18,7 +18,6 @@ import java.awt.GridLayout;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
 import javax.swing.ButtonGroup;
-import javax.swing.DropMode;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 
@@ -28,24 +27,11 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.TransferHandler;
-import javax.swing.JTree;
-import javax.swing.JTable;
-import javax.swing.border.BevelBorder;
-import javax.swing.table.DefaultTableModel;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.Settings.*;
-import redactedrice.ptcgr.randomizer.actions.Action;
-import redactedrice.ptcgr.randomizer.actions.ActionCategories;
 import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
-
-import javax.swing.JComboBox;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class RandomizerApp {
 
@@ -67,8 +53,7 @@ public class RandomizerApp {
 	private JCheckBox pokePowerIncludeWithMovesBox;
 	private final ButtonGroup moveRandTypeGroup = new ButtonGroup();
 	private JTextField saveSetSeedVal;
-	private JTable table_1;
-	private JTable table;
+	private DualTableSelector dualPanel;
 	
 	/**
 	 * Launch the application.
@@ -98,7 +83,6 @@ public class RandomizerApp {
 	 */
 	private void initialize() {
 		randomizer = new RandomizerCore();
-		ActionTableModel actionsModel = new ActionTableModel(randomizer.getActionBank());
 		
 		openRomChooser = new JFileChooser();
 		openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
@@ -161,7 +145,7 @@ public class RandomizerApp {
 					        {
 					        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
 					        }
-					    	randomizer.randomizeAndSaveRom(saveFile, settings, actionsModel.getRows());
+					    	randomizer.randomizeAndSaveRom(saveFile, settings, dualPanel.getSelectedActions());
 					    }
 					} catch (IOException e1) {
 						// TODO later: Auto-generated catch block
@@ -450,50 +434,10 @@ public class RandomizerApp {
 		JCheckBox moveTypeRandPreventWrongTypeBox = new JCheckBox("Prevent Wrong Type Specfic");
 		moveTypeRandPreventWrongTypeBox.setSelected(true);
 		moveTypeRandPreventWrongTypeBox.setEnabled(false);
-		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);
-		
-		JPanel actionsPanel = new JPanel();
-		movesEffectsTab.addTab("Actions", null, actionsPanel, null);
-		actionsPanel.setLayout(new GridLayout(2, 1, 0, 0));
-		
-		JPanel panel_1 = new JPanel();
-		actionsPanel.add(panel_1);
-		panel_1.setLayout(new BorderLayout(0, 0));
-		
-		JPanel panel_2 = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
-		panel_1.add(panel_2, BorderLayout.NORTH);
-		JComboBox<String> categoryComboBox = new JComboBox<>();
-
-		ActionTableModel ate = new ActionTableModel(randomizer.getActionBank());
-		for (String category : ActionCategories.getCategoriesWithAll())
-		{
-			categoryComboBox.addItem(category);
-		}
-		categoryComboBox.addActionListener(new CategoryChangedCBListener(ate));
-		categoryComboBox.setSelectedIndex(0);
-		panel_2.add(categoryComboBox);
-		
-		JComboBox comboBox_2 = new JComboBox();
-		panel_2.add(comboBox_2);
-		
-		JScrollPane scrollPane = new JScrollPane();
-		panel_1.add(scrollPane, BorderLayout.CENTER);
-		
-		table_1 = new ActionTable(ate);
-		table_1.setSize(100, 200);
-		scrollPane.setViewportView(table_1);
-		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		actionsPanel.add(scrollPane_1);
-		
+		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);		
 
 		JPanel dualPanel = new DualTableSelector(randomizer.getActionBank());
 		movesEffectsTab.addTab("Dual", null, dualPanel, null);
-		
-		table = new ActionTable(actionsModel);
-		table.setSize(100, 200);
-		scrollPane_1.setViewportView(table);
 	}
 
 	private Settings createSettingsFromState() 

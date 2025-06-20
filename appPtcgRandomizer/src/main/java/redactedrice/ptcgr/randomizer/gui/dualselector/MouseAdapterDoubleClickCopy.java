@@ -9,10 +9,10 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 
 public class MouseAdapterDoubleClickCopy extends MouseAdapter {
     private final JTable fromTable;
-    private final TableModelAction fromModel;
-    private final TableModelAction toModel;
+    private final TableModelActions fromModel;
+    private final TableModelActions toModel;
 
-    public MouseAdapterDoubleClickCopy(JTable fromTable, TableModelAction fromModel, TableModelAction toModel) {
+    public MouseAdapterDoubleClickCopy(JTable fromTable, TableModelActions fromModel, TableModelActions toModel) {
         this.fromTable = fromTable;
         this.fromModel = fromModel;
         this.toModel = toModel;

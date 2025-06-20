@@ -1,15 +1,15 @@
-package redactedrice.ptcgr.randomizer.gui;
+package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 
-public class CategoryChangedCBListener implements ActionListener 
+public class ActionListenerCategoryChanged implements ActionListener 
 {
-	private ActionTableModel toUpdate;
+	private TableModelActionsList toUpdate;
 	
-	public CategoryChangedCBListener(ActionTableModel toUpdate)
+	public ActionListenerCategoryChanged(TableModelActionsList toUpdate)
 	{
 		this.toUpdate = toUpdate;
 	}
