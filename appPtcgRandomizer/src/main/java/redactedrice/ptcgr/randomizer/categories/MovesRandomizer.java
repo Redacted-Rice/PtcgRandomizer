@@ -16,6 +16,7 @@ import redactedrice.ptcgr.randomizer.actions.ActionCategories;
 import redactedrice.ptcgr.randomizer.actions.DynamicConfig;
 import redactedrice.ptcgr.randomizer.actions.LambdaAction;
 import redactedrice.universalrandomizer.pool.ReusePool;
+import redactedrice.universalrandomizer.randomize.Randomizer;
 import redactedrice.universalrandomizer.randomize.SingleRandomizer;
 import redactedrice.universalrandomizer.userobjectapis.MultiSetterNoReturn;
 import redactedrice.universalrandomizer.userobjectapis.SetterNoReturn;
@@ -30,7 +31,7 @@ public class MovesRandomizer
 				"Sets the number of moves for each card",
 				rom -> {
 		        	SetterNoReturn<MonsterCard, Integer> setter = (mc, count) -> mc.set("numMoves", count);
-		        	SingleRandomizer<MonsterCard, Integer> randomizer =
+		        	Randomizer<MonsterCard, Integer> randomizer =
 		        			SingleRandomizer.create(setter.asSetter());
 		        	randomizer.perform(rom.allCards.cards().monsterCards().stream(), ReusePool.create( 
 		        			StreamUtils.field(rom.allCards.cards().monsterCards().stream(),
@@ -52,7 +53,7 @@ public class MovesRandomizer
 					List<Move> moves = rom.allCards.cards().monsterCards().stream().flatMap(
 							mc -> mc.getAllNonEmptyMoves().stream()).collect(Collectors.toList());
 		        	MultiSetterNoReturn<MonsterCard, Move> setter = MonsterCard::setMove;
-		        	SingleRandomizer<MonsterCard, Move> randomizer =
+		        	Randomizer<MonsterCard, Move> randomizer =
 		        			SingleRandomizer.create(setter.asMultiSetter(), MonsterCard::getNumMoves);
 		        	randomizer.perform(rom.allCards.cards().monsterCards().stream(), ReusePool.create(moves));
 		    	}));
