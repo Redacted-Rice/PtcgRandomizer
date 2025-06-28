@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.randomizer.categories;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,12 +18,8 @@ import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.ColumnFor
 import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.TypeToPrint;
 import redactedrice.universalrandomizer.pool.EliminatePool;
 import redactedrice.universalrandomizer.pool.EliminatePoolSet;
-import redactedrice.universalrandomizer.pool.MultiPool;
-import redactedrice.universalrandomizer.pool.ReusePool;
-import redactedrice.universalrandomizer.pool.RandomizerPool;
-import redactedrice.universalrandomizer.randomize.DependentRandomizer;
+import redactedrice.universalrandomizer.randomize.Randomizer;
 import redactedrice.universalrandomizer.randomize.SingleRandomizer;
-import redactedrice.universalrandomizer.userobjectapis.Getter;
 import redactedrice.universalrandomizer.userobjectapis.SetterNoReturn;
 import redactedrice.universalrandomizer.utils.StreamUtils;
 
@@ -62,86 +57,86 @@ public class CardsRandomizer
 		        			mc.type = t;
 		        		}
 		        	};
-		        	SingleRandomizer<List<MonsterCard>, CardType> randomizer =
+		        	Randomizer<List<MonsterCard>, CardType> randomizer =
 		        			SingleRandomizer.create(setter.asSetter());
 		        	randomizer.perform(byEvoLine, EliminatePoolSet.create(
 		        			EliminatePool.create(CardType.monsterValues()), EliminatePoolSet.UNLIMITED_DEPTH));
 		    	}));
 
-		actionBank.add(new LambdaAction(
-				ActionCategories.CATEGORY_CARDS,
-				"HP by Stage from ROM",
-				"Randomize the HP of cards based on their stage and max stage in the evo line weighting values based on the data in the rom",
-				rom -> {
-					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
-					Map<EvolutionStage, List<MonsterCard>> byMaxStage = 
-							StreamUtils.group(rom.allCards.cards().monsterCards().stream(), 
-									mc -> (EvolutionStage) mc.get("evoLineMaxStage"));
-					for (Entry<EvolutionStage, List<MonsterCard>> maxStageEntry : byMaxStage.entrySet())
-					{
-						Map<EvolutionStage, List<MonsterCard>> byStage = 
-								StreamUtils.group(maxStageEntry.getValue().stream(), mc -> mc.stage);
-						for (Entry<EvolutionStage, List<MonsterCard>> stageEntry : byStage.entrySet())
-						{
-							poolMap.put(stageAndMaxStageHash(stageEntry.getKey(), maxStageEntry.getKey()), 
-									ReusePool.create(stageEntry.getValue().stream().map(
-											mc -> Integer.valueOf(mc.getHp())).toList()));
-						}
-					}
-					randomizeHpByStageMaxStageWithPool(rom.allCards.cards().monsterCards().stream(), poolMap);
-		    	}));
-		
-		actionBank.add(new LambdaAction(
-				ActionCategories.CATEGORY_CARDS,
-				"HP by Stage",
-				"Randomize the HP of cards based on their stage and max stage in the evo line",
-				rom -> {
-					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.BASIC), 
-							ReusePool.create(50, 50, 60, 60, 60, 70, 70, 70, 80, 90, 100, 120));
-
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_1),
-							ReusePool.create(30, 40, 40, 50, 50, 60, 70, 80));
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_1),
-							ReusePool.create(50, 60, 70, 70, 80, 90, 100));
-					
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_2),
-							ReusePool.create(30, 30, 40, 40, 50, 50, 60));
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_2),
-							ReusePool.create(50, 60, 60, 70, 70, 80, 90));
-					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_2, EvolutionStage.STAGE_2),
-							ReusePool.create(80, 90, 100, 100, 110, 120));
-				
-					randomizeHpByStageMaxStageWithPool(rom.allCards.cards().monsterCards().stream(), poolMap);
-		    	}));
+//		actionBank.add(new LambdaAction(
+//				ActionCategories.CATEGORY_CARDS,
+//				"HP by Stage from ROM",
+//				"Randomize the HP of cards based on their stage and max stage in the evo line weighting values based on the data in the rom",
+//				rom -> {
+//					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
+//					Map<EvolutionStage, List<MonsterCard>> byMaxStage = 
+//							StreamUtils.group(rom.allCards.cards().monsterCards().stream(), 
+//									mc -> (EvolutionStage) mc.get("evoLineMaxStage"));
+//					for (Entry<EvolutionStage, List<MonsterCard>> maxStageEntry : byMaxStage.entrySet())
+//					{
+//						Map<EvolutionStage, List<MonsterCard>> byStage = 
+//								StreamUtils.group(maxStageEntry.getValue().stream(), mc -> mc.stage);
+//						for (Entry<EvolutionStage, List<MonsterCard>> stageEntry : byStage.entrySet())
+//						{
+//							poolMap.put(stageAndMaxStageHash(stageEntry.getKey(), maxStageEntry.getKey()), 
+//									ReusePool.create(stageEntry.getValue().stream().map(
+//											mc -> Integer.valueOf(mc.getHp())).toList()));
+//						}
+//					}
+//					randomizeHpByStageMaxStageWithPool(rom.allCards.cards().monsterCards().stream(), poolMap);
+//		    	}));
+//		
+//		actionBank.add(new LambdaAction(
+//				ActionCategories.CATEGORY_CARDS,
+//				"HP by Stage",
+//				"Randomize the HP of cards based on their stage and max stage in the evo line",
+//				rom -> {
+//					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.BASIC), 
+//							ReusePool.create(50, 50, 60, 60, 60, 70, 70, 70, 80, 90, 100, 120));
+//
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_1),
+//							ReusePool.create(30, 40, 40, 50, 50, 60, 70, 80));
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_1),
+//							ReusePool.create(50, 60, 70, 70, 80, 90, 100));
+//					
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_2),
+//							ReusePool.create(30, 30, 40, 40, 50, 50, 60));
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_2),
+//							ReusePool.create(50, 60, 60, 70, 70, 80, 90));
+//					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_2, EvolutionStage.STAGE_2),
+//							ReusePool.create(80, 90, 100, 100, 110, 120));
+//				
+//					randomizeHpByStageMaxStageWithPool(rom.allCards.cards().monsterCards().stream(), poolMap);
+//		    	}));
 	}
 	
-	private static int stageAndMaxStageHash(EvolutionStage stage, EvolutionStage maxStage)
-	{
-		return maxStage.getValue() * 3 + stage.getValue();
-	}
+//	private static int stageAndMaxStageHash(EvolutionStage stage, EvolutionStage maxStage)
+//	{
+//		return maxStage.getValue() * 3 + stage.getValue();
+//	}
 	
-	private static void randomizeHpByStageMaxStageWithPool(
-			Stream<MonsterCard> cards, 
-			Map<Integer, RandomizerPool<Integer>> poolMap)
-	{
-		// DO a pre pass for hp "trend" to keep evo lines more consistent
-		// assign "high" "med" and "low" for more multipools
-		Getter<MonsterCard, Integer> hpIndexGetter = 
-				mc -> stageAndMaxStageHash(mc.stage, (EvolutionStage) mc.get("evoLineMaxStage"));
-		MultiPool<MonsterCard, Integer, Integer> hpPool = 
-				MultiPool.create(poolMap, hpIndexGetter.asMultiGetter());
-		
-    	SetterNoReturn<MonsterCard, Integer> setter = (mc, hp) -> mc.setHp(hp);
-    	DependentRandomizer<List<MonsterCard>, MonsterCard, Integer, EvolutionStage> randomizer =
-    			DependentRandomizer.create(
-    					setter.asSetter(), 
-    					Integer::compare,
-    					mc -> mc.stage,
-    					EvolutionStage::compareTo);
-    	
-    	randomizer.perform(StreamUtils.group(cards, mc -> mc.get("evoLineId")).values().stream(), hpPool);
-	}
+//	private static void randomizeHpByStageMaxStageWithPool(
+//			Stream<MonsterCard> cards, 
+//			Map<Integer, RandomizerPool<Integer>> poolMap)
+//	{
+//		// DO a pre pass for hp "trend" to keep evo lines more consistent
+//		// assign "high" "med" and "low" for more multipools
+//		Getter<MonsterCard, Integer> hpIndexGetter = 
+//				mc -> stageAndMaxStageHash(mc.stage, (EvolutionStage) mc.get("evoLineMaxStage"));
+//		MultiPool<MonsterCard, Integer, Integer> hpPool = 
+//				MultiPool.create(poolMap, hpIndexGetter.asMultiGetter());
+//		
+//    	SetterNoReturn<MonsterCard, Integer> setter = (mc, hp) -> mc.setHp(hp);
+//    	DependentRandomizer<List<MonsterCard>, MonsterCard, Integer, EvolutionStage> randomizer =
+//    			DependentRandomizer.create(
+//    					setter.asSetter(), 
+//    					Integer::compare,
+//    					mc -> mc.stage,
+//    					EvolutionStage::compareTo);
+//    	
+//    	randomizer.perform(StreamUtils.group(cards, mc -> mc.get("evoLineId")).values().stream(), hpPool);
+//	}
 	
 	private static void setEvoLineData(Map<String, List<MonsterCard>> cards)
 	{

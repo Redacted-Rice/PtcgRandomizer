@@ -20,7 +20,8 @@ import redactedrice.universalrandomizer.randomize.SingleRandomizer;
 import redactedrice.universalrandomizer.utils.CreationUtils;
 import redactedrice.universalrandomizer.utils.StreamUtils;
 import redactedrice.universalrandomizer.randomize.MultiRandomizer;
-import redactedrice.universalrandomizer.randomize.SetRandomizer;
+import redactedrice.universalrandomizer.randomize.Randomizer;
+import redactedrice.universalrandomizer.randomize.GroupRandomizer;
 import redactedrice.universalrandomizer.pool.MultiPool;
 import redactedrice.universalrandomizer.pool.ReusePool;
 import redactedrice.universalrandomizer.pool.RandomizerPool;
@@ -564,7 +565,7 @@ public class MoveSetRandomizer {
 				MultiPool<MonsterCardRandomizerWrapper, Integer, List<EnergyType>> mp = 
 						new MultiPool<>(poolMap, (mcw, count) -> mcw.getNumMoves());
 				
-				MultiRandomizer<MonsterCardRandomizerWrapper, List<EnergyType>, EnergyType> randomizer = 
+				Randomizer<MonsterCardRandomizerWrapper, List<EnergyType>> randomizer = 
 						MultiRandomizer.create(
 								MonsterCardRandomizerWrapper::setMoveType);
 				randomizer.perform(currEntry.getValue().stream(), mp);
@@ -580,7 +581,7 @@ public class MoveSetRandomizer {
 		MultiPool<MonsterCardRandomizerWrapper, EnergyType, Move> movesPool = 
 				new MultiPool<MonsterCardRandomizerWrapper, EnergyType, Move>(movesByType, (mcw, count) -> mcw.getMoveTypes()[count]);
 		
-		SingleRandomizer<MonsterCardRandomizerWrapper, Move> movesRand =
+		Randomizer<MonsterCardRandomizerWrapper, Move> movesRand =
 				SingleRandomizer.create(
 						(mcw, move, index) -> mcw.getMonsterCard().setMove(move, index),
 						MonsterCardRandomizerWrapper::getNumMoves);
@@ -619,8 +620,8 @@ public class MoveSetRandomizer {
 		
 //		MonsterCardRandomizerWrapper.setEvoLineIds(mcs.get());
 
-		SetRandomizer<List<MonsterCardRandomizerWrapper>, MonsterCardRandomizerWrapper, List<Integer>, Integer> randomizer = 
-				SetRandomizer.create(
+		Randomizer<List<MonsterCardRandomizerWrapper>, List<Integer>> randomizer = 
+				GroupRandomizer.create(
 						(mcw, hp) -> mcw.getMonsterCard().setHp(hp));
 		randomizer.perform(StreamUtils.group(mcs.get(), MonsterCardRandomizerWrapper::getEvoLineId).values().stream(), multiPool);
 	}
