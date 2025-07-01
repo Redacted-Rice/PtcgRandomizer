@@ -1,5 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -12,7 +13,8 @@ public class CopySelectedListener implements ActionListener {
     private final ActionsTableModel fromModel;
     private final ActionsTableModel toModel;
 
-    public CopySelectedListener(JTable leftTable, ActionsTableModel leftModel, ActionsTableModel rightModel) {
+    public CopySelectedListener(JTable leftTable, ActionsTableModel leftModel,
+            ActionsTableModel rightModel) {
         this.fromTable = leftTable;
         this.fromModel = leftModel;
         this.toModel = rightModel;

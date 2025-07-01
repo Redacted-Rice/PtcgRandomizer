@@ -1,5 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -15,7 +16,8 @@ public class RowsTransferable implements Transferable {
 
     @Override
     public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[] { FLAVOR };
+        return new DataFlavor[] { FLAVOR
+        };
     }
 
     @Override
@@ -25,7 +27,8 @@ public class RowsTransferable implements Transferable {
 
     @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-        if (!isDataFlavorSupported(flavor)) throw new UnsupportedFlavorException(flavor);
+        if (!isDataFlavorSupported(flavor))
+            throw new UnsupportedFlavorException(flavor);
         return indices;
     }
 }

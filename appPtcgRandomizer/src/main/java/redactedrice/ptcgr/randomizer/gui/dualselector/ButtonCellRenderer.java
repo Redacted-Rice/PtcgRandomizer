@@ -7,17 +7,19 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public class ButtonCellRenderer implements TableCellRenderer {
-	private final String text;
-	
-	public ButtonCellRenderer(String text) {
-		this.text = text;
+    private final String text;
+
+    public ButtonCellRenderer(String text) {
+        this.text = text;
     }
 
     @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int column) {
         if (value instanceof Number && ((Number) value).intValue() > 0) {
             JButton button = new JButton(value != null ? text : "");
-            button.addActionListener(e -> new ButtonCellClickedListener(((ActionsTableModel)table.getModel()).getRow(row)));
+            button.addActionListener(e -> new ButtonCellClickedListener(
+                    ((ActionsTableModel) table.getModel()).getRow(row)));
             return button;
         }
         return new JPanel(); // Empty cell if value <= 0 or null
