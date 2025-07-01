@@ -1,5 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -12,7 +13,8 @@ public class DoubleClickCopy extends MouseAdapter {
     private final ActionsTableModel fromModel;
     private final ActionsTableModel toModel;
 
-    public DoubleClickCopy(JTable fromTable, ActionsTableModel fromModel, ActionsTableModel toModel) {
+    public DoubleClickCopy(JTable fromTable, ActionsTableModel fromModel,
+            ActionsTableModel toModel) {
         this.fromTable = fromTable;
         this.fromModel = fromModel;
         this.toModel = toModel;

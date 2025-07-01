@@ -1,12 +1,13 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
+
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 
 public class ButtonCellClickedEditor extends AbstractCellEditor implements TableCellEditor {
-	private static final long serialVersionUID = 1L;
-	private final ButtonCellRenderer renderer;
+    private static final long serialVersionUID = 1L;
+    private final ButtonCellRenderer renderer;
     private Object cellValue;
 
     public ButtonCellClickedEditor(ButtonCellRenderer renderer) {
@@ -14,7 +15,8 @@ public class ButtonCellClickedEditor extends AbstractCellEditor implements Table
     }
 
     @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
+            int row, int column) {
         cellValue = value;
         return renderer.getTableCellRendererComponent(table, value, isSelected, true, row, column);
     }

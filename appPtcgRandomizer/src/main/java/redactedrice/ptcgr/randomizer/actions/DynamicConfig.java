@@ -1,5 +1,6 @@
 package redactedrice.ptcgr.randomizer.actions;
 
+
 public class DynamicConfig<T> {
     private T value;
     private final Class<T> type;
@@ -16,7 +17,7 @@ public class DynamicConfig<T> {
     public void set(T value) {
         this.value = value;
     }
-    
+
     public Class<T> getType() {
         return type;
     }

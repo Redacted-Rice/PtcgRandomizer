@@ -4,27 +4,22 @@ package redactedrice.ptcgr.data.romtexts;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
 
-public class PokeDescription extends OneBlockText
-{		
-	public PokeDescription() 
-	{
-		super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, PtcgRomConstants.MAX_LINES_MONSTER_DESC);
-	}
-	
-	public PokeDescription(String text)
-	{
-		this();
-		setText(text);
-	}
-	
-	public PokeDescription(CharSetPrefix charSet, String text)
-	{
-		this();
-		setText(charSet, text);
-	}
-	
-	public PokeDescription(PokeDescription toCopy) 
-	{
-		super(toCopy);
-	}
+public class PokeDescription extends OneBlockText {
+    public PokeDescription() {
+        super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, PtcgRomConstants.MAX_LINES_MONSTER_DESC);
+    }
+
+    public PokeDescription(String text) {
+        this();
+        setText(text);
+    }
+
+    public PokeDescription(CharSetPrefix charSet, String text) {
+        this();
+        setText(charSet, text);
+    }
+
+    public PokeDescription(PokeDescription toCopy) {
+        super(toCopy);
+    }
 }

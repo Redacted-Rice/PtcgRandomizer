@@ -7,26 +7,22 @@ import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.Rom;
 
-public class Configs 
-{
-	private MoveExclusions moveExclusions;
-	private MoveAssignments moveAssignments;
-	
-	public Configs(Rom romData, Component toCenterPopupsOn)
-	{
-		CardGroup<MonsterCard> allMons = romData.allCards.cards().monsterCards();
+public class Configs {
+    private MoveExclusions moveExclusions;
+    private MoveAssignments moveAssignments;
 
-		moveExclusions = new MoveExclusions(allMons, toCenterPopupsOn);
-		moveAssignments = new MoveAssignments(allMons, toCenterPopupsOn);
-	}
+    public Configs(Rom romData, Component toCenterPopupsOn) {
+        CardGroup<MonsterCard> allMons = romData.allCards.cards().monsterCards();
 
-	public MoveExclusions getMoveExclusions()
-	{
-		return moveExclusions;
-	}
+        moveExclusions = new MoveExclusions(allMons, toCenterPopupsOn);
+        moveAssignments = new MoveAssignments(allMons, toCenterPopupsOn);
+    }
 
-	public MoveAssignments getMoveAssignments() 
-	{
-		return moveAssignments;
-	}
+    public MoveExclusions getMoveExclusions() {
+        return moveExclusions;
+    }
+
+    public MoveAssignments getMoveAssignments() {
+        return moveAssignments;
+    }
 }
