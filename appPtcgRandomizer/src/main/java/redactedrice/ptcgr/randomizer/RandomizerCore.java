@@ -22,6 +22,7 @@ import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
 import redactedrice.randomizer.wrapper.ExecutionResult;
+import redactedrice.randomizer.wrapper.RandomizerResourceExtractor;
 
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
@@ -31,6 +32,7 @@ public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";
     static final String LOG_FILE_EXTENSION = ".log.txt";
     static final String MODULES_DIRECTORY = "modules";
+    static final String RANDOMIZER_DIRECTORY = "randomizer";
 
     private Logger logger;
     private Rom romData;
@@ -41,6 +43,7 @@ public class RandomizerCore {
     public RandomizerCore() {
         logger = new Logger();
         setupLuaRandomizer();
+        actionBank = new ActionBank(luaRandomizer);
     }
 
     public ActionBank getActionBank() {
@@ -52,6 +55,20 @@ public class RandomizerCore {
     }
 
     private void setupLuaRandomizer() {
+        // Extract bundled randomizer files if they dont exist or need updating
+        File randomizerDir = new File(RANDOMIZER_DIRECTORY);
+        String randomizerPath = randomizerDir.getAbsolutePath();
+        RandomizerResourceExtractor.setPath(randomizerPath);
+        try {
+            RandomizerResourceExtractor.extract(false); // false == dont overwrite existing files
+            System.out.println("Using randomizer files from: " + randomizerPath);
+        } catch (IOException e) {
+            System.err.println("Failed to extract core lua randomizer files: " + e.getMessage());
+            e.printStackTrace();
+            // Try to continue anyway in case files already exist
+        }
+
+        // Now that the path is set we can make the wrapper
         luaRandomizer = new LuaRandomizerWrapper();
         luaRandomizer.setChangeDetectionEnabled(true);
 

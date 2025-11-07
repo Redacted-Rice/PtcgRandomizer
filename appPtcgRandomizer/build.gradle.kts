@@ -34,7 +34,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "redactedrice.randomizer.PtcgRandomizerApp"
+    mainClass = "redactedrice.ptcgr.randomizer.gui.RandomizerApp"
 }
 
 tasks.named<Test>("test") {

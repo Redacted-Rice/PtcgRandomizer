@@ -393,8 +393,8 @@ public class RandomizerApp {
         moveTypesRandomPanel.setLayout(new GridLayout(0, 2, 0, 0));
 
         JPanel moveTypesRandomButtonPanel = new JPanel();
-        FlowLayout fl_moveTypesRandomButtonPanel = (FlowLayout) moveTypesRandomButtonPanel
-                .getLayout();
+        FlowLayout fl_moveTypesRandomButtonPanel =
+                (FlowLayout) moveTypesRandomButtonPanel.getLayout();
         fl_moveTypesRandomButtonPanel.setAlignment(FlowLayout.LEFT);
         moveTypesRandomPanel.add(moveTypesRandomButtonPanel);
 
@@ -428,7 +428,7 @@ public class RandomizerApp {
         moveTypeRandPreventWrongTypeBox.setEnabled(false);
         moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);
 
-        JPanel dualPanel = new DualTableSelector(randomizer.getActionBank());
+        dualPanel = new DualTableSelector(randomizer.getActionBank());
         movesEffectsTab.addTab("Advanced", null, dualPanel, null);
     }
 
