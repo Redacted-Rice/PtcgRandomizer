@@ -17,46 +17,42 @@ import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction;
 import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.Column;
 import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.ColumnFormat;
 import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.TypeToPrint;
-import redactedrice.universalrandomizer.pool.EliminatePool;
-import redactedrice.universalrandomizer.pool.EliminatePoolSet;
-import redactedrice.universalrandomizer.randomize.Randomizer;
-import redactedrice.universalrandomizer.randomize.SingleRandomizer;
-import redactedrice.universalrandomizer.userobjectapis.SetterNoReturn;
-import redactedrice.universalrandomizer.utils.StreamUtils;
 
 public class CardsRandomizer {
     public static void addActions(ActionBank actionBank, Logger logger) {
-        actionBank.add(new CardsLogAction(ActionCategories.CATEGORY_CARDS,
-                configs -> "Log Card Info", configs -> "Log info related to card randomizations",
-                logger, TypeToPrint.MONSTERS, new ColumnFormat(Column.C_NAME, "-"),
-                new ColumnFormat(Column.C_TYPE_SHORT, ""), new ColumnFormat(Column.MC_HP, ""),
-                new ColumnFormat(Column.MC_PREV_EVO, "-"), new ColumnFormat(Column.MC_EVO_ID, ""),
-                new ColumnFormat(Column.MC_MAX_EVO_STAGE, "")));
+        // TODO: Old API - move to modules
 
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_CARDS, "Set Evo Line Metadata",
-                "Sets the evoLineId and maxEvoStage for the cards based on the current prevEvoName fields",
-                rom -> setEvoLineData(StreamUtils.group(
-                        rom.allCards.cards().monsterCards().stream(), mc -> mc.name.toString()))));
+        // actionBank.add(new CardsLogAction(ActionCategories.CATEGORY_CARDS,
+        //         configs -> "Log Card Info", configs -> "Log info related to card randomizations",
+        //         logger, TypeToPrint.MONSTERS, new ColumnFormat(Column.C_NAME, "-"),
+        //         new ColumnFormat(Column.C_TYPE_SHORT, ""), new ColumnFormat(Column.MC_HP, ""),
+        //         new ColumnFormat(Column.MC_PREV_EVO, "-"), new ColumnFormat(Column.MC_EVO_ID, ""),
+        //         new ColumnFormat(Column.MC_MAX_EVO_STAGE, "")));
 
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_CARDS,
-                "Even Rando Evo Line Types",
-                "Randomize the energy type per evolution line for all monsters to have a balanced number of cards of each type",
-                rom -> {
-                    Stream<List<MonsterCard>> byEvoLine = StreamUtils
-                            .group(rom.allCards.cards().monsterCards().stream(),
-                                    mc -> mc.get("evoLineId"))
-                            .values().stream();
-                    SetterNoReturn<List<MonsterCard>, CardType> setter = (l, t) -> {
-                        for (MonsterCard mc : l) {
-                            mc.type = t;
-                        }
-                    };
-                    Randomizer<List<MonsterCard>, CardType> randomizer = SingleRandomizer
-                            .create(setter.asSetter());
-                    randomizer.perform(byEvoLine,
-                            EliminatePoolSet.create(EliminatePool.create(CardType.monsterValues()),
-                                    EliminatePoolSet.UNLIMITED_DEPTH));
-                }));
+        // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_CARDS, "Set Evo Line Metadata",
+        //         "Sets the evoLineId and maxEvoStage for the cards based on the current prevEvoName fields",
+        //         rom -> setEvoLineData(StreamUtils.group(
+        //                 rom.allCards.cards().monsterCards().stream(), mc -> mc.name.toString()))));
+
+        // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_CARDS,
+        //         "Even Rando Evo Line Types",
+        //         "Randomize the energy type per evolution line for all monsters to have a balanced number of cards of each type",
+        //         rom -> {
+        //             Stream<List<MonsterCard>> byEvoLine = StreamUtils
+        //                     .group(rom.allCards.cards().monsterCards().stream(),
+        //                             mc -> mc.get("evoLineId"))
+        //                     .values().stream();
+        //             SetterNoReturn<List<MonsterCard>, CardType> setter = (l, t) -> {
+        //                 for (MonsterCard mc : l) {
+        //                     mc.type = t;
+        //                 }
+        //             };
+        //             Randomizer<List<MonsterCard>, CardType> randomizer = SingleRandomizer
+        //                     .create(setter.asSetter());
+        //             randomizer.perform(byEvoLine,
+        //                     EliminatePoolSet.create(EliminatePool.create(CardType.monsterValues()),
+        //                             EliminatePoolSet.UNLIMITED_DEPTH));
+        //         }));
 
         // actionBank.add(new LambdaAction(
         // ActionCategories.CATEGORY_CARDS,
@@ -137,70 +133,70 @@ public class CardsRandomizer {
     // hpPool);
     // }
 
-    private static void setEvoLineData(Map<String, List<MonsterCard>> cards) {
-        int nextEvoId = 1;
-        for (Entry<String, List<MonsterCard>> mcs : cards.entrySet()) {
-            MonsterCard card = mcs.getValue().get(0);
-            // if it has a valid pre evo poke (i.e is not a fossil poke), skip as we
-            // will assign it in the second pass
-            if (!card.prevEvoName.isEmpty() && cards.get(card.prevEvoName.toString()) != null) {
-                continue;
-            }
+    // private static void setEvoLineData(Map<String, List<MonsterCard>> cards) {
+    //     int nextEvoId = 1;
+    //     for (Entry<String, List<MonsterCard>> mcs : cards.entrySet()) {
+    //         MonsterCard card = mcs.getValue().get(0);
+    //         // if it has a valid pre evo poke (i.e is not a fossil poke), skip as we
+    //         // will assign it in the second pass
+    //         if (!card.prevEvoName.isEmpty() && cards.get(card.prevEvoName.toString()) != null) {
+    //             continue;
+    //         }
 
-            // Otherwise assign the id
-            int thisEvoId = nextEvoId++;
-            for (MonsterCard mc : mcs.getValue()) {
-                mc.set("evoLineId", thisEvoId);
-                // Set it to its current stage. Later we will overwrite this potentially
-                mc.set("evoLineMaxStage", mc.stage);
-            }
-        }
-        setEvoLineData_SecondPass(cards);
-    }
+    //         // Otherwise assign the id
+    //         int thisEvoId = nextEvoId++;
+    //         for (MonsterCard mc : mcs.getValue()) {
+    //             mc.set("evoLineId", thisEvoId);
+    //             // Set it to its current stage. Later we will overwrite this potentially
+    //             mc.set("evoLineMaxStage", mc.stage);
+    //         }
+    //     }
+    //     setEvoLineData_SecondPass(cards);
+    // }
 
-    private static void setEvoLineData_SecondPass(Map<String, List<MonsterCard>> cards) {
-        for (Entry<String, List<MonsterCard>> mcs : cards.entrySet()) {
-            int thisEvoId = 0;
-            MonsterCard baseCard = mcs.getValue().get(0);
-            EvolutionStage cardEvoStage = baseCard.stage;
+    // private static void setEvoLineData_SecondPass(Map<String, List<MonsterCard>> cards) {
+    //     for (Entry<String, List<MonsterCard>> mcs : cards.entrySet()) {
+    //         int thisEvoId = 0;
+    //         MonsterCard baseCard = mcs.getValue().get(0);
+    //         EvolutionStage cardEvoStage = baseCard.stage;
 
-            // skip any basic pokes - already assigned
-            if (baseCard.prevEvoName.isEmpty()) {
-                continue;
-            }
+    //         // skip any basic pokes - already assigned
+    //         if (baseCard.prevEvoName.isEmpty()) {
+    //             continue;
+    //         }
 
-            // If we have a higher stage in the chain update
-            // only if higher though in case we process the 2nd
-            // stage before the first stage
-            if (cardEvoStage.compareTo(
-                    (EvolutionStage) baseCard.get("evoLineMaxStage", EvolutionStage.BASIC)) > 0) {
-                for (MonsterCard mc : mcs.getValue()) {
-                    mc.set("evoLineMaxStage", cardEvoStage);
-                }
-            }
+    //         // If we have a higher stage in the chain update
+    //         // only if higher though in case we process the 2nd
+    //         // stage before the first stage
+    //         if (cardEvoStage.compareTo(
+    //                 (EvolutionStage) baseCard.get("evoLineMaxStage", EvolutionStage.BASIC)) > 0) {
+    //             for (MonsterCard mc : mcs.getValue()) {
+    //                 mc.set("evoLineMaxStage", cardEvoStage);
+    //             }
+    //         }
 
-            while (!baseCard.prevEvoName.isEmpty()) {
-                List<MonsterCard> prev = cards.get(baseCard.prevEvoName.toString());
-                if (prev == null) {
-                    break;
-                }
-                baseCard = prev.get(0);
+    //         while (!baseCard.prevEvoName.isEmpty()) {
+    //             List<MonsterCard> prev = cards.get(baseCard.prevEvoName.toString());
+    //             if (prev == null) {
+    //                 break;
+    //             }
+    //             baseCard = prev.get(0);
 
-                // If we have a higher stage in the chain update
-                // only if higher though in case we process the 2nd
-                // stage before the first stage
-                if (cardEvoStage.compareTo((EvolutionStage) baseCard.get("evoLineMaxStage",
-                        EvolutionStage.BASIC)) > 0) {
-                    for (MonsterCard mc : prev) {
-                        mc.set("evoLineMaxStage", cardEvoStage);
-                    }
-                }
-            }
-            thisEvoId = (int) baseCard.get("evoLineId");
+    //             // If we have a higher stage in the chain update
+    //             // only if higher though in case we process the 2nd
+    //             // stage before the first stage
+    //             if (cardEvoStage.compareTo((EvolutionStage) baseCard.get("evoLineMaxStage",
+    //                     EvolutionStage.BASIC)) > 0) {
+    //                 for (MonsterCard mc : prev) {
+    //                     mc.set("evoLineMaxStage", cardEvoStage);
+    //                 }
+    //             }
+    //         }
+    //         thisEvoId = (int) baseCard.get("evoLineId");
 
-            for (MonsterCard mc : mcs.getValue()) {
-                mc.set("evoLineId", thisEvoId);
-            }
-        }
-    }
+    //         for (MonsterCard mc : mcs.getValue()) {
+    //             mc.set("evoLineId", thisEvoId);
+    //         }
+    //     }
+    // }
 }

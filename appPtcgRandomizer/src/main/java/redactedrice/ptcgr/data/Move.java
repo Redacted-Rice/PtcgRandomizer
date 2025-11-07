@@ -13,7 +13,6 @@ import redactedrice.compiler.RawBytePacker;
 import redactedrice.compiler.instructions.basic.RawBytes;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.MovableBlock;
-import redactedrice.universalrandomizer.wrappers.ExtendableObject;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.CardDataConstants.*;
@@ -25,7 +24,7 @@ import redactedrice.ptcgr.data.romtexts.RomText;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
-public class Move extends ExtendableObject {
+public class Move {
     public static final int TOTAL_SIZE_IN_BYTES = 19;
     public static final Move EMPTY_MOVE = new Move();
     public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
