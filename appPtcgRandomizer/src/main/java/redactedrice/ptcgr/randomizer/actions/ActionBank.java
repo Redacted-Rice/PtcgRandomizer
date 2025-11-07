@@ -1,28 +1,40 @@
 package redactedrice.ptcgr.randomizer.actions;
 
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import redactedrice.randomizer.metadata.LuaModuleMetadata;
+import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
 
 public class ActionBank {
     private HashMap<Integer, Action> allActions;
     private HashMap<String, HashMap<Integer, Action>> actionsByCategory;
+    private LuaRandomizerWrapper luaRandomizer;
 
-    public ActionBank() {
-        allActions = new HashMap<>();
-        actionsByCategory = new HashMap<>();
+    public ActionBank(LuaRandomizerWrapper luaRandomizer) {
+        this.luaRandomizer = luaRandomizer;
+        this.allActions = new HashMap<>();
+        this.actionsByCategory = new HashMap<>();
+        loadModules();
     }
 
-    public void add(Action a) {
-        allActions.put(a.getId(), a);
+    private void loadModules() {
+        List<LuaModuleMetadata> modules = luaRandomizer.getAvailableModules();
+        for (LuaModuleMetadata module : modules) {
+            Action action = new Action(module);
+            allActions.put(action.getId(), action);
 
-        HashMap<Integer, Action> actionCatogory = actionsByCategory.get(a.getCategory());
-        if (actionCatogory == null) {
-            actionCatogory = new HashMap<>();
-            actionsByCategory.put(a.getCategory(), actionCatogory);
+            String category = action.getCategory();
+            HashMap<Integer, Action> categoryMap = actionsByCategory.get(category);
+            if (categoryMap == null) {
+                categoryMap = new HashMap<>();
+                actionsByCategory.put(category, categoryMap);
+            }
+            categoryMap.put(action.getId(), action);
         }
-        actionCatogory.put(a.getId(), a);
     }
 
     public Action get(int id) {
@@ -39,5 +51,12 @@ public class ActionBank {
         }
         HashMap<Integer, Action> found = actionsByCategory.get(category);
         return found != null ? found.values() : Collections.emptyList();
+    }
+
+    public List<String> getCategoriesWithAll() {
+        List<String> categories = actionsByCategory.keySet().stream().sorted()
+                .collect(Collectors.toList());
+        categories.add(0, ActionCategories.CATEGORY_ALL);
+        return categories;
     }
 }

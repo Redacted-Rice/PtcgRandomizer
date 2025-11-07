@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.config.Configs;
@@ -13,34 +16,66 @@ import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.randomizer.categories.CardsRandomizer;
-import redactedrice.ptcgr.randomizer.categories.MovesRandomizer;
 import redactedrice.ptcgr.rom.Rom;
 import redactedrice.ptcgr.rom.RomIO;
 import redactedrice.ptcgr.rom.Texts;
+import redactedrice.randomizer.context.JavaContext;
+import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
+import redactedrice.randomizer.wrapper.ExecutionResult;
+
+import redactedrice.ptcgr.constants.CardDataConstants.CardType;
+import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
+import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 
 public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";
     static final String LOG_FILE_EXTENSION = ".log.txt";
+    static final String MODULES_DIRECTORY = "modules";
 
     private Logger logger;
     private Rom romData;
     private Configs configs;
     private ActionBank actionBank;
+    private LuaRandomizerWrapper luaRandomizer;
 
     public RandomizerCore() {
         logger = new Logger();
-        setupActionBank();
+        setupLuaRandomizer();
     }
 
     public ActionBank getActionBank() {
         return actionBank;
     }
 
-    private void setupActionBank() {
-        actionBank = new ActionBank();
-        CardsRandomizer.addActions(actionBank, logger);
-        MovesRandomizer.addActions(actionBank, logger);
+    public LuaRandomizerWrapper getLuaRandomizer() {
+        return luaRandomizer;
+    }
+
+    private void setupLuaRandomizer() {
+        luaRandomizer = new LuaRandomizerWrapper();
+        luaRandomizer.setChangeDetectionEnabled(true);
+
+        // Add modules directory relative to current working directory
+        File modulesDir = new File(MODULES_DIRECTORY);
+        if (modulesDir.exists() && modulesDir.isDirectory()) {
+            luaRandomizer.addSearchPath(modulesDir.getAbsolutePath());
+        }
+
+        int loadedCount = luaRandomizer.loadModules();
+        if (loadedCount > 0) {
+            System.out.println("Loaded " + loadedCount + " Lua modules");
+        } else {
+            System.out.println("No Lua modules found in " + modulesDir.getAbsolutePath());
+        }
+
+        // Check for errors loading
+        List<String> loadErrors = luaRandomizer.getLoadErrors();
+        if (!loadErrors.isEmpty()) {
+            System.err.println("Errors loading Lua modules:");
+            for (String error : loadErrors) {
+                System.err.println("  " + error);
+            }
+        }
     }
 
     public void openRom(File romFile, Component toCenterPopupsOn) {
@@ -90,9 +125,9 @@ public class RandomizerCore {
         romData.writePatch(romFile);
     }
 
-    // public static void main(String[] args) throws IOException //Temp
     public void randomize(Settings settings, List<Action> actions) {
         // get and store the base seed as the next one to use
+        // TODO this needs to be revamped entirely with seed offset from lua
         int nextSeed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
@@ -100,75 +135,59 @@ public class RandomizerCore {
         // it will need to be reset
         romData.resetAndPrepareForModification();
 
+        // Expose objects to be modified
+        // TODO: Add original vs modified and add more
+        JavaContext context = new JavaContext();
+        context.register("rom", romData);
+
+        // Register card some enums
+        // TODO: Add others. Could I do this dynamically or just specify all of them
+        context.registerEnum(CardType.class);
+        context.registerEnum(EnergyType.class);
+        context.registerEnum(EvolutionStage.class);
+
+        // Set monitored objects for change detection
+        // TODO: determine what all to add
+        luaRandomizer.setMonitoredObjects(romData.allCards);
+
+        // Prepare arguments and seeds per module
+        // TODO: Tie in to allow arguements to be specified via the GUI with the data
+        // from the modules
+        Map<String, Map<String, Object>> argumentsPerModule = new HashMap<>();
+        Map<String, Integer> seedsPerModule = new HashMap<>();
+        List<String> moduleNames = new LinkedList<>();
         for (Action action : actions) {
-            action.perform(romData);
+            String name = action.getName();
+            moduleNames.add(name);
+            argumentsPerModule.put(name, new HashMap<>());
+            seedsPerModule.put(name, nextSeed++);
         }
 
-        // Create sub randomizers. If they need to original data, they can save off a copy
-        // when they are created
-        // MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
+        // Execute modules and check for errors
+        List<ExecutionResult> results = luaRandomizer.executeModules(moduleNames, context,
+                argumentsPerModule, seedsPerModule);
+        List<String> executionErrors = luaRandomizer.getExecutionErrors();
+        if (!executionErrors.isEmpty()) {
+            System.err.println("Errors executing Lua modules:");
+            for (String error : executionErrors) {
+                System.err.println("  " + error);
+            }
+        }
 
-        CardGroup<Card> venus = romData.allCards.cards().withNameIgnoringNumber("Venusaur");
-        CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we
-                                                                      // ran and saved successfully
-
-        // Randomize Evolutions (either within current types or completely random)
-        // If randomizing evos and types but keeping lines consistent, completely
-        // randomize here then sort it out in the types
-        nextSeed += 100;
-
-        // Randomize Types (full random, set all mons in a evo line to the same random time)
-        nextSeed += 100;
-
-        // Anything below here contributes to the "power score" of a card and may be rejiggered
-        // or skipped depending on how the balancing is done in the end
-
-        // Randomize HP
-        nextSeed += 100;
-
-        // Randomize weaknesses and resistances
-        nextSeed += 100;
-
-        // Randomize Retreat cost
-        nextSeed += 100;
-
-        // Randomize moves
-        nextSeed += 100;
-
-        // Randomize movesets (full random or match to type)
-        // moveSetRand.randomize(nextSeed, settings, configs);
-        // nextSeed += 100;
-
-        // Non card randomizations
-
-        // Randomize trades
-
-        // Randomize Promos
-
-        // Randomize Decks
-
-        // Temp hack to add more value cards to a pack. In the future this will be more formalized
-        // 11 is the most we can do
-        // TODO: Move to tweak
-        // for (int i = 0; i < 16; i ++)
-        // {
-        // if (i % 4 == 1)
-        // {
-        // romData.rawBytes[0x1e4d4 + i] = 5;
-        // }
-        // else if (i % 4 == 2)
-        // {
-        // romData.rawBytes[0x1e4d4 + i] = 4;
-        // }
-        // else if (i % 4 == 3)
-        // {
-        // romData.rawBytes[0x1e4d4 + i] = 2;
-        // }
-        // else
-        // {
-        // romData.rawBytes[0x1e4d4 + i] = 0;
-        // }
-        // }
+        // Log execution results
+        // TODO: Integrate the two loggers and figure out how I want changes to be logged
+        for (ExecutionResult result : results) {
+            if (result.hasChanges()) {
+                System.out.println("Module " + result.getModuleName() + " made changes:");
+                Map<String, Map<String, String>> changes = result.getChanges();
+                for (Map.Entry<String, Map<String, String>> entry : changes.entrySet()) {
+                    System.out.println("  " + entry.getKey() + ":");
+                    for (Map.Entry<String, String> change : entry.getValue().entrySet()) {
+                        System.out.println("    " + change.getKey() + ": " + change.getValue());
+                    }
+                }
+            }
+        }
     }
 
     public static void test(CardGroup<Card> cards) {

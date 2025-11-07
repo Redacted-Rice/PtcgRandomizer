@@ -5,7 +5,6 @@ import java.util.List;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.randomizer.actions.ActionCategories;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +48,7 @@ public class DualTableSelector extends JPanel {
         // Layout
         // Create a combo box (drop-down) as before…
         JComboBox<String> categoryComboBox = new JComboBox<>();
-        for (String category : ActionCategories.getCategoriesWithAll()) {
+        for (String category : actions.getCategoriesWithAll()) {
             categoryComboBox.addItem(category);
         }
         categoryComboBox.addActionListener(new CategoryChangedListener(listModel));

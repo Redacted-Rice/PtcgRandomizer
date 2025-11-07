@@ -13,7 +13,7 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.StringLambda;
 import redactedrice.ptcgr.rom.Rom;
 
-public class CardsLogAction extends Action {
+public class CardsLogAction {
     public enum TypeToPrint {
         ALL, MONSTERS, NON_MONSTER
     };
@@ -75,25 +75,25 @@ public class CardsLogAction extends Action {
 
     public CardsLogAction(String category, StringLambda name, StringLambda description, Logger log,
             TypeToPrint toPrint, ColumnFormat... columnFormats) {
-        super(category, name, description);
+        // super(category, name, description);
         this.log = log;
         this.toPrint = toPrint;
         this.columnFormats = columnFormats;
     }
 
     public CardsLogAction(CardsLogAction toCopy) {
-        super(toCopy);
+        // super(toCopy);
         this.log = toCopy.log;
         this.toPrint = toCopy.toPrint;
         this.columnFormats = toCopy.columnFormats;
     }
 
-    @Override
-    public Action copy() {
+    // @Override
+    public CardsLogAction copy() {
         return new CardsLogAction(this);
     }
 
-    @Override
+    // @Override
     public void perform(Rom rom) {
         Supplier<Stream<MonsterCard>> mcs = () -> rom.allCards.cards().monsterCards().stream();
 
@@ -113,7 +113,7 @@ public class CardsLogAction extends Action {
         rowFormat = Logger.createTableFormatString(size, formats);
 
         log.println(separator);
-        log.println(Logger.createTableTitle(getName(), totalSize));
+        log.println(Logger.createTableTitle("Print card", totalSize));
         log.printf(rowFormat, (Object[]) titles);
         log.println(separator);
 
