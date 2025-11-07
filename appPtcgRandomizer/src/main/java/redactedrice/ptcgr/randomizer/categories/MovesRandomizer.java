@@ -16,75 +16,72 @@ import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.actions.ActionCategories;
 import redactedrice.ptcgr.randomizer.actions.DynamicConfig;
 import redactedrice.ptcgr.randomizer.actions.LambdaAction;
-import redactedrice.universalrandomizer.pool.ReusePool;
-import redactedrice.universalrandomizer.randomize.Randomizer;
-import redactedrice.universalrandomizer.randomize.SingleRandomizer;
-import redactedrice.universalrandomizer.userobjectapis.MultiSetterNoReturn;
-import redactedrice.universalrandomizer.userobjectapis.SetterNoReturn;
-import redactedrice.universalrandomizer.utils.StreamUtils;
 
 public class MovesRandomizer {
     public static void addActions(ActionBank actionBank, Logger logger) {
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES,
-                "Set Num Moves based on Rom", "Sets the number of moves for each card", rom -> {
-                    SetterNoReturn<MonsterCard, Integer> setter = (mc, count) -> mc.set("numMoves",
-                            count);
-                    Randomizer<MonsterCard, Integer> randomizer = SingleRandomizer
-                            .create(setter.asSetter());
-                    randomizer.perform(rom.allCards.cards().monsterCards().stream(),
-                            ReusePool.create(
-                                    StreamUtils.field(rom.allCards.cards().monsterCards().stream(),
-                                            mc -> mc.getNumMoves()).toList()));
-                }));
-        LambdaAction setNumMoves = new LambdaAction(ActionCategories.CATEGORY_MOVES,
-                configs -> "X moves per card",
-                configs -> "Makes each card have " + configs.get("numMoves").get() + " moves",
-                rom -> rom.allCards.cards().monsterCards().stream()
-                        .forEach(mc -> mc.set("numMoves", 2)));
-        setNumMoves.addConfig("numMoves", new DynamicConfig<>(Integer.class, 1));
-        actionBank.add(setNumMoves);
+        // TODO: All this is old and will be replaced with new module approach
 
-        // Set num damaging
-
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "Randomize Moves",
-                "Randomizes all moves regardless of type", rom -> {
-                    List<Move> moves = rom.allCards.cards().monsterCards().stream()
-                            .flatMap(mc -> mc.getAllNonEmptyMoves().stream())
-                            .collect(Collectors.toList());
-                    MultiSetterNoReturn<MonsterCard, Move> setter = MonsterCard::setMove;
-                    Randomizer<MonsterCard, Move> randomizer = SingleRandomizer
-                            .create(setter.asMultiSetter(), MonsterCard::getNumMoves);
-                    randomizer.perform(rom.allCards.cards().monsterCards().stream(),
-                            ReusePool.create(moves));
-                }));
-        //
         // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES,
-        // "Randomize Moves within Type",
-        // "Randomizes moves within each type of card",
-        // cards -> { changeAllMovesTypes(cards.get(), EnergyType.COLORLESS);}));
-        // Add IsOfType(x)? or get primarytpye()? or have a cardtype from creation (what card it was
-        // on)?
+        //         "Set Num Moves based on Rom", "Sets the number of moves for each card", rom -> {
+        //             SetterNoReturn<MonsterCard, Integer> setter = (mc, count) -> mc.set("numMoves",
+        //                     count);
+        //             Randomizer<MonsterCard, Integer> randomizer = SingleRandomizer
+        //                     .create(setter.asSetter());
+        //             randomizer.perform(rom.allCards.cards().monsterCards().stream(),
+        //                     ReusePool.create(
+        //                             StreamUtils.field(rom.allCards.cards().monsterCards().stream(),
+        //                                     mc -> mc.getNumMoves()).toList()));
+        //         }));
+        // LambdaAction setNumMoves = new LambdaAction(ActionCategories.CATEGORY_MOVES,
+        //         configs -> "X moves per card",
+        //         configs -> "Makes each card have " + configs.get("numMoves").get() + " moves",
+        //         rom -> rom.allCards.cards().monsterCards().stream()
+        //                 .forEach(mc -> mc.set("numMoves", 2)));
+        // setNumMoves.addConfig("numMoves", new DynamicConfig<>(Integer.class, 1));
+        // actionBank.add(setNumMoves);
 
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "All Moves Colorless",
-                "Sets all energy costs of all moves to only be colorless", rom -> {
-                    changeAllMovesTypes(rom.allCards.cards().monsterCards().stream(),
-                            EnergyType.COLORLESS);
-                }));
+        // // Set num damaging
 
-        actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "All Moves Match Type",
-                "Sets all energy costs of all moves to match the type of the card", rom -> {
-                    Map<CardType, List<MonsterCard>> byType = StreamUtils
-                            .group(rom.allCards.cards().monsterCards().stream(), mc -> mc.type);
+        // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "Randomize Moves",
+        //         "Randomizes all moves regardless of type", rom -> {
+        //             List<Move> moves = rom.allCards.cards().monsterCards().stream()
+        //                     .flatMap(mc -> mc.getAllNonEmptyMoves().stream())
+        //                     .collect(Collectors.toList());
+        //             MultiSetterNoReturn<MonsterCard, Move> setter = MonsterCard::setMove;
+        //             Randomizer<MonsterCard, Move> randomizer = SingleRandomizer
+        //                     .create(setter.asMultiSetter(), MonsterCard::getNumMoves);
+        //             randomizer.perform(rom.allCards.cards().monsterCards().stream(),
+        //                     ReusePool.create(moves));
+        //         }));
+        // //
+        // // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES,
+        // // "Randomize Moves within Type",
+        // // "Randomizes moves within each type of card",
+        // // cards -> { changeAllMovesTypes(cards.get(), EnergyType.COLORLESS);}));
+        // // Add IsOfType(x)? or get primarytpye()? or have a cardtype from creation (what card it was
+        // // on)?
 
-                    // Do one energy type at a time
-                    for (Entry<CardType, List<MonsterCard>> entry : byType.entrySet()) {
-                        // Determine the number of moves per monster for this type
-                        changeAllMovesTypes(entry.getValue().stream(),
-                                entry.getKey().convertToEnergyType());
-                    }
-                }));
+        // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "All Moves Colorless",
+        //         "Sets all energy costs of all moves to only be colorless", rom -> {
+        //             changeAllMovesTypes(rom.allCards.cards().monsterCards().stream(),
+        //                     EnergyType.COLORLESS);
+        //         }));
+
+        // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, "All Moves Match Type",
+        //         "Sets all energy costs of all moves to match the type of the card", rom -> {
+        //             Map<CardType, List<MonsterCard>> byType = StreamUtils
+        //                     .group(rom.allCards.cards().monsterCards().stream(), mc -> mc.type);
+
+        //             // Do one energy type at a time
+        //             for (Entry<CardType, List<MonsterCard>> entry : byType.entrySet()) {
+        //                 // Determine the number of moves per monster for this type
+        //                 changeAllMovesTypes(entry.getValue().stream(),
+        //                         entry.getKey().convertToEnergyType());
+        //             }
+        //         }));
     }
 
+    // TODO: Also move to a module but doesn't cause errors so leaving for now
     private static void changeAllMovesTypes(Stream<MonsterCard> pokes, EnergyType type) {
         pokes.forEach(poke -> {
             List<Move> moves = poke.getAllMovesIncludingEmptyOnes();

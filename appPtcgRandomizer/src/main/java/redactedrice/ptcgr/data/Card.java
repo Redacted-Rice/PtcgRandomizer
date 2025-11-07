@@ -4,7 +4,6 @@ package redactedrice.ptcgr.data;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.HybridBlock;
 import redactedrice.rompacker.MovableBlock;
-import redactedrice.universalrandomizer.wrappers.ExtendableObject;
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
@@ -23,7 +22,7 @@ import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
 
-public abstract class Card extends ExtendableObject {
+public abstract class Card {
     public static final int CARD_COMMON_SIZE = 8;
     public static final Comparator<Card> ID_SORTER = new IdSorter();
     public static final Comparator<Card> ROM_SORTER = new RomSorter();

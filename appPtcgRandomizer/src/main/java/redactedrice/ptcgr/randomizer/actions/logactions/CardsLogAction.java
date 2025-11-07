@@ -195,12 +195,6 @@ public class CardsLogAction extends Action {
             case MC_UNKNOWN_2:
                 entries[i] = card.unknownByte2;
                 break;
-            case MC_EVO_ID:
-                entries[i] = card.get("evoLineId", -1);
-                break;
-            case MC_MAX_EVO_STAGE:
-                entries[i] = card.get("evoLineMaxStage", EvolutionStage.BASIC).getAbbreviation();
-                break;
             default:
                 entries[i] = "N/A";
                 break;
