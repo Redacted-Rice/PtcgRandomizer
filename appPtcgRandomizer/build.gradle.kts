@@ -17,12 +17,12 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
-	
+
     implementation("redactedrice:libGbcFramework:0.8.0")
     implementation("redactedrice:libGbz80Compiler:0.8.0")
     implementation("redactedrice:libGbcRomPacker:0.8.0")
     implementation("redactedrice:libBpsQueuedWriter:0.8.0")
-    implementation("redactedrice:libUniversalRandomizer:0.2.0")
+    implementation("redactedrice:libUniversalRandomizerJava:0.5.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -34,7 +34,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "redactedrice.randomizer.PtcgRandomizerApp"
 }
 
 tasks.named<Test>("test") {
