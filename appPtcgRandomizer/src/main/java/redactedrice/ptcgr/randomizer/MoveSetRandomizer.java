@@ -4,8 +4,6 @@ package redactedrice.ptcgr.randomizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,17 +20,16 @@ import redactedrice.gbcframework.utils.MathUtils;
 import redactedrice.ptcgr.config.Configs;
 import redactedrice.ptcgr.config.MoveExclusions;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
-import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.randomizer.Settings.MoveTypeChanges;
 import redactedrice.ptcgr.randomizer.Settings.RandomizationStrategy;
-import redactedrice.ptcgr.rom.Rom;
+import redactedrice.ptcgr.rom.RandomizationData;
 
 public class MoveSetRandomizer {
-    private Rom romData;
+    private RandomizationData romData;
     private Logger logger;
     private final CardGroup<MonsterCard> pokeToGetAttacksFrom;
 
@@ -40,7 +37,7 @@ public class MoveSetRandomizer {
     // TODO later: add logic to allow some moves to only appear once per evo line (or once per
     // monster in evo line) (e.g. call for family)
 
-    public MoveSetRandomizer(Rom inRomData, Logger inLogger) {
+    public MoveSetRandomizer(RandomizationData inRomData, Logger inLogger) {
         romData = inRomData;
         logger = inLogger;
 

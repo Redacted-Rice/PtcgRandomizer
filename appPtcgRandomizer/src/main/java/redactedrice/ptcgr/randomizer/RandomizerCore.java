@@ -16,7 +16,7 @@ import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.rom.Rom;
+import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
 import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.context.JavaContext;
@@ -35,7 +35,7 @@ public class RandomizerCore {
     static final String RANDOMIZER_DIRECTORY = "randomizer";
 
     private Logger logger;
-    private Rom romData;
+    private RomData romData;
     private Configs configs;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
@@ -97,7 +97,7 @@ public class RandomizerCore {
 
     public void openRom(File romFile, Component toCenterPopupsOn) {
         try {
-            romData = new Rom(RomIO.readRaw(romFile));
+            romData = RomIO.readFromFile(romFile);
         } catch (IOException e) {
             // TODO later: Auto-generated catch block
             e.printStackTrace();
@@ -139,7 +139,7 @@ public class RandomizerCore {
         // TODO later: Due to an error, the same data was being written more than once
         // and when this happened, the text for some cards compoundly got worse.
         // Need to look into why this is happening and if it still is
-        romData.writePatch(romFile);
+        RomIO.writePatch(romData, romFile);
     }
 
     public void randomize(Settings settings, List<Action> actions) {
@@ -150,12 +150,13 @@ public class RandomizerCore {
         // Ensure the rom data is back to the original data (for multiple randomizations
         // without reloading) and prepare it to be modified so we know that
         // it will need to be reset
-        romData.resetAndPrepareForModification();
+        romData.prepareForModification();
 
         // Expose objects to be modified
         // TODO: Add original vs modified and add more
         JavaContext context = new JavaContext();
-        context.register("rom", romData);
+        context.register("original", romData.original);
+        context.register("modified", romData.modified);
 
         // Register card some enums
         // TODO: Add others. Could I do this dynamically or just specify all of them
@@ -165,7 +166,7 @@ public class RandomizerCore {
 
         // Set monitored objects for change detection
         // TODO: determine what all to add
-        luaRandomizer.setMonitoredObjects(romData.allCards);
+        luaRandomizer.setMonitoredObjects(romData.modified);
 
         // Prepare arguments and seeds per module
         // TODO: Tie in to allow arguements to be specified via the GUI with the data
