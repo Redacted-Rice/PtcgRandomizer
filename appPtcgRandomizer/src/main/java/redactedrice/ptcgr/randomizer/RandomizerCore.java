@@ -68,16 +68,26 @@ public class RandomizerCore {
             // Try to continue anyway in case files already exist
         }
 
+        File modulesDir = new File(MODULES_DIRECTORY);
+        String modulesPath = modulesDir.getAbsolutePath();
+        PtcgrResourceExtractor.setPath(modulesPath);
+        try {
+        	PtcgrResourceExtractor.extract(false); // false == dont overwrite existing files
+            System.out.println("Using module files from: " + modulesPath);
+        } catch (IOException e) {
+            System.err.println("Failed to extract core modules: " + e.getMessage());
+            e.printStackTrace();
+            // Try to continue anyway in case files already exist
+        }
+
         // Now that the path is set we can make the wrapper
         luaRandomizer = new LuaRandomizerWrapper();
         luaRandomizer.setChangeDetectionEnabled(true);
 
         // Add modules directory relative to current working directory
-        File modulesDir = new File(MODULES_DIRECTORY);
         if (modulesDir.exists() && modulesDir.isDirectory()) {
             luaRandomizer.addSearchPath(modulesDir.getAbsolutePath());
         }
-
         int loadedCount = luaRandomizer.loadModules();
         if (loadedCount > 0) {
             System.out.println("Loaded " + loadedCount + " Lua modules");

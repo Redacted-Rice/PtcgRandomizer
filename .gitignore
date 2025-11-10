@@ -21,3 +21,4 @@ build
 
 # Ignore extracted randomizer core files
 appPtcgRandomizer/randomizer/
+appPtcgRandomizer/modules/
