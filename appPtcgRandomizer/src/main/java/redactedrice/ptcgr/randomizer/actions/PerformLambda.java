@@ -1,8 +1,8 @@
 package redactedrice.ptcgr.randomizer.actions;
 
 
-import redactedrice.ptcgr.rom.Rom;
+import redactedrice.ptcgr.rom.RandomizationData;
 
 public interface PerformLambda {
-    public void perform(Rom rom);
+    public void perform(RandomizationData rom);
 }

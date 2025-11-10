@@ -11,7 +11,7 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.NonMonsterCard;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.StringLambda;
-import redactedrice.ptcgr.rom.Rom;
+import redactedrice.ptcgr.rom.RandomizationData;
 
 public class CardsLogAction {
     public enum TypeToPrint {
@@ -94,7 +94,7 @@ public class CardsLogAction {
     }
 
     // @Override
-    public void perform(Rom rom) {
+    public void perform(RandomizationData rom) {
         Supplier<Stream<MonsterCard>> mcs = () -> rom.allCards.cards().monsterCards().stream();
 
         // Start size at separators between columns and add each columns length

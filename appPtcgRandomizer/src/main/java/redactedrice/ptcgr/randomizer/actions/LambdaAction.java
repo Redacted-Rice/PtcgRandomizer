@@ -1,7 +1,7 @@
 package redactedrice.ptcgr.randomizer.actions;
 
 
-import redactedrice.ptcgr.rom.Rom;
+import redactedrice.ptcgr.rom.RandomizationData;
 
 public class LambdaAction {
 
@@ -27,7 +27,7 @@ public class LambdaAction {
         return new LambdaAction(this);
     }
 
-    public void perform(Rom rom) {
+    public void perform(RandomizationData rom) {
         perform.perform(rom);
     }
 }

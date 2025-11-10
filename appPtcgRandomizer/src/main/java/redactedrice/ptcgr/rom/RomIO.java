@@ -5,22 +5,33 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 import redactedrice.bpsqueuedwriter.BpsWriter;
+import redactedrice.bpsqueuedwriter.compiler.BpsInstructionSetParser;
+import redactedrice.compiler.GbZ80InstructionSetParser;
+import redactedrice.compiler.InstructionParser;
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.gbcframework.addressing.AssignedAddresses;
 import redactedrice.gbcframework.utils.ByteUtils;
+import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
 import redactedrice.ptcgr.data.Card;
+import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.rompacker.Blocks;
+import redactedrice.rompacker.DataManager;
 
 public class RomIO {
     private RomIO() {}
 
-    // TODO: Merge back into Rom class and others as appropriate?
-
+    public static RomData readFromFile(File romFile) throws IOException {
+        byte[] rawBytes = Files.readAllBytes(romFile.toPath());
+        RomIO.verifyRom(rawBytes);
+        return new RomData(rawBytes, readFromBytes(rawBytes));
+    }
+    
     private static void verifyRom(byte[] rawBytes) {
         // TODO later: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
         int index = PtcgRomConstants.HEADER_LOCATION;
@@ -31,13 +42,15 @@ public class RomIO {
             }
         }
     }
-
-    public static byte[] readRaw(File romFile) throws IOException {
-        byte[] rawBytes = Files.readAllBytes(romFile.toPath());
-        RomIO.verifyRom(rawBytes);
-        return rawBytes;
+    
+    public static RandomizationData readFromBytes(byte[] bytes) {
+    	RandomizationData data = new RandomizationData();
+    	data.idsToText = readTextsFromData(bytes, data.blocks);
+    	data.allCards = readCardsFromData(bytes, data.idsToText, data.blocks);
+    	return data;
     }
 
+    // TODO: Testing only. Should remove once BPS is good and ready
     static void writeRaw(byte[] rawBytes, File romFile) {
         try (FileOutputStream fos = new FileOutputStream(romFile)) {
             fos.write(rawBytes);
@@ -150,6 +163,50 @@ public class RomIO {
         return cards;
     }
 
+    public static void writePatch(RomData romData, File patchFile) {
+        // Create the custom parser and set the data blocks to use it
+        PtcgInstructionSetParser ptcgParser = new PtcgInstructionSetParser();
+        InstructionParser parser = new InstructionParser(List.of(ptcgParser,
+                new BpsInstructionSetParser(), new GbZ80InstructionSetParser()));
+
+        // TODO later: Need to handle tweak blocks somehow. Should these all be
+        // file defined and selected via a menu? could also include if they default
+        // to on or not. Also for now we can handle these after the other blocks
+        // are generated but we arbitrarily do it before. Is there any reason to
+        // do one or the other?
+        // CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks, parser);
+
+        // Finalize all the data to prepare for writing
+        finalizeDataAndGenerateBlocks(romData.modified, parser, ptcgParser);
+
+        // Now assign locations for the data
+        DataManager manager = new DataManager();
+        AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.rawBytes, romData.modified.blocks);
+
+        // Finally write the patch file
+        RomIO.writeBpsPatch(patchFile, romData.rawBytes, romData.modified.blocks, assignedAddresses);
+    }
+
+    private static void finalizeDataAndGenerateBlocks(RandomizationData patchedData, InstructionParser parser,
+            PtcgInstructionSetParser ptcgParser) {
+        // Reset the singleton -- TODO later: Needed?
+        HardcodedEffects.reset();
+
+        // Finalize the card data, texts and blocks
+        patchedData.allCards.finalizeConvertAndAddData(patchedData.idsToText, patchedData.blocks, parser);
+
+        // Now add all the text from the custom parser instructions
+        ptcgParser.finalizeAndAddTexts(patchedData.idsToText);
+
+        // Convert the text to blocks
+        patchedData.idsToText.convertAndAddBlocks(patchedData.blocks);
+
+        // Sort them and combine values to make things easier elsewhere in the code
+        // TODO later: if adding custom blanking, we should call this afterwards
+        // TODO: sorted twice?
+        AddressRange.sortAndCombine(patchedData.blocks.getAllBlankedBlocks());
+    }
+    
     public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks,
             AssignedAddresses assignedAddresses) {
         // Now actually write to the bytes
