@@ -2,11 +2,14 @@ package redactedrice.ptcgr.data;
 
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
+import redactedrice.randomizer.wrapper.Trackable;
 import redactedrice.rompacker.Blocks;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.CardDataConstants.*;
@@ -16,7 +19,7 @@ import redactedrice.ptcgr.data.romtexts.PokeDescription;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
-public class MonsterCard extends Card {
+public class MonsterCard extends Card implements Trackable {
     public static final int TOTAL_SIZE_IN_BYTES = 65;
     public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
     public static final int MAX_NUM_MOVES = 2;
@@ -310,5 +313,14 @@ public class MonsterCard extends Card {
         // TODO: Enforce multiple of 10 and not too large (<= 120?)
         this.hp = (byte) hp;
         return true;
+    }
+
+    // Seem to have issues with change detection without this. For now add it and remove later
+    // I'm thinking to try a lua based change detection instead though so it may be obe anyways
+    @Override
+    public Map<String, Object> getTrackableState() {
+        Map<String, Object> state = new LinkedHashMap<>();
+        state.put("hp", hp);
+        return state;
     }
 }
