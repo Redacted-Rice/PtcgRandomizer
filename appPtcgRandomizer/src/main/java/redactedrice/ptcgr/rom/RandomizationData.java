@@ -8,4 +8,6 @@ public class RandomizationData {
     public Cards allCards;
     public Texts idsToText;
     public Blocks blocks;
+    
+    // TODO: Add conveniences for common things - all cards & all trainers?
 }
