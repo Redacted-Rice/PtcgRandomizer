@@ -60,7 +60,7 @@ public class RandomizerCore {
         String randomizerPath = randomizerDir.getAbsolutePath();
         RandomizerResourceExtractor.setPath(randomizerPath);
         try {
-            RandomizerResourceExtractor.extract(false); // false == dont overwrite existing files
+            RandomizerResourceExtractor.extract(true);
             System.out.println("Using randomizer files from: " + randomizerPath);
         } catch (IOException e) {
             System.err.println("Failed to extract core lua randomizer files: " + e.getMessage());
@@ -72,7 +72,8 @@ public class RandomizerCore {
         String modulesPath = modulesDir.getAbsolutePath();
         PtcgrResourceExtractor.setPath(modulesPath);
         try {
-        	PtcgrResourceExtractor.extract(false); // false == dont overwrite existing files
+            // TODO: Make configurable for testing?
+            PtcgrResourceExtractor.extract(true);
             System.out.println("Using module files from: " + modulesPath);
         } catch (IOException e) {
             System.err.println("Failed to extract core modules: " + e.getMessage());

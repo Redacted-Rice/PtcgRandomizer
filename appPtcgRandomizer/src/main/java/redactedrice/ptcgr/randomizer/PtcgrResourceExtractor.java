@@ -12,8 +12,7 @@ public class PtcgrResourceExtractor {
     private static final String RANDOMIZER_RESOURCE_PATH = "modules";
     // TODO: Look into this more. It seems like there should be a way to just copy
     // the whole directory but it doesn't seem to be for a JAR
-    private static final String[] RANDOMIZER_FILES =
-            {"setup.lua", "randomize_hp.lua"};
+    private static final String[] RANDOMIZER_FILES = {"randomize_hp.lua"};
     private static String extractionPath = "modules";
 
     public static void setPath(String path) {
@@ -49,8 +48,8 @@ public class PtcgrResourceExtractor {
             }
 
             String resourcePath = RANDOMIZER_RESOURCE_PATH + "/" + fileName;
-            InputStream resourceStream = PtcgrResourceExtractor.class.getClassLoader()
-                    .getResourceAsStream(resourcePath);
+            InputStream resourceStream =
+                    PtcgrResourceExtractor.class.getClassLoader().getResourceAsStream(resourcePath);
 
             if (resourceStream == null) {
                 throw new IOException("Resource not found: " + resourcePath);
