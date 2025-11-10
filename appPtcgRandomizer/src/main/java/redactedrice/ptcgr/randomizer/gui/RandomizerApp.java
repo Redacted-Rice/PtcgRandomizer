@@ -35,6 +35,9 @@ import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
 
 public class RandomizerApp {
 
+    // TODO: Make configurable for functional testing support?
+    private static final String DEFAULT_ROM_NAME = "ptcg.gbc";
+
     private JFrame frmTradingCard;
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
@@ -86,7 +89,7 @@ public class RandomizerApp {
 
         openRomChooser = new JFileChooser();
         openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        openRomChooser.setSelectedFile(new File("ptcg.gbc"));
+        openRomChooser.setSelectedFile(new File(DEFAULT_ROM_NAME));
 
         saveRomChooser = new JFileChooser();
         saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
@@ -140,8 +143,8 @@ public class RandomizerApp {
 
                     File saveFile = saveRomChooser.getSelectedFile();
                     if (!saveFile.getName().endsWith(randomizer.getFileExtension())) {
-                        saveFile = new File(
-                                saveFile.getPath().concat(randomizer.getFileExtension()));
+                        saveFile =
+                                new File(saveFile.getPath().concat(randomizer.getFileExtension()));
                     }
                     randomizer.randomizeAndSaveRom(saveFile, settings,
                             dualPanel.getSelectedActions());
@@ -430,6 +433,8 @@ public class RandomizerApp {
 
         dualPanel = new DualTableSelector(randomizer.getActionBank());
         movesEffectsTab.addTab("Advanced", null, dualPanel, null);
+
+        openRomIfExists();
     }
 
     private Settings createSettingsFromState() {
@@ -459,5 +464,13 @@ public class RandomizerApp {
         powersData.setIncludeWithMoves(pokePowerIncludeWithMovesBox.isSelected());
 
         return settings;
+    }
+
+    private void openRomIfExists() {
+        File defaultRom = new File(DEFAULT_ROM_NAME);
+        if (defaultRom.isFile()) {
+            openRomChooser.setSelectedFile(defaultRom);
+            EventQueue.invokeLater(() -> randomizer.openRom(defaultRom, frmTradingCard));
+        }
     }
 }

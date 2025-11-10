@@ -8,22 +8,15 @@ return {
 
 	execute = function(context)
 
-		-- TODO: Supply this in the context
-		local monsterOrig = randomizer.list(context.original.cards).filter(function(card)
-			return card.cardType.isMonsterCard()
-		end)
-		local monsterMod = randomizer.list(context.modified.cards).filter(function(card)
-			return card.cardType.isMonsterCard()
-		end)
+		-- Get all monster cards from the original and modified data
+		local monsterOrig = context.original:getMonsterCards()
+		local monsterMod = context.modified:getMonsterCards()
 
-		-- Get hp by stage
-		local healthGroups = randomizer.groupFromField(monsterOrig, "getEvoStage", "getHealth")
+		-- Get hp by stage - groupFromField expects an iterable/list
+		local healthGroups = randomizer.groupFromField(monsterOrig, "stage", "hp")
 
 		-- Randomize modified entities' health using the consumable pool
-		local setter = function(entity, value)
-			entity:setHealth(value)
-		end
-		randomizer.randomize(monsterMod, healthGroups, "hp", {
+		healthGroups:useToRandomize(monsterMod, "stage", "hp", {
 			consumable = true,
 		})
 	end,

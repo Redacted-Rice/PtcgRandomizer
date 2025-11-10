@@ -21,7 +21,8 @@ public class MonsterCard extends Card {
     public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
     public static final int MAX_NUM_MOVES = 2;
 
-    private byte hp; // TODO later: non multiples of 10?
+    // TODO Make some of these private to ensure safe values (e.g. multiple of 10 for this?)
+    public byte hp;
     public EvolutionStage stage; // TODO later: Encaspsulate?
     public CardName prevEvoName; // TODO later: Encaspsulate?
 
