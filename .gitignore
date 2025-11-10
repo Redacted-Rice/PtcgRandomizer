@@ -7,6 +7,7 @@
 *.seed.txt
 *.bps
 *.exe
+*.log
 
 # Eclipse files
 *.settings

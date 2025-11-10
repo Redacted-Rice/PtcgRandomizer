@@ -13,10 +13,12 @@ return {
 		local monsterMod = context.modified:getMonsterCards()
 
 		-- Get hp by stage - groupFromField expects an iterable/list
-		local healthGroups = randomizer.groupFromField(monsterOrig, "stage", "hp")
+		-- Use getter function since hp is private
+		local healthGroups = randomizer.groupFromField(monsterOrig, "stage", "getHp")
 
 		-- Randomize modified entities' health using the consumable pool
-		healthGroups:useToRandomize(monsterMod, "stage", "hp", {
+		-- Use setter function since hp is private
+		healthGroups:useToRandomize(monsterMod, "stage", "setHp", {
 			consumable = true,
 		})
 	end,

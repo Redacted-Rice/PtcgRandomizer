@@ -17,7 +17,6 @@ import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.config.Configs;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
-import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rom.RomData;
@@ -98,8 +97,6 @@ public class RandomizerCore {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        luaRandomizer.setChangeDetectionEnabled(true);
 
         // Add modules directory relative to current working directory
         if (modulesDir.exists() && modulesDir.isDirectory()) {
@@ -191,14 +188,8 @@ public class RandomizerCore {
         context.registerEnum(EnergyType.class);
         context.registerEnum(EvolutionStage.class);
 
-        // TODO: Set more later
-        // Set monitored objects for change detection with custom identifier
-        // Monitor all monster cards and use a custom identifier showing "cardName (cardId)"
-        luaRandomizer.setMonitoredObjectsFromCollection(
-                romData.modified.allCards.cards().monsterCards().iterable(), card -> {
-                    MonsterCard monsterCard = (MonsterCard) card;
-                    return monsterCard.name.toString() + " (" + monsterCard.id + ")";
-                });
+        // Enable lua based change detection. Setup of what is monitored is done in the setup script
+        context.setConfig("changeDetectionActive", true);
 
         // Prepare arguments and seeds per module
         // TODO: Tie in to allow arguements to be specified via the GUI with the data
