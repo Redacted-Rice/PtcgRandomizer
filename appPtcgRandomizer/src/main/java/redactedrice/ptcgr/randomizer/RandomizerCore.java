@@ -3,8 +3,11 @@ package redactedrice.ptcgr.randomizer;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -14,6 +17,7 @@ import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.config.Configs;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rom.RomData;
@@ -83,6 +87,18 @@ public class RandomizerCore {
 
         // Now that the path is set we can make the wrapper
         luaRandomizer = new LuaRandomizerWrapper();
+
+        // Log everything to one file for now. Eventually will tie this into
+        // the existing logging or replace it
+        luaRandomizer.setLogEnabled(true);
+        try {
+            luaRandomizer.addStreamForAllLogLevels(
+                    new FileOutputStream(new File("randomizer.log"), false));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         luaRandomizer.setChangeDetectionEnabled(true);
 
         // Add modules directory relative to current working directory
@@ -115,8 +131,8 @@ public class RandomizerCore {
         }
 
         // TODO later: Move to saving?
-        // Now load the config files
-        configs = new Configs(romData, toCenterPopupsOn);
+        // Skip loading config files for now
+        // configs = new Configs(romData, toCenterPopupsOn);
     }
 
     public void randomizeAndSaveRom(File romFile, Settings settings, List<Action> actionBank)
@@ -175,9 +191,14 @@ public class RandomizerCore {
         context.registerEnum(EnergyType.class);
         context.registerEnum(EvolutionStage.class);
 
-        // Set monitored objects for change detection
-        // TODO: determine what all to add
-        luaRandomizer.setMonitoredObjects(romData.modified);
+        // TODO: Set more later
+        // Set monitored objects for change detection with custom identifier
+        // Monitor all monster cards and use a custom identifier showing "cardName (cardId)"
+        luaRandomizer.setMonitoredObjectsFromCollection(
+                romData.modified.allCards.cards().monsterCards().iterable(), card -> {
+                    MonsterCard monsterCard = (MonsterCard) card;
+                    return monsterCard.name.toString() + " (" + monsterCard.id + ")";
+                });
 
         // Prepare arguments and seeds per module
         // TODO: Tie in to allow arguements to be specified via the GUI with the data
