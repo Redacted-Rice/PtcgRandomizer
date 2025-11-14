@@ -1,0 +1,5 @@
+- Move existing, commented out randomizations to lua modules
+- Pass arguements to modules
+- Pass seeds to modules
+- integrate or determine how loggers integrate
+- Save configurations/modules used to reaload them later

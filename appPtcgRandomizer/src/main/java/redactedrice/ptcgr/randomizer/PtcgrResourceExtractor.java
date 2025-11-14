@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: Move somewhere common
+// TODO: Make a common extractor for this an universal randomizer Java
 public class PtcgrResourceExtractor {
     private static final String RANDOMIZER_RESOURCE_PATH = "modules";
 
