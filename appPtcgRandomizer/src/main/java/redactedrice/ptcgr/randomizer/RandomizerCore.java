@@ -216,17 +216,15 @@ public class RandomizerCore {
         }
 
         // Log execution results
-        // TODO: Integrate the two loggers and figure out how I want changes to be logged
+        // Changes will be automatically logged with the universal randomizer Java logger
+        // TODO: Need to decide how/if to integrate these
         for (ExecutionResult result : results) {
-            if (result.hasChanges()) {
-                System.out.println("Module " + result.getModuleName() + " made changes:");
-                Map<String, Map<String, String>> changes = result.getChanges();
-                for (Map.Entry<String, Map<String, String>> entry : changes.entrySet()) {
-                    System.out.println("  " + entry.getKey() + ":");
-                    for (Map.Entry<String, String> change : entry.getValue().entrySet()) {
-                        System.out.println("    " + change.getKey() + ": " + change.getValue());
-                    }
-                }
+            if (!result.isSuccess()) {
+                System.err.println("Module " + result.getModuleName() + " failed: "
+                        + result.getErrorMessage());
+            } else {
+                System.out.println("Module " + result.getModuleName() + " executed with seed "
+                        + result.getSeedUsed());
             }
         }
     }
