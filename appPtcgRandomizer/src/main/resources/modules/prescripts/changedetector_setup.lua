@@ -3,6 +3,12 @@ return {
 	name = "changedetector_setup",
 	description = "Setup change detection on cards being randomized",
 	when = "randomize",
+	author = "Redacted Rice",
+	version = "0.1",
+	requires = {
+		UniversalRandomizerJava = "0.5.0",
+		PtcgRandomizer = "0.2.0",
+	},
 
 	execute = function(context)
 		local changedetector = require("randomizer").changedetector

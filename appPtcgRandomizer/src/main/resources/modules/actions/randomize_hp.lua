@@ -5,6 +5,12 @@ return {
 	description = "Randomizes the HP of the cards",
 	group = "pokemon cards",
 	modifies = { "hp" },
+	author = "Redacted Rice",
+	version = "0.1",
+	requires = {
+		UniversalRandomizerJava = "0.5.0",
+		PtcgRandomizer = "0.2.0",
+	},
 
 	execute = function(context)
 
