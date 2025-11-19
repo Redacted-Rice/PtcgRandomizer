@@ -25,6 +25,7 @@ import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
 import redactedrice.randomizer.wrapper.ExecutionResult;
+import redactedrice.randomizer.wrapper.ExecutionRequest;
 import redactedrice.randomizer.wrapper.RandomizerResourceExtractor;
 
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
@@ -169,7 +170,7 @@ public class RandomizerCore {
     public void randomize(Settings settings, List<Action> actions) {
         // get and store the base seed as the next one to use
         // TODO this needs to be revamped entirely with seed offset from lua
-        int nextSeed = settings.getSeedValue();
+        int seed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
         // without reloading) and prepare it to be modified so we know that
@@ -191,22 +192,22 @@ public class RandomizerCore {
         // Enable lua based change detection. Setup of what is monitored is done in the setup script
         context.setConfig("changeDetectionActive", true);
 
-        // Prepare arguments and seeds per module
-        // TODO: Tie in to allow arguements to be specified via the GUI with the data
-        // from the modules
-        Map<String, Map<String, Object>> argumentsPerModule = new HashMap<>();
-        Map<String, Integer> seedsPerModule = new HashMap<>();
-        List<String> moduleNames = new LinkedList<>();
+        // Prepare execution requests for each module
+        // TODO: Tie in to allow arguments to be specified via the GUI with the data
+        // from the modules. Same for seeds to override default offset
+        List<ExecutionRequest> executionRequests = new LinkedList<>();
         for (Action action : actions) {
             String name = action.getName();
-            moduleNames.add(name);
-            argumentsPerModule.put(name, new HashMap<>());
-            seedsPerModule.put(name, nextSeed++);
+            Map<String, Object> arguments = new HashMap<>();
+
+            // Use withDefaultSeedOffset to respect module's seed offset if it has one
+            ExecutionRequest request = ExecutionRequest.withDefaultSeedOffset(name, arguments, seed,
+                    luaRandomizer.getModuleRegistry());
+            executionRequests.add(request);
         }
 
         // Execute modules and check for errors
-        List<ExecutionResult> results = luaRandomizer.executeModules(moduleNames, context,
-                argumentsPerModule, seedsPerModule);
+        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context);
         List<String> executionErrors = luaRandomizer.getExecutionErrors();
         if (!executionErrors.isEmpty()) {
             System.err.println("Errors executing Lua modules:");
