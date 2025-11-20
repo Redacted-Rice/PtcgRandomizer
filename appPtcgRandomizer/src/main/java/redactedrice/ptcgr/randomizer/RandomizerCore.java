@@ -26,7 +26,7 @@ import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
 import redactedrice.randomizer.wrapper.ExecutionResult;
 import redactedrice.randomizer.wrapper.ExecutionRequest;
-import redactedrice.randomizer.wrapper.RandomizerResourceExtractor;
+import redactedrice.randomizer.wrapper.ResourceFolderExtractor;
 
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
@@ -62,9 +62,8 @@ public class RandomizerCore {
         // Extract bundled randomizer files if they dont exist or need updating
         File randomizerDir = new File(RANDOMIZER_DIRECTORY);
         String randomizerPath = randomizerDir.getAbsolutePath();
-        RandomizerResourceExtractor.setPath(randomizerPath);
         try {
-            RandomizerResourceExtractor.extract(true);
+            ResourceFolderExtractor.extract("randomizer", randomizerPath, true);
             System.out.println("Using randomizer files from: " + randomizerPath);
         } catch (IOException e) {
             System.err.println("Failed to extract core lua randomizer files: " + e.getMessage());
@@ -72,12 +71,12 @@ public class RandomizerCore {
             // Try to continue anyway in case files already exist
         }
 
+        // Extract bundled module files if they dont exist or need updating
         File modulesDir = new File(MODULES_DIRECTORY);
         String modulesPath = modulesDir.getAbsolutePath();
-        PtcgrResourceExtractor.setPath(modulesPath);
         try {
             // TODO: Make configurable for testing?
-            PtcgrResourceExtractor.extract(true);
+            ResourceFolderExtractor.extract("modules", modulesPath, true);
             System.out.println("Using module files from: " + modulesPath);
         } catch (IOException e) {
             System.err.println("Failed to extract core modules: " + e.getMessage());

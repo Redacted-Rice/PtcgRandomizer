@@ -41,3 +41,29 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+// Task to generate manifest file for modules resource folder
+tasks.register("generateModulesManifest") {
+    group = "build"
+    description = "Generates manifest file for modules resource folder"
+
+    doLast {
+        val manifestFile = file("${projectDir}/src/main/resources/modules/.manifest")
+        val modulesDir = file("${projectDir}/src/main/resources/modules")
+
+        // Walk the directory tree and collect all .lua files with relative paths
+        val files = fileTree(modulesDir) {
+            include("**/*.lua")
+            exclude(".manifest")
+        }.files.map { file ->
+            modulesDir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+        }.sorted()
+
+        manifestFile.writeText(files.joinToString("\n"))
+    }
+}
+
+// Make processResources depend on generateModulesManifest to ensure manifest is generated before packaging
+tasks.named("processResources") {
+    dependsOn("generateModulesManifest")
+}
