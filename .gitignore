@@ -24,3 +24,6 @@ build
 appPtcgRandomizer/randomizer/
 appPtcgRandomizer/modules/
 randomizer/
+
+# Auto-generated manifest
+appPtcgRandomizer/src/main/resources/modules/.manifest
