@@ -83,8 +83,18 @@ public class RandomizerCore {
             // Try to continue anyway in case files already exist
         }
 
-        // Now that the path is set we can make the wrapper
-        luaRandomizer = new LuaRandomizerWrapper();
+        // Prepare allowed directories and search paths
+        List<String> allowedDirectories = new ArrayList<>();
+        allowedDirectories.add(randomizerPath);
+        allowedDirectories.add(modulesPath);
+
+        List<String> searchPaths = new ArrayList<>();
+        if (modulesDir.exists() && modulesDir.isDirectory()) {
+            searchPaths.add(modulesDir.getAbsolutePath());
+        }
+
+        // Now that the paths are set we can make the wrapper
+        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths);
 
         // Log everything to one file for now. Eventually will tie this into
         // the existing logging or replace it
@@ -95,11 +105,6 @@ public class RandomizerCore {
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-
-        // Add modules directory relative to current working directory
-        if (modulesDir.exists() && modulesDir.isDirectory()) {
-            luaRandomizer.addSearchPath(modulesDir.getAbsolutePath());
         }
         int loadedCount = luaRandomizer.loadModules();
         if (loadedCount > 0) {
