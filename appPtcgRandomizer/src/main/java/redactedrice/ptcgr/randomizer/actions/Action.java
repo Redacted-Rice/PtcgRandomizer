@@ -1,14 +1,14 @@
 package redactedrice.ptcgr.randomizer.actions;
 
-import redactedrice.randomizer.metadata.LuaModuleMetadata;
+import redactedrice.randomizer.lua.Module;
 
 public class Action {
     private static int nextId = 0;
 
     private final int id;
-    private final LuaModuleMetadata module;
+    private final Module module;
 
-    public Action(LuaModuleMetadata module) {
+    public Action(Module module) {
         this.id = nextId++;
         this.module = module;
     }
@@ -18,7 +18,12 @@ public class Action {
     }
 
     public String getCategory() {
-        return module.getGroup() != null && !module.getGroup().isEmpty() ? module.getGroup() : "utility";
+        // TODO: Refactor to support multiple groups. For now just take the first
+        if (module.getGroups() != null && !module.getGroups().isEmpty()) {
+            return module.getGroups().iterator().next();
+        }
+        // Shouldn't be empty but just in case
+        return "utility";
     }
 
     public String getName() {
@@ -29,7 +34,7 @@ public class Action {
         return module.getDescription();
     }
 
-    public LuaModuleMetadata getModule() {
+    public Module getModule() {
         return module;
     }
 

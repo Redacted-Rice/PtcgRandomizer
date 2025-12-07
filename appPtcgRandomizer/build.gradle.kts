@@ -47,23 +47,34 @@ tasks.register("generateModulesManifest") {
     group = "build"
     description = "Generates manifest file for modules resource folder"
 
+    val manifestFile = layout.projectDirectory.file("src/main/resources/modules/.manifest")
+    val modulesDir = layout.projectDirectory.dir("src/main/resources/modules")
+
     doLast {
-        val manifestFile = file("${projectDir}/src/main/resources/modules/.manifest")
-        val modulesDir = file("${projectDir}/src/main/resources/modules")
-
         // Walk the directory tree and collect all .lua files with relative paths
-        val files = fileTree(modulesDir) {
-            include("**/*.lua")
-            exclude(".manifest")
-        }.files.map { file ->
-            modulesDir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
-        }.sorted()
-
-        manifestFile.writeText(files.joinToString("\n"))
+        val modulesDirFile = modulesDir.asFile
+        val files = mutableListOf<String>()
+        
+        fun collectLuaFiles(dir: java.io.File, basePath: java.nio.file.Path) {
+            dir.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    collectLuaFiles(file, basePath)
+                } else if (file.isFile && file.name.endsWith(".lua") && file.name != ".manifest") {
+                    val relativePath = basePath.relativize(file.toPath()).toString().replace('\\', '/')
+                    files.add(relativePath)
+                }
+            }
+        }
+        
+        if (modulesDirFile.exists() && modulesDirFile.isDirectory) {
+            collectLuaFiles(modulesDirFile, modulesDirFile.toPath())
+        }
+        
+        manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
     }
 }
 
 // Make processResources depend on generateModulesManifest to ensure manifest is generated before packaging
-tasks.named("processResources") {
+tasks.named<ProcessResources>("processResources") {
     dependsOn("generateModulesManifest")
 }

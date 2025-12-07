@@ -3,7 +3,7 @@ local randomizer = require("randomizer")
 return {
 	name = "shuffle_hp",
 	description = "Randomizes the HP of the cards",
-	group = "pokemon cards",
+	groups = { "pokemon cards" },
 	modifies = { "hp" },
 	author = "Redacted Rice",
 	version = "0.1",
@@ -13,7 +13,6 @@ return {
 	},
 
 	execute = function(context)
-
 		-- Get all monster cards from the original and modified data
 		local monsterOrig = context.original:getMonsterCards()
 		local monsterMod = context.modified:getMonsterCards()
