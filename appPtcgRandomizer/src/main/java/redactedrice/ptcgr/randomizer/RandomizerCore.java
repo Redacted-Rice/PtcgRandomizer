@@ -23,10 +23,11 @@ import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
 import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.context.JavaContext;
-import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
-import redactedrice.randomizer.wrapper.ExecutionResult;
-import redactedrice.randomizer.wrapper.ExecutionRequest;
-import redactedrice.randomizer.wrapper.ManifestResourceExtractor;
+import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.lua.ExecutionResult;
+import redactedrice.randomizer.lua.ExecutionRequest;
+import redactedrice.randomizer.utils.ManifestResourceExtractor;
+import redactedrice.randomizer.utils.ErrorTracker;
 
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
@@ -114,10 +115,9 @@ public class RandomizerCore {
         }
 
         // Check for errors loading
-        List<String> loadErrors = luaRandomizer.getLoadErrors();
-        if (!loadErrors.isEmpty()) {
+        if (ErrorTracker.hasErrors()) {
             System.err.println("Errors loading Lua modules:");
-            for (String error : loadErrors) {
+            for (String error : ErrorTracker.getErrors()) {
                 System.err.println("  " + error);
             }
         }
@@ -211,10 +211,9 @@ public class RandomizerCore {
 
         // Execute modules and check for errors
         List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context);
-        List<String> executionErrors = luaRandomizer.getExecutionErrors();
-        if (!executionErrors.isEmpty()) {
+        if (ErrorTracker.hasErrors()) {
             System.err.println("Errors executing Lua modules:");
-            for (String error : executionErrors) {
+            for (String error : ErrorTracker.getErrors()) {
                 System.err.println("  " + error);
             }
         }

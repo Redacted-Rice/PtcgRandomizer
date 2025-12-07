@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import redactedrice.randomizer.metadata.LuaModuleMetadata;
-import redactedrice.randomizer.wrapper.LuaRandomizerWrapper;
+import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.lua.Module;
 
 public class ActionBank {
     private HashMap<Integer, Action> allActions;
@@ -22,8 +22,8 @@ public class ActionBank {
     }
 
     private void loadModules() {
-        List<LuaModuleMetadata> modules = luaRandomizer.getAvailableModules();
-        for (LuaModuleMetadata module : modules) {
+        List<Module> modules = luaRandomizer.getAvailableModules();
+        for (Module module : modules) {
             Action action = new Action(module);
             allActions.put(action.getId(), action);
 
