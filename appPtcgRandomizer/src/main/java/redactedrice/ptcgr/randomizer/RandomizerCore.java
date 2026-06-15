@@ -1,19 +1,17 @@
 package redactedrice.ptcgr.randomizer;
 
-
 import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.config.Configs;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
@@ -28,6 +26,7 @@ import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.utils.ManifestResourceExtractor;
 import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.Logger;
 
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
@@ -39,14 +38,12 @@ public class RandomizerCore {
     static final String MODULES_DIRECTORY = "modules";
     static final String RANDOMIZER_DIRECTORY = "randomizer";
 
-    private Logger logger;
     private RomData romData;
     private Configs configs;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
 
     public RandomizerCore() {
-        logger = new Logger();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
     }
@@ -97,16 +94,8 @@ public class RandomizerCore {
         // Now that the paths are set we can make the wrapper
         luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths);
 
-        // Log everything to one file for now. Eventually will tie this into
-        // the existing logging or replace it
-        luaRandomizer.setLogEnabled(true);
-        try {
-            luaRandomizer.addStreamForAllLogLevels(
-                    new FileOutputStream(new File("randomizer.log"), false));
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Logger.setEnabled(true);
+
         int loadedCount = luaRandomizer.loadModules();
         if (loadedCount > 0) {
             System.out.println("Loaded " + loadedCount + " Lua modules");
@@ -114,13 +103,7 @@ public class RandomizerCore {
             System.out.println("No Lua modules found in " + modulesDir.getAbsolutePath());
         }
 
-        // Check for errors loading
-        if (ErrorTracker.hasErrors()) {
-            System.err.println("Errors loading Lua modules:");
-            for (String error : ErrorTracker.getErrors()) {
-                System.err.println("  " + error);
-            }
-        }
+        logErrorTrackerMessages("Errors loading Lua modules:");
     }
 
     public void openRom(File romFile, Component toCenterPopupsOn) {
@@ -156,13 +139,20 @@ public class RandomizerCore {
             }
         }
 
-        if (settings.isLogDetails()) {
-            logger.open(romBasePath + LOG_FILE_EXTENSION);
+        OutputStream detailLogStream = null;
+        try {
+            if (settings.isLogDetails()) {
+                detailLogStream = new FileOutputStream(romBasePath + LOG_FILE_EXTENSION);
+                Logger.addStreamForAllLevels(detailLogStream);
+            }
+
+            randomize(settings, actionBank);
+        } finally {
+            if (detailLogStream != null) {
+                detailLogStream.close();
+                Logger.clearAllStreams();
+            }
         }
-
-        randomize(settings, actionBank);
-
-        logger.close();
 
         // TODO later: Due to an error, the same data was being written more than once
         // and when this happened, the text for some cards compoundly got worse.
@@ -192,7 +182,8 @@ public class RandomizerCore {
         context.registerEnum(EnergyType.class);
         context.registerEnum(EvolutionStage.class);
 
-        // Enable lua based change detection. Setup of what is monitored is done in the setup script
+        // Enable lua based change detection. Setup of what is monitored is done in the
+        // setup script
         context.setConfig("changeDetectionActive", true);
 
         // Prepare execution requests for each module
@@ -211,23 +202,24 @@ public class RandomizerCore {
 
         // Execute modules and check for errors
         List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context);
-        if (ErrorTracker.hasErrors()) {
-            System.err.println("Errors executing Lua modules:");
-            for (String error : ErrorTracker.getErrors()) {
-                System.err.println("  " + error);
-            }
-        }
+        logErrorTrackerMessages("Errors executing Lua modules:");
 
-        // Log execution results
-        // Changes will be automatically logged with the universal randomizer Java logger
-        // TODO: Need to decide how/if to integrate these
         for (ExecutionResult result : results) {
             if (!result.isSuccess()) {
-                System.err.println("Module " + result.getModuleName() + " failed: "
+                Logger.error("Module " + result.getModuleName() + " failed: "
                         + result.getErrorMessage());
             } else {
-                System.out.println("Module " + result.getModuleName() + " executed with seed "
+                Logger.info("Module " + result.getModuleName() + " executed with seed "
                         + result.getSeedUsed());
+            }
+        }
+    }
+
+    private static void logErrorTrackerMessages(String heading) {
+        if (ErrorTracker.hasErrors()) {
+            Logger.error(heading);
+            for (String error : ErrorTracker.getErrors()) {
+                Logger.error("  " + error);
             }
         }
     }
