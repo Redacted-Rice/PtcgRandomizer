@@ -15,7 +15,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import redactedrice.gbcframework.utils.Logger;
+import redactedrice.randomizer.utils.Logger;
 import redactedrice.gbcframework.utils.MathUtils;
 import redactedrice.ptcgr.config.Configs;
 import redactedrice.ptcgr.config.MoveExclusions;
@@ -30,16 +30,14 @@ import redactedrice.ptcgr.rom.RandomizationData;
 
 public class MoveSetRandomizer {
     private RandomizationData romData;
-    private Logger logger;
     private final CardGroup<MonsterCard> pokeToGetAttacksFrom;
 
     // TODO later: Add logic to prevent the same move from being on the same monster card
     // TODO later: add logic to allow some moves to only appear once per evo line (or once per
     // monster in evo line) (e.g. call for family)
 
-    public MoveSetRandomizer(RandomizationData inRomData, Logger inLogger) {
+    public MoveSetRandomizer(RandomizationData inRomData) {
         romData = inRomData;
-        logger = inLogger;
 
         // Create a copy of the original pokes for easier move randomization if we change card types
         pokeToGetAttacksFrom = romData.allCards.cards().monsterCards().copy(MonsterCard.class);
@@ -822,11 +820,11 @@ public class MoveSetRandomizer {
         // Create a title row
         String tableName = Logger.createTableTitle("Monster Modified Movesets", totalLength);
 
-        // Print header
-        logger.println(separator);
-        logger.println(tableName);
-        logger.printf(rowFormat, (Object[]) titles);
-        logger.println(separator);
+        // Log header
+        Logger.info(separator);
+        Logger.info(tableName);
+        logTableRow(rowFormat, (Object[]) titles);
+        Logger.info(separator);
 
         // Log each row
         String[] rowData = new String[numIndexes];
@@ -847,10 +845,13 @@ public class MoveSetRandomizer {
                     rowData[index++] = move.getDamageString();
                 }
             }
-            logger.printf(rowFormat, (Object[]) rowData);
+            logTableRow(rowFormat, (Object[]) rowData);
         }
 
-        // Print a final separator
-        logger.println(separator);
+        Logger.info(separator);
+    }
+
+    private static void logTableRow(String rowFormat, Object... args) {
+        Logger.info(String.format(rowFormat.stripTrailing(), args));
     }
 }

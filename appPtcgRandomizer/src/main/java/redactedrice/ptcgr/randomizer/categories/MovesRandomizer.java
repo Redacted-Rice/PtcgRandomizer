@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
 import redactedrice.ptcgr.data.MonsterCard;
@@ -18,7 +17,7 @@ import redactedrice.ptcgr.randomizer.actions.DynamicConfig;
 import redactedrice.ptcgr.randomizer.actions.LambdaAction;
 
 public class MovesRandomizer {
-    public static void addActions(ActionBank actionBank, Logger logger) {
+    public static void addActions(ActionBank actionBank) {
         // TODO: All this is old and will be replaced with new module approach
 
         // actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES,
