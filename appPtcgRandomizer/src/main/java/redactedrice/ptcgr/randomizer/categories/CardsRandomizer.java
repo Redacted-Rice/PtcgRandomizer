@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import redactedrice.gbcframework.utils.Logger;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 import redactedrice.ptcgr.data.MonsterCard;
@@ -19,12 +18,12 @@ import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.ColumnFor
 import redactedrice.ptcgr.randomizer.actions.logactions.CardsLogAction.TypeToPrint;
 
 public class CardsRandomizer {
-    public static void addActions(ActionBank actionBank, Logger logger) {
+    public static void addActions(ActionBank actionBank) {
         // TODO: Old API - move to modules
 
         // actionBank.add(new CardsLogAction(ActionCategories.CATEGORY_CARDS,
         //         configs -> "Log Card Info", configs -> "Log info related to card randomizations",
-        //         logger, TypeToPrint.MONSTERS, new ColumnFormat(Column.C_NAME, "-"),
+        //         TypeToPrint.MONSTERS, new ColumnFormat(Column.C_NAME, "-"),
         //         new ColumnFormat(Column.C_TYPE_SHORT, ""), new ColumnFormat(Column.MC_HP, ""),
         //         new ColumnFormat(Column.MC_PREV_EVO, "-"), new ColumnFormat(Column.MC_EVO_ID, ""),
         //         new ColumnFormat(Column.MC_MAX_EVO_STAGE, "")));

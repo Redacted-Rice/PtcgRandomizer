@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import redactedrice.gbcframework.utils.Logger;
+import redactedrice.randomizer.utils.Logger;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.NonMonsterCard;
@@ -18,7 +18,6 @@ public class CardsLogAction {
         ALL, MONSTERS, NON_MONSTER
     };
 
-    private Logger log;
     private TypeToPrint toPrint;
     private ColumnFormat[] columnFormats;
     private String rowFormat;
@@ -73,17 +72,15 @@ public class CardsLogAction {
         }
     }
 
-    public CardsLogAction(String category, StringLambda name, StringLambda description, Logger log,
+    public CardsLogAction(String category, StringLambda name, StringLambda description,
             TypeToPrint toPrint, ColumnFormat... columnFormats) {
         // super(category, name, description);
-        this.log = log;
         this.toPrint = toPrint;
         this.columnFormats = columnFormats;
     }
 
     public CardsLogAction(CardsLogAction toCopy) {
         // super(toCopy);
-        this.log = toCopy.log;
         this.toPrint = toCopy.toPrint;
         this.columnFormats = toCopy.columnFormats;
     }
@@ -112,14 +109,18 @@ public class CardsLogAction {
         String separator = Logger.createSeparatorLine(totalSize);
         rowFormat = Logger.createTableFormatString(size, formats);
 
-        log.println(separator);
-        log.println(Logger.createTableTitle("Print card", totalSize));
-        log.printf(rowFormat, (Object[]) titles);
-        log.println(separator);
+        Logger.info(separator);
+        Logger.info(Logger.createTableTitle("Print card", totalSize));
+        logTableRow(rowFormat, (Object[]) titles);
+        Logger.info(separator);
 
         mcs.get().forEach(this::printCard);
 
-        log.println(separator);
+        Logger.info(separator);
+    }
+
+    private static void logTableRow(String rowFormat, Object... args) {
+        Logger.info(String.format(rowFormat.stripTrailing(), args));
     }
 
     public void printCard(MonsterCard card) {
@@ -200,7 +201,7 @@ public class CardsLogAction {
                 break;
             }
         }
-        log.printf(rowFormat, entries);
+        logTableRow(rowFormat, entries);
     }
 
     public void printCard(NonMonsterCard card) {
@@ -250,6 +251,6 @@ public class CardsLogAction {
                 break;
             }
         }
-        log.printf(rowFormat, entries);
+        logTableRow(rowFormat, entries);
     }
 }
