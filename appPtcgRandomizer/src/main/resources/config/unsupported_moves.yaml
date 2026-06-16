@@ -1,0 +1,84 @@
+# Default unsupported moves for PTCG randomizer.
+# Installed to configs/unsupported_moves.yaml on first run if missing.
+#
+# exclusions: remove moves from the pool and/or keep them fixed on card(s)
+
+exclusions:
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Ember
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Flamethrower
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Fire Blast
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Flames of Rage
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Hydro Pump
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Water Gun
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Recover
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Call for Friend
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Destiny Bond
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Barrier
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Boyfriends
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Sprout
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Energy Trans
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Energy Burn
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Firegiver
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Rain Dance
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Peal of Thunder
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Toxic Gas
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Clairvoyance
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Strikes Back
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Kabuto Armor
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Prehistoric Power
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Transparency
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Neutralizing Shield
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Retreat Aid
+  - remove_from_pool: true
+    exclude_from_randomization: true
+    move: Thick Skinned
