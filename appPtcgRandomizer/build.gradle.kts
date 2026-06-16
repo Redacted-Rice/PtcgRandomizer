@@ -17,6 +17,7 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+    implementation(libs.snakeyaml)
 
     implementation("redactedrice:libGbcFramework:0.8.0")
     implementation("redactedrice:libGbz80Compiler:0.8.0")
