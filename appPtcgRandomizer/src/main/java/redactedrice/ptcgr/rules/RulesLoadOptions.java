@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 public final class RulesLoadOptions {
     private final boolean loadExclusions;

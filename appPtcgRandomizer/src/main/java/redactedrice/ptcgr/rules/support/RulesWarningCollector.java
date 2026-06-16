@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config.support;
+package redactedrice.ptcgr.rules.support;
 
 import java.awt.Component;
 
@@ -6,11 +6,11 @@ import javax.swing.JOptionPane;
 
 import redactedrice.gbcframework.utils.IOUtils;
 
-public class ConfigWarningCollector {
+public class RulesWarningCollector {
     private final Component toCenterPopupsOn;
     private final StringBuilder warnings = new StringBuilder();
 
-    public ConfigWarningCollector(Component toCenterPopupsOn) {
+    public RulesWarningCollector(Component toCenterPopupsOn) {
         this.toCenterPopupsOn = toCenterPopupsOn;
     }
 

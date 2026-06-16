@@ -1,9 +1,9 @@
-package redactedrice.ptcgr.config.parser;
+package redactedrice.ptcgr.rules.parser;
 
 import java.util.Map;
 
-import redactedrice.ptcgr.config.MoveExclusions;
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.MoveExclusions;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.MonsterCard;
 
@@ -11,7 +11,7 @@ public final class MoveExclusionsYamlParser {
     private MoveExclusionsYamlParser() {}
 
     public static void loadList(Object rawExclusions, String sourceFileName,
-            MoveExclusions moveExclusions, YamlParser parser, ConfigWarningCollector warnings) {
+            MoveExclusions moveExclusions, YamlParser parser, RulesWarningCollector warnings) {
         YamlParser.forEachEntryInList(rawExclusions, "exclusions", sourceFileName, warnings,
                 (fields, entryContext) -> parseEntry(fields, sourceFileName, entryContext,
                         moveExclusions, parser, warnings));
@@ -19,7 +19,7 @@ public final class MoveExclusionsYamlParser {
 
     private static void parseEntry(Map<String, Object> fields, String sourceFileName,
             String entryContext, MoveExclusions moveExclusions, YamlParser parser,
-            ConfigWarningCollector warnings) {
+            RulesWarningCollector warnings) {
         boolean removeFromPool = YamlParser.parseBoolean(fields.get("remove_from_pool"), false,
                 "remove_from_pool", entryContext, warnings);
         boolean excludeFromRandomization =

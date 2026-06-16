@@ -1,5 +1,5 @@
 # Default unsupported moves for PTCG randomizer.
-# Installed to configs/unsupported_moves.yaml on first run if missing.
+# Installed to rules/unsupported_moves.yaml on first run if missing.
 #
 # exclusions: remove moves from the pool and/or keep them fixed on card(s)
 

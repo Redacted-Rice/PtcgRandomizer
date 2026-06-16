@@ -1,24 +1,24 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 import java.awt.Component;
 
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.RomData;
 
-public class Configs {
+public class Rules {
     private final MoveExclusions moveExclusions;
     private final MoveAssignments moveAssignments;
     private final RulesIO io;
 
-    public Configs(RomData romData, Component toCenterPopupsOn) {
+    public Rules(RomData romData, Component toCenterPopupsOn) {
         this(romData.original.allCards.cards().monsterCards(), toCenterPopupsOn, true);
     }
 
-    Configs(CardGroup<MonsterCard> allCards, Component toCenterPopupsOn,
+    Rules(CardGroup<MonsterCard> allCards, Component toCenterPopupsOn,
             boolean loadUnsupportedMovesOnCreate) {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(toCenterPopupsOn);
+        RulesWarningCollector warnings = new RulesWarningCollector(toCenterPopupsOn);
         moveExclusions = new MoveExclusions();
         moveAssignments = new MoveAssignments();
         io = new RulesIO(allCards, moveExclusions, moveAssignments, warnings);

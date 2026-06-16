@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,10 +14,10 @@ import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 
 import redactedrice.gbcframework.utils.IOUtils;
-import redactedrice.ptcgr.config.parser.MoveAssignmentsYamlParser;
-import redactedrice.ptcgr.config.parser.MoveExclusionsYamlParser;
-import redactedrice.ptcgr.config.parser.YamlParser;
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.parser.MoveAssignmentsYamlParser;
+import redactedrice.ptcgr.rules.parser.MoveExclusionsYamlParser;
+import redactedrice.ptcgr.rules.parser.YamlParser;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 
@@ -29,18 +29,18 @@ import redactedrice.ptcgr.data.MonsterCard;
  * addRulesNode.
  */
 public final class RulesIO {
-    public static final String UNSUPPORTED_MOVES_RESOURCE = "/config/unsupported_moves.yaml";
+    public static final String UNSUPPORTED_MOVES_RESOURCE = "/rules/unsupported_moves.yaml";
     public static final String UNSUPPORTED_MOVES_FILE_NAME = "unsupported_moves.yaml";
-    public static final String RULES_INSTALL_DIR = "configs";
+    public static final String RULES_INSTALL_DIR = "rules";
 
     private final CardGroup<MonsterCard> allCards;
     private final MoveExclusions moveExclusions;
     private final MoveAssignments moveAssignments;
-    private final ConfigWarningCollector warnings;
+    private final RulesWarningCollector warnings;
     private final List<String> addedRuleFiles = new ArrayList<>();
 
     public RulesIO(CardGroup<MonsterCard> allCards, MoveExclusions moveExclusions,
-            MoveAssignments moveAssignments, ConfigWarningCollector warnings) {
+            MoveAssignments moveAssignments, RulesWarningCollector warnings) {
         this.allCards = allCards;
         this.moveExclusions = moveExclusions;
         this.moveAssignments = moveAssignments;

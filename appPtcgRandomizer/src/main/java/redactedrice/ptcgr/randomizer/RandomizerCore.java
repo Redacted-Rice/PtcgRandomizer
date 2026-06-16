@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import redactedrice.ptcgr.config.Configs;
+import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.randomizer.actions.Action;
@@ -39,7 +39,7 @@ public class RandomizerCore {
     static final String RANDOMIZER_DIRECTORY = "randomizer";
 
     private RomData romData;
-    private Configs configs;
+    private Rules rules;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
 
@@ -114,9 +114,12 @@ public class RandomizerCore {
             e.printStackTrace();
         }
 
-        // TODO later: Move to saving?
-        // Skip loading config files for now
-        // configs = new Configs(romData, toCenterPopupsOn);
+        rules = new Rules(romData, toCenterPopupsOn);
+        rules.getIo().displayWarnings();
+    }
+
+    public Rules getRules() {
+        return rules;
     }
 
     public void randomizeAndSaveRom(File romFile, Settings settings, List<Action> actionBank)
@@ -175,6 +178,10 @@ public class RandomizerCore {
         JavaContext context = new JavaContext();
         context.register("original", romData.original);
         context.register("modified", romData.modified);
+
+        if (rules != null) {
+            context.register("rules", rules);
+        }
 
         // Register card some enums
         // TODO: Add others. Could I do this dynamically or just specify all of them
