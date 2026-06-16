@@ -5,17 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import redactedrice.ptcgr.rules.parser.YamlParser;
 import redactedrice.ptcgr.rules.support.RulesWarningCollector;
+import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
+import redactedrice.ptcgr.data.Move;
 
 class RulesIOTest {
     @TempDir
@@ -31,6 +33,17 @@ class RulesIOTest {
         Path rulesFile = tempDir.resolve(sourceFileName);
         Files.writeString(rulesFile, yaml);
         io.addFromFile(rulesFile.toFile(), sourceFileName, options);
+    }
+
+    private MonsterCard someMonster(int level, CardId id, String moveName) {
+        MonsterCard card = new MonsterCard();
+        card.id = id;
+        card.name.setText("SomeMonster");
+        card.level = (byte) level;
+        Move move = new Move();
+        move.name.setText(moveName);
+        card.setMoves(List.of(move, new Move()));
+        return card;
     }
 
     @Test
@@ -132,10 +145,10 @@ class RulesIOTest {
         String yaml = """
                 exclusions: []
                 assignments:
-                  - to_card: Charizard_1
+                  - to_card: SomeMonster lvl76
                     to_move_slot: 1
-                    from_card: Blastoise_1
-                    move: Hydro Pump
+                    from_card: OtherMonster lvl40
+                    move: TestMove
                 """;
         addYamlFromString(io, yaml, "test.yaml", RulesLoadOptions.exclusionsOnly());
 
@@ -143,7 +156,7 @@ class RulesIOTest {
     }
 
     @Test
-    void rejectsCardWithoutVersionNumber() throws IOException {
+    void rejectsCardWithoutDisambiguator() throws IOException {
         RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
@@ -153,12 +166,56 @@ class RulesIOTest {
                 exclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
-                    card: Charizard
-                    move: Ember
+                    card: SomeMonster
+                    move: TestMove
                 """;
         addYamlFromString(io, yaml, "test.yaml", RulesLoadOptions.all());
 
         assertTrue(warnings.hasWarnings());
         assertTrue(exclusions.getAllExclusions().isEmpty());
+    }
+
+    @Test
+    void rejectsPrintNumberCardSpecifier() throws IOException {
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
+        MoveExclusions exclusions = new MoveExclusions();
+        MoveAssignments assignments = new MoveAssignments();
+        RulesIO io = createIo(exclusions, assignments, warnings);
+
+        String yaml = """
+                exclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    card: SomeMonster_1
+                    move: TestMove
+                """;
+        addYamlFromString(io, yaml, "test.yaml", RulesLoadOptions.all());
+
+        assertTrue(warnings.hasWarnings());
+        assertTrue(exclusions.getAllExclusions().isEmpty());
+    }
+
+    @Test
+    void resolvesCardByLevelSpecifier() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
+
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
+        MoveExclusions exclusions = new MoveExclusions();
+        MoveAssignments assignments = new MoveAssignments();
+        RulesIO io = new RulesIO(cards, exclusions, assignments, warnings);
+
+        String yaml = """
+                exclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    card: SomeMonster lvl35
+                    move: TestMove
+                """;
+        addYamlFromString(io, yaml, "test.yaml", RulesLoadOptions.all());
+
+        assertEquals(1, exclusions.getAllExclusions().size());
+        assertEquals(CardId.MONSTER_146_1, exclusions.getAllExclusions().get(0).getCardId());
     }
 }

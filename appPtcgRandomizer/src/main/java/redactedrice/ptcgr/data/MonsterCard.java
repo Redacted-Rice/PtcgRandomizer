@@ -3,6 +3,8 @@ package redactedrice.ptcgr.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.InstructionParser;
@@ -20,6 +22,10 @@ public class MonsterCard extends Card {
     public static final int TOTAL_SIZE_IN_BYTES = 65;
     public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
     public static final int MAX_NUM_MOVES = 2;
+    private static final Pattern NAME_WITH_LEVEL_PATTERN =
+            Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+
+    public record NameWithLevel(String name, int level) {}
 
     // TODO Make some of these private to ensure safe values (e.g. multiple of 10 for hp?)
     private byte hp;
@@ -85,6 +91,51 @@ public class MonsterCard extends Card {
 
     public MonsterCard copy() {
         return new MonsterCard(this);
+    }
+
+    public int getLevel() {
+        return level & 0xFF;
+    }
+
+    public static boolean isNameWithLevel(String cardSpecifier) {
+        return parseNameWithLevel(cardSpecifier) != null;
+    }
+
+    public static NameWithLevel parseNameWithLevel(String cardSpecifier) {
+        Matcher matcher = NAME_WITH_LEVEL_PATTERN.matcher(cardSpecifier.trim());
+        if (!matcher.matches()) {
+            return null;
+        }
+
+        String cardName = matcher.group(1).trim();
+        if (cardName.contains(CardName.CARD_NAME_NUMBER_SEPARATOR)) {
+            return null;
+        }
+
+        return new NameWithLevel(cardName, Integer.parseInt(matcher.group(2)));
+    }
+
+    public boolean matchesNameWithLevel(NameWithLevel ref) {
+        return name.toString().equalsIgnoreCase(ref.name()) && getLevel() == ref.level();
+    }
+
+    public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards,
+            NameWithLevel ref) {
+        for (MonsterCard card : cards.iterable()) {
+            if (card.matchesNameWithLevel(ref)) {
+                return card;
+            }
+        }
+        return null;
+    }
+
+    public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards,
+            String cardSpecifier) {
+        NameWithLevel ref = parseNameWithLevel(cardSpecifier);
+        if (ref == null) {
+            return null;
+        }
+        return findByNameWithLevel(cards, ref);
     }
 
     public List<Move> getAllMovesIncludingEmptyOnes() {
