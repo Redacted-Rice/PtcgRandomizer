@@ -32,7 +32,7 @@ public final class MoveAssignmentsYamlParser {
 
         String fromCard = YamlParser.parseOptionalString(fields.get("from_card"));
 
-        MonsterCard targetCard = parser.resolveNumberedCard(toCard, entryContext);
+        MonsterCard targetCard = parser.resolveCard(toCard, entryContext);
         if (targetCard == null) {
             return;
         }
@@ -43,7 +43,7 @@ public final class MoveAssignmentsYamlParser {
         }
 
         MonsterCard hostCard =
-                fromCard.isEmpty() ? null : parser.resolveNumberedCard(fromCard, entryContext);
+                fromCard.isEmpty() ? null : parser.resolveCard(fromCard, entryContext);
         if (!fromCard.isEmpty() && hostCard == null) {
             return;
         }

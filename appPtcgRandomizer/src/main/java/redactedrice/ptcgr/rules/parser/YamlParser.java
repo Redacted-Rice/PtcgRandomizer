@@ -7,7 +7,6 @@ import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
-import redactedrice.ptcgr.data.romtexts.CardName;
 
 public final class YamlParser {
     private final CardGroup<MonsterCard> monsterCards;
@@ -97,27 +96,21 @@ public final class YamlParser {
                 .anyMatch(m -> m.name.toString().equalsIgnoreCase(moveName.trim()));
     }
 
-    public MonsterCard resolveNumberedCard(String cardNameWithNumber, String entryContext) {
-        if (!CardName.doesHaveNumber(cardNameWithNumber)) {
+    public MonsterCard resolveCard(String cardSpecifier, String entryContext) {
+        String trimmed = cardSpecifier.trim();
+        if (!MonsterCard.isNameWithLevel(trimmed)) {
+            String exampleName = trimmed.isEmpty() ? "SomeMonster" : trimmed;
             warnings.appendWarningLine(
-                    "Card \"" + cardNameWithNumber + "\" must include a version number in "
-                            + entryContext + " (e.g. \"" + cardNameWithNumber + "_1\").");
+                    "Monster card \"" + cardSpecifier + "\" must use name and level (e.g. \""
+                            + exampleName + " lvl65\") in " + entryContext + ".");
             warnings.appendWarning("\t" + entryContext);
             return null;
         }
 
-        CardGroup<MonsterCard> foundCards = monsterCards.withNameIgnoringNumber(cardNameWithNumber);
-        if (foundCards.count() < 1) {
-            warnings.appendWarningLine(
-                    "Failed to find card \"" + cardNameWithNumber + "\" in " + entryContext + ":");
-            warnings.appendWarning("\t" + entryContext);
-            return null;
-        }
-
-        MonsterCard card = CardGroup.fromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
+        MonsterCard card = MonsterCard.findByNameWithLevel(monsterCards, trimmed);
         if (card == null) {
-            warnings.appendWarningLine("Failed to resolve numbered card \"" + cardNameWithNumber
-                    + "\" in " + entryContext + ":");
+            warnings.appendWarningLine(
+                    "Failed to resolve card \"" + cardSpecifier + "\" in " + entryContext + ":");
             warnings.appendWarning("\t" + entryContext);
         }
         return card;

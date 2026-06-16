@@ -45,7 +45,7 @@ public final class MoveExclusionsYamlParser {
             return;
         }
 
-        MonsterCard monsterCard = parser.resolveNumberedCard(card, entryContext);
+        MonsterCard monsterCard = parser.resolveCard(card, entryContext);
         if (monsterCard == null) {
             return;
         }

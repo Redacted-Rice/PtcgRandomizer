@@ -152,7 +152,7 @@ public class HardcodedEffects {
         }
     }
 
-    // TODO later: Handle cards with multiple IDs (e.g. 4 different pikachus)
+    // TODO later: Handle cards with multiple IDs (e.g. 4 different prints of the same monster)
     // TODO later: Handle multiple cards (e.g. nidoran male or female)
     public static class CallForFamily {
         private CallForFamily() {}
