@@ -1,9 +1,9 @@
-package redactedrice.ptcgr.config.parser;
+package redactedrice.ptcgr.rules.parser;
 
 import java.util.List;
 import java.util.Map;
 
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
@@ -11,9 +11,9 @@ import redactedrice.ptcgr.data.romtexts.CardName;
 
 public final class YamlParser {
     private final CardGroup<MonsterCard> monsterCards;
-    private final ConfigWarningCollector warnings;
+    private final RulesWarningCollector warnings;
 
-    public YamlParser(CardGroup<MonsterCard> monsterCards, ConfigWarningCollector warnings) {
+    public YamlParser(CardGroup<MonsterCard> monsterCards, RulesWarningCollector warnings) {
         this.monsterCards = monsterCards;
         this.warnings = warnings;
     }
@@ -28,7 +28,7 @@ public final class YamlParser {
     }
 
     public static void forEachEntryInList(Object rawList, String listFieldName,
-            String sourceFileName, ConfigWarningCollector warnings, EntryHandler handler) {
+            String sourceFileName, RulesWarningCollector warnings, EntryHandler handler) {
         if (rawList == null) {
             return;
         }
@@ -54,7 +54,7 @@ public final class YamlParser {
     }
 
     public static boolean parseBoolean(Object value, boolean defaultValue, String fieldName,
-            String entryContext, ConfigWarningCollector warnings) {
+            String entryContext, RulesWarningCollector warnings) {
         if (value == null) {
             return defaultValue;
         }
@@ -75,7 +75,7 @@ public final class YamlParser {
     }
 
     public static String parseRequiredString(Object value, String fieldName, String entryContext,
-            ConfigWarningCollector warnings) {
+            RulesWarningCollector warnings) {
         if (value == null) {
             warnings.appendWarningLine(entryContext + " is missing required field \"" + fieldName
                     + "\" and was skipped.");

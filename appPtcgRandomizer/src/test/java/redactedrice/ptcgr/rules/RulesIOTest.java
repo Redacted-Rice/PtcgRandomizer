@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,8 +12,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import redactedrice.ptcgr.config.parser.YamlParser;
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.parser.YamlParser;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 
@@ -22,7 +22,7 @@ class RulesIOTest {
     Path tempDir;
 
     private RulesIO createIo(MoveExclusions exclusions, MoveAssignments assignments,
-            ConfigWarningCollector warnings) {
+            RulesWarningCollector warnings) {
         return new RulesIO(new CardGroup<MonsterCard>(), exclusions, assignments, warnings);
     }
 
@@ -35,7 +35,7 @@ class RulesIOTest {
 
     @Test
     void rejectsNonMappingRoot() throws IOException {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
@@ -47,7 +47,7 @@ class RulesIOTest {
 
     @Test
     void rejectsExclusionWithoutMove() throws IOException {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
@@ -70,7 +70,7 @@ class RulesIOTest {
 
     @Test
     void rejectsUnknownMoveOnEmptyCardPool() throws IOException {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
@@ -94,7 +94,7 @@ class RulesIOTest {
             Files.copy(in, defaultFile);
         }
 
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
@@ -106,8 +106,8 @@ class RulesIOTest {
     }
 
     @Test
-    void configsCombinesMultipleRuleFiles() throws IOException {
-        Configs configs = new Configs(new CardGroup<MonsterCard>(), null, false);
+    void rulesCombinesMultipleRuleFiles() throws IOException {
+        Rules rules = new Rules(new CardGroup<MonsterCard>(), null, false);
 
         Path firstFile = tempDir.resolve("base_rules.yaml");
         Files.writeString(firstFile, "exclusions: []\n");
@@ -115,16 +115,16 @@ class RulesIOTest {
         Path secondFile = tempDir.resolve("extra_rules.yaml");
         Files.writeString(secondFile, "assignments: []\n");
 
-        configs.getIo().addRulesFile(firstFile.toFile());
-        configs.getIo().addRulesFile(secondFile.toFile());
+        rules.getIo().addRulesFile(firstFile.toFile());
+        rules.getIo().addRulesFile(secondFile.toFile());
 
-        assertEquals(2, configs.getIo().getAddedRuleFiles().size());
-        assertTrue(configs.getMoveAssignments().getAllAssignments().isEmpty());
+        assertEquals(2, rules.getIo().getAddedRuleFiles().size());
+        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
     }
 
     @Test
     void selectiveLoadSkipsAssignments() throws IOException {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
@@ -144,7 +144,7 @@ class RulesIOTest {
 
     @Test
     void rejectsCardWithoutVersionNumber() throws IOException {
-        ConfigWarningCollector warnings = new ConfigWarningCollector(null);
+        RulesWarningCollector warnings = new RulesWarningCollector(null);
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);

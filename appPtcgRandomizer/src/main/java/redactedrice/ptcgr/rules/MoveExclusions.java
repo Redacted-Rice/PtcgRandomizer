@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
-import redactedrice.ptcgr.config.support.MoveExclusionData;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
+import redactedrice.ptcgr.rules.support.MoveExclusionData;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.Move;
 
@@ -62,7 +62,7 @@ public class MoveExclusions {
 
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
             boolean excludeFromRandomization, String sourceFileName,
-            ConfigWarningCollector warnings) {
+            RulesWarningCollector warnings) {
         MoveExclusionData excl = new MoveExclusionData(cardId, moveName, removeFromPool,
                 excludeFromRandomization, sourceFileName);
         List<MoveExclusionData> bucket;

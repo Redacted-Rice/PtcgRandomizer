@@ -1,5 +1,5 @@
 **/bin/
-/configs/
+/rules/
 *.gbc
 *.sav
 *.sgm
@@ -22,7 +22,7 @@ build
 
 # Ignore extracted randomizer core files
 appPtcgRandomizer/randomizer/
-appPtcgRandomizer/configs/
+appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
 randomizer/
 

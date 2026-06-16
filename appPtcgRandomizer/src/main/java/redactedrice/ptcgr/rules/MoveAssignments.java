@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config;
+package redactedrice.ptcgr.rules;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -6,8 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
-import redactedrice.ptcgr.config.support.MoveAssignmentData;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
+import redactedrice.ptcgr.rules.support.MoveAssignmentData;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
@@ -52,7 +52,7 @@ public class MoveAssignments {
     }
 
     public void addMoveAssignment(MonsterCard targetCard, int moveSlot0Based, Move move,
-            String sourceFileName, ConfigWarningCollector warnings) {
+            String sourceFileName, RulesWarningCollector warnings) {
         MoveAssignmentData assign =
                 new MoveAssignmentData(targetCard.id, moveSlot0Based, move, sourceFileName);
         List<MoveAssignmentData> cardAssignments =

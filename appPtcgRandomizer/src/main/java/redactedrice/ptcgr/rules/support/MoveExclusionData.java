@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.config.support;
+package redactedrice.ptcgr.rules.support;
 
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.Move;

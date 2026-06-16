@@ -17,8 +17,8 @@ import java.util.function.Supplier;
 
 import redactedrice.randomizer.utils.Logger;
 import redactedrice.gbcframework.utils.MathUtils;
-import redactedrice.ptcgr.config.Configs;
-import redactedrice.ptcgr.config.MoveExclusions;
+import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
@@ -47,7 +47,7 @@ public class MoveSetRandomizer {
         EMPTY, MOVE, ATTACK, POKE_POWER, DAMAGING_ATTACK
     }
 
-    public void randomize(long nextSeed, Settings settings, Configs configs) {
+    public void randomize(long nextSeed, Settings settings, Rules rules) {
         boolean changedMoves = false;
         CardGroup<MonsterCard> pokes = romData.allCards.cards().monsterCards();
 
@@ -64,13 +64,13 @@ public class MoveSetRandomizer {
 
             // Assign any specific moves and add them to the exclusion list so we don't
             // remove them when we randomize
-            configs.getMoveAssignments().assignSpecifiedMoves(pokes, configs.getMoveExclusions());
+            rules.getMoveAssignments().assignSpecifiedMoves(pokes, rules.getMoveExclusions());
 
             Map<MonsterCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerMonster(
                     nextSeed, pokes, settings);
             nextSeed += 10; // Reserve seed space for when we add randomization to this
 
-            shuffleOrRandomizeMonsterMoves(nextSeed, cardMovesMap, settings, configs);
+            shuffleOrRandomizeMonsterMoves(nextSeed, cardMovesMap, settings, rules);
         }
         // nextSeed += 80; not needed currently as this is the last step in randomization here
 
@@ -538,18 +538,18 @@ public class MoveSetRandomizer {
     /************************** Generate Movesets ****************************************/
     public void shuffleOrRandomizeMonsterMoves(long nextSeed,
             Map<MonsterCard, List<RandomizerMoveCategory>> cardMovesMap, Settings settings,
-            Configs configs) {
+            Rules rules) {
         Supplier<Stream<MonsterCardRandomizerWrapper>> cards = () -> cardMovesMap.keySet().stream()
                 .map(c -> new MonsterCardRandomizerWrapper(c));
 
         // Perform a first pass through the moves assigning at least the attacks (both forced
         // damaging and others) and possible
         // the pokepowers if set that way
-        firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);
+        firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, rules);
         nextSeed += 30;
 
         // Do the second pass for poke powers if they were not handled in the first pass
-        secondPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);
+        secondPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, rules);
         // Not needed now since this is the last one currently
         // nextSeed += 30
 
@@ -559,7 +559,7 @@ public class MoveSetRandomizer {
 
     public void firstPassMoveAssignment(long nextSeed,
             Map<MonsterCard, List<RandomizerMoveCategory>> cardMovesMap,
-            CardGroup<MonsterCard> pokesToGetMovesFrom, Settings settings, Configs configs) {
+            CardGroup<MonsterCard> pokesToGetMovesFrom, Settings settings, Rules rules) {
         // Get our strat in a convenient location
         RandomizationStrategy attackRandStrat = settings.getAttacks().getRandomizationStrat();
         if (RandomizationStrategy.RANDOM == attackRandStrat
@@ -583,15 +583,15 @@ public class MoveSetRandomizer {
                             getEntrysForType(cardMovesMap, pokeType),
                             getSubsetOfMovePool(
                                     pokesToGetMovesFrom.ofCardType(pokeType)
-                                            .allMovesForRandomization(configs.getMoveExclusions()),
+                                            .allMovesForRandomization(rules.getMoveExclusions()),
                                     firstPassMoveCat),
-                            firstPassMoveCat, settings, configs.getMoveExclusions());
+                            firstPassMoveCat, settings, rules.getMoveExclusions());
                     nextSeed += 3; // helper uses two seeds - leave one for expansion, 24 total
                 }
             } else {
                 firstPassMoveAssignmentHelper(nextSeed, cardMovesMap,
-                        pokesToGetMovesFrom.allMovesForRandomization(configs.getMoveExclusions()),
-                        firstPassMoveCat, settings, configs.getMoveExclusions());
+                        pokesToGetMovesFrom.allMovesForRandomization(rules.getMoveExclusions()),
+                        firstPassMoveCat, settings, rules.getMoveExclusions());
                 // nextSeed += 3 * CardType.monsterValues().size(); not needed at the moment - 24
                 // total
             }
@@ -642,7 +642,7 @@ public class MoveSetRandomizer {
     public void secondPassMoveAssignment(long nextSeed,
             Map<MonsterCard, List<RandomizerMoveCategory>> cardMovesMap,
             CardGroup<MonsterCard> originalPokesToTakeMovesFrom, Settings settings,
-            Configs configs) {
+            Rules rules) {
         // Get our strat in a convenient location
         RandomizationStrategy powerRandStrat = settings.getPowers().getRandomizationStrat();
         if (!settings.getPowers().isIncludeWithMoves()
@@ -655,14 +655,14 @@ public class MoveSetRandomizer {
                     assignMovesToMonsters(nextSeed, getEntrysForType(cardMovesMap, pokeType),
                             new ArrayList<>(getSubsetOfMovePool(
                                     originalPokesToTakeMovesFrom.ofCardType(pokeType)
-                                            .allMovesForRandomization(configs.getMoveExclusions()),
+                                            .allMovesForRandomization(rules.getMoveExclusions()),
                                     RandomizerMoveCategory.POKE_POWER)),
                             new ArrayList<>(), // Empty list since this is separate from other move
                                                // randomization
                             RandomizerMoveCategory.POKE_POWER,
                             RandomizationStrategy.SHUFFLE == powerRandStrat, // If its shuffle mode
                                                                              // or not
-                            configs.getMoveExclusions());
+                            rules.getMoveExclusions());
                     nextSeed += 3; // +3 to be consistent with first pass
                 }
             } else {
@@ -670,14 +670,14 @@ public class MoveSetRandomizer {
                 assignMovesToMonsters(nextSeed, cardMovesMap,
                         new ArrayList<>(getSubsetOfMovePool(
                                 originalPokesToTakeMovesFrom
-                                        .allMovesForRandomization(configs.getMoveExclusions()),
+                                        .allMovesForRandomization(rules.getMoveExclusions()),
                                 RandomizerMoveCategory.POKE_POWER)),
                         new ArrayList<>(), // Empty list since this is separate from other move
                                            // randomization
                         RandomizerMoveCategory.POKE_POWER,
                         RandomizationStrategy.SHUFFLE == powerRandStrat, // If its shuffle mode or
                                                                          // not
-                        configs.getMoveExclusions());
+                        rules.getMoveExclusions());
                 // nextSeed += 3 * CardType.monsterValues().size(); not needed at the moment
             }
         }

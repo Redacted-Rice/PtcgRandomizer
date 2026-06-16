@@ -1,9 +1,9 @@
-package redactedrice.ptcgr.config.parser;
+package redactedrice.ptcgr.rules.parser;
 
 import java.util.Map;
 
-import redactedrice.ptcgr.config.MoveAssignments;
-import redactedrice.ptcgr.config.support.ConfigWarningCollector;
+import redactedrice.ptcgr.rules.MoveAssignments;
+import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 
@@ -11,7 +11,7 @@ public final class MoveAssignmentsYamlParser {
     private MoveAssignmentsYamlParser() {}
 
     public static void loadList(Object rawAssignments, String sourceFileName,
-            MoveAssignments moveAssignments, YamlParser parser, ConfigWarningCollector warnings) {
+            MoveAssignments moveAssignments, YamlParser parser, RulesWarningCollector warnings) {
         YamlParser.forEachEntryInList(rawAssignments, "assignments", sourceFileName, warnings,
                 (fields, entryContext) -> parseEntry(fields, sourceFileName, entryContext,
                         moveAssignments, parser, warnings));
@@ -19,7 +19,7 @@ public final class MoveAssignmentsYamlParser {
 
     private static void parseEntry(Map<String, Object> fields, String sourceFileName,
             String entryContext, MoveAssignments moveAssignments, YamlParser parser,
-            ConfigWarningCollector warnings) {
+            RulesWarningCollector warnings) {
         String toCard = YamlParser.parseRequiredString(fields.get("to_card"), "to_card",
                 entryContext, warnings);
         String toMoveSlot = YamlParser.parseRequiredString(fields.get("to_move_slot"),

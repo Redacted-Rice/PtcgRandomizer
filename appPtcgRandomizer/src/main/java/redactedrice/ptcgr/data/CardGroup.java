@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import redactedrice.ptcgr.config.MoveExclusions;
+import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
