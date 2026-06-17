@@ -13,30 +13,25 @@ return {
 	execute = function(context)
 		local changedetector = require("randomizer").changedetector
 
-		-- Get active flag from config
+		-- Respect the GUI/config toggle for whether change detection runs at all
 		local isActive = context.config and context.config.changeDetectionActive or false
 		changedetector.configure(isActive)
 
-		-- Setup monitoring for monster cards
-		-- HP uses a getter, other fields are public
-		local monsterCardFields = {
-            -- TODO Add more later
-			{name = "hp", getter = function(obj) return obj:getHp() end},
-		}
-
 		if context.modified then
 			local monsterCards = context.modified:getMonsterCards()
-			changedetector.monitor("Monster Cards", monsterCards, monsterCardFields, function(obj)
-				-- Format as "cardName (cardId)"
-				local name = "Unknown"
-				if obj.name and obj.name.toString then
-					name = obj.name:toString()
-				end
-				local id = obj.id or "?"
-				return name .. " (" .. tostring(id) .. ")"
-			end)
 
-			-- Log what we're tracking
+			-- Table layout is configured here so formatting stays simple in detectChanges()
+			changedetector.monitor("Monster Cards", monsterCards, {
+				title = "Monster Cards",
+				headerEvery = 30, -- repeat column headers every 30 data rows
+				trailingHeader = true,
+				primaryKey = { header = "ID", align = "right", numeric = true, getter = function(obj) return obj:getIdValue() end },
+				description = { header = "Name", getter = function(obj) return obj.name:toString() end },
+				fields = {
+					{ field = "hp", header = "HP", align = "right", getter = function(obj) return obj:getHp() end },
+				},
+			})
+
 			local entries = changedetector.getMonitoredEntryNames()
 			if #entries > 0 then
 				logger.info("Change detection configured with " .. #entries .. " monitoring entries")
@@ -49,4 +44,3 @@ return {
 		logger.info("Prescript changedetector_setup completed")
 	end,
 }
-
