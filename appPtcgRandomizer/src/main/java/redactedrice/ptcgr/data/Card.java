@@ -91,6 +91,11 @@ public abstract class Card {
 
     public abstract int getSize();
 
+    /** Numeric card id for Lua change-detector sorting and display. */
+    public int getIdValue() {
+        return id.getValue() & 0xFF;
+    }
+
     public String toString() {
         return "Name = " + name.toString() + "\nID = " + id + "\nType = " + type + "\nRarity = "
                 + rarity + "\nSet = " + set + "\nPack = " + pack;

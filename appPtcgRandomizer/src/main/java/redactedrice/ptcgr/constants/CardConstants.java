@@ -140,7 +140,7 @@ public class CardConstants {
         MONSTER_095             (0x83),
         MONSTER_104             (0x84),
         MONSTER_105_1           (0x85),
-        MONSTER_105_3           (0x86),
+        MONSTER_105_2           (0x86),
         MONSTER_106             (0x87),
         MONSTER_107             (0x88),
         MONSTER_111             (0x89),
