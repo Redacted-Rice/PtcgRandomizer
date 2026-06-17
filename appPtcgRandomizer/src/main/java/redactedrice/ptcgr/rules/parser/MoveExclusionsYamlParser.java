@@ -12,7 +12,7 @@ public final class MoveExclusionsYamlParser {
 
     public static void loadList(Object rawExclusions, String sourceFileName,
             MoveExclusions moveExclusions, YamlParser parser, RulesWarningCollector warnings) {
-        YamlParser.forEachEntryInList(rawExclusions, "exclusions", sourceFileName, warnings,
+        YamlParser.forEachEntryInList(rawExclusions, "moveExclusions", sourceFileName, warnings,
                 (fields, entryContext) -> parseEntry(fields, sourceFileName, entryContext,
                         moveExclusions, parser, warnings));
     }

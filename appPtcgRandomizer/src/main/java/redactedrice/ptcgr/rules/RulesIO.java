@@ -20,9 +20,8 @@ import redactedrice.ptcgr.data.MonsterCard;
 /**
  * Reads YAML rules and merges them into their respective container classes
  *
- * Standalone rules files use a root mapping with the sub-rule nodes. For
- * other YAML documents (e.g. saves), extract the rules node first and pass it to
- * addRulesNode.
+ * Standalone rules files use a root mapping with the sub-rule nodes. For other YAML documents (e.g.
+ * saves), extract the rules node first and pass it to addRulesNode.
  */
 public final class RulesIO {
     private final CardGroup<MonsterCard> allCards;
@@ -93,11 +92,11 @@ public final class RulesIO {
 
         YamlParser parser = new YamlParser(allCards, warnings);
         if (options.loadExclusions()) {
-            MoveExclusionsYamlParser.loadList(rulesNode.get("exclusions"), sourceFileName,
+            MoveExclusionsYamlParser.loadList(rulesNode.get("moveExclusions"), sourceFileName,
                     moveExclusions, parser, warnings);
         }
         if (options.loadAssignments()) {
-            MoveAssignmentsYamlParser.loadList(rulesNode.get("assignments"), sourceFileName,
+            MoveAssignmentsYamlParser.loadList(rulesNode.get("moveAssignments"), sourceFileName,
                     moveAssignments, parser, warnings);
         }
     }

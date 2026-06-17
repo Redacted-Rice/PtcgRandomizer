@@ -12,7 +12,7 @@ public final class MoveAssignmentsYamlParser {
 
     public static void loadList(Object rawAssignments, String sourceFileName,
             MoveAssignments moveAssignments, YamlParser parser, RulesWarningCollector warnings) {
-        YamlParser.forEachEntryInList(rawAssignments, "assignments", sourceFileName, warnings,
+        YamlParser.forEachEntryInList(rawAssignments, "moveAssignments", sourceFileName, warnings,
                 (fields, entryContext) -> parseEntry(fields, sourceFileName, entryContext,
                         moveAssignments, parser, warnings));
     }

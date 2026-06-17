@@ -67,7 +67,7 @@ class RulesIOTest {
         RulesIO io = createIo(exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions:
+                moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                 """;
@@ -78,8 +78,8 @@ class RulesIOTest {
 
     @Test
     void entryContextIncludesFileNameAndEntryPath() {
-        assertEquals("sources.yaml:exclusions[0]",
-                YamlParser.entryContext("sources.yaml", "exclusions[0]"));
+        assertEquals("sources.yaml:moveExclusions[0]",
+                YamlParser.entryContext("sources.yaml", "moveExclusions[0]"));
     }
 
     @Test
@@ -90,7 +90,7 @@ class RulesIOTest {
         RulesIO io = createIo(exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions:
+                moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     move: Ember
@@ -125,10 +125,10 @@ class RulesIOTest {
         Rules rules = new Rules(new CardGroup<MonsterCard>(), null, null);
 
         Path firstFile = tempDir.resolve("base_rules.yaml");
-        Files.writeString(firstFile, "exclusions: []\n");
+        Files.writeString(firstFile, "moveExclusions: []\n");
 
         Path secondFile = tempDir.resolve("extra_rules.yaml");
-        Files.writeString(secondFile, "assignments: []\n");
+        Files.writeString(secondFile, "moveAssignments: []\n");
 
         rules.getIo().addRulesFile(firstFile.toFile());
         rules.getIo().addRulesFile(secondFile.toFile());
@@ -145,8 +145,8 @@ class RulesIOTest {
         RulesIO io = createIo(exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions: []
-                assignments:
+                moveExclusions: []
+                moveAssignments:
                   - to_card: SomeMonster lvl76
                     to_move_slot: 1
                     from_card: OtherMonster lvl40
@@ -165,7 +165,7 @@ class RulesIOTest {
         RulesIO io = createIo(exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions:
+                moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     card: SomeMonster
@@ -185,7 +185,7 @@ class RulesIOTest {
         RulesIO io = createIo(exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions:
+                moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     card: SomeMonster_1
@@ -209,7 +209,7 @@ class RulesIOTest {
         RulesIO io = new RulesIO(cards, exclusions, assignments, warnings);
 
         String yaml = """
-                exclusions:
+                moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     card: SomeMonster lvl35

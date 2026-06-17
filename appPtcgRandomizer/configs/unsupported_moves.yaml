@@ -1,9 +1,9 @@
 # Default unsupported moves for PTCG randomizer.
 # Installed to rules/unsupported_moves.yaml on first run if missing.
 #
-# exclusions: remove moves from the pool and/or keep them fixed on card(s)
+# moveExclusions: remove moves from the pool and/or keep them fixed on card(s)
 
-exclusions:
+moveExclusions:
   - remove_from_pool: true
     exclude_from_randomization: true
     move: Ember
