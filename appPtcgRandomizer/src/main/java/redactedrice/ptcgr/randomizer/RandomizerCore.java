@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
-
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
@@ -24,7 +23,6 @@ import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.ExecutionRequest;
-import redactedrice.randomizer.utils.ManifestResourceExtractor;
 import redactedrice.randomizer.utils.ErrorTracker;
 import redactedrice.randomizer.utils.Logger;
 
@@ -35,15 +33,16 @@ import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";
     static final String LOG_FILE_EXTENSION = ".log.txt";
-    static final String MODULES_DIRECTORY = "modules";
-    static final String RANDOMIZER_DIRECTORY = "randomizer";
 
     private RomData romData;
     private Rules rules;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
+    private final AppResourceInstaller resourceInstaller;
 
     public RandomizerCore() {
+        resourceInstaller = new AppResourceInstaller();
+        resourceInstaller.installAll();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
     }
@@ -57,29 +56,10 @@ public class RandomizerCore {
     }
 
     private void setupLuaRandomizer() {
-        // Extract bundled randomizer files if they dont exist or need updating
-        File randomizerDir = new File(RANDOMIZER_DIRECTORY);
+        File randomizerDir = resourceInstaller.getRandomizerDir();
+        File modulesDir = resourceInstaller.getModulesDir();
         String randomizerPath = randomizerDir.getAbsolutePath();
-        try {
-            ManifestResourceExtractor.extract("randomizer", randomizerPath, true);
-            System.out.println("Using randomizer files from: " + randomizerPath);
-        } catch (IOException e) {
-            System.err.println("Failed to extract core lua randomizer files: " + e.getMessage());
-            e.printStackTrace();
-            // Try to continue anyway in case files already exist
-        }
-
-        // Extract bundled module files if they dont exist or need updating
-        File modulesDir = new File(MODULES_DIRECTORY);
         String modulesPath = modulesDir.getAbsolutePath();
-        try {
-            ManifestResourceExtractor.extract("modules", modulesPath, true);
-            System.out.println("Using module files from: " + modulesPath);
-        } catch (IOException e) {
-            System.err.println("Failed to extract core modules: " + e.getMessage());
-            e.printStackTrace();
-            // Try to continue anyway in case files already exist
-        }
 
         // Prepare allowed directories and search paths
         List<String> allowedDirectories = new ArrayList<>();
@@ -114,7 +94,7 @@ public class RandomizerCore {
             e.printStackTrace();
         }
 
-        rules = new Rules(romData, toCenterPopupsOn);
+        rules = new Rules(romData, toCenterPopupsOn, resourceInstaller.getUnsupportedMovesFile());
         rules.getIo().displayWarnings();
     }
 

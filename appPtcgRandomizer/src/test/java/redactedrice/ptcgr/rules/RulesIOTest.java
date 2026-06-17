@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import redactedrice.ptcgr.randomizer.AppResourceInstaller;
 import redactedrice.ptcgr.rules.parser.YamlParser;
 import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
@@ -102,8 +103,9 @@ class RulesIOTest {
 
     @Test
     void loadsUnsupportedMovesResource() throws IOException {
-        Path defaultFile = tempDir.resolve(RulesIO.UNSUPPORTED_MOVES_FILE_NAME);
-        try (InputStream in = getClass().getResourceAsStream(RulesIO.UNSUPPORTED_MOVES_RESOURCE)) {
+        Path defaultFile = tempDir.resolve(AppResourceInstaller.UNSUPPORTED_MOVES_FILE_NAME);
+        try (InputStream in =
+                getClass().getResourceAsStream(AppResourceInstaller.UNSUPPORTED_MOVES_CLASSPATH)) {
             Files.copy(in, defaultFile);
         }
 
@@ -112,7 +114,7 @@ class RulesIOTest {
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
 
-        io.addFromFile(defaultFile.toFile(), RulesIO.UNSUPPORTED_MOVES_FILE_NAME,
+        io.addFromFile(defaultFile.toFile(), AppResourceInstaller.UNSUPPORTED_MOVES_FILE_NAME,
                 RulesLoadOptions.exclusionsOnly());
 
         assertTrue(warnings.hasWarnings());
@@ -120,7 +122,7 @@ class RulesIOTest {
 
     @Test
     void rulesCombinesMultipleRuleFiles() throws IOException {
-        Rules rules = new Rules(new CardGroup<MonsterCard>(), null, false);
+        Rules rules = new Rules(new CardGroup<MonsterCard>(), null, null);
 
         Path firstFile = tempDir.resolve("base_rules.yaml");
         Files.writeString(firstFile, "exclusions: []\n");

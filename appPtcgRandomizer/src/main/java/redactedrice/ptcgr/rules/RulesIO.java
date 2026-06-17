@@ -2,10 +2,7 @@ package redactedrice.ptcgr.rules;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +10,6 @@ import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
-import redactedrice.gbcframework.utils.IOUtils;
 import redactedrice.ptcgr.rules.parser.MoveAssignmentsYamlParser;
 import redactedrice.ptcgr.rules.parser.MoveExclusionsYamlParser;
 import redactedrice.ptcgr.rules.parser.YamlParser;
@@ -29,10 +25,6 @@ import redactedrice.ptcgr.data.MonsterCard;
  * addRulesNode.
  */
 public final class RulesIO {
-    public static final String UNSUPPORTED_MOVES_RESOURCE = "/rules/unsupported_moves.yaml";
-    public static final String UNSUPPORTED_MOVES_FILE_NAME = "unsupported_moves.yaml";
-    public static final String RULES_INSTALL_DIR = "rules";
-
     private final CardGroup<MonsterCard> allCards;
     private final MoveExclusions moveExclusions;
     private final MoveAssignments moveAssignments;
@@ -45,17 +37,6 @@ public final class RulesIO {
         this.moveExclusions = moveExclusions;
         this.moveAssignments = moveAssignments;
         this.warnings = warnings;
-    }
-
-    public void addUnsupportedMoves() {
-        try {
-            File defaultFile = ensureUnsupportedMovesFilePresent();
-            addRulesFile(defaultFile, RulesLoadOptions.exclusionsOnly());
-        } catch (IOException e) {
-            warnings.appendWarning("Unexpected IO Exception reading " + UNSUPPORTED_MOVES_FILE_NAME
-                    + " - information likely was not read in successfully: " + e.getMessage());
-            displayWarnings();
-        }
     }
 
     public void addRulesFile(File rulesFile) {
@@ -83,27 +64,6 @@ public final class RulesIO {
 
     public List<String> getAddedRuleFiles() {
         return Collections.unmodifiableList(addedRuleFiles);
-    }
-
-    public static File ensureUnsupportedMovesFilePresent() throws IOException {
-        File file =
-                new File(RULES_INSTALL_DIR + IOUtils.FILE_SEPARATOR + UNSUPPORTED_MOVES_FILE_NAME);
-        file.getParentFile().mkdirs();
-        if (file.createNewFile()) {
-            try (InputStream fileIn = RulesIO.class.getResourceAsStream(UNSUPPORTED_MOVES_RESOURCE);
-                    OutputStream fileOut = new FileOutputStream(file)) {
-                if (fileIn == null) {
-                    throw new IOException(
-                            "Unsupported moves resource not found: " + UNSUPPORTED_MOVES_RESOURCE);
-                }
-                byte[] readBuffer = new byte[2048];
-                int lengthToRead;
-                while ((lengthToRead = fileIn.read(readBuffer)) != -1) {
-                    fileOut.write(readBuffer, 0, lengthToRead);
-                }
-            }
-        }
-        return file;
     }
 
     public void addFromFile(File rulesFile, String sourceFileName, RulesLoadOptions options)
