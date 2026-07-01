@@ -30,6 +30,7 @@ import redactedrice.randomizer.utils.Logger;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
+import redactedrice.ptcgr.resources.PtcgBundledResources;
 
 public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";
@@ -39,11 +40,11 @@ public class RandomizerCore {
     private Rules rules;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
-    private final AppResourceInstaller resourceInstaller;
+    private final PtcgBundledResources bundledResources;
 
     public RandomizerCore() {
-        resourceInstaller = new AppResourceInstaller();
-        resourceInstaller.installAll();
+        bundledResources = new PtcgBundledResources();
+        bundledResources.installAll();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
     }
@@ -57,8 +58,8 @@ public class RandomizerCore {
     }
 
     private void setupLuaRandomizer() {
-        File randomizerDir = resourceInstaller.getRandomizerDir();
-        File modulesDir = resourceInstaller.getModulesDir();
+        File randomizerDir = bundledResources.getRandomizerDir();
+        File modulesDir = bundledResources.getModulesDir();
         String randomizerPath = randomizerDir.getAbsolutePath();
         String modulesPath = modulesDir.getAbsolutePath();
 
@@ -95,7 +96,7 @@ public class RandomizerCore {
             e.printStackTrace();
         }
 
-        rules = new Rules(romData, toCenterPopupsOn, resourceInstaller.getUnsupportedMovesFile());
+        rules = new Rules(romData, toCenterPopupsOn, bundledResources.getUnsupportedMovesFile());
         rules.getIo().displayWarnings();
     }
 

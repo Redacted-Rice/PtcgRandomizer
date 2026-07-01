@@ -2,6 +2,8 @@ plugins {
     application
 }
 
+import org.gradle.jvm.tasks.Jar
+
 group = "redactedrice"
 version = "0.2.0"
 
@@ -10,12 +12,9 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // This dependency is used by the application.
     implementation(libs.guava)
     implementation(libs.snakeyaml)
 
@@ -26,7 +25,6 @@ dependencies {
     implementation("redactedrice:libUniversalRandomizerJava:0.5.0")
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(20)
@@ -34,16 +32,14 @@ java {
 }
 
 application {
-    // Define the main class for the application.
     mainClass = "redactedrice.ptcgr.randomizer.gui.RandomizerApp"
 }
 
 tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    dependsOn("fatJar")
 }
 
-// Task to generate manifest file for modules resource folder
 tasks.register("generateModulesManifest") {
     group = "build"
     description = "Generates manifest file for modules resource folder"
@@ -52,10 +48,9 @@ tasks.register("generateModulesManifest") {
     val modulesDir = layout.projectDirectory.dir("src/main/resources/modules")
 
     doLast {
-        // Walk the directory tree and collect all .lua files with relative paths
         val modulesDirFile = modulesDir.asFile
         val files = mutableListOf<String>()
-        
+
         fun collectLuaFiles(dir: java.io.File, basePath: java.nio.file.Path) {
             dir.listFiles()?.forEach { file ->
                 if (file.isDirectory) {
@@ -66,16 +61,72 @@ tasks.register("generateModulesManifest") {
                 }
             }
         }
-        
+
         if (modulesDirFile.exists() && modulesDirFile.isDirectory) {
             collectLuaFiles(modulesDirFile, modulesDirFile.toPath())
         }
-        
+
         manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
     }
 }
 
-// Make processResources depend on generateModulesManifest to ensure manifest is generated before packaging
+tasks.register("generateRulesManifest") {
+    group = "build"
+    description = "Generates manifest file for rules resource folder"
+
+    val manifestFile = layout.projectDirectory.file("src/main/resources/rules/.manifest")
+    val rulesDir = layout.projectDirectory.dir("src/main/resources/rules")
+
+    doLast {
+        val rulesDirFile = rulesDir.asFile
+        val files = mutableListOf<String>()
+
+        if (rulesDirFile.exists() && rulesDirFile.isDirectory) {
+            rulesDirFile.listFiles()?.forEach { file ->
+                if (file.isFile && file.name != ".manifest") {
+                    files.add(file.name)
+                }
+            }
+        }
+
+        manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
+    }
+}
+
 tasks.named<ProcessResources>("processResources") {
-    dependsOn("generateModulesManifest")
+    dependsOn("generateModulesManifest", "generateRulesManifest")
+}
+
+tasks.register<Jar>("fatJar") {
+    group = "application"
+    description = "Builds a single runnable JAR with all dependencies and bundled resources"
+    archiveClassifier.set("all")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn("jar")
+
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
+
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith(".jar") }
+            .map { zipTree(it) }
+    }) {
+        exclude(
+            "META-INF/*.SF",
+            "META-INF/*.DSA",
+            "META-INF/*.RSA",
+        )
+    }
+}
+
+tasks.named<JavaExec>("run") {
+    dependsOn("processResources")
+}
+
+tasks.named("build") {
+    dependsOn("fatJar")
 }

@@ -20,11 +20,14 @@
 # Ignore Gradle build output directory
 build
 
-# Ignore extracted randomizer core files
+# Runtime-extracted resource directories (installed at app launch)
 appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
-randomizer/
 
-# Auto-generated manifest
+# URC randomizer Lua is bundled by libUniversalRandomizerJava - ignore here
+appPtcgRandomizer/src/main/resources/randomizer/
+
+# Auto-generated manifests
 appPtcgRandomizer/src/main/resources/modules/.manifest
+appPtcgRandomizer/src/main/resources/rules/.manifest
