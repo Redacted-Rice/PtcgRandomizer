@@ -23,6 +23,7 @@ import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.ExecutionRequest;
+import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.utils.ErrorTracker;
 import redactedrice.randomizer.utils.Logger;
 
@@ -144,8 +145,7 @@ public class RandomizerCore {
     }
 
     public void randomize(Settings settings, List<Action> actions) {
-        // get and store the base seed as the next one to use
-        // TODO this needs to be revamped entirely with seed offset from lua
+        // get and store the base seed
         int seed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
@@ -175,20 +175,25 @@ public class RandomizerCore {
 
         // Prepare execution requests for each module
         // TODO: Tie in to allow arguments to be specified via the GUI with the data
-        // from the modules. Same for seeds to override default offset
+        // from the modules.
         List<ExecutionRequest> executionRequests = new LinkedList<>();
         for (Action action : actions) {
             String name = action.getName();
             Map<String, Object> arguments = new HashMap<>();
 
-            // Use withDefaultSeedOffset to respect module's seed offset if it has one
-            ExecutionRequest request = ExecutionRequest.withDefaultSeedOffset(name, arguments, seed,
-                    luaRandomizer.getModuleRegistry());
+            // Use module metadata defaultSeedOffset for now until we tie it into the UI
+            Module module = luaRandomizer.getModule(name);
+            if (module == null) {
+                Logger.error("Module not found: " + name);
+                continue;
+            }
+            ExecutionRequest request = ExecutionRequest.forModule(module, arguments);
             executionRequests.add(request);
         }
 
         // Execute modules and check for errors
-        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context);
+        List<ExecutionResult> results =
+                luaRandomizer.executeModules(executionRequests, context, seed);
         logErrorTrackerMessages("Errors executing Lua modules:");
 
         for (ExecutionResult result : results) {
