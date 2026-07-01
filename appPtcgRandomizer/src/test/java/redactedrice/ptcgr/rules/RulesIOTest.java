@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import redactedrice.ptcgr.randomizer.AppResourceInstaller;
+import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.rules.parser.YamlParser;
 import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
@@ -103,9 +103,9 @@ class RulesIOTest {
 
     @Test
     void loadsUnsupportedMovesResource() throws IOException {
-        Path defaultFile = tempDir.resolve(AppResourceInstaller.UNSUPPORTED_MOVES_FILE_NAME);
+        Path defaultFile = tempDir.resolve(PtcgBundledResources.UNSUPPORTED_MOVES_FILE_NAME);
         try (InputStream in =
-                getClass().getResourceAsStream(AppResourceInstaller.UNSUPPORTED_MOVES_CLASSPATH)) {
+                getClass().getResourceAsStream(PtcgBundledResources.UNSUPPORTED_MOVES_CLASSPATH)) {
             Files.copy(in, defaultFile);
         }
 
@@ -114,7 +114,7 @@ class RulesIOTest {
         MoveAssignments assignments = new MoveAssignments();
         RulesIO io = createIo(exclusions, assignments, warnings);
 
-        io.addFromFile(defaultFile.toFile(), AppResourceInstaller.UNSUPPORTED_MOVES_FILE_NAME,
+        io.addFromFile(defaultFile.toFile(), PtcgBundledResources.UNSUPPORTED_MOVES_FILE_NAME,
                 RulesLoadOptions.exclusionsOnly());
 
         assertTrue(warnings.hasWarnings());
