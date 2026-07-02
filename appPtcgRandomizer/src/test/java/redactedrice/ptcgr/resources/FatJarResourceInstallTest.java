@@ -29,12 +29,13 @@ class FatJarResourceInstallTest {
     }
 
     private static Path findFatJar() throws Exception {
-        Path libsDir = Path.of("build/libs");
-        try (Stream<Path> jars = Files.list(libsDir)) {
-            return jars.filter(path -> path.getFileName().toString().endsWith("-all.jar"))
+        Path appDir = Path.of("app");
+        try (Stream<Path> jars = Files.list(appDir)) {
+            return jars.filter(path -> path.getFileName().toString().startsWith("PtcgRandomizer-")
+                    && path.getFileName().toString().endsWith(".jar"))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException(
-                            "No -all.jar found in " + libsDir.toAbsolutePath()));
+                            "No runnable JAR found in " + appDir.toAbsolutePath()));
         }
     }
 }
