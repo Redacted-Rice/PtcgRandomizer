@@ -33,6 +33,8 @@ import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.Settings.*;
 import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
+import redactedrice.ptcgr.randomizer.preset.PresetIO;
+import redactedrice.ptcgr.randomizer.preset.RandomizerPreset;
 
 public class RandomizerApp {
 
@@ -44,13 +46,14 @@ public class RandomizerApp {
     private JFrame frmTradingCard;
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
+    private JFileChooser saveConfigChooser;
     private JButton openRomButton;
 
     private RandomizerCore randomizer;
     private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
     private final ButtonGroup pokePowersStrategyGroup = new ButtonGroup();
-    private JCheckBox saveLogSeedBox;
     private JCheckBox saveLogDetailsBox;
+    private JCheckBox saveSettingsBox;
     private JCheckBox moveRandWithinTypeBox;
     private JCheckBox moveRandForceDamageBox;
     private JCheckBox generalRandNumMovesBox;
@@ -99,6 +102,10 @@ public class RandomizerApp {
         saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
         saveRomChooser.setSelectedFile(new File("ptcg_randomized.bps"));
 
+        saveConfigChooser = new JFileChooser();
+        saveConfigChooser.setCurrentDirectory(new File(".")); // Jar location by default
+        saveConfigChooser.setSelectedFile(new File(PresetIO.DEFAULT_BASE_NAME));
+
         frmTradingCard = new JFrame();
         frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
         frmTradingCard.setBounds(100, 100, 1024, 768);
@@ -111,12 +118,16 @@ public class RandomizerApp {
         saveRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
 
         saveLogDetailsBox = new JCheckBox("Log Randomizations");
+        saveLogDetailsBox.setToolTipText(
+                "Write a detailed log of randomization changes alongside the patch file.");
         saveRomPanel.add(saveLogDetailsBox);
         saveLogDetailsBox.setSelected(true);
 
-        saveLogSeedBox = new JCheckBox("Log Seed");
-        saveRomPanel.add(saveLogSeedBox);
-        saveLogSeedBox.setSelected(true);
+        saveSettingsBox = new JCheckBox("Save Settings");
+        saveSettingsBox.setToolTipText(
+                "Save the config settings to a file that can be loaded to repeat the same randomization again later.");
+        saveRomPanel.add(saveSettingsBox);
+        saveSettingsBox.setSelected(true);
 
         JPanel saveSetSeedPanel = new JPanel();
         saveRomPanel.add(saveSetSeedPanel);
@@ -154,10 +165,30 @@ public class RandomizerApp {
                     return;
                 }
 
+                Settings settings = createSettingsFromState();
+
+                if (saveSettingsBox.isSelected()) {
+                    int configReturnVal = saveConfigChooser.showSaveDialog(frmTradingCard);
+                    if (configReturnVal != JFileChooser.APPROVE_OPTION) {
+                        return;
+                    }
+
+                    File configFile =
+                            PresetIO.ensureYamlExtension(saveConfigChooser.getSelectedFile());
+                    try {
+                        RandomizerPreset preset = RandomizerPreset.fromActions(
+                                settings.getSeedString(), dualPanel.getSelectedActions());
+                        PresetIO.save(configFile, preset);
+                    } catch (IOException configError) {
+                        configError.printStackTrace();
+                        JOptionPane.showMessageDialog(frmTradingCard, configError.getMessage(),
+                                "Config Save Failed", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    Settings settings = createSettingsFromState();
-
                     File saveFile = saveRomChooser.getSelectedFile();
                     if (!saveFile.getName().endsWith(randomizer.getFileExtension())) {
                         saveFile =
@@ -187,8 +218,8 @@ public class RandomizerApp {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 if (!randomizer.openRom(openRomChooser.getSelectedFile(), frmTradingCard)) {
                     JOptionPane.showMessageDialog(frmTradingCard,
-                            "Could not open the selected ROM file.",
-                            "Open ROM Failed", JOptionPane.ERROR_MESSAGE);
+                            "Could not open the selected ROM file.", "Open ROM Failed",
+                            JOptionPane.ERROR_MESSAGE);
                 }
                 updateRomLoadedState();
             }
@@ -472,7 +503,6 @@ public class RandomizerApp {
         PokePowersData powersData = new PokePowersData();
 
         settings.setSeed(saveSetSeedVal.getText());
-        settings.setLogSeed(saveLogSeedBox.isSelected());
         settings.setLogDetails(saveLogDetailsBox.isSelected());
 
         settings.setTypeSpecificData(typeData);
