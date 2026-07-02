@@ -23,6 +23,10 @@ public class DoubleClickCopy extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) { // Double-click detection
+            int column = fromTable.columnAtPoint(e.getPoint());
+            if (column == ActionsTableModel.Columns.CONFIG.getValue()) {
+                return;
+            }
             int row = fromTable.rowAtPoint(e.getPoint());
             if (row >= 0) {
                 Action action = fromModel.getRow(row);

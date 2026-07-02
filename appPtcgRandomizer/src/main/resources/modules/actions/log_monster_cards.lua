@@ -21,6 +21,7 @@ return {
 		UniversalRandomizerJava = "0.5.0",
 		PtcgRandomizer = "0.2.0",
 	},
+	seeded = false,
 
 	execute = function(context)
 		if not context.modified then

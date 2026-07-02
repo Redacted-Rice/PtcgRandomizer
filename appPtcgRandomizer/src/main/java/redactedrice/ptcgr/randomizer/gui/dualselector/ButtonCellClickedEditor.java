@@ -5,6 +5,8 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 
+import redactedrice.ptcgr.randomizer.actions.Action;
+
 public class ButtonCellClickedEditor extends AbstractCellEditor implements TableCellEditor {
     private static final long serialVersionUID = 1L;
     private final ButtonCellRenderer renderer;
@@ -18,6 +20,13 @@ public class ButtonCellClickedEditor extends AbstractCellEditor implements Table
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
             int row, int column) {
         cellValue = value;
+        Action action = ((ActionsTableModel) table.getModel()).getRow(row);
+        if (action != null && action.numConfigs() > 0) {
+            Window owner = SwingUtilities.getWindowAncestor(table);
+            SwingUtilities.invokeLater(
+                    () -> SeedOffsetConfigDialog.show(owner, action, renderer.isEditable()));
+        }
+        SwingUtilities.invokeLater(this::fireEditingCanceled);
         return renderer.getTableCellRendererComponent(table, value, isSelected, true, row, column);
     }
 

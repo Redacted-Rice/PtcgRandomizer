@@ -88,16 +88,22 @@ public class RandomizerCore {
         logErrorTrackerMessages("Errors loading Lua modules:");
     }
 
-    public void openRom(File romFile, Component toCenterPopupsOn) {
+    public boolean isRomLoaded() {
+        return romData != null;
+    }
+
+    public boolean openRom(File romFile, Component toCenterPopupsOn) {
         try {
             romData = RomIO.readFromFile(romFile);
+            rules = new Rules(romData, toCenterPopupsOn, bundledResources.getUnsupportedMovesFile());
+            rules.getIo().displayWarnings();
+            return true;
         } catch (IOException e) {
-            // TODO later: Auto-generated catch block
+            romData = null;
+            rules = null;
             e.printStackTrace();
+            return false;
         }
-
-        rules = new Rules(romData, toCenterPopupsOn, bundledResources.getUnsupportedMovesFile());
-        rules.getIo().displayWarnings();
     }
 
     public Rules getRules() {
@@ -106,6 +112,9 @@ public class RandomizerCore {
 
     public void randomizeAndSaveRom(File romFile, Settings settings, List<Action> actionBank)
             throws IOException {
+        requireRomLoaded();
+        requireSelectedActions(actionBank);
+
         String romBasePath = romFile.getPath();
         romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
 
@@ -146,6 +155,9 @@ public class RandomizerCore {
     }
 
     public void randomize(Settings settings, List<Action> actions) {
+        requireRomLoaded();
+        requireSelectedActions(actions);
+
         // get and store the base seed
         int seed = settings.getSeedValue();
 
@@ -174,21 +186,19 @@ public class RandomizerCore {
         // setup script
         context.setConfig("changeDetectionActive", true);
 
-        // Prepare execution requests for each module
-        // TODO: Tie in to allow arguments to be specified via the GUI with the data
-        // from the modules.
+        // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
         for (Action action : actions) {
             String name = action.getName();
             Map<String, Object> arguments = new HashMap<>();
 
-            // Use module metadata defaultSeedOffset for now until we tie it into the UI
             Module module = luaRandomizer.getModule(name);
             if (module == null) {
                 Logger.error("Module not found: " + name);
                 continue;
             }
-            ExecutionRequest request = ExecutionRequest.forModule(module, arguments);
+            ExecutionRequest request =
+                    ExecutionRequest.forModuleWithSeedOffset(module, arguments, action.getSeedOffset());
             executionRequests.add(request);
         }
 
@@ -205,6 +215,20 @@ public class RandomizerCore {
                 Logger.info("Module " + result.getModuleName() + " executed with seed "
                         + result.getSeedUsed());
             }
+        }
+    }
+
+    private void requireRomLoaded() {
+        // Guard against randomizing before a ROM has been opened
+        if (romData == null) {
+            throw new IllegalStateException("A ROM must be loaded before randomizing.");
+        }
+    }
+
+    private static void requireSelectedActions(List<Action> actions) {
+        if (actions == null || actions.isEmpty()) {
+            throw new IllegalStateException(
+                    "Add at least one module to the selected list before randomizing.");
         }
     }
 
