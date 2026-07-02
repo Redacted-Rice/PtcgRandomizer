@@ -197,8 +197,10 @@ public class RandomizerCore {
                 Logger.error("Module not found: " + name);
                 continue;
             }
-            ExecutionRequest request =
-                    ExecutionRequest.forModuleWithSeedOffset(module, arguments, action.getSeedOffset());
+            ExecutionRequest request = module.isSeeded()
+                    ? ExecutionRequest.forModuleWithSeedOffset(module, arguments,
+                            action.getSeedOffset())
+                    : ExecutionRequest.forUnseededModule(module, arguments);
             executionRequests.add(request);
         }
 
@@ -212,8 +214,13 @@ public class RandomizerCore {
                 Logger.error("Module " + result.getModuleName() + " failed: "
                         + result.getErrorMessage());
             } else {
-                Logger.info("Module " + result.getModuleName() + " executed with seed "
-                        + result.getSeedUsed());
+                ExecutionRequest request = result.getRequest();
+                if (request != null && request.usesSeed()) {
+                    Logger.info("Module " + result.getModuleName() + " executed with seed "
+                            + result.getSeedUsed());
+                } else {
+                    Logger.info("Module " + result.getModuleName() + " executed");
+                }
             }
         }
     }
