@@ -54,8 +54,8 @@ public class ActionBank {
     }
 
     public List<String> getCategoriesWithAll() {
-        List<String> categories = actionsByCategory.keySet().stream().sorted()
-                .collect(Collectors.toList());
+        List<String> categories =
+                actionsByCategory.keySet().stream().sorted().collect(Collectors.toList());
         categories.add(0, ActionCategories.CATEGORY_ALL);
         return categories;
     }

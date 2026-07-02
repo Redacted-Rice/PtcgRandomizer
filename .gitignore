@@ -28,6 +28,11 @@ appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
 
+# YAML outside bundled src/main/resources
+**/*.yaml
+**/*.yml
+!**/src/main/resources/**
+
 # URC randomizer Lua is bundled by libUniversalRandomizerJava - ignore here
 appPtcgRandomizer/src/main/resources/randomizer/
 

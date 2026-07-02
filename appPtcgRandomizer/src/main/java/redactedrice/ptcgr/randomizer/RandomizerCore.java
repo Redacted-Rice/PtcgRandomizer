@@ -118,19 +118,17 @@ public class RandomizerCore {
         String romBasePath = romFile.getPath();
         romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
 
-        if (settings.isLogSeed()) {
-            FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
-            try {
-                String seedText = settings.getSeedString();
-                String seedVal = String.valueOf(settings.getSeedValue());
-                if (!seedText.equals(seedVal)) {
-                    seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent: " + seedVal);
-                } else {
-                    seedFile.write("Seed value: " + seedText);
-                }
-            } finally {
-                seedFile.close();
+        FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
+        try {
+            String seedText = settings.getSeedString();
+            String seedVal = String.valueOf(settings.getSeedValue());
+            if (!seedText.equals(seedVal)) {
+                seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent: " + seedVal);
+            } else {
+                seedFile.write("Seed value: " + seedText);
             }
+        } finally {
+            seedFile.close();
         }
 
         OutputStream detailLogStream = null;
