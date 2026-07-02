@@ -7,10 +7,13 @@ public class Action {
 
     private final int id;
     private final Module module;
+    // Per instance seed offset that default to the module metadata offset
+    private int seedOffset;
 
     public Action(Module module) {
         this.id = nextId++;
         this.module = module;
+        this.seedOffset = module.getSeedOffset();
     }
 
     public int getId() {
@@ -39,7 +42,24 @@ public class Action {
     }
 
     public int numConfigs() {
-        return module.getArguments().size();
+        // Add an option for seeded modules
+        int numConfigs = module.getArguments().size();
+        if (module.isSeeded()) {
+            numConfigs++;
+        }
+        return numConfigs;
+    }
+
+    public int getSeedOffset() {
+        return seedOffset;
+    }
+
+    public void setSeedOffset(int seedOffset) {
+        this.seedOffset = seedOffset;
+    }
+
+    public int getDefaultSeedOffset() {
+        return module.getSeedOffset();
     }
 
     public Action copy() {

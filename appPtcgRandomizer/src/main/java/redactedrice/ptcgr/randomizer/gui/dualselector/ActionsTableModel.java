@@ -95,7 +95,12 @@ public class ActionsTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        return column == Columns.CONFIG.getValue(); // Enable editing for the button column
+        // Only the config column is clickable, and only when the module has config options
+        if (column != Columns.CONFIG.getValue() || row >= getDataRowCount()) {
+            return false;
+        }
+        Action action = getRow(row);
+        return action != null && action.numConfigs() > 0;
     }
 
     public Action getRow(int index) {

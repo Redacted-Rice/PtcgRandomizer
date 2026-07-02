@@ -27,6 +27,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
@@ -37,10 +38,13 @@ public class RandomizerApp {
 
     // TODO: Make configurable for functional testing support?
     private static final String DEFAULT_ROM_NAME = "ptcg.gbc";
+    private static final String OPEN_ROM_TEXT = "Open ROM";
+    private static final String OPEN_NEW_ROM_TEXT = "Open New ROM";
 
     private JFrame frmTradingCard;
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
+    private JButton openRomButton;
 
     private RandomizerCore randomizer;
     private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
@@ -137,6 +141,19 @@ public class RandomizerApp {
         randomizeBtnPanel.add(randomizeButton);
         randomizeButton.addActionListener(event -> {
             try {
+                if (!randomizer.isRomLoaded()) {
+                    JOptionPane.showMessageDialog(frmTradingCard,
+                            "A ROM must be loaded before randomizing.\nUse Open ROM to load one.",
+                            "No ROM Loaded", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (dualPanel.getSelectedActions().isEmpty()) {
+                    JOptionPane.showMessageDialog(frmTradingCard,
+                            "Add at least one module to the selected list on the Advanced tab.",
+                            "No Modules Selected", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     Settings settings = createSettingsFromState();
@@ -152,17 +169,28 @@ public class RandomizerApp {
             } catch (IOException e1) {
                 // TODO later: Auto-generated catch block
                 e1.printStackTrace();
+                JOptionPane.showMessageDialog(frmTradingCard, e1.getMessage(),
+                        "Randomization Failed", JOptionPane.ERROR_MESSAGE);
+            } catch (RuntimeException e1) {
+                e1.printStackTrace();
+                JOptionPane.showMessageDialog(frmTradingCard, e1.getMessage(),
+                        "Randomization Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         JPanel openRomPanel = new JPanel();
         frmTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
 
-        JButton openRomButton = new JButton("Open ROM");
+        openRomButton = new JButton(OPEN_ROM_TEXT);
         openRomButton.addActionListener(event -> {
             int returnVal = openRomChooser.showOpenDialog(frmTradingCard);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                randomizer.openRom(openRomChooser.getSelectedFile(), frmTradingCard);
+                if (!randomizer.openRom(openRomChooser.getSelectedFile(), frmTradingCard)) {
+                    JOptionPane.showMessageDialog(frmTradingCard,
+                            "Could not open the selected ROM file.",
+                            "Open ROM Failed", JOptionPane.ERROR_MESSAGE);
+                }
+                updateRomLoadedState();
             }
         });
         openRomPanel.add(openRomButton);
@@ -466,11 +494,18 @@ public class RandomizerApp {
         return settings;
     }
 
+    private void updateRomLoadedState() {
+        openRomButton.setText(randomizer.isRomLoaded() ? OPEN_NEW_ROM_TEXT : OPEN_ROM_TEXT);
+    }
+
     private void openRomIfExists() {
         File defaultRom = new File(DEFAULT_ROM_NAME);
         if (defaultRom.isFile()) {
             openRomChooser.setSelectedFile(defaultRom);
-            EventQueue.invokeLater(() -> randomizer.openRom(defaultRom, frmTradingCard));
+            EventQueue.invokeLater(() -> {
+                randomizer.openRom(defaultRom, frmTradingCard);
+                updateRomLoadedState();
+            });
         }
     }
 }

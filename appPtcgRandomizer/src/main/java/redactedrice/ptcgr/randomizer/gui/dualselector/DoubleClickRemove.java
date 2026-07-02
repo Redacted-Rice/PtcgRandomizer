@@ -18,6 +18,10 @@ public class DoubleClickRemove extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) { // Double-click detection
+            int column = table.columnAtPoint(e.getPoint());
+            if (column == ActionsTableModel.Columns.CONFIG.getValue()) {
+                return;
+            }
             int row = table.rowAtPoint(e.getPoint());
             if (row >= 0) {
                 model.removeRow(row);

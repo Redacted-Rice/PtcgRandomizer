@@ -23,7 +23,7 @@ public class ActionsSelectedTable extends ActionsHoverToolTipTable {
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setMinWidth(60);
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setMaxWidth(80);
 
-        ButtonCellRenderer renderer = new ButtonCellRenderer("Edit");
+        ButtonCellRenderer renderer = new ButtonCellRenderer("Edit", true);
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
         getColumnModel().getColumn(Columns.CONFIG.getValue())
                 .setCellEditor(new ButtonCellClickedEditor(renderer));
