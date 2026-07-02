@@ -20,6 +20,9 @@
 # Ignore Gradle build output directory
 build
 
+# Runnable application JAR
+appPtcgRandomizer/app/
+
 # Runtime-extracted resource directories (installed at app launch)
 appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/

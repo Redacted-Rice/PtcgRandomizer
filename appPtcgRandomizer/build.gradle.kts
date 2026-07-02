@@ -15,7 +15,6 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    implementation(libs.guava)
     implementation(libs.snakeyaml)
 
     implementation("redactedrice:libGbcFramework:0.8.0")
@@ -35,9 +34,10 @@ application {
     mainClass = "redactedrice.ptcgr.randomizer.gui.RandomizerApp"
 }
 
-tasks.named<Test>("test") {
-    useJUnitPlatform()
-    dependsOn("fatJar")
+val runnableJarName = "PtcgRandomizer-${project.version}.jar"
+
+tasks.named<Jar>("jar") {
+    enabled = false
 }
 
 tasks.register("generateModulesManifest") {
@@ -99,10 +99,12 @@ tasks.named<ProcessResources>("processResources") {
 
 tasks.register<Jar>("fatJar") {
     group = "application"
-    description = "Builds a single runnable JAR with all dependencies and bundled resources"
-    archiveClassifier.set("all")
+    description = "Builds the runnable application JAR with all dependencies and bundled resources"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    dependsOn("jar")
+    dependsOn("classes", "processResources")
+
+    archiveFileName.set(runnableJarName)
+    destinationDirectory.set(layout.projectDirectory.dir("app"))
 
     manifest {
         attributes["Main-Class"] = application.mainClass.get()
@@ -127,6 +129,11 @@ tasks.named<JavaExec>("run") {
     dependsOn("processResources")
 }
 
-tasks.named("build") {
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    dependsOn("fatJar")
+}
+
+tasks.named("assemble") {
     dependsOn("fatJar")
 }
