@@ -100,7 +100,7 @@ public class RandomizerApp {
 
         saveRomChooser = new JFileChooser();
         saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        saveRomChooser.setSelectedFile(new File("ptcg_randomized.bps"));
+        saveRomChooser.setSelectedFile(new File(RandomizerCore.DEFAULT_PATCH_BASE_NAME));
 
         saveConfigChooser = new JFileChooser();
         saveConfigChooser.setCurrentDirectory(new File(".")); // Jar location by default
@@ -189,11 +189,8 @@ public class RandomizerApp {
 
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File saveFile = saveRomChooser.getSelectedFile();
-                    if (!saveFile.getName().endsWith(randomizer.getFileExtension())) {
-                        saveFile =
-                                new File(saveFile.getPath().concat(randomizer.getFileExtension()));
-                    }
+                    File saveFile = RandomizerCore
+                            .ensurePatchExtension(saveRomChooser.getSelectedFile());
                     randomizer.randomizeAndSaveRom(saveFile, settings,
                             dualPanel.getSelectedActions());
                 }

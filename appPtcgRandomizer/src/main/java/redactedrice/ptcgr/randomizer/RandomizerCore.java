@@ -35,6 +35,8 @@ import redactedrice.ptcgr.resources.PtcgBundledResources;
 public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";
     static final String LOG_FILE_EXTENSION = ".log.txt";
+    public static final String PATCH_FILE_EXTENSION = ".bps";
+    public static final String DEFAULT_PATCH_BASE_NAME = "ptcg_randomized";
 
     private RomData romData;
     private Rules rules;
@@ -259,7 +261,14 @@ public class RandomizerCore {
         }
     }
 
+    public static File ensurePatchExtension(File file) {
+        if (!file.getName().endsWith(PATCH_FILE_EXTENSION)) {
+            return new File(file.getPath() + PATCH_FILE_EXTENSION);
+        }
+        return file;
+    }
+
     public String getFileExtension() {
-        return ".bps";
+        return PATCH_FILE_EXTENSION;
     }
 }
