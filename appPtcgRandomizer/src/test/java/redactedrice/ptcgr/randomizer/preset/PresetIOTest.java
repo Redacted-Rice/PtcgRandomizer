@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.yaml.snakeyaml.Yaml;
 
 import redactedrice.ptcgr.randomizer.Settings;
+import redactedrice.ptcgr.randomizer.actions.ActionBank;
 
 class PresetIOTest {
     @TempDir
@@ -74,5 +76,62 @@ class PresetIOTest {
         Map<String, Object> loaded = new Yaml().load(yamlText.substring(yamlText.indexOf('\n') + 1));
         assertEquals("42", loaded.get("seed"));
         assertEquals(Collections.emptyList(), loaded.get("actions"));
+    }
+
+    @Test
+    void loadRestoresSeedActionsAndSeedOffset() throws Exception {
+        String yaml = """
+                version: 1
+                seed: 987654321
+                actions:
+                  - module: shuffle_hp
+                    config:
+                      seedOffset: 12
+                """;
+        Path presetFile = tempDir.resolve("preset.yaml");
+        Files.writeString(presetFile, yaml);
+
+        List<String> warnings = new ArrayList<>();
+        RandomizerPreset preset = PresetIO.load(presetFile.toFile(), warnings);
+        assertTrue(warnings.isEmpty());
+        assertEquals("987654321", preset.getSeed());
+        assertEquals(1, preset.getActions().size());
+        assertEquals("shuffle_hp", preset.getActions().get(0).getModule());
+        assertEquals(12, preset.getActions().get(0).getConfig().getSeedOffset());
+    }
+
+    @Test
+    void loadAcceptsNumericSeed() throws Exception {
+        String yaml = """
+                version: 1
+                seed: 42
+                actions: []
+                """;
+        Path presetFile = tempDir.resolve("preset.yaml");
+        Files.writeString(presetFile, yaml);
+
+        RandomizerPreset preset = PresetIO.load(presetFile.toFile(), new ArrayList<>());
+        assertEquals("42", preset.getSeed());
+    }
+
+    @Test
+    void missingModulesAreSkippedWithWarning() {
+        RandomizerPreset preset = new RandomizerPreset("1",
+                List.of(new ActionPreset("missing_module", ActionConfig.empty())));
+
+        ActionBank actionBank = new ActionBank(null) {
+            @Override
+            public redactedrice.randomizer.lua.Module getModule(String moduleName) {
+                return null;
+            }
+        };
+
+        List<String> warnings = new ArrayList<>();
+        var actions = PresetActions.toActions(preset, actionBank, warnings);
+
+        assertTrue(actions.isEmpty());
+        assertEquals(1, warnings.size());
+        assertTrue(warnings.get(0).contains("missing_module"));
+        assertTrue(warnings.get(0).contains("skipped"));
     }
 }
