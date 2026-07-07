@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     testImplementation(libs.junit.jupiter)
+    testImplementation("org.luaj:luaj-jse:3.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation(libs.snakeyaml)
@@ -39,6 +40,26 @@ val runnableJarName = "PtcgRandomizer-${project.version}.jar"
 tasks.named<Jar>("jar") {
     enabled = false
 }
+
+val generateAppVersion = tasks.register("generateAppVersion") {
+    group = "build"
+    description = "Generates app-version.properties from the Gradle project version"
+
+    val appVersion = version.toString()
+    val outputFile = layout.buildDirectory.file(
+        "generated/resources/redactedrice/ptcgr/constants/app-version.properties")
+
+    outputs.file(outputFile)
+
+    doLast {
+        val file = outputFile.get().asFile
+        file.parentFile.mkdirs()
+        file.writeText("version=$appVersion\n")
+    }
+}
+
+sourceSets.main.get().resources.srcDir(
+    layout.buildDirectory.dir("generated/resources"))
 
 tasks.register("generateModulesManifest") {
     group = "build"
@@ -94,7 +115,7 @@ tasks.register("generateRulesManifest") {
 }
 
 tasks.named<ProcessResources>("processResources") {
-    dependsOn("generateModulesManifest", "generateRulesManifest")
+    dependsOn("generateAppVersion", "generateModulesManifest", "generateRulesManifest")
 }
 
 tasks.register<Jar>("fatJar") {
