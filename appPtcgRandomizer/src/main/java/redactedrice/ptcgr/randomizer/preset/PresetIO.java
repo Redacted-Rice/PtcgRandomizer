@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,11 +16,12 @@ import org.yaml.snakeyaml.Yaml;
 public final class PresetIO {
     public static final String FILE_EXTENSION = ".yaml";
     public static final String DEFAULT_BASE_NAME = "ptcgr_configs";
+    public static final String DEFAULT_FILE_NAME = DEFAULT_BASE_NAME + FILE_EXTENSION;
 
     private PresetIO() {}
 
-    public static void save(File file, RandomizerPreset preset) throws IOException {
-        Map<String, Object> root = preset.toDocumentMap();
+    public static void save(File file, Preset preset) throws IOException {
+        Map<String, Object> root = preset.prepForSave();
 
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -35,22 +35,23 @@ public final class PresetIO {
         }
     }
 
-    public static RandomizerPreset load(File file, List<String> warnings)
-            throws IOException, PresetLoadException {
+    public static Preset load(File file, List<String> warnings)
+            throws IOException, PresetException {
         if (warnings == null) {
             throw new IllegalArgumentException("warnings list cannot be null");
         }
 
-        try (FileInputStream input = new FileInputStream(file)) {
+        File yamlFile = ensureYamlExtension(file);
+        try (FileInputStream input = new FileInputStream(yamlFile)) {
             Yaml yaml = new Yaml();
             Object loaded = yaml.load(input);
             if (!(loaded instanceof Map<?, ?> loadedMap)) {
-                throw new PresetLoadException("Preset file root must be a mapping.");
+                throw new PresetException("Preset file root must be a mapping.");
             }
 
             @SuppressWarnings("unchecked")
             Map<String, Object> root = (Map<String, Object>) loadedMap;
-            return RandomizerPreset.fromDocumentMap(root, warnings);
+            return Preset.readFromSave(root, warnings);
         }
     }
 
