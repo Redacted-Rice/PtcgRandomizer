@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -32,9 +33,16 @@ import javax.swing.JOptionPane;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.Settings.*;
+import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
+import redactedrice.ptcgr.randomizer.preset.PresetActions;
 import redactedrice.ptcgr.randomizer.preset.PresetIO;
+import redactedrice.ptcgr.randomizer.preset.PresetLoadException;
+import redactedrice.ptcgr.randomizer.preset.PresetWarnings;
 import redactedrice.ptcgr.randomizer.preset.RandomizerPreset;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RandomizerApp {
 
@@ -47,6 +55,7 @@ public class RandomizerApp {
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
     private JFileChooser saveConfigChooser;
+    private JFileChooser loadConfigChooser;
     private JButton openRomButton;
 
     private RandomizerCore randomizer;
@@ -105,6 +114,11 @@ public class RandomizerApp {
         saveConfigChooser = new JFileChooser();
         saveConfigChooser.setCurrentDirectory(new File(".")); // Jar location by default
         saveConfigChooser.setSelectedFile(new File(PresetIO.DEFAULT_BASE_NAME));
+
+        loadConfigChooser = new JFileChooser();
+        loadConfigChooser.setCurrentDirectory(new File("."));
+        loadConfigChooser.setSelectedFile(new File(PresetIO.DEFAULT_BASE_NAME));
+        loadConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
 
         frmTradingCard = new JFrame();
         frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
@@ -189,8 +203,8 @@ public class RandomizerApp {
 
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File saveFile = RandomizerCore
-                            .ensurePatchExtension(saveRomChooser.getSelectedFile());
+                    File saveFile =
+                            RandomizerCore.ensurePatchExtension(saveRomChooser.getSelectedFile());
                     randomizer.randomizeAndSaveRom(saveFile, settings,
                             dualPanel.getSelectedActions());
                 }
@@ -208,6 +222,7 @@ public class RandomizerApp {
 
         JPanel openRomPanel = new JPanel();
         frmTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
+        openRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
 
         openRomButton = new JButton(OPEN_ROM_TEXT);
         openRomButton.addActionListener(event -> {
@@ -222,6 +237,10 @@ public class RandomizerApp {
             }
         });
         openRomPanel.add(openRomButton);
+
+        JButton loadConfigsButton = new JButton("Load Configs");
+        loadConfigsButton.addActionListener(event -> loadConfigsFromFile());
+        openRomPanel.add(loadConfigsButton);
 
         JTabbedPane movesEffectsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(movesEffectsTab, BorderLayout.CENTER);
@@ -519,6 +538,35 @@ public class RandomizerApp {
         powersData.setIncludeWithMoves(pokePowerIncludeWithMovesBox.isSelected());
 
         return settings;
+    }
+
+    private void loadConfigsFromFile() {
+        int returnVal = loadConfigChooser.showOpenDialog(frmTradingCard);
+        if (returnVal != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File configFile = loadConfigChooser.getSelectedFile();
+        List<String> warnings = new ArrayList<>();
+        try {
+            RandomizerPreset preset = PresetIO.load(configFile, warnings);
+            saveSetSeedVal.setText(preset.getSeed());
+            List<Action> actions =
+                    PresetActions.toActions(preset, randomizer.getActionBank(), warnings);
+            dualPanel.setSelectedActions(actions);
+
+            if (!warnings.isEmpty()) {
+                JOptionPane.showMessageDialog(frmTradingCard, String.join("\n", warnings),
+                        "Config Loaded With Warnings", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (PresetLoadException loadError) {
+            JOptionPane.showMessageDialog(frmTradingCard, loadError.getMessage(),
+                    "Config Load Failed", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ioError) {
+            ioError.printStackTrace();
+            JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
+                    "Config Load Failed", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void updateRomLoadedState() {

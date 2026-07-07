@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class DualTableSelector extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final ActionsTableModel selectedModel;
+    private final ActionSelectedTableModel selectedModel;
 
     public DualTableSelector(ActionBank actions) {
         selectedModel = new ActionSelectedTableModel();
@@ -20,6 +20,10 @@ public class DualTableSelector extends JPanel {
 
     public List<Action> getSelectedActions() {
         return selectedModel.getRows();
+    }
+
+    public void setSelectedActions(List<Action> actions) {
+        selectedModel.setRows(actions);
     }
 
     private void createUI(ActionBank actions) {

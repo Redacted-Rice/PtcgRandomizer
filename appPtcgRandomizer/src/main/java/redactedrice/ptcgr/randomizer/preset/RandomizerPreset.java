@@ -1,7 +1,6 @@
 package redactedrice.ptcgr.randomizer.preset;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,11 @@ public final class RandomizerPreset {
         return new RandomizerPreset(seed, presets);
     }
 
+    public static RandomizerPreset fromDocumentMap(Map<String, Object> root, List<String> warnings)
+            throws PresetLoadException {
+        return PresetParsing.parseDocument(root, warnings);
+    }
+
     public int getVersion() {
         return version;
     }
@@ -61,80 +65,5 @@ public final class RandomizerPreset {
         }
         root.put("actions", actionNodes);
         return root;
-    }
-
-    public static final class ActionPreset {
-        private final String module;
-        private final ActionConfig config;
-
-        public ActionPreset(String module, ActionConfig config) {
-            this.module = Objects.requireNonNull(module, "module");
-            this.config = config != null ? config : ActionConfig.empty();
-        }
-
-        public static ActionPreset fromAction(Action action) {
-            return new ActionPreset(action.getName(), ActionConfig.fromAction(action));
-        }
-
-        public String getModule() {
-            return module;
-        }
-
-        public ActionConfig getConfig() {
-            return config;
-        }
-
-        Map<String, Object> toDocumentMap() {
-            Map<String, Object> node = new LinkedHashMap<>();
-            node.put("module", module);
-            if (!config.isEmpty()) {
-                node.put("config", config.toDocumentMap());
-            }
-            return node;
-        }
-    }
-
-    public static final class ActionConfig {
-        private final Integer seedOffset;
-        private final Map<String, Object> arguments;
-
-        public ActionConfig(Integer seedOffset, Map<String, Object> arguments) {
-            this.seedOffset = seedOffset;
-            this.arguments =
-                    arguments != null ? Collections.unmodifiableMap(new LinkedHashMap<>(arguments))
-                            : Map.of();
-        }
-
-        public static ActionConfig empty() {
-            return new ActionConfig(null, Map.of());
-        }
-
-        public static ActionConfig fromAction(Action action) {
-            Integer seedOffset = action.getModule().isSeeded() ? action.getSeedOffset() : null;
-            return new ActionConfig(seedOffset, Map.of());
-        }
-
-        public Integer getSeedOffset() {
-            return seedOffset;
-        }
-
-        public Map<String, Object> getArguments() {
-            return arguments;
-        }
-
-        public boolean isEmpty() {
-            return seedOffset == null && arguments.isEmpty();
-        }
-
-        Map<String, Object> toDocumentMap() {
-            Map<String, Object> node = new LinkedHashMap<>();
-            if (seedOffset != null) {
-                node.put("seedOffset", seedOffset);
-            }
-            if (!arguments.isEmpty()) {
-                node.put("arguments", new LinkedHashMap<>(arguments));
-            }
-            return node;
-        }
     }
 }

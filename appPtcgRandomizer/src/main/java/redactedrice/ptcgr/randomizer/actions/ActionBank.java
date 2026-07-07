@@ -22,6 +22,9 @@ public class ActionBank {
     }
 
     private void loadModules() {
+        if (luaRandomizer == null) {
+            return;
+        }
         List<Module> modules = luaRandomizer.getAvailableModules();
         for (Module module : modules) {
             Action action = new Action(module);
@@ -39,6 +42,13 @@ public class ActionBank {
 
     public Action get(int id) {
         return allActions.get(id);
+    }
+
+    public Module getModule(String moduleName) {
+        if (luaRandomizer == null) {
+            return null;
+        }
+        return luaRandomizer.getModule(moduleName);
     }
 
     public Collection<Action> get() {
