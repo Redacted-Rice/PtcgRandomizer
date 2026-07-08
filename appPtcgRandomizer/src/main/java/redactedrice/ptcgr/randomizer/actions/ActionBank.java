@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.Module;
+import redactedrice.randomizer.lua.ModuleRegistry;
 
 public class ActionBank {
     private HashMap<Integer, Action> allActions;
@@ -49,6 +50,21 @@ public class ActionBank {
             return null;
         }
         return luaRandomizer.getModule(moduleName);
+    }
+
+    public List<Module> getPreScripts() {
+        return getAllScripts(ModuleRegistry.SCRIPT_TIMING_PRE);
+    }
+
+    public List<Module> getPostScripts() {
+        return getAllScripts(ModuleRegistry.SCRIPT_TIMING_POST);
+    }
+
+    private List<Module> getAllScripts(String timing) {
+        if (luaRandomizer == null) {
+            return List.of();
+        }
+        return luaRandomizer.getModuleRegistry().getAllScripts(timing);
     }
 
     public Collection<Action> get() {

@@ -30,7 +30,7 @@ public final class ModuleConfigPreset {
         return new ModuleConfigPreset(seedOffset, Map.of());
     }
 
-    Map<String, Object> prepForSave() {
+    public Map<String, Object> prepForSave() {
         Map<String, Object> node = new LinkedHashMap<>();
         if (seedOffset != null) {
             node.put(SEED_OFFSET_KEY, seedOffset);
@@ -41,7 +41,7 @@ public final class ModuleConfigPreset {
         return node;
     }
 
-    static ModuleConfigPreset readFromSave(Map<String, Object> node, List<String> warnings,
+    public static ModuleConfigPreset readFromSave(Map<String, Object> node, List<String> warnings,
             String entryLabel) {
         Integer seedOffset = null;
         Object seedOffsetValue = node.get(SEED_OFFSET_KEY);
