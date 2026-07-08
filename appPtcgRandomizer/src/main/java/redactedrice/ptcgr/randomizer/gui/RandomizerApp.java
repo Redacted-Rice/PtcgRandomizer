@@ -192,7 +192,7 @@ public class RandomizerApp {
                             PresetIO.ensureYamlExtension(saveConfigChooser.getSelectedFile());
                     try {
                         Preset preset = Preset.fromAppState(settings.getSeedString(),
-                                dualPanel.getSelectedActions());
+                                dualPanel.getSelectedActions(), randomizer.getActionBank());
                         PresetIO.save(configFile, preset);
                     } catch (IOException configError) {
                         configError.printStackTrace();
@@ -552,6 +552,7 @@ public class RandomizerApp {
         try {
             Preset preset = PresetIO.load(configFile, warnings);
             saveSetSeedVal.setText(preset.getSeed());
+            preset.checkScripts(randomizer.getActionBank(), warnings);
             List<Action> actions = preset.getActions(randomizer.getActionBank(), warnings);
             dualPanel.setSelectedActions(actions);
 

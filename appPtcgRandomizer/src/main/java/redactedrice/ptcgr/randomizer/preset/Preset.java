@@ -9,6 +9,7 @@ import java.util.Objects;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
+import redactedrice.randomizer.lua.Module;
 
 /**
  * In memory representation of a saved randomizer settings/configs. Used for both saving and
@@ -19,6 +20,8 @@ public final class Preset {
     static final String APP_VERSION_KEY = "appVersion";
     static final String SEED_KEY = "seed";
     static final String ACTIONS_KEY = "actions";
+    static final String PRESCRIPTS_KEY = "prescripts";
+    static final String POSTSCRIPTS_KEY = "postscripts";
 
     public static final int CURRENT_FORMAT_VERSION = 1;
 
@@ -26,17 +29,24 @@ public final class Preset {
     private final String appVersion;
     private final String seed;
     private final List<ActionPreset> actionPresets;
+    private final List<ScriptPreset> preScriptPresets;
+    private final List<ScriptPreset> postScriptPresets;
 
-    public Preset(String seed, List<ActionPreset> actionPresets) {
-        this(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed, actionPresets);
+    public Preset(String seed, List<ActionPreset> actionPresets,
+            List<ScriptPreset> preScriptPresets, List<ScriptPreset> postScriptPresets) {
+        this(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed, actionPresets,
+                preScriptPresets, postScriptPresets);
     }
 
     public Preset(int formatVersion, String appVersion, String seed,
-            List<ActionPreset> actionPresets) {
+            List<ActionPreset> actionPresets, List<ScriptPreset> preScriptPresets,
+            List<ScriptPreset> postScriptPresets) {
         this.formatVersion = formatVersion;
         this.appVersion = appVersion;
         this.seed = Objects.requireNonNull(seed, "seed");
         this.actionPresets = List.copyOf(actionPresets);
+        this.preScriptPresets = List.copyOf(preScriptPresets);
+        this.postScriptPresets = List.copyOf(postScriptPresets);
     }
 
     private static List<ActionPreset> convertActions(List<Action> actions) {
@@ -47,9 +57,18 @@ public final class Preset {
         return presets;
     }
 
-    public static Preset fromAppState(String seed, List<Action> actions) {
+    private static List<ScriptPreset> convertScripts(List<Module> scripts) {
+        List<ScriptPreset> presets = new ArrayList<>();
+        for (Module script : scripts) {
+            presets.add(ScriptPreset.fromModule(script));
+        }
+        return presets;
+    }
+
+    public static Preset fromAppState(String seed, List<Action> actions, ActionBank actionBank) {
         return new Preset(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed,
-                convertActions(actions));
+                convertActions(actions), convertScripts(actionBank.getPreScripts()),
+                convertScripts(actionBank.getPostScripts()));
     }
 
     public static Preset readFromSave(Map<String, Object> root, List<String> warnings)
@@ -62,23 +81,40 @@ public final class Preset {
         String appVersion = parseAppVersion(root.get(APP_VERSION_KEY), warnings);
         String seed = parseSeed(root.get(SEED_KEY));
         List<ActionPreset> actions = parseActions(root.get(ACTIONS_KEY), warnings);
+        List<ScriptPreset> preScripts =
+                parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY, warnings);
+        List<ScriptPreset> postScripts =
+                parseScripts(root.get(POSTSCRIPTS_KEY), POSTSCRIPTS_KEY, warnings);
         warnAppVersionMismatch(appVersion, warnings);
-        return new Preset(formatVersion, appVersion, seed, actions);
+        return new Preset(formatVersion, appVersion, seed, actions, preScripts, postScripts);
     }
 
-    Map<String, Object> prepForSave() {
+    private static List<Map<String, Object>> prepForSaveActions(List<ActionPreset> actionPresets) {
+        List<Map<String, Object>> actionNodes = new ArrayList<>();
+        for (ActionPreset actionPreset : actionPresets) {
+            actionNodes.add(actionPreset.prepForSave());
+        }
+        return actionNodes;
+    }
+
+    private static List<Map<String, Object>> prepForSaveScripts(List<ScriptPreset> scriptPresets) {
+        List<Map<String, Object>> scriptNodes = new ArrayList<>();
+        for (ScriptPreset script : scriptPresets) {
+            scriptNodes.add(script.prepForSave());
+        }
+        return scriptNodes;
+    }
+
+    public Map<String, Object> prepForSave() {
         Map<String, Object> root = new LinkedHashMap<>();
         root.put(FORMAT_VERSION_KEY, formatVersion);
         if (appVersion != null) {
             root.put(APP_VERSION_KEY, appVersion);
         }
         root.put(SEED_KEY, seed);
-
-        List<Map<String, Object>> actionNodes = new ArrayList<>();
-        for (ActionPreset actionPreset : actionPresets) {
-            actionNodes.add(actionPreset.prepForSave());
-        }
-        root.put(ACTIONS_KEY, actionNodes);
+        root.put(ACTIONS_KEY, prepForSaveActions(actionPresets));
+        root.put(PRESCRIPTS_KEY, prepForSaveScripts(preScriptPresets));
+        root.put(POSTSCRIPTS_KEY, prepForSaveScripts(postScriptPresets));
         return root;
     }
 
@@ -98,6 +134,14 @@ public final class Preset {
         return actionPresets;
     }
 
+    public List<ScriptPreset> getPreScriptPresets() {
+        return preScriptPresets;
+    }
+
+    public List<ScriptPreset> getPostScriptPresets() {
+        return postScriptPresets;
+    }
+
     public List<Action> getActions(ActionBank actionBank, List<String> warnings) {
         List<Action> actions = new ArrayList<>();
         for (ActionPreset actionPreset : getActionPresets()) {
@@ -107,6 +151,13 @@ public final class Preset {
             }
         }
         return actions;
+    }
+
+    public void checkScripts(ActionBank actionBank, List<String> warnings) {
+        ScriptPreset.checkAndWarnDifferences(PRESCRIPTS_KEY, preScriptPresets,
+                actionBank.getPreScripts(), actionBank, warnings);
+        ScriptPreset.checkAndWarnDifferences(POSTSCRIPTS_KEY, postScriptPresets,
+                actionBank.getPostScripts(), actionBank, warnings);
     }
 
     private static int parseFormatVersion(Object value, List<String> warnings) {
@@ -193,5 +244,33 @@ public final class Preset {
             }
         }
         return actions;
+    }
+
+    private static List<ScriptPreset> parseScripts(Object value, String sectionKey,
+            List<String> warnings) {
+        if (value == null) {
+            return List.of();
+        }
+        if (!(value instanceof List<?> scriptNodes)) {
+            warnings.add(sectionKey + " must be a list; ignoring " + sectionKey + ".");
+            return List.of();
+        }
+
+        List<ScriptPreset> scripts = new ArrayList<>();
+        for (int i = 0; i < scriptNodes.size(); i++) {
+            Object scriptNode = scriptNodes.get(i);
+            String entryLabel = sectionKey + "[" + i + "]";
+            if (!(scriptNode instanceof Map<?, ?> scriptMap)) {
+                warnings.add(entryLabel + ": script entry must be a mapping.");
+                continue;
+            }
+            @SuppressWarnings("unchecked")
+            ScriptPreset parsed = ScriptPreset.readFromSave((Map<String, Object>) scriptMap,
+                    warnings, entryLabel);
+            if (parsed != null) {
+                scripts.add(parsed);
+            }
+        }
+        return scripts;
     }
 }
