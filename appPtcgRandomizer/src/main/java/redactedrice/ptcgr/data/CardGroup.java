@@ -16,6 +16,7 @@ import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
+import redactedrice.ptcgr.utils.WarningCollector;
 
 public class CardGroup<T extends Card> {
     private EnumMap<CardId, T> cardsById;
@@ -204,5 +205,123 @@ public class CardGroup<T extends Card> {
 
     public int count() {
         return cardsById.size();
+    }
+
+    public boolean isKnownMoveName(String moveName) {
+        String trimmed = moveName.trim();
+        for (T card : iterable()) {
+            if (!(card instanceof MonsterCard monster)) {
+                continue;
+            }
+            for (Move move : monster.getAllMovesIncludingEmptyOnes()) {
+                if (!move.isEmpty() && move.name.toString().equalsIgnoreCase(trimmed)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public MonsterCard resolveCard(String cardSpecifier, String entryContext,
+            WarningCollector warnings) {
+        String trimmed = cardSpecifier.trim();
+        if (!MonsterCard.isNameWithLevel(trimmed)) {
+            String exampleName = trimmed.isEmpty() ? "SomeMonster" : trimmed;
+            warnings.addWarning(entryContext + ": monster card \"" + cardSpecifier
+                    + "\" must use name and level (e.g. \"" + exampleName + " lvl65\").");
+            return null;
+        }
+
+        MonsterCard card = findMonsterByNameWithLevel(trimmed);
+        if (card == null) {
+            warnings.addWarning(
+                    entryContext + ": failed to resolve card \"" + cardSpecifier + "\".");
+        }
+        return card;
+    }
+
+    public Move resolveMoveOnCard(MonsterCard hostCard, String moveName, String entryContext,
+            WarningCollector warnings) {
+        Move moveWithName = hostCard.getMoveWithName(moveName);
+        if (moveWithName != null) {
+            return moveWithName;
+        }
+
+        warnings.addWarning(entryContext + ": failed to find move \"" + moveName + "\" on card \""
+                + hostCard.name + "\".");
+        return null;
+    }
+
+    /**
+     * Assignment target slots are 1 based in files. Internal storage is 0 based.
+     */
+    public int parseMoveSlotId(String slotSpecifier, String entryContext,
+            WarningCollector warnings) {
+        try {
+            int oneBasedSlot = Integer.parseInt(slotSpecifier);
+            if (oneBasedSlot >= 1 && oneBasedSlot <= MonsterCard.MAX_NUM_MOVES) {
+                return oneBasedSlot - 1;
+            }
+
+            warnings.addWarning(entryContext + ": to_move_slot \"" + slotSpecifier
+                    + "\" is out of range; use " + 1 + "-" + MonsterCard.MAX_NUM_MOVES + ".");
+            return -1;
+        } catch (NumberFormatException ignored) {
+            warnings.addWarning(entryContext + ": to_move_slot must be a 1-based slot number (1-"
+                    + MonsterCard.MAX_NUM_MOVES + ").");
+            return -1;
+        }
+    }
+
+    public boolean cardHasMove(MonsterCard card, String moveName) {
+        return card.getMoveWithName(moveName) != null;
+    }
+
+    /**
+     * Resolved by move name. If optionalFromCard is null the first card in ROM order with that move
+     * is used and a warning is logged if more than one card matches.
+     */
+    public Move resolveMoveByName(String moveName, MonsterCard optionalFromCard,
+            String entryContext, WarningCollector warnings) {
+        if (optionalFromCard != null) {
+            return resolveMoveOnCard(optionalFromCard, moveName, entryContext, warnings);
+        }
+
+        MonsterCard firstHost = null;
+        for (T card : iterable()) {
+            if (!(card instanceof MonsterCard monster)) {
+                continue;
+            }
+            if (monster.getMoveWithName(moveName) == null) {
+                continue;
+            }
+            if (firstHost != null) {
+                warnings.addWarning(entryContext + ": move \"" + moveName
+                        + "\" was found on multiple cards; using the first match.");
+                return firstHost.getMoveWithName(moveName);
+            }
+            firstHost = monster;
+        }
+
+        if (firstHost == null) {
+            warnings.addWarning(
+                    entryContext + ": failed to find move \"" + moveName + "\" on any card.");
+            return null;
+        }
+
+        return firstHost.getMoveWithName(moveName);
+    }
+
+    private MonsterCard findMonsterByNameWithLevel(String cardSpecifier) {
+        MonsterCard.NameWithLevel ref = MonsterCard.parseNameWithLevel(cardSpecifier);
+        if (ref == null) {
+            return null;
+        }
+        for (T card : iterable()) {
+            if (card instanceof MonsterCard monster && monster.matchesNameWithLevel(ref)) {
+                return monster;
+            }
+        }
+        return null;
     }
 }

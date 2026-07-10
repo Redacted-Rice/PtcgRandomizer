@@ -7,13 +7,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import redactedrice.ptcgr.configs.YamlIO;
+import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.utils.FileExtensionUtils;
+import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rom.RomData;
@@ -40,15 +45,33 @@ public class RandomizerCore {
 
     private RomData romData;
     private Rules rules;
+    private RulesConfig pendingRules;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
     private final PtcgBundledResources bundledResources;
+    WarningCollector warnings;
 
-    public RandomizerCore() {
+    public RandomizerCore(Component toCenterPopupsOn) {
+        warnings = new WarningCollector(toCenterPopupsOn);
         bundledResources = new PtcgBundledResources();
         bundledResources.installAll();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
+        pendingRules = loadBundledDefaultRules(toCenterPopupsOn);
+    }
+
+    private RulesConfig loadBundledDefaultRules(Component toCenterPopupsOn) {
+        try {
+            File rulesFile = bundledResources.getUnsupportedMovesFile();
+            RulesConfig bundled = RulesConfig.readFromLoadedYamlMap(
+                    YamlIO.load(rulesFile, warnings), "Unsupported moves", warnings);
+            warnings.logAndDisplay("default rules", true);
+            return bundled;
+        } catch (IOException e) {
+            warnings.addWarning("Failed to load bundled default rules: " + e.getMessage());
+            warnings.logAndDisplay("default rules", true);
+            return RulesConfig.empty();
+        }
     }
 
     public ActionBank getActionBank() {
@@ -97,8 +120,9 @@ public class RandomizerCore {
     public boolean openRom(File romFile, Component toCenterPopupsOn) {
         try {
             romData = RomIO.readFromFile(romFile);
-            rules = new Rules(romData, toCenterPopupsOn, bundledResources.getUnsupportedMovesFile());
-            rules.getIo().displayWarnings();
+            rules = new Rules(romData);
+            pendingRules.recreateRules(rules, warnings);
+            warnings.logAndDisplay("loaded rules", true);
             return true;
         } catch (IOException e) {
             romData = null;
@@ -108,14 +132,31 @@ public class RandomizerCore {
         }
     }
 
+    /**
+     * Replaces session rules from a config (or other source). If a ROM is already loaded, runtime
+     * rules are recreated from the new config.
+     */
+    public void replacePendingRules(RulesConfig rulesConfig) {
+        pendingRules = rulesConfig;
+        if (rules != null) {
+            pendingRules.recreateRules(rules, warnings);
+            warnings.logAndDisplay("loaded rules", true);
+        }
+    }
+
+    public RulesConfig getPendingRules() {
+        return pendingRules;
+    }
+
     public Rules getRules() {
         return rules;
     }
 
-    public void randomizeAndSaveRom(File romFile, Settings settings, List<Action> actionBank)
+    public boolean randomizeAndSaveRom(File romFile, Settings settings, List<Action> actions)
             throws IOException {
-        requireRomLoaded();
-        requireSelectedActions(actionBank);
+        if (!isRomLoaded() || !hasSelectedActions(actions)) {
+            return false;
+        }
 
         String romBasePath = romFile.getPath();
         romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
@@ -140,34 +181,35 @@ public class RandomizerCore {
                 Logger.addStreamForAllLevels(detailLogStream);
             }
 
-            randomize(settings, actionBank);
+            randomize(settings, actions);
         } finally {
             if (detailLogStream != null) {
                 detailLogStream.close();
                 Logger.clearAllStreams();
             }
         }
-
         // TODO later: Due to an error, the same data was being written more than once
         // and when this happened, the text for some cards compoundly got worse.
         // Need to look into why this is happening and if it still is
         RomIO.writePatch(romData, romFile);
+        return true;
     }
 
-    public void randomize(Settings settings, List<Action> actions) {
-        requireRomLoaded();
-        requireSelectedActions(actions);
+    public boolean randomize(Settings settings, List<Action> actions) {
+        if (!isRomLoaded() || !hasSelectedActions(actions)) {
+            return false;
+        }
 
         // get and store the base seed
         int seed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
         // without reloading) and prepare it to be modified so we know that
-        // it will need to be reset
+        // it will need to be reset)
         romData.prepareForModification();
 
         // Expose objects to be modified
-        // TODO: Add original vs modified and add more
+        // TODO later: Add original vs modified and add more
         JavaContext context = new JavaContext();
         context.register("original", romData.original);
         context.register("modified", romData.modified);
@@ -177,7 +219,7 @@ public class RandomizerCore {
         }
 
         // Register card some enums
-        // TODO: Add others. Could I do this dynamically or just specify all of them
+        // TODO later: Add others. Could I do this dynamically or just specify all of them
         context.registerEnum(CardType.class);
         context.registerEnum(EnergyType.class);
         context.registerEnum(EvolutionStage.class);
@@ -223,20 +265,11 @@ public class RandomizerCore {
                 }
             }
         }
+        return true;
     }
 
-    private void requireRomLoaded() {
-        // Guard against randomizing before a ROM has been opened
-        if (romData == null) {
-            throw new IllegalStateException("A ROM must be loaded before randomizing.");
-        }
-    }
-
-    private static void requireSelectedActions(List<Action> actions) {
-        if (actions == null || actions.isEmpty()) {
-            throw new IllegalStateException(
-                    "Add at least one module to the selected list before randomizing.");
-        }
+    private static boolean hasSelectedActions(List<Action> actions) {
+        return actions != null && !actions.isEmpty();
     }
 
     private static void logErrorTrackerMessages(String heading) {
@@ -259,13 +292,7 @@ public class RandomizerCore {
         {
             System.out.println(allText.getAtId(i));
         }
-    }
 
-    public static File ensurePatchExtension(File file) {
-        if (!file.getName().endsWith(PATCH_FILE_EXTENSION)) {
-            return new File(file.getPath() + PATCH_FILE_EXTENSION);
-        }
-        return file;
     }
 
     public String getFileExtension() {
