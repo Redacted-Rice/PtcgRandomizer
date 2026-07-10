@@ -52,6 +52,13 @@ public class ActionBank {
         return luaRandomizer.getModule(moduleName);
     }
 
+    public Module getScript(String scriptName) {
+        if (luaRandomizer == null) {
+            return null;
+        }
+        return luaRandomizer.getScript(scriptName);
+    }
+
     public List<Module> getPreScripts() {
         return getAllScripts(ModuleRegistry.SCRIPT_TIMING_PRE);
     }

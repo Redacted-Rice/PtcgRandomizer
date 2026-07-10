@@ -1,16 +1,16 @@
-package redactedrice.ptcgr.rules.support;
+package redactedrice.ptcgr.rules;
 
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.Move;
 
-public class MoveExclusionData {
+public class MoveExclusion {
     private final CardId cardId;
     private final String moveName;
     private final boolean removeFromPool;
     private final boolean excludeFromRandomization;
     private final String sourceFileName;
 
-    public MoveExclusionData(CardId cardId, String moveName, boolean removeFromPool,
+    public MoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
             boolean excludeFromRandomization, String sourceFileName) {
         this.cardId = cardId;
         this.moveName = moveName;
@@ -52,11 +52,11 @@ public class MoveExclusionData {
         return sourceFileName;
     }
 
-    public boolean hasSameTarget(MoveExclusionData other) {
+    public boolean hasSameTarget(MoveExclusion other) {
         return cardId == other.cardId && moveName.equals(other.moveName);
     }
 
-    public boolean hasSameSettings(MoveExclusionData other) {
+    public boolean hasSameSettings(MoveExclusion other) {
         return removeFromPool == other.removeFromPool
                 && excludeFromRandomization == other.excludeFromRandomization;
     }

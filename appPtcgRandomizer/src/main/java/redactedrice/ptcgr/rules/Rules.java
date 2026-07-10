@@ -1,34 +1,28 @@
 package redactedrice.ptcgr.rules;
 
-import java.awt.Component;
-import java.io.File;
-
-import redactedrice.ptcgr.rules.support.RulesWarningCollector;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.RomData;
 
+/** Runtime move exclusion and assignment state for an opened ROM. */
 public class Rules {
+    private final CardGroup<MonsterCard> allCards;
     private final MoveExclusions moveExclusions;
     private final MoveAssignments moveAssignments;
-    private final RulesIO io;
 
-    public Rules(RomData romData, Component toCenterPopupsOn, File defaultRulesFile) {
-        this(romData.original.allCards.cards().monsterCards(), toCenterPopupsOn, defaultRulesFile);
+    public Rules(RomData romData) {
+        this(romData.original.allCards.cards().monsterCards());
     }
 
-    Rules(CardGroup<MonsterCard> allCards, Component toCenterPopupsOn, File defaultRulesFile) {
-        RulesWarningCollector warnings = new RulesWarningCollector(toCenterPopupsOn);
+    public Rules(CardGroup<MonsterCard> allCards) {
+        this.allCards = allCards;
         moveExclusions = new MoveExclusions();
         moveAssignments = new MoveAssignments();
-        io = new RulesIO(allCards, moveExclusions, moveAssignments, warnings);
-        if (defaultRulesFile != null) {
-            io.addRulesFile(defaultRulesFile, RulesLoadOptions.exclusionsOnly());
-        }
     }
 
-    public RulesIO getIo() {
-        return io;
+    public void clear() {
+        moveExclusions.clear();
+        moveAssignments.clear();
     }
 
     public MoveExclusions getMoveExclusions() {
@@ -37,5 +31,9 @@ public class Rules {
 
     public MoveAssignments getMoveAssignments() {
         return moveAssignments;
+    }
+
+    public CardGroup<MonsterCard> getAllCards() {
+        return allCards;
     }
 }

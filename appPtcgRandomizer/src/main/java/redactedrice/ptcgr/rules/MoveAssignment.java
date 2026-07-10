@@ -1,15 +1,15 @@
-package redactedrice.ptcgr.rules.support;
+package redactedrice.ptcgr.rules;
 
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.Move;
 
-public class MoveAssignmentData {
+public class MoveAssignment {
     private final CardId cardId;
     private final int moveSlot;
     private final Move move;
     private final String sourceFileName;
 
-    public MoveAssignmentData(CardId cardId, int moveSlot, Move move, String sourceFileName) {
+    public MoveAssignment(CardId cardId, int moveSlot, Move move, String sourceFileName) {
         this.cardId = cardId;
         this.moveSlot = moveSlot;
         this.move = new Move(move);
@@ -32,11 +32,11 @@ public class MoveAssignmentData {
         return sourceFileName;
     }
 
-    public boolean hasSameTarget(MoveAssignmentData other) {
+    public boolean hasSameTarget(MoveAssignment other) {
         return cardId == other.cardId && moveSlot == other.moveSlot;
     }
 
-    public boolean hasSameSettings(MoveAssignmentData other) {
+    public boolean hasSameSettings(MoveAssignment other) {
         return move.name.toString().equals(other.move.name.toString());
     }
 }

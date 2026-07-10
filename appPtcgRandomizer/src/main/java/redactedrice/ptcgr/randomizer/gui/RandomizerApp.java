@@ -37,12 +37,14 @@ import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.Settings.*;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
-import redactedrice.ptcgr.randomizer.preset.PresetIO;
-import redactedrice.ptcgr.randomizer.preset.PresetException;
-import redactedrice.ptcgr.randomizer.preset.Preset;
+import redactedrice.ptcgr.utils.FileExtensionUtils;
+import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.ptcgr.configs.YamlIO;
+import redactedrice.ptcgr.configs.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RandomizerApp {
 
@@ -101,7 +103,13 @@ public class RandomizerApp {
      * Initialize the contents of the frame.
      */
     private void initialize() {
-        randomizer = new RandomizerCore();
+        frmTradingCard = new JFrame();
+        frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
+        frmTradingCard.setBounds(100, 100, 1024, 768);
+        frmTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frmTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
+
+        randomizer = new RandomizerCore(frmTradingCard);
 
         openRomChooser = new JFileChooser();
         openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
@@ -113,19 +121,13 @@ public class RandomizerApp {
 
         saveConfigChooser = new JFileChooser();
         saveConfigChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        saveConfigChooser.setSelectedFile(new File(PresetIO.DEFAULT_FILE_NAME));
+        saveConfigChooser.setSelectedFile(new File(YamlIO.DEFAULT_FILE_NAME));
         saveConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
 
         loadConfigChooser = new JFileChooser();
         loadConfigChooser.setCurrentDirectory(new File("."));
-        loadConfigChooser.setSelectedFile(new File(PresetIO.DEFAULT_FILE_NAME));
+        loadConfigChooser.setSelectedFile(new File(YamlIO.DEFAULT_FILE_NAME));
         loadConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
-
-        frmTradingCard = new JFrame();
-        frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-        frmTradingCard.setBounds(100, 100, 1024, 768);
-        frmTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frmTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 
         JPanel saveRomPanel = new JPanel();
         saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
@@ -188,12 +190,13 @@ public class RandomizerApp {
                         return;
                     }
 
-                    File configFile =
-                            PresetIO.ensureYamlExtension(saveConfigChooser.getSelectedFile());
+                    File configFile = FileExtensionUtils.ensureExtension(
+                            saveConfigChooser.getSelectedFile(), YamlIO.FILE_EXTENSION);
                     try {
-                        Preset preset = Preset.fromAppState(settings.getSeedString(),
-                                dualPanel.getSelectedActions(), randomizer.getActionBank());
-                        PresetIO.save(configFile, preset);
+                        Config config = Config.fromAppState(settings.getSeedString(),
+                                dualPanel.getSelectedActions(), randomizer.getActionBank(),
+                                randomizer.getPendingRules());
+                        YamlIO.save(configFile, config.convertToYamlMap());
                     } catch (IOException configError) {
                         configError.printStackTrace();
                         JOptionPane.showMessageDialog(frmTradingCard, configError.getMessage(),
@@ -204,8 +207,8 @@ public class RandomizerApp {
 
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File saveFile =
-                            RandomizerCore.ensurePatchExtension(saveRomChooser.getSelectedFile());
+                    File saveFile = FileExtensionUtils.ensureExtension(
+                            saveRomChooser.getSelectedFile(), RandomizerCore.PATCH_FILE_EXTENSION);
                     randomizer.randomizeAndSaveRom(saveFile, settings,
                             dualPanel.getSelectedActions());
                 }
@@ -547,25 +550,18 @@ public class RandomizerApp {
             return;
         }
 
-        File configFile = PresetIO.ensureYamlExtension(loadConfigChooser.getSelectedFile());
-        List<String> warnings = new ArrayList<>();
+        File configFile = FileExtensionUtils.ensureExtension(loadConfigChooser.getSelectedFile(),
+                YamlIO.FILE_EXTENSION);
         try {
-            Preset preset = PresetIO.load(configFile, warnings);
-            saveSetSeedVal.setText(preset.getSeed());
-            preset.checkScripts(randomizer.getActionBank(), warnings);
-            List<Action> actions = preset.getActions(randomizer.getActionBank(), warnings);
+            WarningCollector warnings = new WarningCollector(frmTradingCard);
+            Map<String, Object> yaml = YamlIO.load(configFile, warnings);
+            Config config = Config.readFromLoadedYamlMap(yaml, configFile.getName(), warnings);
+            saveSetSeedVal.setText(config.getSeed());
+            config.checkScripts(randomizer.getActionBank(), warnings);
+            randomizer.replacePendingRules(config.getRulesConfig());
+            List<Action> actions = config.getActions(randomizer.getActionBank(), warnings);
             dualPanel.setSelectedActions(actions);
-
-            if (!warnings.isEmpty()) {
-                for (String warning : warnings) {
-                    Logger.warn("Preset load: " + warning);
-                }
-                JOptionPane.showMessageDialog(frmTradingCard, String.join("\n", warnings),
-                        "Config Loaded With Warnings", JOptionPane.WARNING_MESSAGE);
-            }
-        } catch (PresetException loadError) {
-            JOptionPane.showMessageDialog(frmTradingCard, loadError.getMessage(),
-                    "Config Load Failed", JOptionPane.ERROR_MESSAGE);
+            warnings.logAndDisplay("config load", true);
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),

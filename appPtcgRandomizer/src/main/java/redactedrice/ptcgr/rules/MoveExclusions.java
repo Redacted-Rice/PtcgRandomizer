@@ -6,15 +6,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import redactedrice.ptcgr.rules.support.RulesWarningCollector;
-import redactedrice.ptcgr.rules.support.MoveExclusionData;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.data.Move;
+import redactedrice.ptcgr.utils.WarningCollector;
 
 public class MoveExclusions {
-    private final Map<CardId, List<MoveExclusionData>> exclByCardId;
-    private final Map<String, List<MoveExclusionData>> exclByMoveName;
+    private final Map<CardId, List<MoveExclusion>> exclByCardId;
+    private final Map<String, List<MoveExclusion>> exclByMoveName;
 
     public MoveExclusions() {
         exclByCardId = new EnumMap<>(CardId.class);
@@ -31,18 +29,23 @@ public class MoveExclusions {
                 || anyExclusionMatches(id, move, false, exclByMoveName.get(move.name.toString()));
     }
 
-    public List<MoveExclusionData> getAllExclusions() {
-        List<MoveExclusionData> all = new ArrayList<>();
+    public List<MoveExclusion> getAllExclusions() {
+        List<MoveExclusion> all = new ArrayList<>();
         exclByCardId.values().forEach(all::addAll);
         exclByMoveName.values().forEach(all::addAll);
         return List.copyOf(all);
     }
 
+    public void clear() {
+        exclByCardId.clear();
+        exclByMoveName.clear();
+    }
+
     private boolean anyExclusionMatches(CardId id, Move move,
             boolean checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList,
-            List<MoveExclusionData> foundExcl) {
+            List<MoveExclusion> foundExcl) {
         if (foundExcl != null) {
-            for (MoveExclusionData excl : foundExcl) {
+            for (MoveExclusion excl : foundExcl) {
                 if (checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList) {
                     return excl.isRemoveFromPool() && excl.matchesMove(id, move);
                 } else {
@@ -54,6 +57,19 @@ public class MoveExclusions {
         return false;
     }
 
+    public void add(MoveExclusion exclusion) {
+        List<MoveExclusion> bucket;
+        if (exclusion.isCardIdSet()) {
+            bucket = exclByCardId.computeIfAbsent(exclusion.getCardId(), ll -> new LinkedList<>());
+        } else if (exclusion.isMoveNameSet()) {
+            bucket = exclByMoveName.computeIfAbsent(exclusion.getMoveName(),
+                    ll -> new LinkedList<>());
+        } else {
+            return;
+        }
+        bucket.add(exclusion);
+    }
+
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
             boolean excludeFromRandomization, String sourceFileName) {
         addMoveExclusion(cardId, moveName, removeFromPool, excludeFromRandomization, sourceFileName,
@@ -61,11 +77,10 @@ public class MoveExclusions {
     }
 
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
-            boolean excludeFromRandomization, String sourceFileName,
-            RulesWarningCollector warnings) {
-        MoveExclusionData excl = new MoveExclusionData(cardId, moveName, removeFromPool,
+            boolean excludeFromRandomization, String sourceFileName, WarningCollector warnings) {
+        MoveExclusion excl = new MoveExclusion(cardId, moveName, removeFromPool,
                 excludeFromRandomization, sourceFileName);
-        List<MoveExclusionData> bucket;
+        List<MoveExclusion> bucket;
         if (excl.isCardIdSet()) {
             bucket = exclByCardId.computeIfAbsent(excl.getCardId(), ll -> new LinkedList<>());
         } else if (excl.isMoveNameSet()) {
@@ -74,7 +89,7 @@ public class MoveExclusions {
             return;
         }
 
-        for (MoveExclusionData existing : bucket) {
+        for (MoveExclusion existing : bucket) {
             if (!existing.hasSameTarget(excl)) {
                 continue;
             }
@@ -83,14 +98,12 @@ public class MoveExclusions {
             }
             if (warnings != null) {
                 String targetLabel = excl.isCardIdSet() ? "card \"" + cardId + "\"" : "move";
-                warnings.appendWarningLine("Conflicting exclusion for " + targetLabel + " \""
-                        + moveName + "\" in " + sourceFileName
+                warnings.addWarning("Conflicting exclusion for " + targetLabel + " \"" + moveName
+                        + "\" in " + sourceFileName
                         + "; keeping the first entry and ignoring the duplicate.");
-                warnings.appendWarning("\t" + sourceFileName);
             }
             return;
         }
-
         bucket.add(excl);
     }
 }

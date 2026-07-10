@@ -119,6 +119,10 @@ public class MonsterCard extends Card {
         return name.toString().equalsIgnoreCase(ref.name()) && getLevel() == ref.level();
     }
 
+    public String toNameWithLevelSpecifier() {
+        return name.toString() + " lvl" + getLevel();
+    }
+
     public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards,
             NameWithLevel ref) {
         for (MonsterCard card : cards.iterable()) {
