@@ -192,7 +192,7 @@ public class MonsterCard extends Card {
     }
 
     public boolean setMove(Move move, int moveSlot) {
-        boolean okay = moveSlot > moves.length;
+        boolean okay = moveSlot >= 0 && moveSlot < moves.length;
         if (okay) {
             moves[moveSlot] = new Move(move);
         }

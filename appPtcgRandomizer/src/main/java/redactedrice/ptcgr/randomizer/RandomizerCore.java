@@ -29,9 +29,11 @@ import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.Module;
+import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.ErrorTracker;
 import redactedrice.randomizer.utils.Logger;
 
+import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
@@ -98,8 +100,13 @@ public class RandomizerCore {
             searchPaths.add(modulesDir.getAbsolutePath());
         }
 
-        // Now that the paths are set we can make the wrapper
-        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths);
+        CoreRequirements requirements = new CoreRequirements();
+        // We just use the PTCGR version instead of all 3 (PTCGR, URJ and URC) for simplicity and
+        // since they are bundled together
+        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
+                PtcgRandomizerVersion.VERSION, true);
+        luaRandomizer =
+                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
 
         Logger.setEnabled(true);
 
@@ -110,6 +117,12 @@ public class RandomizerCore {
             System.out.println("No Lua modules found in " + modulesDir.getAbsolutePath());
         }
 
+        if (ErrorTracker.hasErrors()) {
+            for (String error : ErrorTracker.getErrors()) {
+                warnings.addWarning("Module requirement validation failed: " + error);
+            }
+            warnings.logAndDisplay("module requirements", true);
+        }
         logErrorTrackerMessages("Errors loading Lua modules:");
     }
 
@@ -231,12 +244,12 @@ public class RandomizerCore {
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
         for (Action action : actions) {
-            String name = action.getName();
+            String moduleId = action.getModuleId();
             Map<String, Object> arguments = new HashMap<>();
 
-            Module module = luaRandomizer.getModule(name);
+            Module module = luaRandomizer.getModule(moduleId);
             if (module == null) {
-                Logger.error("Module not found: " + name);
+                Logger.error("Module not found: " + moduleId);
                 continue;
             }
             ExecutionRequest request = module.isSeeded()

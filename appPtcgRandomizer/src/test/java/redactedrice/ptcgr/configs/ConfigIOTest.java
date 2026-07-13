@@ -318,6 +318,8 @@ class YamlIOTest {
                 appVersion: %s
                 seed: 1
                 actions: []
+                prescripts: []
+                postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
@@ -368,7 +370,7 @@ class YamlIOTest {
         loadConfig(configFile.toFile(), warnings);
 
         assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("does not record an appVersion")));
+                .anyMatch(w -> w.contains("Config is missing an appVersion")));
     }
 
     @Test
@@ -596,12 +598,12 @@ class YamlIOTest {
             @Override
             public Module getScript(String name) {
                 for (Module script : preScripts) {
-                    if (script.getName().equals(name)) {
+                    if (script.getId().equals(name)) {
                         return script;
                     }
                 }
                 for (Module script : postScripts) {
-                    if (script.getName().equals(name)) {
+                    if (script.getId().equals(name)) {
                         return script;
                     }
                 }
@@ -620,24 +622,23 @@ class YamlIOTest {
         };
     }
 
-    private static Module moduleWithVersion(String name, String version) {
-        return new Module(name, "", Set.of("pokemon cards"), Set.of(), List.of(),
+    private static Module moduleWithVersion(String id, String version) {
+        return new Module(id, id, "", Set.of("pokemon cards"), Set.of(), List.of(),
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {
                         return LuaValue.NIL;
                     }
-                }, null, "test.lua", 0, true, true, null, "author", version,
-                Map.of("UniversalRandomizerJava", "0.5.0"), null, null, null);
+                }, null, "test.lua", 0, true, true, null, "author", version, Map.of(), null,
+                null, null);
     }
 
-    private static Module scriptWithVersion(String name, String version, String when) {
-        return new Module(name, "", Set.of(), Set.of(), List.of(), new ZeroArgFunction() {
+    private static Module scriptWithVersion(String id, String version, String when) {
+        return new Module(id, id, "", Set.of(), Set.of(), List.of(), new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.NIL;
             }
-        }, null, "test.lua", 0, false, false, when, "author", version,
-                Map.of("UniversalRandomizerJava", "0.5.0"), null, null, null);
+        }, null, "test.lua", 0, false, false, when, "author", version, Map.of(), null, null, null);
     }
 }

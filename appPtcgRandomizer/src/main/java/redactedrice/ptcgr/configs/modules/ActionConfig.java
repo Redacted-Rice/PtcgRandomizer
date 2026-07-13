@@ -16,7 +16,7 @@ public final class ActionConfig extends ModuleConfig {
     }
 
     public static ActionConfig fromAction(Action action) {
-        return new ActionConfig(action.getName(), action.getModule().getVersion(),
+        return new ActionConfig(action.getModuleId(), action.getModule().getVersion(),
                 ActionArgumentsConfig.fromAction(action));
     }
 
