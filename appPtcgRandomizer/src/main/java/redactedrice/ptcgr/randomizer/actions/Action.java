@@ -33,6 +33,10 @@ public class Action {
         return module.getName();
     }
 
+    public String getModuleId() {
+        return module.getId();
+    }
+
     public String getDescription() {
         return module.getDescription();
     }

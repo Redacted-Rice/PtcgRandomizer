@@ -1,13 +1,15 @@
 -- Checks for changes and logs if there are any
 return {
-	name = "changedetector_detect",
+	id = "PtcgrChangeDetectorDetect",
+	name = "Ptcgr Change Detector Detect",
 	description = "Detect and log changes after each module",
 	when = "module",
 	author = "Redacted Rice",
-	version = "0.1",
+	version = "0.9.0",
 	requires = {
-		UniversalRandomizerJava = "0.5.0",
 		PtcgRandomizer = "0.2.0",
+		PtcgrChangeDetectorSetup = "0.7.0",
+		PtcgrChangeDetectorSnapshot = "0.9.0",
 	},
 
 	execute = function(context)

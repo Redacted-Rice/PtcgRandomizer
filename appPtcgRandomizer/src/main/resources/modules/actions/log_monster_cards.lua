@@ -11,14 +11,14 @@ local function moveName(moveIndex)
 end
 
 return {
-	name = "log_monster_cards",
+	id = "log_monster_cards",
+	name = "Log Monster Cards",
 	description = "Log monster card data as an ASCII table",
 	groups = { "pokemon cards" },
 	modifies = {},
 	author = "Redacted Rice",
 	version = "0.1",
 	requires = {
-		UniversalRandomizerJava = "0.5.0",
 		PtcgRandomizer = "0.2.0",
 	},
 	seeded = false,

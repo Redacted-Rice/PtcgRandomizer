@@ -1,13 +1,14 @@
 -- Takes a snapshot for change detection before each module
 return {
-	name = "changedetector_snapshot",
+	id = "PtcgrChangeDetectorSnapshot",
+	name = "Ptcgr Change Detector Snapshot",
 	description = "Take snapshot before each module",
 	when = "module",
 	author = "Redacted Rice",
-	version = "0.1",
+	version = "0.9.0",
 	requires = {
-		UniversalRandomizerJava = "0.5.0",
 		PtcgRandomizer = "0.2.0",
+		PtcgrChangeDetectorSetup = "0.7.0",
 	},
 
 	execute = function(context)
@@ -15,4 +16,3 @@ return {
 		changedetector.takeSnapshots()
 	end,
 }
-

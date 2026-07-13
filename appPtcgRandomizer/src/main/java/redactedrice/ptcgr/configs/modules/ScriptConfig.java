@@ -14,7 +14,7 @@ public final class ScriptConfig extends ModuleConfig {
     }
 
     public static ScriptConfig fromModule(Module module) {
-        return new ScriptConfig(module.getName(), module.getVersion());
+        return new ScriptConfig(module.getId(), module.getVersion());
     }
 
     public static ScriptConfig readFromLoadedYamlMap(Map<String, Object> node,
@@ -43,8 +43,8 @@ public final class ScriptConfig extends ModuleConfig {
         }
 
         for (Module module : currentModules) {
-            if (!savedNames.contains(module.getName())) {
-                warnings.addWarning("App has " + sectionLabel + " \"" + module.getName()
+            if (!savedNames.contains(module.getId())) {
+                warnings.addWarning("App has " + sectionLabel + " \"" + module.getId()
                         + "\" that was not in the config.");
             }
         }
