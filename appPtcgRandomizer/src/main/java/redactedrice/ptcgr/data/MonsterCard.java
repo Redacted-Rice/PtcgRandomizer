@@ -25,7 +25,8 @@ public class MonsterCard extends Card {
     private static final Pattern NAME_WITH_LEVEL_PATTERN =
             Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
 
-    public record NameWithLevel(String name, int level) {}
+    public record NameWithLevel(String name, int level) {
+    }
 
     // TODO Make some of these private to ensure safe values (e.g. multiple of 10 for hp?)
     private byte hp;
@@ -33,6 +34,8 @@ public class MonsterCard extends Card {
     public CardName prevEvoName; // TODO later: Encaspsulate?
 
     private Move[] moves;
+    // Number of active move slots (0..MAX_NUM_MOVES)
+    private int numMoves;
 
     public byte retreatCost; // TODO later: max allowed?
     public WeaknessResistanceType weakness; // Allows multiple
@@ -56,6 +59,7 @@ public class MonsterCard extends Card {
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             moves[moveIndex] = new Move();
         }
+        numMoves = 0;
         monsterCategory = new MonsterCategory();
         description = new PokeDescription();
     }
@@ -70,6 +74,7 @@ public class MonsterCard extends Card {
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             moves[moveIndex] = new Move(toCopy.moves[moveIndex]);
         }
+        numMoves = toCopy.numMoves;
         retreatCost = toCopy.retreatCost;
         weakness = toCopy.weakness;
         resistance = toCopy.resistance;
@@ -123,8 +128,7 @@ public class MonsterCard extends Card {
         return name.toString() + " lvl" + getLevel();
     }
 
-    public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards,
-            NameWithLevel ref) {
+    public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards, NameWithLevel ref) {
         for (MonsterCard card : cards.iterable()) {
             if (card.matchesNameWithLevel(ref)) {
                 return card;
@@ -161,22 +165,22 @@ public class MonsterCard extends Card {
     }
 
     public int getNumMoves() {
-        int numMoves = 0;
-        for (Move move : moves) {
-            if (!move.isEmpty()) {
-                numMoves++;
-            }
-        }
         return numMoves;
     }
 
-    // TODO later: investigate return immutable object instead of a copy
+    public boolean setNumMoves(int numMoves) {
+        boolean okay = numMoves >= 0 && numMoves <= MAX_NUM_MOVES;
+        if (okay) {
+            this.numMoves = numMoves;
+        }
+        return okay;
+    }
+
     public Move getMove(int moveIndex) {
-        if (moveIndex > moves.length) {
+        if (moveIndex < 0 || moveIndex >= moves.length) {
             return Move.EMPTY_MOVE;
         }
-
-        return new Move(moves[moveIndex]);
+        return moves[moveIndex];
     }
 
     public Move getMoveWithName(String moveName) {
@@ -186,7 +190,6 @@ public class MonsterCard extends Card {
                 return new Move(move);
             }
         }
-
         // If we didn't find a match, return null
         return null;
     }
@@ -288,6 +291,12 @@ public class MonsterCard extends Card {
 
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText);
+        }
+        numMoves = 0;
+        for (Move move : moves) {
+            if (!move.isEmpty()) {
+                numMoves++;
+            }
         }
 
         retreatCost = cardBytes[index++];

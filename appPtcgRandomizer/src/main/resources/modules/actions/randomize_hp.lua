@@ -1,30 +1,36 @@
 local randomizer = require("randomizer")
 
-return {
+local module = {
 	id = "shuffle_hp",
 	name = "Shuffle HP",
 	description = "Randomizes the HP of the cards",
-	groups = { "pokemon cards" },
+	groups = { "cards" },
 	modifies = { "hp" },
 	author = "Redacted Rice",
-	version = "0.1",
+	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.2.0",
 	},
-
-	execute = function(context)
-        -- Get all monster cards from the original and modified data
-		local monsterOrig = context.original:getMonsterCards()
-		local monsterMod = context.modified:getMonsterCards()
-
-        -- Get hp by stage - groupFromField expects an iterable/list
-        -- Use getter function since hp is private
-		local healthGroups = randomizer.groupFromField(monsterOrig, "stage", "getHp")
-
-        -- Randomize modified entities' health using the consumable pool
-        -- Use setter function since hp is private
-		healthGroups:useToRandomize(monsterMod, "stage", "setHp", {
-			consumable = true,
-		})
+	execute = function(context, args)
+		return module.shuffleHp(context, args)
 	end,
 }
+
+-- TODO later: Add args/options and make it more distinct from hp by stage
+function module.shuffleHp(context)
+	-- Get all monster cards from the original and modified data
+	local monsterOrig = context.original:getMonsterCards()
+	local monsterMod = context.modified:getMonsterCards()
+
+	-- Get hp by stage - groupFromField expects an iterable/list
+	-- Use getter function since hp is private
+	local healthGroups = randomizer.groupFromField(monsterOrig, "stage", "getHp")
+
+	-- Randomize modified entities' health using the consumable pool
+	-- Use setter function since hp is private
+	healthGroups:useToRandomize(monsterMod, "stage", "setHp", {
+		consumable = true,
+	})
+end
+
+return module
