@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "hp_by_stage_from_rom",
 	name = "HP by Stage from ROM",
 	description = "Randomize HP by stage and evo-line max stage using ROM HP pools",

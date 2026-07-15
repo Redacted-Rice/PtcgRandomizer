@@ -1,9 +1,10 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "randomize_moves",
 	name = "Randomize Moves",
-	description = "Randomizes all moves regardless of type",
+	description = "Randomizes all move slots from one mixed attack+power pool (include-with-moves)",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",

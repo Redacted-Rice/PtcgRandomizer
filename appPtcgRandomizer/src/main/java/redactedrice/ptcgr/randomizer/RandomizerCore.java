@@ -16,14 +16,10 @@ import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.WarningCollector;
-import redactedrice.ptcgr.data.Card;
-import redactedrice.ptcgr.data.CardGroup;
-import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
-import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.ExecutionResult;
@@ -292,20 +288,6 @@ public class RandomizerCore {
                 Logger.error("  " + error);
             }
         }
-    }
-
-    public static void test(CardGroup<Card> cards) {
-        for (Card card : cards.iterable()) {
-            System.out.println(card.toString() + "\n");
-        }
-    }
-
-    public static void test(Texts allText) {
-        for (short i = 1; i < 20; i++) // String text : allText)
-        {
-            System.out.println(allText.getAtId(i));
-        }
-
     }
 
     public String getFileExtension() {
