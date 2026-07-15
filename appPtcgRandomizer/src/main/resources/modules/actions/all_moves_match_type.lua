@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "all_moves_match_type",
 	name = "All Moves Match Type",
 	description = "Sets each move's non-colorless energy costs to match its card's type",

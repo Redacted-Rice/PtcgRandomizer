@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "shuffle_num_moves_from_rom",
 	name = "Shuffle Num Moves from ROM",
 	description = "Shuffles each card's active move count using ROM move counts",

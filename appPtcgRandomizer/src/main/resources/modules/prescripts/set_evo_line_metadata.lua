@@ -2,7 +2,8 @@
 -- These are Lua side fields (not ROM data) used by other randomization modules.
 local randomizer = require("randomizer")
 
-local script = {
+local script
+script = {
 	id = "set_evo_line_metadata",
 	name = "Set Evo Line Metadata",
 	description = "Sets metadata for each evolution line in the rom for modules reference",
@@ -29,7 +30,12 @@ end
 
 -- TODO later: Move to a module. We may have reason to call this more than once
 function script.setEvoLineMetadata(context)
-	local monsterCards = context.modified:getMonsterCards()
+    -- Set evo line metadata for both original and modified
+	script.applyEvoLineMetadata(context.original:getMonsterCards())
+	script.applyEvoLineMetadata(context.modified:getMonsterCards())
+end
+
+function script.applyEvoLineMetadata(monsterCards)
 	local cardsByName = randomizer.groupBy(monsterCards, function(card)
 		return card.name:toString()
 	end)
@@ -84,7 +90,7 @@ function script.setEvoLineMetadata(context)
 	end)
 	logger.info("Prescript set_evo_line_metadata completed for " .. #monsterCards .. " cards")
 
-    -- TODO later: Add in to change detector
+	-- TODO later: Add in to change detector
 end
 
 return script

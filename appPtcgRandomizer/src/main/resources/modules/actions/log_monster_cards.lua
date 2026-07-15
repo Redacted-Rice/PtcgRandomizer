@@ -1,6 +1,7 @@
 local datatable = require("randomizer").datatable
 
-local module = {
+local module
+module = {
 	id = "log_monster_cards",
 	name = "Log Monster Cards",
 	description = "Log monster card data as an ASCII table",

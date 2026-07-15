@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "all_moves_colorless",
 	name = "All Moves Colorless",
 	description = "Sets all move energy costs to colorless",

@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "even_rando_evo_line_types",
 	name = "Even Random Evo Line Types",
 	description = "Randomize monster type per evolution line with balanced type distribution",

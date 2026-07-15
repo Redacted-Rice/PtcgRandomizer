@@ -1,7 +1,8 @@
 -- Takes a snapshot for change detection before each module
 local randomizer = require("randomizer")
 
-local script = {
+local script
+script = {
 	id = "PtcgrChangeDetectorSnapshot",
 	name = "Ptcgr Change Detector Snapshot",
 	description = "Take snapshot before each module",

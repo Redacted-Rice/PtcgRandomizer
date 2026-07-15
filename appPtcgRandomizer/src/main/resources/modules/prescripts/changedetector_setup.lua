@@ -1,7 +1,8 @@
 -- Configure the change detector for PTCG Randomizer
 local randomizer = require("randomizer")
 
-local script = {
+local script
+script = {
 	id = "PtcgrChangeDetectorSetup",
 	name = "Ptcgr Change Detector Setup",
 	description = "Setup change detection on cards being randomized",

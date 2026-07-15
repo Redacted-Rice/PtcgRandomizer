@@ -11,6 +11,8 @@ import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.ModuleRegistry;
 
 public class ActionBank {
+    private static final String CATEGORY_ALL = "All";
+
     private HashMap<Integer, Action> allActions;
     private HashMap<String, HashMap<Integer, Action>> actionsByCategory;
     private LuaRandomizerWrapper luaRandomizer;
@@ -79,7 +81,7 @@ public class ActionBank {
     }
 
     public Collection<Action> get(String category) {
-        if (category == null || ActionCategories.CATEGORY_ALL.equals(category)) {
+        if (category == null || CATEGORY_ALL.equals(category)) {
             return allActions.values();
         }
         HashMap<Integer, Action> found = actionsByCategory.get(category);
@@ -89,7 +91,7 @@ public class ActionBank {
     public List<String> getCategoriesWithAll() {
         List<String> categories =
                 actionsByCategory.keySet().stream().sorted().collect(Collectors.toList());
-        categories.add(0, ActionCategories.CATEGORY_ALL);
+        categories.add(0, CATEGORY_ALL);
         return categories;
     }
 }

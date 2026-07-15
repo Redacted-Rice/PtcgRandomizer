@@ -1,6 +1,7 @@
 local randomizer = require("randomizer")
 
-local module = {
+local module
+module = {
 	id = "shuffle_hp",
 	name = "Shuffle HP",
 	description = "Randomizes the HP of the cards",

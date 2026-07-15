@@ -1,7 +1,8 @@
 -- Checks for changes and logs if there are any
 local randomizer = require("randomizer")
 
-local script = {
+local script
+script = {
 	id = "PtcgrChangeDetectorDetect",
 	name = "Ptcgr Change Detector Detect",
 	description = "Detect and log changes after each module",
