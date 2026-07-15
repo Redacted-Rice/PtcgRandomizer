@@ -1,18 +1,24 @@
 -- Takes a snapshot for change detection before each module
-return {
+local randomizer = require("randomizer")
+
+local script = {
 	id = "PtcgrChangeDetectorSnapshot",
 	name = "Ptcgr Change Detector Snapshot",
 	description = "Take snapshot before each module",
 	when = "module",
 	author = "Redacted Rice",
-	version = "0.9.0",
+	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.2.0",
-		PtcgrChangeDetectorSetup = "0.7.0",
+		PtcgrChangeDetectorSetup = "0.7",
 	},
-
-	execute = function(context)
-		local changedetector = require("randomizer").changedetector
-		changedetector.takeSnapshots()
+	execute = function(context, args)
+		return script.takeSnapshots(context, args)
 	end,
 }
+
+function script.takeSnapshots(context)
+	randomizer.changedetector.takeSnapshots()
+end
+
+return script

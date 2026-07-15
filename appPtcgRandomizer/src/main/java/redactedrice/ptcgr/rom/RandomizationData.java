@@ -6,6 +6,7 @@ import java.util.List;
 
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.MonsterCard;
+import redactedrice.ptcgr.data.Move;
 import redactedrice.rompacker.Blocks;
 
 public class RandomizationData {
@@ -33,5 +34,10 @@ public class RandomizationData {
             result.add(card);
         }
         return result;
+    }
+
+    /** All non-empty moves on monster cards. */
+    public List<Move> allMoves() {
+        return allCards.cards().allMoves();
     }
 }
