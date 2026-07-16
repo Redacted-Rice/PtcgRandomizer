@@ -2,40 +2,48 @@
 -- These are Lua side fields (not ROM data) used by other randomization modules.
 local randomizer = require("randomizer")
 
-local script
-script = {
+local module
+module = {
 	id = "set_evo_line_metadata",
 	name = "Set Evo Line Metadata",
-	description = "Sets metadata for each evolution line in the rom for modules reference",
-	when = "randomize",
+	description = "Sets metadata for each evolution line in the rom for other modules reference. Makes no changes to the ROM",
+	groups = { "cards" },
+	modifies = { "evoLineId", "evoLineMaxStage" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.2.0",
 	},
+	seeded = false,
 	execute = function(context, args)
-		return script.setEvoLineMetadata(context, args)
+		return module.setEvoLineMetadata(context, args)
 	end,
 }
 
-function script.setMaxStageIfHigher(cardsList, cardEvoStage)
+function module.setMaxStageIfHigher(cardsList, cardEvoStage)
 	local first = cardsList:get(1)
-	local currentMax = first.evoLineMaxStage or first.stage
-	if cardEvoStage:getValue() > currentMax:getValue() then
+	local currentMax = first.evoLineMaxStage
+	-- Set if its higher than the current max or unset
+	if currentMax == nil or cardEvoStage:getValue() > currentMax:getValue() then
 		cardsList:each(function(mc)
 			mc.evoLineMaxStage = cardEvoStage
 		end)
 	end
 end
 
--- TODO later: Move to a module. We may have reason to call this more than once
-function script.setEvoLineMetadata(context)
+function module.setEvoLineMetadata(context)
+    -- Add the fields to the change detector first so it will log what is assigned
+	randomizer.changedetector.addFields("Monster Cards", {
+		{ field = "evoLineId", header = "Evo Line", align = "right" },
+		{ field = "evoLineMaxStage", header = "Max Stage", align = "right" },
+	})
+
     -- Set evo line metadata for both original and modified
-	script.applyEvoLineMetadata(context.original:getMonsterCards())
-	script.applyEvoLineMetadata(context.modified:getMonsterCards())
+	module.applyEvoLineMetadata(context.original:getMonsterCards())
+	module.applyEvoLineMetadata(context.modified:getMonsterCards())
 end
 
-function script.applyEvoLineMetadata(monsterCards)
+function module.applyEvoLineMetadata(monsterCards)
 	local cardsByName = randomizer.groupBy(monsterCards, function(card)
 		return card.name:toString()
 	end)
@@ -65,7 +73,7 @@ function script.applyEvoLineMetadata(monsterCards)
 		if not baseCard.prevEvoName:isEmpty() then
 			-- First set this cards max evo stage if its higher than it already is
 			local cardEvoStage = baseCard.stage
-			script.setMaxStageIfHigher(cardsList, cardEvoStage)
+			module.setMaxStageIfHigher(cardsList, cardEvoStage)
 
 			-- Now recursively go through each of its prev evos and set their max evo stage
 			-- if its higher than it already is
@@ -77,20 +85,17 @@ function script.applyEvoLineMetadata(monsterCards)
 					break
 				end
 				chainCard = prevCards:get(1)
-				script.setMaxStageIfHigher(prevCards, cardEvoStage)
+				module.setMaxStageIfHigher(prevCards, cardEvoStage)
 			end
-
 			-- Finally set the evoLineId for the base cards evo line id. Any others in this line
-			-- that don't have it yet will get it assigned when they are processed
+			-- that don't have it yet will get it assigned when they are processed too
 			local evoLineId = chainCard.evoLineId
 			cardsList:each(function(mc)
 				mc.evoLineId = evoLineId
 			end)
 		end
 	end)
-	logger.info("Prescript set_evo_line_metadata completed for " .. #monsterCards .. " cards")
-
-	-- TODO later: Add in to change detector
+	logger.info("Module set_evo_line_metadata completed for " .. #monsterCards .. " cards")
 end
 
-return script
+return module
