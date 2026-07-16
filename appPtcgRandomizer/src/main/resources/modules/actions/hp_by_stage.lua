@@ -59,7 +59,8 @@ function module.poolKeyForCard(mc)
 	return module.stageAndMaxStageHash(mc.stage, mc.evoLineMaxStage)
 end
 
--- Assign freely from the stage/maxStage pool, then enforce non-decreasing HP up each evo line
+-- Assign freely from the stage/maxStage pool. Users can run a variation of
+-- fix_evo_line_hp after for consistency if desired
 function module.randomizeHp(context)
 	local monsterCards = context.modified:getMonsterCards()
 	local hpPoolGroup = module.buildHpPoolGroup(context)
@@ -67,22 +68,6 @@ function module.randomizeHp(context)
 	hpPoolGroup:useToRandomize(monsterCards, module.poolKeyForCard, "setHp", {
 		consumable = true,
 	})
-
-    -- TODO later: Move this into a separate module for fixing the HP in lines
-	randomizer.groupBy(monsterCards, "evoLineId"):each(function(_, line)
-		-- Sort in place so setHp mutates the real wrappers (List:sort deep-copies)
-		table.sort(line.items, function(a, b)
-			return a.stage:getValue() < b.stage:getValue()
-		end)
-
-		local prevHp = 0
-		line:each(function(mc)
-			if mc:getHp() < prevHp then
-				mc:setHp(prevHp)
-			end
-			prevHp = mc:getHp()
-		end)
-	end)
 end
 
 return module
