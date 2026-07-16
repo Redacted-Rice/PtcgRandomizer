@@ -262,15 +262,15 @@ public class RandomizerCore {
 
         for (ExecutionResult result : results) {
             if (!result.isSuccess()) {
-                Logger.error("Module " + result.getModuleName() + " failed: "
+                Logger.error("Module " + result.getModuleId() + " failed: "
                         + result.getErrorMessage());
             } else {
                 ExecutionRequest request = result.getRequest();
                 if (request != null && request.usesSeed()) {
-                    Logger.info("Module " + result.getModuleName() + " executed with seed "
+                    Logger.info("Module " + result.getModuleId() + " executed with seed "
                             + result.getSeedUsed());
                 } else {
-                    Logger.info("Module " + result.getModuleName() + " executed");
+                    Logger.info("Module " + result.getModuleId() + " executed");
                 }
             }
         }

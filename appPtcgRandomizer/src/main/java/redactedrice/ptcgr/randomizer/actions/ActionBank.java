@@ -47,18 +47,18 @@ public class ActionBank {
         return allActions.get(id);
     }
 
-    public Module getModule(String moduleName) {
+    public Module getModule(String moduleId) {
         if (luaRandomizer == null) {
             return null;
         }
-        return luaRandomizer.getModule(moduleName);
+        return luaRandomizer.getModule(moduleId);
     }
 
-    public Module getScript(String scriptName) {
+    public Module getScript(String scriptId) {
         if (luaRandomizer == null) {
             return null;
         }
-        return luaRandomizer.getScript(scriptName);
+        return luaRandomizer.getScript(scriptId);
     }
 
     public List<Module> getPreScripts() {
