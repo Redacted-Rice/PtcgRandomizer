@@ -190,7 +190,9 @@ public class RandomizerCore {
                 Logger.addStreamForAllLevels(detailLogStream);
             }
 
-            randomize(settings, actions);
+            if (!randomize(settings, actions)) {
+                return false;
+            }
         } finally {
             if (detailLogStream != null) {
                 detailLogStream.close();
@@ -239,6 +241,7 @@ public class RandomizerCore {
 
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
+        boolean success = true;
         for (Action action : actions) {
             String moduleId = action.getModuleId();
             Map<String, Object> arguments = new HashMap<>();
@@ -246,6 +249,7 @@ public class RandomizerCore {
             Module module = luaRandomizer.getModule(moduleId);
             if (module == null) {
                 Logger.error("Module not found: " + moduleId);
+                success = false;
                 continue;
             }
             ExecutionRequest request = module.isSeeded()
@@ -255,15 +259,23 @@ public class RandomizerCore {
             executionRequests.add(request);
         }
 
+        if (executionRequests.isEmpty()) {
+            return false;
+        }
+
         // Execute modules and check for errors
         List<ExecutionResult> results =
                 luaRandomizer.executeModules(executionRequests, context, seed);
         logErrorTrackerMessages("Errors executing Lua modules:");
+        if (ErrorTracker.hasErrors()) {
+            success = false;
+        }
 
         for (ExecutionResult result : results) {
             if (!result.isSuccess()) {
                 Logger.error("Module " + result.getModuleId() + " failed: "
                         + result.getErrorMessage());
+                success = false;
             } else {
                 ExecutionRequest request = result.getRequest();
                 if (request != null && request.usesSeed()) {
@@ -274,7 +286,7 @@ public class RandomizerCore {
                 }
             }
         }
-        return true;
+        return success;
     }
 
     private static boolean hasSelectedActions(List<Action> actions) {

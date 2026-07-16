@@ -1,4 +1,4 @@
--- Enforces non-decreasing HP up each evolution line (by stage).
+-- Enforces non-decreasing HP up each evolution line by stage.
 -- Run after HP randomization and set_evo_line_metadata.
 local randomizer = require("randomizer")
 
@@ -24,18 +24,22 @@ module = {
 function module.fixEvoLineHp(context)
 	local monsterCards = context.modified:getMonsterCards()
 
-	randomizer.groupBy(monsterCards, "evoLineId"):each(function(_, line)
-		-- Sort in place so setHp mutates the real wrappers (List:sort deep-copies)
-		table.sort(line.items, function(a, b)
-			return a.stage:getValue() < b.stage:getValue()
+	local byEvoLine = randomizer.groupBy(monsterCards, "evoLineId")
+	byEvoLine:each(function(_, line)
+		-- Group by EvolutionStage's underlying value so sort is numeric
+		local byStage = randomizer.groupBy(line, function(mc)
+			return mc.stage:getValue()
 		end)
+		local prevStageMaxHp = 0
 
-		local prevHp = 0
-		line:each(function(mc)
-			if mc:getHp() < prevHp then
-				mc:setHp(prevHp)
-			end
-			prevHp = mc:getHp()
+		-- Sort by stage so we go through in the right order and continue until its all reached
+		byStage:sort():each(function(_, cardsAtStage)
+			cardsAtStage:each(function(mc)
+				if mc:getHp() < prevStageMaxHp then
+					mc:setHp(prevStageMaxHp)
+				end
+			end)
+			prevStageMaxHp = cardsAtStage:max("getHp")
 		end)
 	end)
 end

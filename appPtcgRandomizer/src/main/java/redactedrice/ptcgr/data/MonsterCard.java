@@ -148,15 +148,16 @@ public class MonsterCard extends Card {
 
     public List<Move> getAllMovesIncludingEmptyOnes() {
         ArrayList<Move> movesList = new ArrayList<>();
-        for (Move move : moves) {
-            movesList.add(new Move(move));
+        for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
+            movesList.add(getMove(moveIndex));
         }
         return movesList;
     }
 
     public List<Move> getAllNonEmptyMoves() {
         ArrayList<Move> movesList = new ArrayList<>();
-        for (Move move : moves) {
+        for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
+            Move move = moves[moveIndex];
             if (!move.isEmpty()) {
                 movesList.add(new Move(move));
             }
@@ -168,40 +169,64 @@ public class MonsterCard extends Card {
         return numMoves;
     }
 
+    /**
+     * Sets how many move slots are active. Trailing slots beyond the new count are cleared.
+     * Expanding the count exposes existing (cleared) slots as empty until setMove fills them.
+     */
     public boolean setNumMoves(int numMoves) {
         boolean okay = numMoves >= 0 && numMoves <= MAX_NUM_MOVES;
         if (okay) {
+            if (numMoves < this.numMoves) {
+                clearMovesFrom(numMoves);
+            }
             this.numMoves = numMoves;
         }
         return okay;
     }
 
+    /**
+     * Returns a copy of the move in the given active slot. Slots at or beyond getNumMoves are
+     * treated as empty. Use setMove to write back.
+     */
     public Move getMove(int moveIndex) {
-        if (moveIndex < 0 || moveIndex >= moves.length) {
+        if (moveIndex < 0 || moveIndex >= numMoves || moveIndex >= moves.length) {
             return Move.EMPTY_MOVE;
         }
-        return moves[moveIndex];
+
+        return new Move(moves[moveIndex]);
     }
 
     public Move getMoveWithName(String moveName) {
-        // For each move see if the name matches and if it does, return the move
-        for (Move move : moves) {
+        for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
+            Move move = moves[moveIndex];
             if (move.name.toString().equals(moveName)) {
                 return new Move(move);
             }
         }
-        // If we didn't find a match, return null
+
         return null;
     }
 
+    /**
+     * Writes a copy of move into the slot and updates numMoves so it remains the source of truth
+     * for active slots.
+     */
     public boolean setMove(Move move, int moveSlot) {
         boolean okay = moveSlot >= 0 && moveSlot < moves.length;
         if (okay) {
             moves[moveSlot] = new Move(move);
+            if (!moves[moveSlot].isEmpty()) {
+                numMoves = Math.max(numMoves, moveSlot + 1);
+            } else {
+                trimTrailingEmptyMoves();
+            }
         }
         return okay;
     }
 
+    /**
+     * Replaces all move slots and sets numMoves to the highest non-empty slot index + 1.
+     */
     public void setMoves(List<Move> newMoves) {
         if (newMoves.size() != moves.length) {
             throw new IllegalArgumentException(
@@ -210,6 +235,24 @@ public class MonsterCard extends Card {
 
         for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
             moves[moveIndex] = new Move(newMoves.get(moveIndex));
+        }
+        numMoves = 0;
+        for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
+            if (!moves[moveIndex].isEmpty()) {
+                numMoves = moveIndex + 1;
+            }
+        }
+    }
+
+    private void clearMovesFrom(int startIndex) {
+        for (int moveIndex = startIndex; moveIndex < moves.length; moveIndex++) {
+            moves[moveIndex] = new Move();
+        }
+    }
+
+    private void trimTrailingEmptyMoves() {
+        while (numMoves > 0 && moves[numMoves - 1].isEmpty()) {
+            numMoves--;
         }
     }
 
@@ -260,6 +303,13 @@ public class MonsterCard extends Card {
                 moves[moveIndex] = moves[moveIndex + 1];
                 moves[moveIndex + 1] = tempMove;
                 moveIndex = 0; // restart sort loop
+            }
+        }
+        // After packing empties to the end, keep numMoves aligned with occupied slots
+        numMoves = 0;
+        for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
+            if (!moves[moveIndex].isEmpty()) {
+                numMoves = moveIndex + 1;
             }
         }
     }
@@ -329,6 +379,7 @@ public class MonsterCard extends Card {
         monsterCategory.finalizeAndAddTexts(texts);
         description.finalizeAndAddTexts(texts);
 
+        clearMovesFrom(numMoves);
         sortMoves();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this, parser);

@@ -187,8 +187,12 @@ public class RandomizerApp {
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File saveFile = FileExtensionUtils.ensureExtension(
                             saveRomChooser.getSelectedFile(), RandomizerCore.PATCH_FILE_EXTENSION);
-                    randomizer.randomizeAndSaveRom(saveFile, settings,
-                            dualPanel.getSelectedActions());
+                    if (!randomizer.randomizeAndSaveRom(saveFile, settings,
+                            dualPanel.getSelectedActions())) {
+                        JOptionPane.showMessageDialog(frmTradingCard,
+                                "Randomization failed. See the log for module errors; no patch was written.",
+                                "Randomization Failed", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             } catch (IOException e1) {
                 // TODO later: Auto-generated catch block
