@@ -95,7 +95,8 @@ function module.applyEvoLineMetadata(monsterCards)
 			end)
 		end
 	end)
-	logger.info("Module set_evo_line_metadata completed for " .. #monsterCards .. " cards")
+	logger.info("Module set_evo_line_metadata completed for "
+		.. randomizer.list(monsterCards):size() .. " cards")
 end
 
 return module

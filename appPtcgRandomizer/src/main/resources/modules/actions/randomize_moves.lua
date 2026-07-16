@@ -18,7 +18,7 @@ module = {
 }
 
 function module.randomizeMoves(context)
-	local movePool = context.original:allMoves()
+	local movePool = context.modified:allMoves()
 	local moveSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes("getNumMoves")
 	randomizer.list(movePool):useToRandomize(moveSlots, function(target, move)
 		-- Lua is 1 based, Java and its objects are 0 based
