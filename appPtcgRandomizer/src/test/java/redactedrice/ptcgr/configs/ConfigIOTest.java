@@ -416,7 +416,7 @@ class YamlIOTest {
 
         ActionBank actionBank = new ActionBank(null) {
             @Override
-            public Module getModule(String moduleName) {
+            public Module getModule(String moduleId) {
                 return null;
             }
 
@@ -584,26 +584,26 @@ class YamlIOTest {
         return Config.readFromLoadedYamlMap(YamlIO.load(file, warnings), file.getName(), warnings);
     }
 
-    private static ActionBank testActionBank(String moduleName, String version,
+    private static ActionBank testActionBank(String moduleId, String version,
             List<Module> preScripts, List<Module> postScripts) {
         return new ActionBank(null) {
             @Override
-            public Module getModule(String name) {
-                if (moduleName != null && moduleName.equals(name)) {
-                    return moduleWithVersion(name, version);
+            public Module getModule(String id) {
+                if (moduleId != null && moduleId.equals(id)) {
+                    return moduleWithVersion(id, version);
                 }
                 return null;
             }
 
             @Override
-            public Module getScript(String name) {
+            public Module getScript(String id) {
                 for (Module script : preScripts) {
-                    if (script.getId().equals(name)) {
+                    if (script.getId().equals(id)) {
                         return script;
                     }
                 }
                 for (Module script : postScripts) {
-                    if (script.getId().equals(name)) {
+                    if (script.getId().equals(id)) {
                         return script;
                     }
                 }
