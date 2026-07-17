@@ -3,8 +3,8 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "randomize_attacks_within_type",
-	name = "Randomize Attacks Within Type",
-	description = "Randomizes attack slots using an attack pool built only from same-type cards",
+	name = "Randomize Existing Attacks Within Type",
+	description = "Randomizes existing attack slots using an attack pool built only from same type cards. Keeps the same number of attacks per card.",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",
@@ -17,37 +17,20 @@ module = {
 	end,
 }
 
-local function setMoveFromTarget(target, move)
-	target.card:setMove(move, target.slot)
-end
-
 function module.randomizeAttacksWithinType(context)
-	-- Get all the slots that we are randomizing
-	local attackSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes(
-		"getNumMoves",
-		function(card, index)
-			if card:getMove(index - 1):isAttack() then
-				return { card = card, slot = index - 1 }
-			end
-		end
-	)
+	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
+	-- randomize moves actually allowed to be randomized
+	local attackTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):filter("isAttack")
+	-- Get the pools of moves to use by type. This time include assigned moves
+	-- (as long as they aren't also excluded from the pool) but not empty ones
+	local poolsByType = randomizer.list(context.modified:getRandomizableMoves(true, false)):
+		filter("isAttack"):groupBy("getSourceCard:type")
 
-    -- TODO later: Need to figure out how to handle exclusions with this as we can't pull from
-    -- moves directly as they won't keep the type for now. Maybe add the host card's type to
-    -- the moves?
-	-- Group them by type
-	local attackSlotsByType = randomizer.groupBy(attackSlots, function(target)
-		return target.card.type
+	-- Randomize each move based on its host card's type and setting the move slot on the
+	-- host card to the new value so it sticks (we shouldn't modify the move directly)
+	poolsByType:useToRandomize(attackTargets, "getSourceCard:type", function(target, move)
+		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end)
-
-	-- Get all the attacks from those slots and group them by type
-	local attackPoolsByType = attackSlotsByType:applyToEachList("select", function(target)
-		return target.card:getMove(target.slot)
-	end)
-
-	attackPoolsByType:useToRandomize(attackSlotsByType:toList(), function(target)
-		return target.card.type
-	end, setMoveFromTarget)
 end
 
 return module

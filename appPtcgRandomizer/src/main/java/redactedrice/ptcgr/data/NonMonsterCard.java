@@ -25,15 +25,17 @@ public class NonMonsterCard extends Card {
         description = new EffectDescription();
     }
 
-    public NonMonsterCard(NonMonsterCard toCopy) {
-        super(toCopy);
+    public NonMonsterCard copy() {
+        NonMonsterCard copy = new NonMonsterCard();
+        copy.copyNonMonsterCardFields(this);
+        return copy;
+    }
+
+    protected void copyNonMonsterCardFields(NonMonsterCard toCopy) {
+        copyCardFields(toCopy);
 
         effectPtr = toCopy.effectPtr;
         description = new EffectDescription(toCopy.description);
-    }
-
-    public NonMonsterCard copy() {
-        return new NonMonsterCard(this);
     }
 
     @Override
@@ -50,8 +52,7 @@ public class NonMonsterCard extends Card {
         effectPtr = ByteUtils.readAsShort(cardBytes, index);
         index += 2;
 
-        int[] descIndexes = { index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES
-        };
+        int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
         description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText);
         return TOTAL_SIZE_IN_BYTES;
     }

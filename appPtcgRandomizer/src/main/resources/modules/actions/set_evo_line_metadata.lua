@@ -39,8 +39,8 @@ function module.setEvoLineMetadata(context)
 	})
 
     -- Set evo line metadata for both original and modified
-	module.applyEvoLineMetadata(context.original:getMonsterCards())
-	module.applyEvoLineMetadata(context.modified:getMonsterCards())
+	module.applyEvoLineMetadata(context.original:getRandomizableMonsterCards())
+	module.applyEvoLineMetadata(context.modified:getRandomizableMonsterCards())
 end
 
 function module.applyEvoLineMetadata(monsterCards)

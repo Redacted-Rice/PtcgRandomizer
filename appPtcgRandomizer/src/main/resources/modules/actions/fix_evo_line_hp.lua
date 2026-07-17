@@ -22,9 +22,7 @@ module = {
 }
 
 function module.fixEvoLineHp(context)
-	local monsterCards = context.modified:getMonsterCards()
-
-	local byEvoLine = randomizer.groupBy(monsterCards, "evoLineId")
+	local byEvoLine = randomizer.groupBy(context.modified:getRandomizableMonsterCards(), "evoLineId")
 	byEvoLine:each(function(_, line)
 		-- Group by EvolutionStage's underlying value so sort is numeric
 		local byStage = randomizer.groupBy(line, function(mc)

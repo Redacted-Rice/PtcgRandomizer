@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import redactedrice.compiler.CodeBlock;
@@ -15,6 +16,7 @@ import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.MovableBlock;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
+import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.*;
 import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
@@ -26,7 +28,6 @@ import redactedrice.ptcgr.rom.Texts;
 
 public class Move {
     public static final int TOTAL_SIZE_IN_BYTES = 19;
-    public static final Move EMPTY_MOVE = new Move();
     public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
 
     EnumMap<EnergyType, Byte> energyCost;
@@ -40,8 +41,20 @@ public class Move {
     Set<MoveEffect3> effect3;
     byte unknownByte;
     byte animation;
+    private final MonsterCard sourceCard;
+    private final int sourceMoveIndex;
+    private boolean lockedViaAssignment;
 
-    public Move() {
+    public Move(MonsterCard card, int moveIndex) {
+        sourceCard = Objects.requireNonNull(card);
+        if (moveIndex < 0 || moveIndex >= MonsterCard.MAX_NUM_MOVES) {
+            throw new IllegalArgumentException("Move slot index out of range: " + moveIndex);
+        }
+        sourceMoveIndex = moveIndex;
+        initializeEmptyFields();
+    }
+
+    private void initializeEmptyFields() {
         energyCost = new EnumMap<>(EnergyType.class);
         name = new MoveName();
         description = new EffectDescription();
@@ -52,7 +65,7 @@ public class Move {
         effect3 = new HashSet<>();
     }
 
-    public Move(Move toCopy) {
+    public void copyNonMetadataFieldsFrom(Move toCopy) {
         energyCost = new EnumMap<>(toCopy.energyCost);
         name = new MoveName(toCopy.name);
         description = new EffectDescription(toCopy.description);
@@ -64,6 +77,41 @@ public class Move {
         effect3 = new HashSet<>(toCopy.effect3);
         unknownByte = toCopy.unknownByte;
         animation = toCopy.animation;
+    }
+
+    public void swapNonMetadataFieldsWith(Move other) {
+        Move temp = new Move(sourceCard, sourceMoveIndex);
+        temp.copyNonMetadataFieldsFrom(this);
+        copyNonMetadataFieldsFrom(other);
+        other.copyNonMetadataFieldsFrom(temp);
+    }
+
+    public void makeEmpty() {
+        initializeEmptyFields();
+        lockedViaAssignment = false;
+    }
+
+    public Move copy() {
+        Move move = new Move(sourceCard, sourceMoveIndex);
+        move.lockedViaAssignment = lockedViaAssignment;
+        move.copyNonMetadataFieldsFrom(this);
+        return move;
+    }
+
+    public boolean isLockedViaAssignment() {
+        return lockedViaAssignment;
+    }
+
+    void setLockedViaAssignment(boolean lockedViaAssignment) {
+        this.lockedViaAssignment = lockedViaAssignment;
+    }
+
+    public MonsterCard getSourceCard() {
+        return sourceCard;
+    }
+
+    public int getSourceMoveIndex() {
+        return sourceMoveIndex;
     }
 
     public static class BasicSorter implements Comparator<Move> {
@@ -232,8 +280,7 @@ public class Move {
 
         index = name.readDataAndConvertIds(moveBytes, index, idToText);
 
-        int[] descIndexes = { index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES
-        };
+        int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
         description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText);
         index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 
@@ -250,6 +297,7 @@ public class Move {
         return index;
     }
 
+    // TODO later: Clear the call for family logic out
     public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard,
             InstructionParser parser) {
         name.finalizeAndAddTexts(texts);
@@ -261,8 +309,8 @@ public class Move {
                         "Failed to find basic card for " + hostCard.name.toString());
             }
 
-            CustomCardEffect custEffect = HardcodedEffects.CallForFamily
-                    .createMoveEffect(/* cards, */ basics, parser);
+            CustomCardEffect custEffect =
+                    HardcodedEffects.CallForFamily.createMoveEffect(/* cards, */ basics, parser);
             List<MovableBlock> effectBlocks = custEffect.convertToBlocks();
             for (MovableBlock block : effectBlocks) {
                 blocks.addMovableBlock(block);

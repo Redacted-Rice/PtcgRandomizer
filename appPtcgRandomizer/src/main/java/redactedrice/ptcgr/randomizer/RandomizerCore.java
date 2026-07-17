@@ -42,7 +42,6 @@ public class RandomizerCore {
     public static final String DEFAULT_PATCH_BASE_NAME = "ptcg_randomized";
 
     private RomData romData;
-    private Rules rules;
     private RulesConfig pendingRules;
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
@@ -129,13 +128,11 @@ public class RandomizerCore {
     public boolean openRom(File romFile, Component toCenterPopupsOn) {
         try {
             romData = RomIO.readFromFile(romFile);
-            rules = new Rules(romData);
-            pendingRules.recreateRules(rules, warnings);
+            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards(), warnings);
             warnings.logAndDisplay("loaded rules", true);
             return true;
         } catch (IOException e) {
             romData = null;
-            rules = null;
             e.printStackTrace();
             return false;
         }
@@ -147,18 +144,14 @@ public class RandomizerCore {
      */
     public void replacePendingRules(RulesConfig rulesConfig) {
         pendingRules = rulesConfig;
-        if (rules != null) {
-            pendingRules.recreateRules(rules, warnings);
+        if (romData != null) {
+            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards(), warnings);
             warnings.logAndDisplay("loaded rules", true);
         }
     }
 
     public RulesConfig getPendingRules() {
         return pendingRules;
-    }
-
-    public Rules getRules() {
-        return rules;
     }
 
     public boolean randomizeAndSaveRom(File romFile, Settings settings, List<Action> actions)
@@ -215,8 +208,8 @@ public class RandomizerCore {
         int seed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
-        // without reloading) and prepare it to be modified so we know that
-        // it will need to be reset)
+        // without reloading) and prepare it to be modified which includes reapplying
+        // the rules
         romData.prepareForModification();
 
         // Expose objects to be modified
@@ -224,10 +217,7 @@ public class RandomizerCore {
         JavaContext context = new JavaContext();
         context.register("original", romData.original);
         context.register("modified", romData.modified);
-
-        if (rules != null) {
-            context.register("rules", rules);
-        }
+        context.register("rules", romData.rules);
 
         // Register card some enums
         // TODO later: Add others. Could I do this dynamically or just specify all of them
@@ -273,8 +263,8 @@ public class RandomizerCore {
 
         for (ExecutionResult result : results) {
             if (!result.isSuccess()) {
-                Logger.error("Module " + result.getModuleId() + " failed: "
-                        + result.getErrorMessage());
+                Logger.error(
+                        "Module " + result.getModuleId() + " failed: " + result.getErrorMessage());
                 success = false;
             } else {
                 ExecutionRequest request = result.getRequest();

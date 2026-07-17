@@ -26,7 +26,7 @@ function script.setupChangeDetection(context)
 
     -- Just set it up anyways in case later someone wants to enable it for
     -- some things but not others or we want to use it for specific modules for debug
-    local monsterCards = context.modified:getMonsterCards()
+    local monsterCards = context.modified:getRandomizableMonsterCards()
 
     -- Table layout is configured here so formatting stays simple in detectChanges()
     changedetector.monitor("Monster Cards", monsterCards, {

@@ -30,22 +30,36 @@ public class MoveAssignments {
         assignmentsByCardId.clear();
     }
 
-    public void assignSpecifiedMoves(CardGroup<MonsterCard> cardsToApplyTo,
-            MoveExclusions exclusionsToAddTo) {
-        CardGroup<MonsterCard> foundCards = cardsToApplyTo.withIds(assignmentsByCardId.keySet());
+    public void assignSpecifiedMoves(CardGroup<MonsterCard> cards) {
+        CardGroup<MonsterCard> foundCards = cards.withIds(assignmentsByCardId.keySet());
         for (MonsterCard card : foundCards.iterable()) {
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
                 card.setMove(assign.getMove(), assign.getMoveSlot());
-
-                exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), false,
-                        true, exclusionSourceForAssignment(assign));
+                card.setMoveLockedViaAssignment(assign.getMoveSlot(), true);
             }
         }
     }
 
+    public boolean hasAssignmentForSlot(CardId cardId, int moveSlot) {
+        List<MoveAssignment> cardAssignments = assignmentsByCardId.get(cardId);
+        if (cardAssignments == null) {
+            return false;
+        }
+        for (MoveAssignment assignment : cardAssignments) {
+            if (assignment.getMoveSlot() == moveSlot) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static String exclusionSourceForAssignment(MoveAssignment assign) {
-        return assign.getSourceFileName() + ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX;
+        return exclusionSourceForAssignment(assign.getSourceFileName());
+    }
+
+    public static String exclusionSourceForAssignment(String sourceFileName) {
+        return sourceFileName + ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX;
     }
 
     public static boolean isAssignmentDerivedExclusionSource(String sourceFileName) {
@@ -56,6 +70,15 @@ public class MoveAssignments {
     public void add(MoveAssignment assignment) {
         List<MoveAssignment> cardAssignments = assignmentsByCardId
                 .computeIfAbsent(assignment.getCardId(), ll -> new LinkedList<>());
+        for (MoveAssignment existing : cardAssignments) {
+            if (!existing.hasSameTarget(assignment)) {
+                continue;
+            }
+            if (existing.hasSameSettings(assignment)) {
+                return;
+            }
+            return;
+        }
         cardAssignments.add(assignment);
     }
 

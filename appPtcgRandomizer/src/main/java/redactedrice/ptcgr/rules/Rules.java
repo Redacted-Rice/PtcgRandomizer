@@ -2,22 +2,15 @@ package redactedrice.ptcgr.rules;
 
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
-import redactedrice.ptcgr.rom.RomData;
 
 /** Runtime move exclusion and assignment state for an opened ROM. */
 public class Rules {
-    private final CardGroup<MonsterCard> allCards;
     private final MoveExclusions moveExclusions;
     private final MoveAssignments moveAssignments;
 
-    public Rules(RomData romData) {
-        this(romData.original.allCards.cards().monsterCards());
-    }
-
-    public Rules(CardGroup<MonsterCard> allCards) {
-        this.allCards = allCards;
-        moveExclusions = new MoveExclusions();
+    public Rules() {
         moveAssignments = new MoveAssignments();
+        moveExclusions = new MoveExclusions();
     }
 
     public void clear() {
@@ -33,7 +26,15 @@ public class Rules {
         return moveAssignments;
     }
 
-    public CardGroup<MonsterCard> getAllCards() {
-        return allCards;
+    public void addMoveExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
+        moveExclusions.add(exclusion, cards, moveAssignments);
+    }
+
+    public void addMoveAssignment(MoveAssignment assignment) {
+        moveAssignments.add(assignment);
+    }
+
+    public void applyTo(CardGroup<MonsterCard> cards) {
+        moveAssignments.assignSpecifiedMoves(cards);
     }
 }

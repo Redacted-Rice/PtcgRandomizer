@@ -3,8 +3,8 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "randomize_poke_powers_within_type",
-	name = "Randomize Poke Powers Within Type",
-	description = "Randomizes poke power only within each energy type, leaving attacks unchanged",
+	name = "Randomize Existing Poke Powers Within Type",
+	description = "Randomizes existing poke power slots using a poke power pool built only from same type cards. Keeps the same number of poke powers per card.",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",
@@ -17,37 +17,20 @@ module = {
 	end,
 }
 
-local function setMoveFromTarget(target, move)
-	target.card:setMove(move, target.slot)
-end
-
 function module.randomizePokePowersWithinType(context)
-	-- Get all the slots that we are randomizing
-	local powerSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes(
-		"getNumMoves",
-		function(card, index)
-			if card:getMove(index - 1):isPokePower() then
-				return { card = card, slot = index - 1 }
-			end
-		end
-	)
+	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
+	-- randomize moves actually allowed to be randomized
+	local powerTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):filter("isPokePower")
+	-- Get the pools of moves to use by type. This time include assigned moves
+	-- (as long as they aren't also excluded from the pool) but not empty ones
+	local poolsByType = randomizer.list(context.modified:getRandomizableMoves(true, false)):
+		filter("isPokePower"):groupBy("getSourceCard:type")
 
-    -- TODO later: Need to figure out how to handle exclusions with this as we can't pull from
-    -- moves directly as they won't keep the type for now. Maybe add the host card's type to
-    -- the moves?
-	-- Group them by type
-	local powerSlotsByType = randomizer.groupBy(powerSlots, function(target)
-		return target.card.type
+	-- Randomize each move based on its host card's type and setting the move slot on the
+	-- host card to the new value so it sticks (we shouldn't modify the move directly)
+	poolsByType:useToRandomize(powerTargets, "getSourceCard:type", function(target, move)
+		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end)
-
-    -- And then pull out the moves
-	local powerPoolsByType = powerSlotsByType:applyToEachList("select", function(target)
-		return target.card:getMove(target.slot)
-	end)
-
-	powerPoolsByType:useToRandomize(powerSlotsByType:toList(), function(target)
-		return target.card.type
-	end, setMoveFromTarget)
 end
 
 return module

@@ -28,8 +28,10 @@ module = {
 	end,
 }
 
+-- TODO later: None the other modules actually use this ATM. Consider how to handle this
+-- for those or to make separate ones that do use this
 function module.setNumMoves(context, args)
-	randomizer.list(context.modified:getMonsterCards()):each(function(card)
+	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
 		card:setNumMoves(args.numMoves)
 	end)
 end

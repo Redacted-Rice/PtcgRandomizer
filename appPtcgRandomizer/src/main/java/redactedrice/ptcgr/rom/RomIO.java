@@ -31,7 +31,7 @@ public class RomIO {
         RomIO.verifyRom(rawBytes);
         return new RomData(rawBytes, readFromBytes(rawBytes));
     }
-    
+
     private static void verifyRom(byte[] rawBytes) {
         // TODO later: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
         int index = PtcgRomConstants.HEADER_LOCATION;
@@ -42,12 +42,12 @@ public class RomIO {
             }
         }
     }
-    
+
     public static RandomizationData readFromBytes(byte[] bytes) {
-    	RandomizationData data = new RandomizationData();
-    	data.idsToText = readTextsFromData(bytes, data.blocks);
-    	data.allCards = readCardsFromData(bytes, data.idsToText, data.blocks);
-    	return data;
+        RandomizationData data = new RandomizationData();
+        data.idsToText = readTextsFromData(bytes, data.blocks);
+        data.allCards = readCardsFromData(bytes, data.idsToText, data.blocks);
+        return data;
     }
 
     // TODO: Testing only. Should remove once BPS is good and ready
@@ -71,8 +71,8 @@ public class RomIO {
 
         // Read the text based on the pointer map in the rom
         // First pointer is a null pointer so we skip it
-        int ptrIndex = PtcgRomConstants.TEXT_POINTERS_LOC
-                + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+        int ptrIndex =
+                PtcgRomConstants.TEXT_POINTERS_LOC + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
         int ptr = 0;
         int textIndex = 0;
         int firstPtr = Integer.MAX_VALUE;
@@ -94,8 +94,7 @@ public class RomIO {
             CharSetPrefix charSet = CharSetPrefix.readFromByte(rawBytes[textIndex]);
             if (charSet != CharSetPrefix.EMPTY) {
                 // Loop until we find the ending character if its not an empty text
-                while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR)
-                    ;
+                while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR);
             }
 
             // Read the string to the null char (but not including it) and store where
@@ -117,8 +116,8 @@ public class RomIO {
 
         // Add the space for the pointers. The ptrIndex will end at the first text
         // + 1 because end is exclusive
-        AddressRange textPtrsRange = new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC,
-                ptrIndex + 1);
+        AddressRange textPtrsRange =
+                new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1);
         texts.setOrigPtrsRange(textPtrsRange);
         toBlankSpaceIn.addBlankedBlock(textPtrsRange);
         return texts;
@@ -133,8 +132,8 @@ public class RomIO {
 
         // Read the cards based on the pointer map in the rom
         // Skip the first null pointer
-        int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC
-                + PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
+        int ptrIndex =
+                PtcgRomConstants.CARD_POINTERS_LOC + PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
         int cardIndex = 0;
 
         // Read each pointer one at a time until we reach the ending null pointer
@@ -155,8 +154,8 @@ public class RomIO {
 
         // Add the space for the pointers. The ptrIndex will end at the first text
         // + 1 because end is exclusive
-        AddressRange cardPtrsRange = new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC,
-                ptrIndex + 1);
+        AddressRange cardPtrsRange =
+                new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1);
         cards.setOrigPtrsRange(cardPtrsRange);
         toBlankSpaceIn.addBlankedBlock(cardPtrsRange);
 
@@ -181,19 +180,22 @@ public class RomIO {
 
         // Now assign locations for the data
         DataManager manager = new DataManager();
-        AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.rawBytes, romData.modified.blocks);
+        AssignedAddresses assignedAddresses =
+                manager.allocateBlocks(romData.rawBytes, romData.modified.blocks);
 
         // Finally write the patch file
-        RomIO.writeBpsPatch(patchFile, romData.rawBytes, romData.modified.blocks, assignedAddresses);
+        RomIO.writeBpsPatch(patchFile, romData.rawBytes, romData.modified.blocks,
+                assignedAddresses);
     }
 
-    private static void finalizeDataAndGenerateBlocks(RandomizationData patchedData, InstructionParser parser,
-            PtcgInstructionSetParser ptcgParser) {
+    private static void finalizeDataAndGenerateBlocks(RandomizationData patchedData,
+            InstructionParser parser, PtcgInstructionSetParser ptcgParser) {
         // Reset the singleton -- TODO later: Needed?
         HardcodedEffects.reset();
 
         // Finalize the card data, texts and blocks
-        patchedData.allCards.finalizeConvertAndAddData(patchedData.idsToText, patchedData.blocks, parser);
+        patchedData.allCards.finalizeConvertAndAddData(patchedData.idsToText, patchedData.blocks,
+                parser);
 
         // Now add all the text from the custom parser instructions
         ptcgParser.finalizeAndAddTexts(patchedData.idsToText);
@@ -206,7 +208,7 @@ public class RomIO {
         // TODO: sorted twice?
         AddressRange.sortAndCombine(patchedData.blocks.getAllBlankedBlocks());
     }
-    
+
     public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks,
             AssignedAddresses assignedAddresses) {
         // Now actually write to the bytes

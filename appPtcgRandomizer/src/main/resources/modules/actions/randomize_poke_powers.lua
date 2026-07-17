@@ -3,8 +3,8 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "randomize_poke_powers",
-	name = "Randomize Poke Powers",
-	description = "Randomizes poke power only, leaving attacks unchanged",
+	name = "Randomize Existing Poke Powers",
+	description = "Randomizes existing poke power slots using a poke power pool of any type. Keeps the same number of poke powers per card.",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",
@@ -18,24 +18,17 @@ module = {
 }
 
 function module.randomizePokePowers(context)
-	-- Get all the slots that we are randomizing
-	local powerSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes(
-		"getNumMoves",
-		function(card, index)
-			if card:getMove(index - 1):isPokePower() then
-				return { card = card, slot = index - 1 }
-			end
-		end
-	)
+	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
+	-- randomize moves actually allowed to be randomized
+	local powerTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):filter("isPokePower")
+	-- Get the pool of moves to draw from. This time include assigned moves
+	-- (as long as they aren't also excluded from the pool) but not empty ones
+	local powerPool = randomizer.list(context.modified:getRandomizableMoves(true, false)):filter("isPokePower")
 
-	-- Get all poke powers from modified moves
-	local powerPool = randomizer.list(context.modified:allMoves()):filter(function(move)
-		return move:isPokePower()
-	end)
-
-	-- And randomize them
-	powerPool:useToRandomize(powerSlots, function(target, move)
-		target.card:setMove(move, target.slot)
+	-- Randomize each target slot by setting the move on the host card so it sticks
+	-- (we shouldn't modify the move directly)
+	powerPool:useToRandomize(powerTargets, function(target, move)
+		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end)
 end
 

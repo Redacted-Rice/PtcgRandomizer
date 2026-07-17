@@ -17,6 +17,8 @@ import redactedrice.ptcgr.data.romtexts.MonsterCategory;
 import redactedrice.ptcgr.data.romtexts.PokeDescription;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
+import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.Logger;
 
 public class MonsterCard extends Card {
     public static final int TOTAL_SIZE_IN_BYTES = 65;
@@ -57,24 +59,33 @@ public class MonsterCard extends Card {
         prevEvoName = new CardName(true); // Pokename
         moves = new Move[MAX_NUM_MOVES];
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
-            moves[moveIndex] = new Move();
+            moves[moveIndex] = new Move(this, moveIndex);
         }
         numMoves = 0;
         monsterCategory = new MonsterCategory();
         description = new PokeDescription();
     }
 
-    public MonsterCard(MonsterCard toCopy) {
-        super(toCopy);
+    @Override
+    protected CardName createCardName() {
+        return new CardName(true); // a pokename
+    }
+
+    @Override
+    public MonsterCard copy() {
+        MonsterCard copy = new MonsterCard();
+        copy.copyMonsterCardFields(this);
+        return copy;
+    }
+
+    protected void copyMonsterCardFields(MonsterCard toCopy) {
+        copyCardFields(toCopy);
 
         setHp(toCopy.getHp());
         stage = toCopy.stage;
         prevEvoName = new CardName(toCopy.prevEvoName);
-        moves = new Move[MAX_NUM_MOVES];
-        for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
-            moves[moveIndex] = new Move(toCopy.moves[moveIndex]);
-        }
-        numMoves = toCopy.numMoves;
+        // Set the moves. THis will copy and retarget the moves metadata
+        setMoves(toCopy.peekAllMoves(true));
         retreatCost = toCopy.retreatCost;
         weakness = toCopy.weakness;
         resistance = toCopy.resistance;
@@ -87,15 +98,6 @@ public class MonsterCard extends Card {
         weight = toCopy.weight;
         description = new PokeDescription(toCopy.description);
         unknownByte2 = toCopy.unknownByte2;
-    }
-
-    @Override
-    protected CardName createCardName() {
-        return new CardName(true); // a pokename
-    }
-
-    public MonsterCard copy() {
-        return new MonsterCard(this);
     }
 
     public int getLevel() {
@@ -146,20 +148,12 @@ public class MonsterCard extends Card {
         return findByNameWithLevel(cards, ref);
     }
 
-    public List<Move> getAllMovesIncludingEmptyOnes() {
-        ArrayList<Move> movesList = new ArrayList<>();
+    /** Returns live move refs for this card's slots. Should be treated as a const */
+    public List<Move> peekAllMoves(boolean includeEmpty) {
+        List<Move> movesList = new ArrayList<>();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
-            movesList.add(getMove(moveIndex));
-        }
-        return movesList;
-    }
-
-    public List<Move> getAllNonEmptyMoves() {
-        ArrayList<Move> movesList = new ArrayList<>();
-        for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
-            Move move = moves[moveIndex];
-            if (!move.isEmpty()) {
-                movesList.add(new Move(move));
+            if (includeEmpty || !moves[moveIndex].isEmpty()) {
+                movesList.add(moves[moveIndex]);
             }
         }
         return movesList;
@@ -174,79 +168,130 @@ public class MonsterCard extends Card {
      * Expanding the count exposes existing (cleared) slots as empty until setMove fills them.
      */
     public boolean setNumMoves(int numMoves) {
+        return setNumMoves(numMoves, null);
+    }
+
+    /**
+     * Sets how many move slots are active. If the new count is lower than the current count, locked
+     * assignment slots in the removed range trigger a warning but are still cleared.
+     */
+    public boolean setNumMoves(int numMoves, WarningCollector warnings) {
         boolean okay = numMoves >= 0 && numMoves <= MAX_NUM_MOVES;
         if (okay) {
             if (numMoves < this.numMoves) {
-                clearMovesFrom(numMoves);
+                for (int moveIndex = numMoves; moveIndex < this.numMoves; moveIndex++) {
+                    if (moves[moveIndex].isLockedViaAssignment()) {
+                        warnLockedMoveCleared(moveIndex, warnings);
+                    }
+                    moves[moveIndex].makeEmpty();
+                }
             }
             this.numMoves = numMoves;
         }
         return okay;
     }
 
-    /**
-     * Returns a copy of the move in the given active slot. Slots at or beyond getNumMoves are
-     * treated as empty. Use setMove to write back.
-     */
+    private void warnLockedMoveCleared(int moveIndex, WarningCollector warnings) {
+        String message = "Reducing move count on \"" + toNameWithLevelSpecifier()
+                + "\" cleared locked assignment in slot " + (moveIndex + 1) + ".";
+        if (warnings != null) {
+            warnings.addWarning(message);
+        } else {
+            Logger.warn(message);
+        }
+    }
+
+    /** Returns the 0-based indexes of active move slots locked via assignment. */
+    public List<Integer> getLockedMoveIndexes() {
+        List<Integer> lockedIndexes = new ArrayList<>();
+        for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
+            if (moves[moveIndex].isLockedViaAssignment()) {
+                lockedIndexes.add(moveIndex);
+            }
+        }
+        return lockedIndexes;
+    }
+
+    /** Returns the ref for stored move for the given slot index. Should be treated as a const */
+    public Move peekMove(int moveIndex) {
+        if (moveIndex < 0 || moveIndex >= MAX_NUM_MOVES) {
+            return null;
+        }
+        return moves[moveIndex];
+    }
+
+    /** Returns a copy of the move in the given slot, which may be empty. */
     public Move getMove(int moveIndex) {
-        if (moveIndex < 0 || moveIndex >= numMoves || moveIndex >= moves.length) {
-            return Move.EMPTY_MOVE;
+        if (moveIndex < 0 || moveIndex >= MAX_NUM_MOVES) {
+            return null;
         }
 
-        return new Move(moves[moveIndex]);
+        return moves[moveIndex].copy();
     }
 
     public Move getMoveWithName(String moveName) {
         for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
             Move move = moves[moveIndex];
             if (move.name.toString().equals(moveName)) {
-                return new Move(move);
+                return move.copy();
             }
         }
-
         return null;
     }
 
     /**
-     * Writes a copy of move into the slot and updates numMoves so it remains the source of truth
-     * for active slots.
+     * Copies move data into the slot and updates numMoves so it remains the source of truth for
+     * active slots.
      */
     public boolean setMove(Move move, int moveSlot) {
         boolean okay = moveSlot >= 0 && moveSlot < moves.length;
         if (okay) {
-            moves[moveSlot] = new Move(move);
-            if (!moves[moveSlot].isEmpty()) {
-                numMoves = Math.max(numMoves, moveSlot + 1);
-            } else {
-                trimTrailingEmptyMoves();
-            }
+            moves[moveSlot].copyNonMetadataFieldsFrom(move);
+            moves[moveSlot].setLockedViaAssignment(false);
+            updateNumMovesForSlot(moveSlot);
         }
         return okay;
     }
 
+    public void setMoveLockedViaAssignment(int moveSlot, boolean locked) {
+        if (moveSlot >= 0 && moveSlot < moves.length) {
+            moves[moveSlot].setLockedViaAssignment(locked);
+        }
+    }
+
+    private void updateNumMovesForSlot(int moveSlot) {
+        if (!moves[moveSlot].isEmpty()) {
+            numMoves = Math.max(numMoves, moveSlot + 1);
+        } else {
+            trimTrailingEmptyMoves();
+        }
+    }
+
+    public void setMoves(Move... newMoves) {
+        setMoves(List.of(newMoves));
+    }
+
     /**
-     * Replaces all move slots and sets numMoves to the highest non-empty slot index + 1.
+     * Replaces move slots up to {@link #MAX_NUM_MOVES} and sets numMoves to the highest non-empty
+     * slot index + 1. Shorter lists clear the remaining slots.
      */
     public void setMoves(List<Move> newMoves) {
-        if (newMoves.size() != moves.length) {
+        if (newMoves.size() > moves.length) {
             throw new IllegalArgumentException(
                     "Bad number of moves (" + newMoves.size() + ") was passed!");
         }
 
-        for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
-            moves[moveIndex] = new Move(newMoves.get(moveIndex));
+        for (int moveIndex = 0; moveIndex < newMoves.size(); moveIndex++) {
+            moves[moveIndex].copyNonMetadataFieldsFrom(newMoves.get(moveIndex));
+        }
+        for (int moveIndex = newMoves.size(); moveIndex < moves.length; moveIndex++) {
+            moves[moveIndex].makeEmpty();
         }
         numMoves = 0;
         for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
             if (!moves[moveIndex].isEmpty()) {
                 numMoves = moveIndex + 1;
             }
-        }
-    }
-
-    private void clearMovesFrom(int startIndex) {
-        for (int moveIndex = startIndex; moveIndex < moves.length; moveIndex++) {
-            moves[moveIndex] = new Move();
         }
     }
 
@@ -257,7 +302,6 @@ public class MonsterCard extends Card {
     }
 
     public void sortMoves() {
-        Move tempMove;
         boolean needsSwap;
         for (int moveIndex = 0; moveIndex < moves.length - 1; moveIndex++) {
             needsSwap = false;
@@ -299,9 +343,7 @@ public class MonsterCard extends Card {
             }
 
             if (needsSwap) {
-                tempMove = moves[moveIndex];
-                moves[moveIndex] = moves[moveIndex + 1];
-                moves[moveIndex + 1] = tempMove;
+                moves[moveIndex].swapNonMetadataFieldsWith(moves[moveIndex + 1]);
                 moveIndex = 0; // restart sort loop
             }
         }
@@ -379,7 +421,6 @@ public class MonsterCard extends Card {
         monsterCategory.finalizeAndAddTexts(texts);
         description.finalizeAndAddTexts(texts);
 
-        clearMovesFrom(numMoves);
         sortMoves();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this, parser);
