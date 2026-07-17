@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.utils.WarningCollector;
 
@@ -57,7 +59,8 @@ public class MoveExclusions {
         return false;
     }
 
-    public void add(MoveExclusion exclusion) {
+    public void add(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments) {
         List<MoveExclusion> bucket;
         if (exclusion.isCardIdSet()) {
             bucket = exclByCardId.computeIfAbsent(exclusion.getCardId(), ll -> new LinkedList<>());
@@ -68,16 +71,38 @@ public class MoveExclusions {
             return;
         }
         bucket.add(exclusion);
+        if (cards != null) {
+            addAssignmentsForExclusion(exclusion, cards, assignments);
+        }
+    }
+
+    private void addAssignmentsForExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments) {
+        if (!exclusion.isExcludeFromRandomization()) {
+            return;
+        }
+
+        for (MonsterCard card : cards.iterable()) {
+            for (int moveIndex = 0; moveIndex < card.getNumMoves(); moveIndex++) {
+                Move move = card.peekMove(moveIndex);
+                if (!move.isEmpty() && exclusion.matchesMove(card.id, move)) {
+                    assignments.addMoveAssignment(card, moveIndex, move, MoveAssignments
+                            .exclusionSourceForAssignment(exclusion.getSourceFileName()));
+                }
+            }
+        }
     }
 
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
-            boolean excludeFromRandomization, String sourceFileName) {
+            boolean excludeFromRandomization, String sourceFileName, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments) {
         addMoveExclusion(cardId, moveName, removeFromPool, excludeFromRandomization, sourceFileName,
-                null);
+                cards, assignments, null);
     }
 
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
-            boolean excludeFromRandomization, String sourceFileName, WarningCollector warnings) {
+            boolean excludeFromRandomization, String sourceFileName, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments, WarningCollector warnings) {
         MoveExclusion excl = new MoveExclusion(cardId, moveName, removeFromPool,
                 excludeFromRandomization, sourceFileName);
         List<MoveExclusion> bucket;
@@ -104,6 +129,6 @@ public class MoveExclusions {
             }
             return;
         }
-        bucket.add(excl);
+        add(excl, cards, assignments);
     }
 }

@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveAssignment;
+import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.utils.WarningCollector;
 
 public final class RulesConfig {
@@ -48,19 +52,18 @@ public final class RulesConfig {
         return node;
     }
 
-    public void applyTo(Rules rules, WarningCollector warnings) {
+    public void applyTo(Rules rules, CardGroup<MonsterCard> cards, WarningCollector warnings) {
         if (rules == null) {
             warnings.addWarning("Cannot apply rules because no ROM is loaded.");
             return;
         }
 
-        var cards = rules.getAllCards();
         for (int i = 0; i < moveExclusionConfigs.size(); i++) {
             String entryContext = sourceLabel + ":" + MOVE_EXCLUSIONS_KEY + "[" + i + "]";
             MoveExclusion exclusion = moveExclusionConfigs.get(i).toMoveExclusion(cards,
                     sourceLabel, entryContext, warnings);
             if (exclusion != null) {
-                rules.getMoveExclusions().add(exclusion);
+                rules.addMoveExclusion(exclusion, cards);
             }
         }
         for (int i = 0; i < moveAssignmentConfigs.size(); i++) {
@@ -68,18 +71,19 @@ public final class RulesConfig {
             MoveAssignment assignment = moveAssignmentConfigs.get(i).toMoveAssignment(cards,
                     sourceLabel, entryContext, warnings);
             if (assignment != null) {
-                rules.getMoveAssignments().add(assignment);
+                rules.addMoveAssignment(assignment);
             }
         }
     }
 
-    public void recreateRules(Rules rules, WarningCollector warnings) {
+    public void recreateRules(Rules rules, CardGroup<MonsterCard> cards,
+            WarningCollector warnings) {
         if (rules == null) {
             warnings.addWarning("Cannot apply rules because no ROM is loaded.");
             return;
         }
         rules.clear();
-        applyTo(rules, warnings);
+        applyTo(rules, cards, warnings);
     }
 
     public RulesConfig mergedWith(RulesConfig other) {

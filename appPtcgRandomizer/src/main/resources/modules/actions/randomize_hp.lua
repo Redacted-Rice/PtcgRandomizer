@@ -20,8 +20,8 @@ module = {
 -- TODO later: Add args/options and make it more distinct from hp by stage
 function module.shuffleHp(context)
 	-- Get all monster cards from the original and modified data
-	local monsterOrig = context.original:getMonsterCards()
-	local monsterMod = context.modified:getMonsterCards()
+	local monsterOrig = context.original:getRandomizableMonsterCards()
+	local monsterMod = context.modified:getRandomizableMonsterCards()
 
 	-- Get hp by stage - groupFromField expects an iterable/list
 	-- Use getter function since hp is private

@@ -12,7 +12,7 @@ public class MoveAssignment {
     public MoveAssignment(CardId cardId, int moveSlot, Move move, String sourceFileName) {
         this.cardId = cardId;
         this.moveSlot = moveSlot;
-        this.move = new Move(move);
+        this.move = move.copy();
         this.sourceFileName = sourceFileName;
     }
 

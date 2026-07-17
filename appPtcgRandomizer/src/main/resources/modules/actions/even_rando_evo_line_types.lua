@@ -19,7 +19,7 @@ module = {
 }
 
 function module.randomizeEvoLineTypes(context)
-	local monsterCards = context.modified:getMonsterCards()
+	local monsterCards = context.modified:getRandomizableMonsterCards()
 
 	-- Get all types from monster cards
 	-- TODO later: Probably use original not modified - or make it an config option?

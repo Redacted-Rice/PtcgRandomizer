@@ -48,7 +48,10 @@ public abstract class Card {
 
     protected abstract CardName createCardName();
 
-    public Card(Card toCopy) {
+    public abstract Card copy();
+
+    // Common copying used by subclasses
+    protected void copyCardFields(Card toCopy) {
         readFromAddress = toCopy.readFromAddress;
         type = toCopy.type;
         name = new CardName(toCopy.name);
@@ -58,8 +61,6 @@ public abstract class Card {
         pack = toCopy.pack;
         id = toCopy.id;
     }
-
-    public abstract Card copy();
 
     public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText,
             CardGroup<Card> toAddTo) {

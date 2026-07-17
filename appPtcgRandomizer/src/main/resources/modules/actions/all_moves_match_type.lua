@@ -21,7 +21,7 @@ module = {
 -- Keeps colorless costs as is and only change non colorless energy to the card's type
 function module.setMoveCostsToMatchType(context)
 	local EnergyType = context.EnergyType
-	randomizer.list(context.modified:getMonsterCards()):each(function(mon)
+	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(mon)
 		local energyType = mon.type:convertToEnergyType()
 		for moveSlot = 0, mon:getNumMoves() - 1 do
 			local move = mon:getMove(moveSlot)

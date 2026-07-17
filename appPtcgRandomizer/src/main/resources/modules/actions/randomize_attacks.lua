@@ -3,8 +3,8 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "randomize_attacks",
-	name = "Randomize Attacks",
-	description = "Randomizes attack slots from the attack pool, leaving poke-powers unchanged",
+	name = "Randomize Existing Attacks",
+	description = "Randomizes existing attack slots using an attack pool of any type. Keeps the same number of attacks per card.",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",
@@ -18,24 +18,17 @@ module = {
 }
 
 function module.randomizeAttacks(context)
-	-- Get all the slots that we are randomizing
-	local attackSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes(
-		"getNumMoves",
-		function(card, index)
-			if card:getMove(index - 1):isAttack() then
-				return { card = card, slot = index - 1 }
-			end
-		end
-	)
+	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
+	-- randomize moves actually allowed to be randomized
+	local attackTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):filter("isAttack")
+	-- Get the pool of moves to draw from. This time include assigned moves
+	-- (as long as they aren't also excluded from the pool) but not empty ones
+	local attackPool = randomizer.list(context.modified:getRandomizableMoves(true, false)):filter("isAttack")
 
-	-- Get all attacks from modified moves
-	local attackPool = randomizer.list(context.modified:allMoves()):filter(function(move)
-		return move:isAttack()
-	end)
-
-	-- And randomize them
-	attackPool:useToRandomize(attackSlots, function(target, move)
-		target.card:setMove(move, target.slot)
+	-- Randomize each target slot by setting the move on the host card so it sticks
+	-- (we shouldn't modify the move directly)
+	attackPool:useToRandomize(attackTargets, function(target, move)
+		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end)
 end
 

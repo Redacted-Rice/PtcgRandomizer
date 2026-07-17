@@ -1,17 +1,18 @@
 package redactedrice.ptcgr.data;
 
 
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.constants.CardConstants.CardId;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
@@ -160,19 +161,24 @@ public class CardGroup<T extends Card> {
                 .filter(card -> cardType.equals(card.type)).collect(Collectors.toList()));
     }
 
-    public List<Move> allMoves() {
-        return allMovesForRandomization(null);
-    }
-
-    public List<Move> allMovesForRandomization(MoveExclusions movesToExclude) {
-        CardGroup<MonsterCard> pokeCards = monsterCards();
+    public List<Move> getRandomizableMoves(MoveExclusions moveExclusions,
+            MoveAssignments moveAssignments, boolean includeEmpty) {
         List<Move> moves = new ArrayList<>();
-        for (MonsterCard card : pokeCards.iterable()) {
-            for (Move move : card.getAllMovesIncludingEmptyOnes()) {
-                if (!move.isEmpty() && (movesToExclude == null
-                        || !movesToExclude.isMoveRemovedFromPool(card.id, move))) {
-                    moves.add(move);
+        for (MonsterCard card : monsterCards().iterable()) {
+            for (int moveIndex = 0; moveIndex < card.getNumMoves(); moveIndex++) {
+                if (moveAssignments != null
+                        && moveAssignments.hasAssignmentForSlot(card.id, moveIndex)) {
+                    continue;
                 }
+                Move stored = card.peekMove(moveIndex);
+                if (!includeEmpty && stored.isEmpty()) {
+                    continue;
+                }
+                if (moveExclusions != null
+                        && moveExclusions.isMoveRemovedFromPool(card.id, stored)) {
+                    continue;
+                }
+                moves.add(stored);
             }
         }
         return moves;
@@ -213,7 +219,7 @@ public class CardGroup<T extends Card> {
             if (!(card instanceof MonsterCard monster)) {
                 continue;
             }
-            for (Move move : monster.getAllMovesIncludingEmptyOnes()) {
+            for (Move move : monster.peekAllMoves(true)) {
                 if (!move.isEmpty() && move.name.toString().equalsIgnoreCase(trimmed)) {
                     return true;
                 }

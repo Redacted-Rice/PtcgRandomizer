@@ -19,9 +19,9 @@ module = {
 
 -- TODO later: Add args/options
 function module.shuffleNumMoves(context)
-	local monsterOrig = context.original:getMonsterCards()
-	local monsterMod = context.modified:getMonsterCards()
-	local numMovesPool = randomizer.listFromField(monsterOrig, "getNumMoves")
+
+	local numMovesPool = randomizer.list(context.original:getRandomizableMonsterCards()):select("getNumMoves")
+	local monsterMod = context.modified:getRandomizableMonsterCards()
 
 	numMovesPool:useToRandomize(monsterMod, "setNumMoves", {
 		consumable = true,

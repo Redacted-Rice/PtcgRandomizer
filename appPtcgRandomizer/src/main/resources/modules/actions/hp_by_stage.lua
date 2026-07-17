@@ -50,7 +50,7 @@ end
 
 function module.buildHpPoolGroup(context)
 	if module.useRomPools then
-		return module.buildRomHpPools(context.original:getMonsterCards())
+		return module.buildRomHpPools(context.original:getRandomizableMonsterCards())
 	end
 	return module.buildFixedHpPools()
 end
@@ -62,11 +62,11 @@ end
 -- Assign freely from the stage/maxStage pool. Users can run a variation of
 -- fix_evo_line_hp after for consistency if desired
 function module.randomizeHp(context)
-	local monsterCards = context.modified:getMonsterCards()
 	local hpPoolGroup = module.buildHpPoolGroup(context)
 
-	hpPoolGroup:useToRandomize(monsterCards, module.poolKeyForCard, "setHp", {
-		consumable = true,
+	hpPoolGroup:useToRandomize(context.modified:getRandomizableMonsterCards(),
+        module.poolKeyForCard, "setHp", {
+		    consumable = true,
 	})
 end
 

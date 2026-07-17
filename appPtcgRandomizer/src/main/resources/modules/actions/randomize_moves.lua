@@ -3,12 +3,12 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "randomize_moves",
-	name = "Randomize Moves",
-	description = "Randomizes all move slots from one mixed attack+power pool (include-with-moves)",
+	name = "Randomize Existing Moves",
+	description = "Randomizes existing move slots using a mixed attack+power pool of any type. Keeps the same number of moves per card.",
 	groups = { "moves" },
 	modifies = { "moves" },
 	author = "Redacted Rice",
-	version = "0.7",
+	version = "0.8",
 	requires = {
 		PtcgRandomizer = "0.2.0",
 	},
@@ -18,11 +18,17 @@ module = {
 }
 
 function module.randomizeMoves(context)
-	local movePool = context.modified:allMoves()
-	local moveSlots = randomizer.list(context.modified:getMonsterCards()):flatMapNTimes("getNumMoves")
-	randomizer.list(movePool):useToRandomize(moveSlots, function(target, move)
-		-- Lua is 1 based, Java and its objects are 0 based
-		target.item:setMove(move, target.index - 1)
+	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
+	-- randomize moves actually allowed to be randomized
+	local moveTargets = randomizer.list(context.modified:getRandomizableMoves(false, false))
+	-- Get the pool of moves to draw from. This time include assigned moves
+	-- (as long as they aren't also excluded from the pool) but not empty ones
+	local movePool = randomizer.list(context.modified:getRandomizableMoves(true, false))
+
+	-- Randomize each target slot by setting the move on the host card so it sticks
+	-- (we shouldn't modify the move directly)
+	movePool:useToRandomize(moveTargets, function(target, move)
+		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end)
 end
 

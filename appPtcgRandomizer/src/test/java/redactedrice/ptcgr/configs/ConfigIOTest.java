@@ -461,8 +461,8 @@ class YamlIOTest {
         assertTrue(!warnings.hasWarnings());
         assertEquals("TestMove", loaded.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
 
-        Rules rules = new Rules(cards);
-        loaded.getRulesConfig().recreateRules(rules, warnings);
+        Rules rules = new Rules();
+        loaded.getRulesConfig().recreateRules(rules, cards, warnings);
 
         assertTrue(!warnings.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
@@ -516,16 +516,16 @@ class YamlIOTest {
         Config config = new Config("1", List.of(), List.of(), List.of(), rulesPreset);
 
         WarningCollector warnings = new WarningCollector(null);
-        Rules rules = new Rules(cards);
+        Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
-                "unsupported_moves.yaml");
+                "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, warnings);
+        config.getRulesConfig().recreateRules(rules, cards, warnings);
 
         assertTrue(!warnings.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals("TestMove", rules.getMoveExclusions().getAllExclusions().get(0).getMoveName());
-        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
     }
 
     @Test
@@ -534,11 +534,11 @@ class YamlIOTest {
         Config config = new Config("1", List.of(), List.of(), List.of(), RulesConfig.empty());
 
         WarningCollector warnings = new WarningCollector(null);
-        Rules rules = new Rules(cards);
+        Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
-                "unsupported_moves.yaml");
+                "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, warnings);
+        config.getRulesConfig().recreateRules(rules, cards, warnings);
 
         assertTrue(!warnings.hasWarnings());
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
@@ -574,9 +574,9 @@ class YamlIOTest {
         card.id = id;
         card.name.setText("SomeMonster");
         card.level = (byte) level;
-        Move move = new Move();
+        Move move = card.peekMove(0);
         move.name.setText(moveName);
-        card.setMoves(List.of(move, new Move()));
+        card.setMoves(List.of(move, card.peekMove(1)));
         return card;
     }
 

@@ -44,9 +44,9 @@ class RulesConfigTest {
         card.id = id;
         card.name.setText("SomeMonster");
         card.level = (byte) level;
-        Move move = new Move();
+        Move move = card.peekMove(0);
         move.name.setText(moveName);
-        card.setMoves(List.of(move, new Move()));
+        card.setMoves(List.of(move, card.peekMove(1)));
         return card;
     }
 
@@ -90,8 +90,8 @@ class RulesConfigTest {
                 """;
         RulesConfig config = readYaml(yaml, "sources.yaml", warnings);
 
-        Rules rules = new Rules(new CardGroup<>());
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, new CardGroup<>(), warnings);
 
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("failed to find any card")));
@@ -110,8 +110,8 @@ class RulesConfigTest {
         RulesConfig config = RulesConfig.readFromLoadedYamlMap(
                 YamlIO.load(defaultFile.toFile(), warnings), defaultFile.getFileName().toString(),
                 warnings);
-        Rules rules = new Rules(new CardGroup<>());
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, new CardGroup<>(), warnings);
 
         assertTrue(warnings.getWarnings().stream().anyMatch(w -> !w.isBlank()));
     }
@@ -139,8 +139,8 @@ class RulesConfigTest {
                     move: TestMove
                 """;
         RulesConfig config = readYaml(yaml, "test.yaml", warnings);
-        Rules rules = new Rules(cards);
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, cards, warnings);
 
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("must use name and level")));
@@ -159,8 +159,8 @@ class RulesConfigTest {
                     move: TestMove
                 """;
         RulesConfig config = readYaml(yaml, "test.yaml", warnings);
-        Rules rules = new Rules(cards);
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, cards, warnings);
 
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("must use name and level")));
@@ -182,8 +182,8 @@ class RulesConfigTest {
                     move: TestMove
                 """;
         RulesConfig config = readYaml(yaml, "test.yaml", warnings);
-        Rules rules = new Rules(cards);
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, cards, warnings);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(CardId.MONSTER_146_1,
@@ -211,8 +211,8 @@ class RulesConfigTest {
         RulesConfig saved = RulesConfig.readFromLoadedYamlMap(config.convertToYamlMap(),
                 "config.yaml", warnings);
 
-        Rules rules = new Rules(cards);
-        saved.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        saved.applyTo(rules, cards, warnings);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
@@ -232,8 +232,8 @@ class RulesConfigTest {
                     to_move_slot: 1
                     move: TestMove
                 """, "slot_one.yaml", warnings);
-        Rules rules = new Rules(cards);
-        slotOne.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        slotOne.applyTo(rules, cards, warnings);
 
         assertEquals(0, rules.getMoveAssignments().getAllAssignments().get(0).getMoveSlot());
         assertEquals("1", slotOne.getMoveAssignmentConfigs().get(0).getToMoveSlot());
@@ -244,7 +244,7 @@ class RulesConfigTest {
                     to_move_slot: 2
                     move: OtherMove
                 """, "slot_two.yaml", warnings);
-        slotTwo.applyTo(rules, warnings);
+        slotTwo.applyTo(rules, cards, warnings);
 
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().get(1).getMoveSlot());
         MoveAssignmentConfig serialized = MoveAssignmentConfig.fromMoveAssignment(
@@ -265,8 +265,8 @@ class RulesConfigTest {
                     to_move_slot: 0
                     move: TestMove
                 """, "bad_slot.yaml", warnings);
-        Rules rules = new Rules(cards);
-        config.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, cards, warnings);
 
         assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("out of range")));
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
@@ -293,14 +293,14 @@ class RulesConfigTest {
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
         WarningCollector warnings = new WarningCollector(null);
-        Rules rules = new Rules(cards);
+        Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
-                "old.yaml");
+                "old.yaml", cards, rules.getMoveAssignments());
         rules.getMoveAssignments().addMoveAssignment(cards.withId(CardId.MONSTER_146_1), 0,
                 cards.withId(CardId.MONSTER_146_1).getMoveWithName("TestMove"), "old.yaml");
 
         RulesConfig replacement = RulesConfig.empty();
-        replacement.recreateRules(rules, warnings);
+        replacement.recreateRules(rules, cards, warnings);
 
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
@@ -326,8 +326,8 @@ class RulesConfigTest {
 
         RulesConfig reloaded = RulesConfig.readFromLoadedYamlMap(
                 YamlIO.load(output.toFile(), warnings), output.getFileName().toString(), warnings);
-        Rules rules = new Rules(cards);
-        reloaded.applyTo(rules, warnings);
+        Rules rules = new Rules();
+        reloaded.applyTo(rules, cards, warnings);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
     }
