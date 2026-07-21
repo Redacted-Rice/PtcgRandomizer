@@ -52,36 +52,97 @@ class MonsterCardLockedMoveTest {
 
         MoveAssignments assignments = new MoveAssignments();
         assignments.addMoveAssignment(card, 1, namedMove("AssignedMove"), "test.yaml");
-        assignments.assignSpecifiedMoves(cards);
+        assignments.assignSpecifiedMoves(cards, null);
 
         assertTrue(card.peekMove(1).isLockedViaAssignment());
         assertEquals(List.of(1), card.getLockedMoveIndexes());
     }
 
     @Test
-    void setMoveFromPoolClearsLockedFlag() {
+    void setMoveRefusesToOverrideLockedSlotWithoutForce() {
         MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
         card.setMove(namedMove("AssignedMove"), 0);
         card.setMoveLockedViaAssignment(0, true);
 
-        card.setMove(namedMove("RandomizedMove"), 0);
-
-        assertFalse(card.peekMove(0).isLockedViaAssignment());
-        assertTrue(card.getLockedMoveIndexes().isEmpty());
+        WarningCollector warnings = new WarningCollector(null);
+        assertFalse(card.setMove(namedMove("RandomizedMove"), 0, false, warnings));
+        assertTrue(card.peekMove(0).isLockedViaAssignment());
+        assertEquals("AssignedMove", card.peekMove(0).name.toString());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("Refusing to overwrite locked assignment")));
     }
 
     @Test
-    void setNumMovesWarnsWhenClearingLockedSlotButStillAllowsChange() {
+    void setMoveWithForceOverrideKeepsLockedFlag() {
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
+        card.setMove(namedMove("AssignedMove"), 0);
+        card.setMoveLockedViaAssignment(0, true);
+
+        WarningCollector warnings = new WarningCollector(null);
+        assertTrue(card.setMove(namedMove("RandomizedMove"), 0, true, warnings));
+        assertTrue(card.peekMove(0).isLockedViaAssignment());
+        assertEquals("RandomizedMove", card.peekMove(0).name.toString());
+        assertEquals(List.of(0), card.getLockedMoveIndexes());
+        assertTrue(warnings.getWarnings().isEmpty());
+    }
+
+    @Test
+    void setNumMovesRefusesToClearLockedSlotWithoutForce() {
         MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
         card.setMove(namedMove("MoveOne"), 0);
         card.setMove(namedMove("LockedMove"), 1);
         card.setMoveLockedViaAssignment(1, true);
 
         WarningCollector warnings = new WarningCollector(null);
-        assertTrue(card.setNumMoves(1, warnings));
+        assertFalse(card.setNumMoves(1, false, warnings));
+        assertEquals(2, card.getNumMoves());
+        assertTrue(card.peekMove(1).isLockedViaAssignment());
+        assertEquals("LockedMove", card.peekMove(1).name.toString());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("Refusing to reduce move count")));
+    }
+
+    @Test
+    void getMaxLockedMoveIndexUsesHighestLockedSlot() {
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
+        assertEquals(-1, card.getMaxLockedMoveIndex());
+
+        card.setMove(namedMove("MoveOne"), 0);
+        card.setMoveLockedViaAssignment(0, true);
+        assertEquals(0, card.getMaxLockedMoveIndex());
+
+        card.setMove(namedMove("LockedMove"), 1);
+        card.setMoveLockedViaAssignment(1, true);
+        assertEquals(1, card.getMaxLockedMoveIndex());
+    }
+
+    @Test
+    void setMovesRefusesToClearLockedSlotWithoutForce() {
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
+        card.setMove(namedMove("MoveOne"), 0);
+        card.setMove(namedMove("LockedMove"), 1);
+        card.setMoveLockedViaAssignment(1, true);
+
+        WarningCollector warnings = new WarningCollector(null);
+        assertEquals(List.of(0), card.setMoves(List.of(card.peekMove(0)), false, warnings));
+        assertEquals(2, card.getNumMoves());
+        assertTrue(card.peekMove(1).isLockedViaAssignment());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("Refusing to overwrite locked assignment")));
+    }
+
+    @Test
+    void setNumMovesWithForceOverrideClearsLockedSlot() {
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
+        card.setMove(namedMove("MoveOne"), 0);
+        card.setMove(namedMove("LockedMove"), 1);
+        card.setMoveLockedViaAssignment(1, true);
+
+        WarningCollector warnings = new WarningCollector(null);
+        assertTrue(card.setNumMoves(1, true, warnings));
         assertEquals(1, card.getNumMoves());
         assertTrue(card.getLockedMoveIndexes().isEmpty());
-        assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("cleared locked assignment in slot 2")));
+        assertTrue(card.peekMove(1).isEmpty());
+        assertTrue(warnings.getWarnings().isEmpty());
     }
 }

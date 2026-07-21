@@ -32,6 +32,9 @@ module = {
 -- for those or to make separate ones that do use this
 function module.setNumMoves(context, args)
 	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
+        -- Set the num moves not overridding assignments. This intentially does not check
+        -- locked slots first so it will be apparant in the logs if a card is skipped due
+        -- to a locked slot
 		card:setNumMoves(args.numMoves)
 	end)
 end

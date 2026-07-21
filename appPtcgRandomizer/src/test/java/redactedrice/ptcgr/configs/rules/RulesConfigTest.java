@@ -288,6 +288,32 @@ class RulesConfigTest {
     }
 
     @Test
+    void rejectsConflictingMoveAssignmentsFromYaml() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1, "TestMove");
+        card.peekMove(1).name.setText("OtherMove");
+        card.setMoves(List.of(card.peekMove(0), card.peekMove(1)));
+        cards.add(card);
+
+        WarningCollector warnings = new WarningCollector(null);
+        RulesConfig config = readYaml("""
+                moveAssignments:
+                  - to_card: SomeMonster lvl35
+                    to_move_slot: 1
+                    move: TestMove
+                  - to_card: SomeMonster lvl35
+                    to_move_slot: 1
+                    move: OtherMove
+                """, "conflict.yaml", warnings);
+        Rules rules = new Rules();
+        config.applyTo(rules, cards, warnings);
+
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("Conflicting assignment")));
+    }
+
+    @Test
     void recreateRulesClearsExistingRules() throws IOException {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));

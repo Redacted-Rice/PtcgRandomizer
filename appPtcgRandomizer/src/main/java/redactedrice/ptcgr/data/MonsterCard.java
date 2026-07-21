@@ -168,32 +168,42 @@ public class MonsterCard extends Card {
      * Expanding the count exposes existing (cleared) slots as empty until setMove fills them.
      */
     public boolean setNumMoves(int numMoves) {
-        return setNumMoves(numMoves, null);
+        return setNumMoves(numMoves, false, null);
+    }
+
+    public boolean setNumMoves(int numMoves, WarningCollector warnings) {
+        return setNumMoves(numMoves, false, warnings);
     }
 
     /**
-     * Sets how many move slots are active. If the new count is lower than the current count, locked
-     * assignment slots in the removed range trigger a warning but are still cleared.
+     * Sets how many move slots are active. Reducing the count refuses to clear locked assignment
+     * slots unless forceOverride is true.
      */
-    public boolean setNumMoves(int numMoves, WarningCollector warnings) {
-        boolean okay = numMoves >= 0 && numMoves <= MAX_NUM_MOVES;
-        if (okay) {
-            if (numMoves < this.numMoves) {
-                for (int moveIndex = numMoves; moveIndex < this.numMoves; moveIndex++) {
-                    if (moves[moveIndex].isLockedViaAssignment()) {
-                        warnLockedMoveCleared(moveIndex, warnings);
-                    }
-                    moves[moveIndex].makeEmpty();
-                }
-            }
-            this.numMoves = numMoves;
+    public boolean setNumMoves(int numMoves, boolean forceOverride, WarningCollector warnings) {
+        if (numMoves < 0 || numMoves > MAX_NUM_MOVES) {
+            return false;
         }
-        return okay;
+
+        if (numMoves < this.numMoves) {
+            for (int moveIndex = numMoves; moveIndex < this.numMoves; moveIndex++) {
+                if (moves[moveIndex].isLockedViaAssignment()) {
+                    if (!forceOverride) {
+                        warnLockedMoveClearBlocked(moveIndex, warnings);
+                        return false;
+                    }
+                    Logger.info("Clearing locked assignment on \"" + toNameWithLevelSpecifier()
+                            + "\" in slot " + (moveIndex + 1) + " by reducing move count.");
+                }
+                moves[moveIndex].makeEmpty();
+            }
+        }
+        this.numMoves = numMoves;
+        return true;
     }
 
-    private void warnLockedMoveCleared(int moveIndex, WarningCollector warnings) {
-        String message = "Reducing move count on \"" + toNameWithLevelSpecifier()
-                + "\" cleared locked assignment in slot " + (moveIndex + 1) + ".";
+    private void warnLockedMoveClearBlocked(int moveIndex, WarningCollector warnings) {
+        String message = "Refusing to reduce move count on \"" + toNameWithLevelSpecifier()
+                + "\" because slot " + (moveIndex + 1) + " has a locked assignment.";
         if (warnings != null) {
             warnings.addWarning(message);
         } else {
@@ -210,6 +220,17 @@ public class MonsterCard extends Card {
             }
         }
         return lockedIndexes;
+    }
+
+    /** Returns the highest 0-based index of an active move slot locked via assignment. */
+    public int getMaxLockedMoveIndex() {
+        int maxLockedIndex = -1;
+        for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
+            if (moves[moveIndex].isLockedViaAssignment()) {
+                maxLockedIndex = Math.max(maxLockedIndex, moveIndex);
+            }
+        }
+        return maxLockedIndex;
     }
 
     /** Returns the ref for stored move for the given slot index. Should be treated as a const */
@@ -241,16 +262,45 @@ public class MonsterCard extends Card {
 
     /**
      * Copies move data into the slot and updates numMoves so it remains the source of truth for
-     * active slots.
+     * active slots. Locked assignment slots are left unchanged unless {@code forceOverride} is
+     * true.
      */
     public boolean setMove(Move move, int moveSlot) {
-        boolean okay = moveSlot >= 0 && moveSlot < moves.length;
-        if (okay) {
-            moves[moveSlot].copyNonMetadataFieldsFrom(move);
-            moves[moveSlot].setLockedViaAssignment(false);
-            updateNumMovesForSlot(moveSlot);
+        return setMove(move, moveSlot, false, null);
+    }
+
+    public boolean setMove(Move move, int moveSlot, boolean forceOverride) {
+        return setMove(move, moveSlot, forceOverride, null);
+    }
+
+    public boolean setMove(Move move, int moveSlot, boolean forceOverride,
+            WarningCollector warnings) {
+        if (moveSlot < 0 || moveSlot >= moves.length) {
+            return false;
         }
-        return okay;
+
+        if (moves[moveSlot].isLockedViaAssignment()) {
+            if (!forceOverride) {
+                warnLockedMoveOverwriteBlocked(moveSlot, warnings);
+                return false;
+            }
+            Logger.info("Overwriting locked assignment on \"" + toNameWithLevelSpecifier()
+                    + "\" in slot " + (moveSlot + 1) + ".");
+        }
+        moves[moveSlot].copyNonMetadataFieldsFrom(move);
+        // Leave the locked status unchanged
+        updateNumMovesForSlot(moveSlot);
+        return true;
+    }
+
+    private void warnLockedMoveOverwriteBlocked(int moveIndex, WarningCollector warnings) {
+        String message = "Refusing to overwrite locked assignment on \""
+                + toNameWithLevelSpecifier() + "\" in slot " + (moveIndex + 1) + ".";
+        if (warnings != null) {
+            warnings.addWarning(message);
+        } else {
+            Logger.warn(message);
+        }
     }
 
     public void setMoveLockedViaAssignment(int moveSlot, boolean locked) {
@@ -267,32 +317,43 @@ public class MonsterCard extends Card {
         }
     }
 
-    public void setMoves(Move... newMoves) {
-        setMoves(List.of(newMoves));
+    public List<Integer> setMoves(Move... newMoves) {
+        return setMoves(List.of(newMoves));
     }
 
     /**
      * Replaces move slots up to {@link #MAX_NUM_MOVES} and sets numMoves to the highest non-empty
      * slot index + 1. Shorter lists clear the remaining slots.
+     *
+     * @return 0-based indexes of slots that were successfully updated
      */
-    public void setMoves(List<Move> newMoves) {
+    public List<Integer> setMoves(List<Move> newMoves) {
+        return setMoves(newMoves, false, null);
+    }
+
+    public List<Integer> setMoves(List<Move> newMoves, boolean forceOverride) {
+        return setMoves(newMoves, forceOverride, null);
+    }
+
+    public List<Integer> setMoves(List<Move> newMoves, boolean forceOverride,
+            WarningCollector warnings) {
         if (newMoves.size() > moves.length) {
             throw new IllegalArgumentException(
                     "Bad number of moves (" + newMoves.size() + ") was passed!");
         }
 
+        List<Integer> setIndexes = new ArrayList<>();
         for (int moveIndex = 0; moveIndex < newMoves.size(); moveIndex++) {
-            moves[moveIndex].copyNonMetadataFieldsFrom(newMoves.get(moveIndex));
-        }
-        for (int moveIndex = newMoves.size(); moveIndex < moves.length; moveIndex++) {
-            moves[moveIndex].makeEmpty();
-        }
-        numMoves = 0;
-        for (int moveIndex = 0; moveIndex < moves.length; moveIndex++) {
-            if (!moves[moveIndex].isEmpty()) {
-                numMoves = moveIndex + 1;
+            if (setMove(newMoves.get(moveIndex), moveIndex, forceOverride, warnings)) {
+                setIndexes.add(moveIndex);
             }
         }
+        for (int moveIndex = newMoves.size(); moveIndex < moves.length; moveIndex++) {
+            if (setMove(new Move(this, moveIndex), moveIndex, forceOverride, warnings)) {
+                setIndexes.add(moveIndex);
+            }
+        }
+        return setIndexes;
     }
 
     private void trimTrailingEmptyMoves() {

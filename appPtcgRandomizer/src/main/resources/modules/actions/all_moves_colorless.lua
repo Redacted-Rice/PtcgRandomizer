@@ -26,7 +26,8 @@ function module.setAllMovesColorless(context)
 			local totalCost = move:getCost(EnergyType.COLORLESS) + move:getNonColorlessEnergyCosts()
 			move:clearCosts()
 			move:setCost(EnergyType.COLORLESS, totalCost)
-			mon:setMove(move, moveSlot)
+			-- True = force set even for assignments
+			mon:setMove(move, moveSlot, true)
 		end
 	end)
 end

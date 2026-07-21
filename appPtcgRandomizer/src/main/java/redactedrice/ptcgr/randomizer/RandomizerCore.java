@@ -210,7 +210,7 @@ public class RandomizerCore {
         // Ensure the rom data is back to the original data (for multiple randomizations
         // without reloading) and prepare it to be modified which includes reapplying
         // the rules
-        romData.prepareForModification();
+        romData.prepareForModification(warnings);
 
         // Expose objects to be modified
         // TODO later: Add original vs modified and add more

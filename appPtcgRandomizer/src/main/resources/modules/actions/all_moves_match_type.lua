@@ -35,7 +35,8 @@ function module.setMoveCostsToMatchType(context)
 				move:setCost(EnergyType.COLORLESS, colorlessCost)
 				move:setCost(energyType, nonColorlessCost)
 			end
-			mon:setMove(move, moveSlot)
+			-- True = force set even for assignments
+			mon:setMove(move, moveSlot, true)
 		end
 	end)
 end
