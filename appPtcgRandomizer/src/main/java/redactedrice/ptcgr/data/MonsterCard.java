@@ -85,7 +85,7 @@ public class MonsterCard extends Card {
         stage = toCopy.stage;
         prevEvoName = new CardName(toCopy.prevEvoName);
         // Set the moves. THis will copy and retarget the moves metadata
-        setMoves(toCopy.peekAllMoves(true));
+        setMoves(toCopy.getAllMoves(true));
         retreatCost = toCopy.retreatCost;
         weakness = toCopy.weakness;
         resistance = toCopy.resistance;
@@ -148,12 +148,12 @@ public class MonsterCard extends Card {
         return findByNameWithLevel(cards, ref);
     }
 
-    /** Returns live move refs for this card's slots. Should be treated as a const */
-    public List<Move> peekAllMoves(boolean includeEmpty) {
+    /** Returns copies of this card's move slots, optionally including empty slots. */
+    public List<Move> getAllMoves(boolean includeEmpty) {
         List<Move> movesList = new ArrayList<>();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             if (includeEmpty || !moves[moveIndex].isEmpty()) {
-                movesList.add(moves[moveIndex]);
+                movesList.add(moves[moveIndex].copy());
             }
         }
         return movesList;
@@ -231,14 +231,6 @@ public class MonsterCard extends Card {
             }
         }
         return maxLockedIndex;
-    }
-
-    /** Returns the ref for stored move for the given slot index. Should be treated as a const */
-    public Move peekMove(int moveIndex) {
-        if (moveIndex < 0 || moveIndex >= MAX_NUM_MOVES) {
-            return null;
-        }
-        return moves[moveIndex];
     }
 
     /** Returns a copy of the move in the given slot, which may be empty. */

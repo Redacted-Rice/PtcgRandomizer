@@ -574,9 +574,9 @@ class YamlIOTest {
         card.id = id;
         card.name.setText("SomeMonster");
         card.level = (byte) level;
-        Move move = card.peekMove(0);
+        Move move = card.getMove(0);
         move.name.setText(moveName);
-        card.setMoves(List.of(move, card.peekMove(1)));
+        card.setMoves(List.of(move, card.getMove(1)));
         return card;
     }
 

@@ -170,7 +170,7 @@ public class CardGroup<T extends Card> {
                         && moveAssignments.hasAssignmentForSlot(card.id, moveIndex)) {
                     continue;
                 }
-                Move stored = card.peekMove(moveIndex);
+                Move stored = card.getMove(moveIndex);
                 if (!includeEmpty && stored.isEmpty()) {
                     continue;
                 }
@@ -219,7 +219,7 @@ public class CardGroup<T extends Card> {
             if (!(card instanceof MonsterCard monster)) {
                 continue;
             }
-            for (Move move : monster.peekAllMoves(true)) {
+            for (Move move : monster.getAllMoves(true)) {
                 if (!move.isEmpty() && move.name.toString().equalsIgnoreCase(trimmed)) {
                     return true;
                 }
