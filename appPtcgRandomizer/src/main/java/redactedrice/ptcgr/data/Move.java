@@ -16,7 +16,6 @@ import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.MovableBlock;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.*;
 import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;

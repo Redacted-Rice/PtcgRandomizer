@@ -3,6 +3,7 @@ package redactedrice.ptcgr.rom;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.utils.WarningCollector;
 
 public class RomData {
     // These should never be modified
@@ -22,11 +23,11 @@ public class RomData {
         return original.allCards.cards().monsterCards();
     }
 
-    public void prepareForModification() {
+    public void prepareForModification(WarningCollector warnings) {
         // Do a fresh read as this is easier and a better guarantee of isolation
         // than doing a deep copy
         modified = RomIO.readFromBytes(rawBytes);
-        original.prepareForRandomization(rules);
-        modified.prepareForRandomization(rules);
+        original.prepareForRandomization(rules, warnings);
+        modified.prepareForRandomization(rules, warnings);
     }
 }

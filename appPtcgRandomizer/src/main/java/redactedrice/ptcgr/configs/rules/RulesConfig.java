@@ -7,10 +7,8 @@ import java.util.Map;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveAssignment;
-import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.utils.WarningCollector;
 
 public final class RulesConfig {
@@ -71,7 +69,7 @@ public final class RulesConfig {
             MoveAssignment assignment = moveAssignmentConfigs.get(i).toMoveAssignment(cards,
                     sourceLabel, entryContext, warnings);
             if (assignment != null) {
-                rules.addMoveAssignment(assignment);
+                rules.addMoveAssignment(assignment, warnings);
             }
         }
     }

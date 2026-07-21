@@ -7,6 +7,7 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.rompacker.Blocks;
 
 public class RandomizationData {
@@ -20,9 +21,9 @@ public class RandomizationData {
         this.blocks = new Blocks();
     }
 
-    public void prepareForRandomization(Rules rules) {
+    public void prepareForRandomization(Rules rules, WarningCollector warnings) {
         this.rules = rules;
-        rules.applyTo(allCards.cards().monsterCards());
+        rules.applyTo(allCards.cards().monsterCards(), warnings);
     }
 
     public List<Card> getRandomizableCards() {
