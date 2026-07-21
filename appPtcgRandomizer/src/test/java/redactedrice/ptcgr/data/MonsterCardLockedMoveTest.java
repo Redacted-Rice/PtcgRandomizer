@@ -23,8 +23,10 @@ class MonsterCardLockedMoveTest {
 
     private Move namedMove(String moveName) {
         MonsterCard scratch = new MonsterCard();
-        scratch.peekMove(0).name.setText(moveName);
-        return scratch.peekMove(0);
+        Move move = scratch.getMove(0);
+        move.name.setText(moveName);
+        scratch.setMove(move, 0);
+        return scratch.getMove(0);
     }
 
     @Test
@@ -33,15 +35,13 @@ class MonsterCardLockedMoveTest {
         MonsterCard targetCard = someMonster(37, CardId.MONSTER_146_2);
         sourceCard.setMove(namedMove("SharedMove"), 0);
 
-        Move poolMove = sourceCard.peekMove(0);
-        Move targetSlot = targetCard.peekMove(1);
-
+        Move poolMove = sourceCard.getMove(0);
         targetCard.setMove(poolMove, 1);
 
-        assertEquals("SharedMove", targetCard.peekMove(1).name.toString());
-        assertEquals(targetCard, targetSlot.getSourceCard());
-        assertEquals(1, targetSlot.getSourceMoveIndex());
-        assertEquals(poolMove, sourceCard.peekMove(0));
+        assertEquals("SharedMove", targetCard.getMove(1).name.toString());
+        assertEquals(targetCard, targetCard.getMove(1).getSourceCard());
+        assertEquals(1, targetCard.getMove(1).getSourceMoveIndex());
+        assertEquals("SharedMove", sourceCard.getMove(0).name.toString());
     }
 
     @Test
@@ -54,7 +54,7 @@ class MonsterCardLockedMoveTest {
         assignments.addMoveAssignment(card, 1, namedMove("AssignedMove"), "test.yaml");
         assignments.assignSpecifiedMoves(cards, null);
 
-        assertTrue(card.peekMove(1).isLockedViaAssignment());
+        assertTrue(card.getMove(1).isLockedViaAssignment());
         assertEquals(List.of(1), card.getLockedMoveIndexes());
     }
 
@@ -66,8 +66,8 @@ class MonsterCardLockedMoveTest {
 
         WarningCollector warnings = new WarningCollector(null);
         assertFalse(card.setMove(namedMove("RandomizedMove"), 0, false, warnings));
-        assertTrue(card.peekMove(0).isLockedViaAssignment());
-        assertEquals("AssignedMove", card.peekMove(0).name.toString());
+        assertTrue(card.getMove(0).isLockedViaAssignment());
+        assertEquals("AssignedMove", card.getMove(0).name.toString());
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("Refusing to overwrite locked assignment")));
     }
@@ -80,8 +80,8 @@ class MonsterCardLockedMoveTest {
 
         WarningCollector warnings = new WarningCollector(null);
         assertTrue(card.setMove(namedMove("RandomizedMove"), 0, true, warnings));
-        assertTrue(card.peekMove(0).isLockedViaAssignment());
-        assertEquals("RandomizedMove", card.peekMove(0).name.toString());
+        assertTrue(card.getMove(0).isLockedViaAssignment());
+        assertEquals("RandomizedMove", card.getMove(0).name.toString());
         assertEquals(List.of(0), card.getLockedMoveIndexes());
         assertTrue(warnings.getWarnings().isEmpty());
     }
@@ -96,8 +96,8 @@ class MonsterCardLockedMoveTest {
         WarningCollector warnings = new WarningCollector(null);
         assertFalse(card.setNumMoves(1, false, warnings));
         assertEquals(2, card.getNumMoves());
-        assertTrue(card.peekMove(1).isLockedViaAssignment());
-        assertEquals("LockedMove", card.peekMove(1).name.toString());
+        assertTrue(card.getMove(1).isLockedViaAssignment());
+        assertEquals("LockedMove", card.getMove(1).name.toString());
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("Refusing to reduce move count")));
     }
@@ -124,9 +124,9 @@ class MonsterCardLockedMoveTest {
         card.setMoveLockedViaAssignment(1, true);
 
         WarningCollector warnings = new WarningCollector(null);
-        assertEquals(List.of(0), card.setMoves(List.of(card.peekMove(0)), false, warnings));
+        assertEquals(List.of(0), card.setMoves(List.of(card.getMove(0)), false, warnings));
         assertEquals(2, card.getNumMoves());
-        assertTrue(card.peekMove(1).isLockedViaAssignment());
+        assertTrue(card.getMove(1).isLockedViaAssignment());
         assertTrue(warnings.getWarnings().stream()
                 .anyMatch(w -> w.contains("Refusing to overwrite locked assignment")));
     }
@@ -142,7 +142,7 @@ class MonsterCardLockedMoveTest {
         assertTrue(card.setNumMoves(1, true, warnings));
         assertEquals(1, card.getNumMoves());
         assertTrue(card.getLockedMoveIndexes().isEmpty());
-        assertTrue(card.peekMove(1).isEmpty());
+        assertTrue(card.getMove(1).isEmpty());
         assertTrue(warnings.getWarnings().isEmpty());
     }
 }

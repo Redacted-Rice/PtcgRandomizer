@@ -84,7 +84,7 @@ public class MoveExclusions {
 
         for (MonsterCard card : cards.iterable()) {
             for (int moveIndex = 0; moveIndex < card.getNumMoves(); moveIndex++) {
-                Move move = card.peekMove(moveIndex);
+                Move move = card.getMove(moveIndex);
                 if (!move.isEmpty() && exclusion.matchesMove(card.id, move)) {
                     assignments.addMoveAssignment(card, moveIndex, move, MoveAssignments
                             .exclusionSourceForAssignment(exclusion.getSourceFileName()));

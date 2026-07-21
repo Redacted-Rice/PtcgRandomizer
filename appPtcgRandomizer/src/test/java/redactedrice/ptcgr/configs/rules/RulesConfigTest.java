@@ -44,9 +44,9 @@ class RulesConfigTest {
         card.id = id;
         card.name.setText("SomeMonster");
         card.level = (byte) level;
-        Move move = card.peekMove(0);
+        Move move = card.getMove(0);
         move.name.setText(moveName);
-        card.setMoves(List.of(move, card.peekMove(1)));
+        card.setMoves(List.of(move, card.getMove(1)));
         return card;
     }
 
@@ -291,8 +291,9 @@ class RulesConfigTest {
     void rejectsConflictingMoveAssignmentsFromYaml() throws IOException {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         MonsterCard card = someMonster(35, CardId.MONSTER_146_1, "TestMove");
-        card.peekMove(1).name.setText("OtherMove");
-        card.setMoves(List.of(card.peekMove(0), card.peekMove(1)));
+        Move otherMove = card.getMove(1);
+        otherMove.name.setText("OtherMove");
+        card.setMoves(List.of(card.getMove(0), otherMove));
         cards.add(card);
 
         WarningCollector warnings = new WarningCollector(null);
