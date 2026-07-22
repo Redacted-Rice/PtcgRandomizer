@@ -176,8 +176,7 @@ class YamlIOTest {
                 actions:
                   - module: shuffle_hp
                     version: 0.1
-                    config:
-                      seedOffset: 12
+                    seedOffset: 12
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
@@ -217,9 +216,8 @@ class YamlIOTest {
                 seed: 1
                 actions:
                   - module: set_num_moves
-                    config:
-                      arguments:
-                        numMoves: 1
+                    arguments:
+                      numMoves: 1
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
@@ -247,10 +245,9 @@ class YamlIOTest {
                 seed: 1
                 actions:
                   - module: set_num_moves
-                    config:
-                      arguments:
-                        numMoves: 1
-                        bogusArg: 5
+                    arguments:
+                      numMoves: 1
+                      bogusArg: 5
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
@@ -278,8 +275,7 @@ class YamlIOTest {
                 seed: 1
                 actions:
                   - module: set_num_moves
-                    config:
-                      arguments: {}
+                    arguments: {}
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
@@ -333,8 +329,7 @@ class YamlIOTest {
                 seed: 987654321
                 actions:
                   - module: shuffle_hp
-                    config:
-                      seedOffset: 12
+                    seedOffset: 12
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
