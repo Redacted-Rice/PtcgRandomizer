@@ -6,6 +6,8 @@ import java.util.Map;
 import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.lua.Module;
+import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 
 public final class ActionArgumentsConfig {
     static final String SEED_OFFSET_KEY = "seedOffset";
@@ -27,8 +29,7 @@ public final class ActionArgumentsConfig {
 
     public static ActionArgumentsConfig fromAction(Action action) {
         Integer seedOffset = action.getModule().isSeeded() ? action.getSeedOffset() : null;
-        // For right now we only have seeds
-        return new ActionArgumentsConfig(seedOffset, Map.of());
+        return new ActionArgumentsConfig(seedOffset, action.getArguments());
     }
 
     public Map<String, Object> convertToYamlMap() {
@@ -57,13 +58,42 @@ public final class ActionArgumentsConfig {
 
         Map<String, Object> arguments = Map.of();
         Object argumentsValue = node.get(ARGUMENTS_KEY);
-        if (argumentsValue instanceof Map<?, ?> argumentsMap && !argumentsMap.isEmpty()) {
-            warnings.addWarning(
-                    entryLabel + ": module arguments are not supported in the UI yet; ignoring.");
+        if (argumentsValue instanceof Map<?, ?> argumentsMap) {
+            if (!argumentsMap.isEmpty()) {
+                Map<String, Object> parsed = new LinkedHashMap<>();
+                for (Map.Entry<?, ?> entry : argumentsMap.entrySet()) {
+                    if (entry.getKey() == null) {
+                        warnings.addWarning(entryLabel + ": arguments keys must be strings.");
+                        continue;
+                    }
+                    parsed.put(entry.getKey().toString(), entry.getValue());
+                }
+                arguments = parsed;
+            }
         } else if (argumentsValue != null) {
             warnings.addWarning(entryLabel + ": arguments must be a mapping.");
         }
         return new ActionArgumentsConfig(seedOffset, arguments);
+    }
+
+    public void applyToAction(Action action, Module module, WarningCollector warnings,
+            String entryLabel) {
+        for (Map.Entry<String, Object> entry : arguments.entrySet()) {
+            String name = entry.getKey();
+            if (!action.hasArgument(name)) {
+                warnings.addWarning(entryLabel + ": unknown argument \"" + name + "\"; ignoring.");
+                continue;
+            }
+            action.setArgument(name, entry.getValue());
+        }
+
+        for (ArgumentDefinition argDef : module.getArguments()) {
+            String name = argDef.getName();
+            if (!arguments.containsKey(name)) {
+                warnings.addWarning(entryLabel + ": argument \"" + name
+                        + "\" not specified; using default value.");
+            }
+        }
     }
 
     public Integer getSeedOffset() {

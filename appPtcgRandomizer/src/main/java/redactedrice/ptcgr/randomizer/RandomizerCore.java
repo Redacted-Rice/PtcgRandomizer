@@ -7,10 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.rules.Rules;
@@ -24,7 +22,6 @@ import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.ExecutionRequest;
-import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.ErrorTracker;
 import redactedrice.randomizer.utils.Logger;
@@ -233,19 +230,12 @@ public class RandomizerCore {
         List<ExecutionRequest> executionRequests = new LinkedList<>();
         boolean success = true;
         for (Action action : actions) {
-            String moduleId = action.getModuleId();
-            Map<String, Object> arguments = new HashMap<>();
-
-            Module module = luaRandomizer.getModule(moduleId);
-            if (module == null) {
-                Logger.error("Module not found: " + moduleId);
+            ExecutionRequest request = action.toExecutionRequest();
+            if (luaRandomizer.getModule(request.getModuleId()) == null) {
+                Logger.error("Module not found: " + request.getModuleId());
                 success = false;
                 continue;
             }
-            ExecutionRequest request = module.isSeeded()
-                    ? ExecutionRequest.forModuleWithSeedOffset(module, arguments,
-                            action.getSeedOffset())
-                    : ExecutionRequest.forUnseededModule(module, arguments);
             executionRequests.add(request);
         }
 

@@ -39,6 +39,7 @@ public final class ActionConfig extends ModuleConfig {
                         + " does not use seed offsets; ignoring seedOffset.");
             }
         }
+        config.applyToAction(action, module, warnings, "Module \"" + getModule() + "\"");
         return action;
     }
 
