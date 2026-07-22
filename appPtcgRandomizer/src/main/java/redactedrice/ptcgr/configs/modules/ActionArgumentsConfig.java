@@ -81,7 +81,8 @@ public final class ActionArgumentsConfig {
         for (Map.Entry<String, Object> entry : arguments.entrySet()) {
             String name = entry.getKey();
             if (!action.hasArgument(name)) {
-                warnings.addWarning(entryLabel + ": unknown argument \"" + name + "\"; ignoring.");
+                warnings.addWarning(entryLabel + ": unknown argument \"" + name + "\" (value: "
+                        + entry.getValue() + "); ignoring.");
                 continue;
             }
             action.setArgument(name, entry.getValue());
@@ -91,7 +92,8 @@ public final class ActionArgumentsConfig {
             String name = argDef.getName();
             if (!arguments.containsKey(name)) {
                 warnings.addWarning(entryLabel + ": argument \"" + name
-                        + "\" not specified; using default value.");
+                        + "\" not specified; using default value (" + argDef.getDefaultValue()
+                        + ").");
             }
         }
     }
