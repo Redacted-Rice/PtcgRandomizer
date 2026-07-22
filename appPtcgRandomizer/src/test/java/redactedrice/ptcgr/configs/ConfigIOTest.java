@@ -29,11 +29,14 @@ import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.randomizer.Settings;
+import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.randomizer.lua.Module;
+import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
+import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 class YamlIOTest {
     @TempDir
@@ -98,7 +101,7 @@ class YamlIOTest {
         var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
         var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
         Config config = Config.fromAppState(settings.getSeedString(), List.of(),
-                testActionBank(null, null, List.of(setupScript), List.of(detectScript)),
+                testActionBank(null, null, List.of(), List.of(setupScript), List.of(detectScript)),
                 RulesConfig.empty());
         Path output = tempDir.resolve("config.yaml");
         YamlIO.save(output.toFile(), config.convertToYamlMap());
@@ -193,6 +196,110 @@ class YamlIOTest {
     }
 
     @Test
+    void actionPresetSavesStoredModuleArguments() {
+        Module module = moduleWithArguments("set_num_moves", "0.9", List.of(
+                new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)));
+        Action action = new Action(module);
+        action.setArgument("numMoves", 1);
+
+        ActionArgumentsConfig saved = ActionArgumentsConfig.fromAction(action);
+        Map<String, Object> yamlArgs = saved.convertToYamlMap();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> arguments = (Map<String, Object>) yamlArgs.get("arguments");
+        assertEquals(1, arguments.get("numMoves"));
+    }
+
+    @Test
+    void loadRestoresModuleArguments() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: set_num_moves
+                    config:
+                      arguments:
+                        numMoves: 1
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        assertEquals(1, config.getActionConfigs().size());
+        assertEquals(1, config.getActionConfigs().get(0).getConfig().getArguments().get("numMoves"));
+
+        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+                List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+        assertEquals(1, actions.size());
+        assertEquals(1, actions.get(0).getArgument("numMoves"));
+    }
+
+    @Test
+    void loadWarnsOnUnknownModuleArgument() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: set_num_moves
+                    config:
+                      arguments:
+                        numMoves: 1
+                        bogusArg: 5
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+                List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertEquals(1, actions.get(0).getArgument("numMoves"));
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("bogusArg") && w.contains("ignoring")));
+    }
+
+    @Test
+    void loadWarnsOnMissingModuleArgument() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: set_num_moves
+                    config:
+                      arguments: {}
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+                List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertEquals(2, actions.get(0).getArgument("numMoves"));
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("numMoves") && w.contains("not specified")));
+    }
+
+    @Test
     void loadRestoresScriptsWithoutLoadingThem() throws Exception {
         String yaml = """
                 version: 1
@@ -250,7 +357,7 @@ class YamlIOTest {
                 List.of(new ActionConfig("shuffle_hp", "0.1", ActionArgumentsConfig.empty())),
                 List.of(), List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of());
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
 
         WarningCollector warnings = new WarningCollector(null);
         var actions = config.getActions(actionBank, warnings);
@@ -269,7 +376,7 @@ class YamlIOTest {
                 List.of(new ScriptConfig("changedetector_setup", "0.0")),
                 List.of(new ScriptConfig("changedetector_detect", "0.0")), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank(null, null,
+        ActionBank actionBank = testActionBank(null, null, List.of(),
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")),
                 List.of(scriptWithVersion("changedetector_detect", "0.2", "module")));
 
@@ -288,7 +395,7 @@ class YamlIOTest {
                 new Config("1", List.of(), List.of(new ScriptConfig("missing_prescript", "0.1")),
                         List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank(null, null, List.of(), List.of());
+        ActionBank actionBank = testActionBank(null, null, List.of(), List.of(), List.of());
 
         WarningCollector warnings = new WarningCollector(null);
         config.checkScripts(actionBank, warnings);
@@ -301,7 +408,7 @@ class YamlIOTest {
     void extraScriptInAppWarns() {
         Config config = new Config("1", List.of(), List.of(), List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank(null, null,
+        ActionBank actionBank = testActionBank(null, null, List.of(),
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")), List.of());
 
         WarningCollector warnings = new WarningCollector(null);
@@ -398,7 +505,7 @@ class YamlIOTest {
                 List.of(new ActionConfig("shuffle_hp", null, ActionArgumentsConfig.empty())),
                 List.of(), List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of());
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
 
         WarningCollector warnings = new WarningCollector(null);
         var actions = config.getActions(actionBank, warnings);
@@ -482,7 +589,7 @@ class YamlIOTest {
                         "config.yaml", new WarningCollector(null));
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
 
         assertEquals("UserMove", config.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
@@ -499,7 +606,7 @@ class YamlIOTest {
                 "config.yaml", new WarningCollector(null));
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
 
         assertTrue(config.getRulesConfig().getMoveAssignmentConfigs().isEmpty());
     }
@@ -562,7 +669,7 @@ class YamlIOTest {
                 warnings);
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
 
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
         assertEquals("TestMove", config.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
@@ -585,12 +692,13 @@ class YamlIOTest {
     }
 
     private static ActionBank testActionBank(String moduleId, String version,
-            List<Module> preScripts, List<Module> postScripts) {
+            List<ArgumentDefinition> arguments, List<Module> preScripts,
+            List<Module> postScripts) {
         return new ActionBank(null) {
             @Override
             public Module getModule(String id) {
                 if (moduleId != null && moduleId.equals(id)) {
-                    return moduleWithVersion(id, version);
+                    return moduleWithVersion(id, version, arguments);
                 }
                 return null;
             }
@@ -623,7 +731,17 @@ class YamlIOTest {
     }
 
     private static Module moduleWithVersion(String id, String version) {
-        return new Module(id, id, "", Set.of("pokemon cards"), Set.of(), List.of(),
+        return moduleWithVersion(id, version, List.of());
+    }
+
+    private static Module moduleWithArguments(String id, String version,
+            List<ArgumentDefinition> arguments) {
+        return moduleWithVersion(id, version, arguments);
+    }
+
+    private static Module moduleWithVersion(String id, String version,
+            List<ArgumentDefinition> arguments) {
+        return new Module(id, id, "", Set.of("pokemon cards"), Set.of(), arguments,
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {
