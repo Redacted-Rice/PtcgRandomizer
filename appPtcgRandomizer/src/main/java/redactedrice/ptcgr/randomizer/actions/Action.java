@@ -99,10 +99,6 @@ public class Action {
         this.seedOffset = seedOffset;
     }
 
-    public int getDefaultSeedOffset() {
-        return module.getSeedOffset();
-    }
-
     public ExecutionRequest toExecutionRequest() {
         if (!module.isSeeded()) {
             return ExecutionRequest.forUnseededModule(module, arguments);

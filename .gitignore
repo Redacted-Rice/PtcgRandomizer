@@ -36,6 +36,5 @@ appPtcgRandomizer/modules/
 # URC randomizer Lua is bundled by libUniversalRandomizerJava - ignore here
 appPtcgRandomizer/src/main/resources/randomizer/
 
-# Auto-generated manifests
-appPtcgRandomizer/src/main/resources/modules/.manifest
-appPtcgRandomizer/src/main/resources/rules/.manifest
+# Auto generated manifests
+appPtcgRandomizer/src/main/resources/**/.manifest

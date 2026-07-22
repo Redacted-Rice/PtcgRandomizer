@@ -91,6 +91,36 @@ tasks.register("generateModulesManifest") {
     }
 }
 
+tasks.register("generateDevModulesManifest") {
+    group = "build"
+    description = "Generates manifest file for the dev only modules resource folder"
+
+    val manifestFile = layout.projectDirectory.file("src/main/resources/devmodules/.manifest")
+    val devModulesDir = layout.projectDirectory.dir("src/main/resources/devmodules")
+
+    doLast {
+        val devModulesDirFile = devModulesDir.asFile
+        val files = mutableListOf<String>()
+
+        fun collectLuaFiles(dir: java.io.File, basePath: java.nio.file.Path) {
+            dir.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    collectLuaFiles(file, basePath)
+                } else if (file.isFile && file.name.endsWith(".lua") && file.name != ".manifest") {
+                    val relativePath = basePath.relativize(file.toPath()).toString().replace('\\', '/')
+                    files.add(relativePath)
+                }
+            }
+        }
+
+        if (devModulesDirFile.exists() && devModulesDirFile.isDirectory) {
+            collectLuaFiles(devModulesDirFile, devModulesDirFile.toPath())
+        }
+
+        manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
+    }
+}
+
 tasks.register("generateRulesManifest") {
     group = "build"
     description = "Generates manifest file for rules resource folder"
@@ -115,7 +145,8 @@ tasks.register("generateRulesManifest") {
 }
 
 tasks.named<ProcessResources>("processResources") {
-    dependsOn("generateAppVersion", "generateModulesManifest", "generateRulesManifest")
+    dependsOn("generateAppVersion", "generateModulesManifest", "generateDevModulesManifest",
+        "generateRulesManifest")
 }
 
 tasks.register<Jar>("fatJar") {
@@ -131,7 +162,12 @@ tasks.register<Jar>("fatJar") {
         attributes["Main-Class"] = application.mainClass.get()
     }
 
-    from(sourceSets.main.get().output)
+    // Dev only test modules are never bundled into release packages. See the run task
+    // and PtcgBundledResources.installDevAppResources() for how they're installed
+    // for dev builds
+    from(sourceSets.main.get().output) {
+        exclude("devmodules/**")
+    }
     dependsOn(configurations.runtimeClasspath)
     from({
         configurations.runtimeClasspath.get()
@@ -148,6 +184,9 @@ tasks.register<Jar>("fatJar") {
 
 tasks.named<JavaExec>("run") {
     dependsOn("processResources")
+    // run is the dev build/run path, so also install the dev only test modules
+    // alongside the regular ones. Release packages (fatJar) never set this property.
+    systemProperty("ptcgr.devModules", "true")
 }
 
 tasks.named<Test>("test") {
