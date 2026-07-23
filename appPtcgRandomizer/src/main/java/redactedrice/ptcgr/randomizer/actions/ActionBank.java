@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.context.EnumDefinition;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.ModuleRegistry;
 
@@ -52,6 +53,16 @@ public class ActionBank {
             return null;
         }
         return luaRandomizer.getModule(moduleId);
+    }
+
+    // Resolves the values for an enum registered by a module's onLoad (e.g. via
+    // context.registerEnum). Used to populate ENUM base type argument dropdowns in the config UI.
+    public List<String> getEnumValues(String enumName) {
+        if (luaRandomizer == null || enumName == null || enumName.isBlank()) {
+            return null;
+        }
+        EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
+        return enumDefinition != null ? enumDefinition.getValues() : null;
     }
 
     public Module getScript(String scriptId) {

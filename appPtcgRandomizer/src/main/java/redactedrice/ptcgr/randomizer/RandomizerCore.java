@@ -100,6 +100,15 @@ public class RandomizerCore {
         luaRandomizer =
                 new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
 
+        // Register built in PTCGR enums in the shared enum context instead of in the runtime
+        // context so they're merged into every execution context the same way module registered
+        // (onLoad) enums are, and so they're resolvable by name for the config UI's ENUM argument
+        // dropdowns even before a randomization has run.
+        // TODO later: Add others. Could I do this dynamically or just specify all of them?
+        luaRandomizer.getSharedContext().registerEnum(CardType.class);
+        luaRandomizer.getSharedContext().registerEnum(EnergyType.class);
+        luaRandomizer.getSharedContext().registerEnum(EvolutionStage.class);
+
         Logger.setEnabled(true);
 
         int loadedCount = luaRandomizer.loadModules();
@@ -215,12 +224,6 @@ public class RandomizerCore {
         context.register("original", romData.original);
         context.register("modified", romData.modified);
         context.register("rules", romData.rules);
-
-        // Register card some enums
-        // TODO later: Add others. Could I do this dynamically or just specify all of them
-        context.registerEnum(CardType.class);
-        context.registerEnum(EnergyType.class);
-        context.registerEnum(EvolutionStage.class);
 
         // Enable lua based change detection. Setup of what is monitored is done in the
         // setup script

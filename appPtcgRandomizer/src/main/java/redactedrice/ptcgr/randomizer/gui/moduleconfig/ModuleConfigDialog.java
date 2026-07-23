@@ -57,14 +57,17 @@ public class ModuleConfigDialog extends JDialog {
 
     private final Action action;
     private final boolean editable;
+    private final EnumValuesProvider enumValuesProvider;
     private ArgumentValueEditor seedOffsetEditor;
     private final Map<String, ArgumentValueEditor> argumentEditors = new LinkedHashMap<>();
     private JScrollPane rowsScrollPane;
 
-    public ModuleConfigDialog(Window owner, Action action, boolean editable) {
+    public ModuleConfigDialog(Window owner, Action action, boolean editable,
+            EnumValuesProvider enumValuesProvider) {
         super(owner, editable ? "Edit Configs" : "Show Configs", ModalityType.APPLICATION_MODAL);
         this.action = action;
         this.editable = editable;
+        this.enumValuesProvider = enumValuesProvider;
 
         setLayout(new BorderLayout());
         JPanel contentPanel = new JPanel();
@@ -130,7 +133,7 @@ public class ModuleConfigDialog extends JDialog {
             String name = argDef.getName();
             JComponent valueComponent;
             if (editable) {
-                ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+                ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef, enumValuesProvider);
                 editor.setValue(action.getArgument(name));
                 argumentEditors.put(name, editor);
                 valueComponent = editor.getComponent();
@@ -330,8 +333,10 @@ public class ModuleConfigDialog extends JDialog {
         dispose();
     }
 
-    public static void show(Window owner, Action action, boolean editable) {
-        ModuleConfigDialog dialog = new ModuleConfigDialog(owner, action, editable);
+    public static void show(Window owner, Action action, boolean editable,
+            EnumValuesProvider enumValuesProvider) {
+        ModuleConfigDialog dialog =
+                new ModuleConfigDialog(owner, action, editable, enumValuesProvider);
         dialog.setVisible(true);
     }
 }
