@@ -3,13 +3,15 @@ package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 import javax.swing.*;
 
+import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.dualselector.ActionsTableModel.Columns;
 
 public class ActionsListTable extends ActionsHoverToolTipTable {
 
     private static final long serialVersionUID = 1L;
 
-    public ActionsListTable(ActionsTableModel listModel, ActionsTableModel selectedModel) {
+    public ActionsListTable(ActionsTableModel listModel, ActionsTableModel selectedModel,
+            ActionBank actionBank) {
         super(listModel);
 
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -25,6 +27,6 @@ public class ActionsListTable extends ActionsHoverToolTipTable {
         ButtonCellRenderer renderer = new ButtonCellRenderer("View", false);
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
         getColumnModel().getColumn(Columns.CONFIG.getValue())
-                .setCellEditor(new ButtonCellClickedEditor(renderer));
+                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank::getEnumValues));
     }
 }

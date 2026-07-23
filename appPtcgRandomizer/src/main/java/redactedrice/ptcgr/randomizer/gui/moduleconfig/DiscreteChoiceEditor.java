@@ -7,10 +7,11 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
-// Drop down editor used for constraints with a fixed, prepopulated set of choices:
-// DISCRETE_RANGE (min/max/step) and ENUM (explicit allowed values). Both cases boil down to a
-// list of numbers to choose from, so they share this single widget instead of needing separate
-// UI elements.
+// Drop down editor for numeric constraints with a fixed, prepopulated set of choices:
+// DISCRETE_RANGE (min/max/step) and ENUM (explicit allowed numeric values). Both cases need to
+// normalize choices to a consistent int or double representation (see normalize()), which is
+// specific to numeric types - for a fixed set of non-numeric choices (string/boolean enums, or
+// the ENUM base type) see EnumEditor instead.
 public class DiscreteChoiceEditor implements ArgumentValueEditor {
     // Safety cap so a misconfigured module (e.g. a tiny step over a huge range) can't
     // generate an unusably long list of choices.

@@ -69,6 +69,10 @@ class ModuleRequirementsTest {
         assertFalse(new File(resources.getModulesDir(), "actions/dev_test_int_args.lua").isFile());
         assertFalse(
                 new File(resources.getModulesDir(), "actions/dev_test_double_args.lua").isFile());
+        assertFalse(
+                new File(resources.getModulesDir(), "actions/dev_test_string_args.lua").isFile());
+        assertFalse(new File(resources.getModulesDir(), "actions/dev_test_bool_args.lua").isFile());
+        assertFalse(new File(resources.getModulesDir(), "actions/dev_test_enum_args.lua").isFile());
     }
 
     @Test
@@ -81,6 +85,9 @@ class ModuleRequirementsTest {
             File modulesDir = resources.getModulesDir();
             assertTrue(new File(modulesDir, "actions/dev_test_int_args.lua").isFile());
             assertTrue(new File(modulesDir, "actions/dev_test_double_args.lua").isFile());
+            assertTrue(new File(modulesDir, "actions/dev_test_string_args.lua").isFile());
+            assertTrue(new File(modulesDir, "actions/dev_test_bool_args.lua").isFile());
+            assertTrue(new File(modulesDir, "actions/dev_test_enum_args.lua").isFile());
             // Regular modules should still be there too, unaffected by the dev merge
             assertTrue(new File(modulesDir, "actions/randomize_hp.lua").isFile());
 
@@ -104,6 +111,9 @@ class ModuleRequirementsTest {
                     () -> "Module requirement validation failed: " + ErrorTracker.getErrors());
             assertNotNull(wrapper.getModule("dev_test_int_args"));
             assertNotNull(wrapper.getModule("dev_test_double_args"));
+            assertNotNull(wrapper.getModule("dev_test_string_args"));
+            assertNotNull(wrapper.getModule("dev_test_bool_args"));
+            assertNotNull(wrapper.getModule("dev_test_enum_args"));
         } finally {
             System.clearProperty("ptcgr.devModules");
         }

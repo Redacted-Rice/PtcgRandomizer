@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
 
+import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.dualselector.ActionsTableModel.Columns;
 
 public class ActionsSelectedTable extends ActionsHoverToolTipTable {
@@ -8,7 +9,7 @@ public class ActionsSelectedTable extends ActionsHoverToolTipTable {
     private static final long serialVersionUID = 1L;
     private final ActionsTableModel model;
 
-    public ActionsSelectedTable(ActionsTableModel model) {
+    public ActionsSelectedTable(ActionsTableModel model, ActionBank actionBank) {
         super(model);
         this.model = model;
 
@@ -26,7 +27,7 @@ public class ActionsSelectedTable extends ActionsHoverToolTipTable {
         ButtonCellRenderer renderer = new ButtonCellRenderer("Edit", true);
         getColumnModel().getColumn(Columns.CONFIG.getValue()).setCellRenderer(renderer);
         getColumnModel().getColumn(Columns.CONFIG.getValue())
-                .setCellEditor(new ButtonCellClickedEditor(renderer));
+                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank::getEnumValues));
     }
 
     public void moveSelectedRow(int direction) {

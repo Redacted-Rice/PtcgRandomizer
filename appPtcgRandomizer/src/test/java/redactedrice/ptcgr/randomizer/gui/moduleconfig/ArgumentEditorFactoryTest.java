@@ -161,8 +161,8 @@ class ArgumentEditorFactoryTest {
 
     @Test
     void unsupportedBaseTypeFallsBackToReadOnlyEditor() {
-        ArgumentDefinition argDef =
-                new ArgumentDefinition("label", TypeDefinition.string(), "default");
+        ArgumentDefinition argDef = new ArgumentDefinition("labels",
+                TypeDefinition.listOf(TypeDefinition.string()), List.of("default"));
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof UnsupportedValueEditor);
@@ -173,5 +173,97 @@ class ArgumentEditorFactoryTest {
         editor.setEditable(true);
         assertTrue(editor.getComponent() instanceof JTextField);
         assertTrue(!((JTextField) editor.getComponent()).isEditable());
+    }
+
+    @Test
+    void anyStringConstraintUsesFreeEntryTextField() {
+        ArgumentDefinition argDef =
+                new ArgumentDefinition("label", TypeDefinition.string(), "default");
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof StringFieldEditor);
+        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
+
+        editor.setValue("hello");
+        assertEquals("hello", editor.getValue());
+    }
+
+    @Test
+    void enumStringConstraintUsesAllowedValuesAsChoices() {
+        ArgumentDefinition argDef = new ArgumentDefinition("color",
+                TypeDefinition.string(ArgumentConstraint.enumValues(List.of("red", "green", "blue"))),
+                "red");
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof EnumEditor);
+        assertEquals("custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(3, comboBox.getItemCount());
+
+        editor.setValue("green");
+        assertEquals("green", editor.getValue());
+    }
+
+    @Test
+    void anyBooleanConstraintUsesTrueFalseChoices() {
+        ArgumentDefinition argDef = new ArgumentDefinition("flag", TypeDefinition.bool(), true);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof EnumEditor);
+        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
+
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(2, comboBox.getItemCount());
+
+        editor.setValue(false);
+        assertEquals(false, editor.getValue());
+    }
+
+    @Test
+    void booleanConstraintAlwaysShowsBothTrueAndFalseChoices() {
+        // Even if the argument definition restricts the enum to a single allowed value, a
+        // boolean "choice" of just one value doesn't make sense - the UI always offers both.
+        ArgumentDefinition argDef = new ArgumentDefinition("flag",
+                TypeDefinition.bool(ArgumentConstraint.enumValues(List.of(false))), false);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof EnumEditor);
+        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
+
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(2, comboBox.getItemCount());
+
+        editor.setValue(true);
+        assertEquals(true, editor.getValue());
+    }
+
+    @Test
+    void enumBaseTypeUsesProviderValuesAsChoices() {
+        ArgumentDefinition argDef =
+                new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef,
+                name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null);
+
+        assertTrue(editor instanceof EnumEditor);
+
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(3, comboBox.getItemCount());
+
+        editor.setValue("MAGE");
+        assertEquals("MAGE", editor.getValue());
+    }
+
+    @Test
+    void enumBaseTypeWithoutProviderFallsBackToReadOnlyEditor() {
+        ArgumentDefinition argDef =
+                new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof UnsupportedValueEditor);
     }
 }
