@@ -24,8 +24,14 @@ final class ArgumentConstraintDescription {
 
     static String describe(ArgumentDefinition argDef) {
         TypeDefinition typeDef = argDef.getTypeDefinition();
+        if (typeDef.isList()) {
+            return StructuredTypeText.describeListType(typeDef);
+        }
+        if (typeDef.isTable()) {
+            return StructuredTypeText.describeTableType(typeDef);
+        }
         if (typeDef.isEnum()) {
-            return describeEnumType(typeDef.getEnumName());
+            return StructuredTypeText.describeEnumType(typeDef.getEnumName());
         }
         return describe(typeDef.getBaseType(), typeDef.getConstraint());
     }
@@ -63,15 +69,6 @@ final class ArgumentConstraintDescription {
             default:
                 return "";
         }
-    }
-
-    // Enum base type: show the registered enum name when supplied. Otherwise use
-    // generic label
-    private static String describeEnumType(String enumName) {
-        if (enumName != null && !enumName.isBlank()) {
-            return enumName;
-        }
-        return "custom enum";
     }
 
     // Special formatting for bound values for ranges

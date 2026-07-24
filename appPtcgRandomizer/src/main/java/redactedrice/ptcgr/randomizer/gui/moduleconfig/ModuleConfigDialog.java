@@ -27,6 +27,7 @@ import javax.swing.ScrollPaneConstants;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
+import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Shows the seed offset (for seeded modules) and every module argument as an aligned list of
 // rows. All rows share a single GridBagLayout so columns stay lined up regardless of how many
@@ -133,12 +134,14 @@ public class ModuleConfigDialog extends JDialog {
             String name = argDef.getName();
             JComponent valueComponent;
             if (editable) {
-                ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef, enumValuesProvider);
+                ArgumentValueEditor editor =
+                        ArgumentEditorFactory.create(argDef, enumValuesProvider);
                 editor.setValue(action.getArgument(name));
                 argumentEditors.put(name, editor);
                 valueComponent = editor.getComponent();
             } else {
-                valueComponent = readOnlyValueLabel(action.getArgument(name));
+                valueComponent =
+                        readOnlyValueLabel(argDef.getTypeDefinition(), action.getArgument(name));
             }
             row = addRow(grid, gbc, row, name, ArgumentEditorFactory.describeConstraint(argDef),
                     valueComponent);
@@ -206,10 +209,12 @@ public class ModuleConfigDialog extends JDialog {
         return row + 1;
     }
 
+    // Wraps rather than calls setPreferredSize() directly on valueComponent since some editors
+    // (e.g. ListInlineEditor) change size later as rows are added/removed, and setPreferredSize
+    // would freeze that first layout size forever instead of letting it grow/shrink with the
+    // content.
     private static JComponent widenValueComponent(JComponent valueComponent) {
-        Dimension pref = valueComponent.getPreferredSize();
-        valueComponent.setPreferredSize(new Dimension(VALUE_FIELD_WIDTH, pref.height));
-        return valueComponent;
+        return new MinWidthPanel(valueComponent, VALUE_FIELD_WIDTH, true);
     }
 
     // Solid vertical rules spanning the full data section between the top and bottom horizontal
@@ -267,6 +272,15 @@ public class ModuleConfigDialog extends JDialog {
     // it's visually clear that it can't be edited here
     private static JLabel readOnlyValueLabel(Object value) {
         return new JLabel(value == null ? "" : String.valueOf(value));
+    }
+
+    // LIST/TABLE values get compact preview text, e.g. "common, uncommon" or
+    // "fire → 10, water → (1, 2, 3)" for nested complex values.
+    private static JLabel readOnlyValueLabel(TypeDefinition typeDef, Object value) {
+        if (typeDef.isList() || typeDef.isTable()) {
+            return new JLabel(StructuredValueFormatting.format(typeDef, value));
+        }
+        return readOnlyValueLabel(value);
     }
 
     private JPanel buildButtonPanel() {

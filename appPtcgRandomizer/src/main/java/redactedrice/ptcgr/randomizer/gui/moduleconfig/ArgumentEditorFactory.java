@@ -1,5 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
@@ -19,23 +21,94 @@ public final class ArgumentEditorFactory {
 
     public static ArgumentValueEditor create(ArgumentDefinition argDef,
             EnumValuesProvider enumValuesProvider) {
-        TypeDefinition typeDef = argDef.getTypeDefinition();
-        if (typeDef.isEnum()) {
-            return createForEnumType(typeDef.getEnumName(), enumValuesProvider);
-        }
-        switch (typeDef.getBaseType()) {
-            case INTEGER:
-            case DOUBLE:
-                return createForNumeric(typeDef.getBaseType() == ArgumentType.INTEGER,
-                        typeDef.getConstraint());
-            case STRING:
-                return createForString(typeDef.getConstraint());
-            case BOOLEAN:
-                return createForBoolean();
-            default:
-                // Not yet supported: LIST, MAP, GROUP
-                return new UnsupportedValueEditor();
-        }
+        return createForType(argDef.getTypeDefinition(), enumValuesProvider, 0, 0);
+    }
+
+    // Builds an editor directly from a TypeDefinition rather than a full ArgumentDefinition.
+    // Used both for top level module arguments and recursively for LIST/TABLE elements, keys,
+    // and values, which don't have an ArgumentDefinition of their own.
+    // depth is 0 for a top level module argument, and parentDepth + 1 for a LIST/TABLE created
+    // as another structured type's element/key/value editor - see ListInlineEditor and
+    // TableInlineEditor, which use it to indent/box nested values.
+    // depth tracks overall nesting; listIndentDepth increments only for list of list nesting and
+    // controls the extra left indent inside the nested box border.
+    static ArgumentValueEditor createForType(TypeDefinition typeDef,
+            EnumValuesProvider enumValuesProvider, int depth, int listIndentDepth) {
+        return visitType(typeDef, new StructuredTypeVisitor<>() {
+            @Override
+            public ArgumentValueEditor visitList(TypeDefinition type) {
+                return new ListInlineEditor(type.getElementType(), enumValuesProvider, depth,
+                        listIndentDepth);
+            }
+
+            @Override
+            public ArgumentValueEditor visitTable(TypeDefinition type) {
+                return new TableInlineEditor(type.getKeyType(), type.getValueType(),
+                        enumValuesProvider, depth);
+            }
+
+            @Override
+            public ArgumentValueEditor visitEnum(TypeDefinition type) {
+                return createForEnumType(type.getEnumName(), enumValuesProvider);
+            }
+
+            @Override
+            public ArgumentValueEditor visitBase(TypeDefinition type) {
+                switch (type.getBaseType()) {
+                    case INTEGER:
+                    case DOUBLE:
+                        return createForNumeric(type.getBaseType() == ArgumentType.INTEGER,
+                                type.getConstraint());
+                    case STRING:
+                        return createForString(type.getConstraint());
+                    case BOOLEAN:
+                        return createForBoolean();
+                    default:
+                        // ENUM base type without a resolvable value list (see createForEnumType)
+                        return new UnsupportedValueEditor();
+                }
+            }
+        });
+    }
+
+    // Seed value used when a new row is added to a LIST or TABLE, so its editor starts with
+    // something valid rather than null, which most editors can't render/save.
+    static Object defaultValueFor(TypeDefinition typeDef, EnumValuesProvider enumValuesProvider) {
+        return visitType(typeDef, new StructuredTypeVisitor<>() {
+            @Override
+            public Object visitList(TypeDefinition type) {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public Object visitTable(TypeDefinition type) {
+                return new LinkedHashMap<>();
+            }
+
+            @Override
+            public Object visitEnum(TypeDefinition type) {
+                List<String> values = enumValuesProvider != null
+                        ? enumValuesProvider.getEnumValues(type.getEnumName())
+                        : null;
+                return values != null && !values.isEmpty() ? values.get(0) : "";
+            }
+
+            @Override
+            public Object visitBase(TypeDefinition type) {
+                switch (type.getBaseType()) {
+                    case STRING:
+                        return "";
+                    case INTEGER:
+                        return 0;
+                    case DOUBLE:
+                        return 0.0;
+                    case BOOLEAN:
+                        return Boolean.FALSE;
+                    default:
+                        return null;
+                }
+            }
+        });
     }
 
     // Plain, unconstrained integer editor for the seed offset field. Seed offset is a
@@ -50,6 +123,29 @@ public final class ArgumentEditorFactory {
 
     public static String describeConstraint(ArgumentDefinition argDef) {
         return ArgumentConstraintDescription.describe(argDef);
+    }
+
+    private static <T> T visitType(TypeDefinition typeDef, StructuredTypeVisitor<T> visitor) {
+        if (typeDef.isList()) {
+            return visitor.visitList(typeDef);
+        }
+        if (typeDef.isTable()) {
+            return visitor.visitTable(typeDef);
+        }
+        if (typeDef.isEnum()) {
+            return visitor.visitEnum(typeDef);
+        }
+        return visitor.visitBase(typeDef);
+    }
+
+    private interface StructuredTypeVisitor<T> {
+        T visitList(TypeDefinition typeDef);
+
+        T visitTable(TypeDefinition typeDef);
+
+        T visitEnum(TypeDefinition typeDef);
+
+        T visitBase(TypeDefinition typeDef);
     }
 
     private static ArgumentValueEditor createForNumeric(boolean integer,

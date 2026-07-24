@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -160,14 +161,62 @@ class ArgumentEditorFactoryTest {
     }
 
     @Test
+    void listArgumentUsesListInlineEditor() {
+        ArgumentDefinition argDef = new ArgumentDefinition("tags",
+                TypeDefinition.listOf(TypeDefinition.string()), List.of());
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof ListInlineEditor);
+        assertEquals("List of string", ArgumentEditorFactory.describeConstraint(argDef));
+
+        editor.setValue(List.of("common", "rare"));
+        assertEquals(List.of("common", "rare"), editor.getValue());
+    }
+
+    @Test
+    void nestedListOfListDescribesShapeRecursively() {
+        ArgumentDefinition argDef = new ArgumentDefinition("groups",
+                TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer())), List.of());
+
+        assertEquals("List of List of int", ArgumentEditorFactory.describeConstraint(argDef));
+
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        editor.setValue(List.of(List.of(1, 2), List.of(3)));
+        assertEquals(List.of(List.of(1, 2), List.of(3)), editor.getValue());
+    }
+
+    @Test
+    void tableArgumentUsesTableInlineEditor() {
+        ArgumentDefinition argDef = new ArgumentDefinition("weights",
+                TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()),
+                Map.of());
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof TableInlineEditor);
+        assertEquals("string \u2192 int", ArgumentEditorFactory.describeConstraint(argDef));
+
+        editor.setValue(Map.of("fire", 10));
+        assertEquals(Map.of("fire", 10), editor.getValue());
+    }
+
+    @Test
+    void nestedTableOfListsDescribesShapeRecursively() {
+        ArgumentDefinition argDef = new ArgumentDefinition("poolsByType",
+                TypeDefinition.tableOf(TypeDefinition.string(),
+                        TypeDefinition.listOf(TypeDefinition.integer())),
+                Map.of());
+
+        assertEquals("string \u2192 List of int",
+                ArgumentEditorFactory.describeConstraint(argDef));
+    }
+
+    @Test
     void unsupportedBaseTypeFallsBackToReadOnlyEditor() {
-        ArgumentDefinition argDef = new ArgumentDefinition("labels",
-                TypeDefinition.listOf(TypeDefinition.string()), List.of("default"));
+        ArgumentDefinition argDef = new ArgumentDefinition("entityType",
+                TypeDefinition.enumType("MissingEnum"), "WARRIOR");
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof UnsupportedValueEditor);
-        editor.setValue("default");
-        assertEquals("default", editor.getValue());
 
         // Unsupported editors stay read-only regardless of the requested editable state
         editor.setEditable(true);
