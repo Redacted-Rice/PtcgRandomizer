@@ -21,30 +21,25 @@ public final class ArgumentEditorFactory {
 
     public static ArgumentValueEditor create(ArgumentDefinition argDef,
             EnumValuesProvider enumValuesProvider) {
-        return createForType(argDef.getTypeDefinition(), enumValuesProvider, 0, 0);
+        return createForType(argDef.getTypeDefinition(), enumValuesProvider);
     }
 
     // Builds an editor directly from a TypeDefinition rather than a full ArgumentDefinition.
-    // Used both for top level module arguments and recursively for LIST/TABLE elements, keys,
-    // and values, which don't have an ArgumentDefinition of their own.
-    // depth is 0 for a top level module argument, and parentDepth + 1 for a LIST/TABLE created
-    // as another structured type's element/key/value editor - see ListInlineEditor and
-    // TableInlineEditor, which use it to indent/box nested values.
-    // depth tracks overall nesting; listIndentDepth increments only for list of list nesting and
-    // controls the extra left indent inside the nested box border.
+    // Used for top level module arguments and for TABLE keys - LIST/TABLE elements and values
+    // are handled directly by StructuredGridPanels own recursion instead of by recursing through
+    // here since they need row/column level control rather than an independent
+    // ArgumentValueEditor component.
     static ArgumentValueEditor createForType(TypeDefinition typeDef,
-            EnumValuesProvider enumValuesProvider, int depth, int listIndentDepth) {
+            EnumValuesProvider enumValuesProvider) {
         return visitType(typeDef, new StructuredTypeVisitor<>() {
             @Override
             public ArgumentValueEditor visitList(TypeDefinition type) {
-                return new ListInlineEditor(type.getElementType(), enumValuesProvider, depth,
-                        listIndentDepth);
+                return new StructuredGridPanel(type, enumValuesProvider);
             }
 
             @Override
             public ArgumentValueEditor visitTable(TypeDefinition type) {
-                return new TableInlineEditor(type.getKeyType(), type.getValueType(),
-                        enumValuesProvider, depth);
+                return new StructuredGridPanel(type, enumValuesProvider);
             }
 
             @Override

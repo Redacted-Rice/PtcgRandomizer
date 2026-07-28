@@ -4,7 +4,7 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Shared text for structured argument types - constraint labels, read only previews, and inline
 // editor separators. Kept separate from Swing layout helpers so non UI code can format types
-// without depending on StructuredInlineEditorSupport.
+// without depending on StructuredGridHelpers.
 final class StructuredTypeText {
     static final String ARROW = "\u2192";
     static final String ARROW_SEPARATOR = " " + ARROW + " ";
