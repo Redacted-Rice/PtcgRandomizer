@@ -26,11 +26,23 @@ final class ColumnWidthPanel extends JPanel {
     }
 
     int getContentWidth() {
-        return getContentSize().width;
+        if (getComponentCount() == 0) {
+            return 0;
+        }
+        JComponent content = (JComponent) getComponent(0);
+        if (content instanceof WrappingLabel wrappingLabel) {
+            return wrappingLabel.getUnwrappedWidth();
+        }
+        return content.getPreferredSize().width;
     }
 
     void setLayoutColumnWidth(int width) {
+        if (layoutColumnWidth == width) {
+            return;
+        }
         layoutColumnWidth = width;
+        syncWrapWidth(width);
+        revalidate();
     }
 
     void clearLayoutColumnWidth() {
@@ -39,14 +51,16 @@ final class ColumnWidthPanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        Dimension content = getContentSize();
-        return new Dimension(resolveWidth(content.width), content.height);
+        int width = resolvePreferredWidth(getContentWidth());
+        syncWrapWidth(width);
+        return new Dimension(width, getWrappedContentHeight());
     }
 
     @Override
     public Dimension getMinimumSize() {
-        Dimension content = getContentSize();
-        return new Dimension(minWidth, content.height);
+        int width = layoutColumnWidth >= 0 ? layoutColumnWidth : getContentWidth();
+        syncWrapWidth(clampWidth(width));
+        return new Dimension(clampWidth(width), getWrappedContentHeight());
     }
 
     @Override
@@ -56,21 +70,34 @@ final class ColumnWidthPanel extends JPanel {
         return new Dimension(widthCap, pref.height);
     }
 
-    private Dimension getContentSize() {
+    private int getWrappedContentHeight() {
         if (getComponentCount() == 0) {
-            return new Dimension(0, 0);
+            return 0;
         }
-        return getComponent(0).getPreferredSize();
+        return getComponent(0).getPreferredSize().height;
     }
 
-    private int resolveWidth(int contentWidth) {
+    private void syncWrapWidth(int width) {
+        if (getComponentCount() == 0) {
+            return;
+        }
+        JComponent content = (JComponent) getComponent(0);
+        if (content instanceof WrappingLabel wrappingLabel) {
+            wrappingLabel.setWrapWidth(width);
+        }
+    }
+
+    private int resolvePreferredWidth(int contentWidth) {
         if (layoutColumnWidth >= 0) {
-            return layoutColumnWidth;
+            return clampWidth(layoutColumnWidth);
         }
-        int width = Math.max(minWidth, contentWidth);
+        return clampWidth(Math.max(0, contentWidth));
+    }
+
+    private int clampWidth(int width) {
         if (maxWidth != Integer.MAX_VALUE) {
-            width = Math.min(maxWidth, width);
+            return Math.min(maxWidth, Math.max(minWidth, width));
         }
-        return width;
+        return Math.max(minWidth, width);
     }
 }

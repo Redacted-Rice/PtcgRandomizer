@@ -6,9 +6,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Component;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,6 +25,8 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.randomizer.lua.Module;
@@ -36,7 +39,6 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 public class ModuleConfigDialog extends JDialog {
     private static final long serialVersionUID = 1L;
 
-    private static final int MIN_WIDTH = 520;
     private static final int MAX_WIDTH = 940;
     private static final int MIN_HEIGHT = 320;
     private static final int MAX_HEIGHT = 680;
@@ -79,7 +81,8 @@ public class ModuleConfigDialog extends JDialog {
     private final EnumValuesProvider enumValuesProvider;
     private ArgumentValueEditor seedOffsetEditor;
     private final Map<String, ArgumentValueEditor> argumentEditors = new LinkedHashMap<>();
-    private JScrollPane rowsScrollPane;
+    private ConfigScrollPane rowsScrollPane;
+    private JButton defaultButton;
 
     public ModuleConfigDialog(Window owner, Action action, boolean editable,
             EnumValuesProvider enumValuesProvider) {
@@ -103,9 +106,23 @@ public class ModuleConfigDialog extends JDialog {
         pack();
         applySizeConstraints();
         setLocationRelativeTo(owner);
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                resetScrollPosition();
+                rowsScrollPane.releaseInitialScrollLock();
+                SwingUtilities.invokeLater(() -> {
+                    resetScrollPosition();
+                    if (defaultButton != null) {
+                        defaultButton.requestFocusInWindow();
+                    }
+                });
+            }
+        });
     }
 
-    private JScrollPane buildRowsPanel() {
+    private ConfigScrollPane buildRowsPanel() {
         Module module = action.getModule();
 
         JPanel grid = new ModuleConfigGridPanel(COLUMN_SPECS, COLUMN_HORIZONTAL_CHROME);
@@ -120,7 +137,6 @@ public class ModuleConfigDialog extends JDialog {
         addHorizontalLine(grid, gbc, row);
         row++;
 
-        int dataStartRow = row;
         boolean hasDataRow = false;
 
         if (module.isSeeded()) {
@@ -163,37 +179,37 @@ public class ModuleConfigDialog extends JDialog {
             hasDataRow = true;
         }
 
-        int dataSectionSpan = row - dataStartRow;
-        if (dataSectionSpan > 0) {
-            addColumnSeparator(grid, gbc, dataStartRow, SEPARATOR_AFTER_ARGUMENT, dataSectionSpan);
-            addColumnSeparator(grid, gbc, dataStartRow, SEPARATOR_AFTER_CONSTRAINTS,
-                    dataSectionSpan);
+        int bodyRowSpan = row;
+        if (bodyRowSpan > 0) {
+            addColumnSeparator(grid, gbc, 0, SEPARATOR_AFTER_ARGUMENT, bodyRowSpan);
+            addColumnSeparator(grid, gbc, 0, SEPARATOR_AFTER_CONSTRAINTS, bodyRowSpan);
         }
 
         addHorizontalLine(grid, gbc, row);
 
         JPanel viewPanel = new JPanel(new BorderLayout());
+        viewPanel.setOpaque(false);
         viewPanel.add(grid, BorderLayout.NORTH);
 
-        JScrollPane scrollPane = new JScrollPane(viewPanel);
-        scrollPane.setBorder(null);
+        ConfigScrollPane scrollPane = new ConfigScrollPane(viewPanel);
+        scrollPane.setBorder(BorderFactory.createLineBorder(LINE_COLOR, LINE_WIDTH));
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setPreferredSize(grid.getPreferredSize());
         return scrollPane;
     }
 
     private void addHeaderRow(JPanel grid, GridBagConstraints gbc, int row) {
-        addCell(grid, gbc, row, ARGUMENT_COLUMN, headerLabel("Argument"), GridBagConstraints.WEST,
-                true);
+        addCell(grid, gbc, row, ARGUMENT_COLUMN, headerLabel("Argument"),
+                GridBagConstraints.CENTER, true);
         addCell(grid, gbc, row, CONSTRAINTS_COLUMN, headerLabel("Constraints"),
-                GridBagConstraints.WEST, true);
-        addCell(grid, gbc, row, VALUE_COLUMN, headerLabel("Value"), GridBagConstraints.WEST, true);
+                GridBagConstraints.CENTER, true);
+        addCell(grid, gbc, row, VALUE_COLUMN, headerLabel("Value"), GridBagConstraints.CENTER,
+                true);
     }
 
     private static JLabel headerLabel(String text) {
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         return label;
     }
@@ -238,19 +254,18 @@ public class ModuleConfigDialog extends JDialog {
 
     private int addRow(JPanel grid, GridBagConstraints gbc, int row, String name,
             String constraintDescription, JComponent valueComponent) {
-        addCell(grid, gbc, row, ARGUMENT_COLUMN, new JLabel(name), GridBagConstraints.WEST, true);
-
-        JLabel constraintLabel = new JLabel(constraintDescription);
-        constraintLabel.setForeground(Color.DARK_GRAY);
-        addCell(grid, gbc, row, CONSTRAINTS_COLUMN, constraintLabel, GridBagConstraints.WEST, true);
+        addCell(grid, gbc, row, ARGUMENT_COLUMN, new WrappingLabel(name), GridBagConstraints.WEST,
+                true);
+        addCell(grid, gbc, row, CONSTRAINTS_COLUMN, WrappingLabel.constraints(constraintDescription),
+                GridBagConstraints.WEST, true);
 
         addCell(grid, gbc, row, VALUE_COLUMN, valueComponent, GridBagConstraints.WEST, true);
 
         return row + 1;
     }
 
-    // Solid vertical rules spanning the full data section between the top and bottom horizontal
-    // lines
+    // Solid vertical rules spanning the header and data rows between the top and bottom horizontal
+    // lines.
     private void addColumnSeparator(JPanel grid, GridBagConstraints gbc, int startRow, int column,
             int rowSpan) {
         gbc.gridx = column;
@@ -302,15 +317,15 @@ public class ModuleConfigDialog extends JDialog {
 
     // Read only rows show the value as a plain label rather than a disabled input widget, so
     // it's visually clear that it can't be edited here
-    private static JLabel readOnlyValueLabel(Object value) {
-        return new JLabel(value == null ? "" : String.valueOf(value));
+    private static WrappingLabel readOnlyValueLabel(Object value) {
+        return new WrappingLabel(value == null ? "" : String.valueOf(value));
     }
 
     // LIST/TABLE values get compact preview text, e.g. "common, uncommon" or
     // "fire → 10, water → (1, 2, 3)" for nested complex values.
-    private static JLabel readOnlyValueLabel(TypeDefinition typeDef, Object value) {
+    private static WrappingLabel readOnlyValueLabel(TypeDefinition typeDef, Object value) {
         if (typeDef.isList() || typeDef.isTable()) {
-            return new JLabel(StructuredValueFormatting.format(typeDef, value));
+            return new WrappingLabel(StructuredValueFormatting.format(typeDef, value));
         }
         return readOnlyValueLabel(value);
     }
@@ -324,17 +339,19 @@ public class ModuleConfigDialog extends JDialog {
             cancelButton.addActionListener(e -> dispose());
             buttonPanel.add(okButton);
             buttonPanel.add(cancelButton);
+            defaultButton = okButton;
         } else {
             JButton closeButton = new JButton("Close");
             closeButton.addActionListener(e -> dispose());
             buttonPanel.add(closeButton);
+            defaultButton = closeButton;
         }
         return buttonPanel;
     }
 
     private void applySizeConstraints() {
         Dimension preferred = getPreferredSize();
-        int width = clamp(preferred.width, MIN_WIDTH, MAX_WIDTH);
+        int width = Math.min(preferred.width, MAX_WIDTH);
 
         if (preferred.height > MAX_HEIGHT) {
             int chromeHeight = preferred.height - rowsScrollPane.getPreferredSize().height;
@@ -343,51 +360,68 @@ public class ModuleConfigDialog extends JDialog {
                     Math.max(MIN_HEIGHT / 2, scrollHeight)));
             pack();
             preferred = getPreferredSize();
+            resetScrollPosition();
         }
 
-        int height = clamp(preferred.height, MIN_HEIGHT, MAX_HEIGHT);
-        setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
-        setSize(new Dimension(width, height));
-        validate();
+        int height = Math.min(preferred.height, MAX_HEIGHT);
 
-        Dimension slack = scrollBarSlack();
-        setSize(new Dimension(clamp(width + slack.width, MIN_WIDTH, MAX_WIDTH + slack.width),
-                clamp(height + slack.height, MIN_HEIGHT, MAX_HEIGHT + slack.height)));
+        Dimension scrollPref = rowsScrollPane.getPreferredSize();
+        Dimension slack = scrollBarSlack(scrollPref.width, scrollPref.height);
+        Dimension size = new Dimension(Math.min(width + slack.width, MAX_WIDTH + slack.width),
+                Math.min(height + slack.height, MAX_HEIGHT));
+        setMinimumSize(size);
+        setSize(size);
+        validate();
+        resetScrollPosition();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            resetScrollPosition();
+        }
+        super.setVisible(visible);
+    }
+
+    private void resetScrollPosition() {
+        JViewport viewport = rowsScrollPane.getViewport();
+        viewport.setViewPosition(new Point(0, 0));
+        rowsScrollPane.getVerticalScrollBar().setValue(0);
+        rowsScrollPane.getHorizontalScrollBar().setValue(0);
     }
 
     // Extra dialog size so AS_NEEDED scroll bars are fully visible (one pass, no loop).
-    private Dimension scrollBarSlack() {
-        JViewport viewport = rowsScrollPane.getViewport();
-        Component view = viewport.getView();
-        if (view == null) {
+    // Uses planned scroll-pane dimensions — viewport extent is unreliable before/while sizing.
+    private Dimension scrollBarSlack(int scrollPaneWidth, int scrollPaneHeight) {
+        Component view = rowsScrollPane.getViewport().getView();
+        if (view == null || scrollPaneWidth <= 0 || scrollPaneHeight <= 0) {
             return new Dimension(0, 0);
         }
 
         Dimension viewSize = view.getPreferredSize();
-        Dimension extent = viewport.getExtentSize();
-        if (extent.width <= 0 || extent.height <= 0) {
-            return new Dimension(0, 0);
-        }
-
         JScrollBar verticalBar = rowsScrollPane.getVerticalScrollBar();
         JScrollBar horizontalBar = rowsScrollPane.getHorizontalScrollBar();
         int verticalBarWidth = verticalBar.getPreferredSize().width;
         int horizontalBarHeight = horizontalBar.getPreferredSize().height;
 
+        Insets insets = rowsScrollPane.getInsets();
+        int viewportWidth = scrollPaneWidth - insets.left - insets.right;
+        int viewportHeight = scrollPaneHeight - insets.top - insets.bottom;
+        if (viewportWidth <= 0 || viewportHeight <= 0) {
+            return new Dimension(0, 0);
+        }
+
         int extraWidth = 0;
         int extraHeight = 0;
-        if (viewSize.height > extent.height) {
+        if (viewSize.height > viewportHeight) {
             extraWidth += verticalBarWidth;
+            viewportWidth -= verticalBarWidth;
         }
         // Vertical bar steals viewport width — may require a horizontal bar too.
-        if (viewSize.width > extent.width - extraWidth) {
+        if (viewSize.width > viewportWidth) {
             extraHeight += horizontalBarHeight;
         }
         return new Dimension(extraWidth, extraHeight);
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(value, max));
     }
 
     private void saveAndClose() {
@@ -420,5 +454,27 @@ public class ModuleConfigDialog extends JDialog {
         ModuleConfigDialog dialog =
                 new ModuleConfigDialog(owner, action, editable, enumValuesProvider);
         dialog.setVisible(true);
+    }
+
+    // Suppresses focus-driven scrolling while the dialog is first shown and sized.
+    private static final class ConfigScrollPane extends JScrollPane {
+        private static final long serialVersionUID = 1L;
+
+        private boolean suppressScrollRectToVisible = true;
+
+        ConfigScrollPane(JComponent view) {
+            super(view);
+        }
+
+        void releaseInitialScrollLock() {
+            suppressScrollRectToVisible = false;
+        }
+
+        @Override
+        public void scrollRectToVisible(Rectangle rect) {
+            if (!suppressScrollRectToVisible) {
+                super.scrollRectToVisible(rect);
+            }
+        }
     }
 }
