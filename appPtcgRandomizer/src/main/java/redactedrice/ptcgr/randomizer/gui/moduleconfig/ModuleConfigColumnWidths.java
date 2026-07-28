@@ -33,18 +33,37 @@ final class ModuleConfigColumnWidths {
             throw new IllegalArgumentException("naturalWidths and specs must match");
         }
 
-        int columnCount = specs.length;
-        int[] widths = new int[columnCount];
-        for (int i = 0; i < columnCount; i++) {
-            widths[i] = clampNatural(naturalWidths[i], specs[i]);
-        }
+        int[] widths = computeOpeningWidths(naturalWidths, specs);
 
         if (availableWidth <= 0) {
             return widths;
         }
 
-        distributeSlack(widths, specs, availableWidth - horizontalChrome - sum(widths));
+        int contentBudget = availableWidth - horizontalChrome;
+        int openingSum = sum(widths);
+        if (contentBudget > openingSum) {
+            distributeSlack(widths, specs, contentBudget - openingSum);
+        }
         return widths;
+    }
+
+    static int openingContentWidth(int[] naturalWidths, ColumnSpec[] specs, int horizontalChrome) {
+        return horizontalChrome + sum(computeOpeningWidths(naturalWidths, specs));
+    }
+
+    static int[] computeOpeningWidths(int[] naturalWidths, ColumnSpec[] specs) {
+        int[] widths = new int[specs.length];
+        for (int i = 0; i < specs.length; i++) {
+            widths[i] = openingWidth(naturalWidths[i], specs[i]);
+        }
+        return widths;
+    }
+
+    private static int openingWidth(int naturalWidth, ColumnSpec spec) {
+        if (spec.maxWidth < Integer.MAX_VALUE) {
+            return (spec.minWidth + spec.maxWidth) / 2;
+        }
+        return Math.max(spec.minWidth, naturalWidth);
     }
 
     private static void distributeSlack(int[] widths, ColumnSpec[] specs, double slack) {
@@ -89,10 +108,6 @@ final class ModuleConfigColumnWidths {
                 return;
             }
         }
-    }
-
-    private static int clampNatural(int naturalWidth, ColumnSpec spec) {
-        return Math.min(spec.maxWidth, Math.max(spec.minWidth, naturalWidth));
     }
 
     private static int sum(int[] values) {

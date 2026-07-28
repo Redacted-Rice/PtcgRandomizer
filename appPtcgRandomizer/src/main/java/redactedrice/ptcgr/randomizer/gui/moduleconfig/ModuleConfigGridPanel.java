@@ -43,7 +43,9 @@ final class ModuleConfigGridPanel extends JPanel {
 
     @Override
     public void doLayout() {
-        applyColumnWidths(getWidth());
+        int openingContentWidth = ModuleConfigColumnWidths.openingContentWidth(
+                measureNaturalWidths(), columnSpecs, horizontalChrome);
+        applyColumnWidths(Math.max(getWidth(), openingContentWidth));
         super.doLayout();
     }
 
