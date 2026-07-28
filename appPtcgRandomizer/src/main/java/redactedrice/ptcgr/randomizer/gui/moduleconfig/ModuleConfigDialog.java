@@ -210,7 +210,7 @@ public class ModuleConfigDialog extends JDialog {
     }
 
     // Wraps rather than calls setPreferredSize() directly on valueComponent since some editors
-    // (e.g. ListInlineEditor) change size later as rows are added/removed, and setPreferredSize
+    // (e.g. StructuredGridPanel) change size later as rows are added/removed, and setPreferredSize
     // would freeze that first layout size forever instead of letting it grow/shrink with the
     // content.
     private static JComponent widenValueComponent(JComponent valueComponent) {

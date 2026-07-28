@@ -161,12 +161,12 @@ class ArgumentEditorFactoryTest {
     }
 
     @Test
-    void listArgumentUsesListInlineEditor() {
+    void listArgumentUsesStructuredGridPanel() {
         ArgumentDefinition argDef = new ArgumentDefinition("tags",
                 TypeDefinition.listOf(TypeDefinition.string()), List.of());
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
-        assertTrue(editor instanceof ListInlineEditor);
+        assertTrue(editor instanceof StructuredGridPanel);
         assertEquals("List of string", ArgumentEditorFactory.describeConstraint(argDef));
 
         editor.setValue(List.of("common", "rare"));
@@ -186,13 +186,13 @@ class ArgumentEditorFactoryTest {
     }
 
     @Test
-    void tableArgumentUsesTableInlineEditor() {
+    void tableArgumentUsesStructuredGridPanel() {
         ArgumentDefinition argDef = new ArgumentDefinition("weights",
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()),
                 Map.of());
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
-        assertTrue(editor instanceof TableInlineEditor);
+        assertTrue(editor instanceof StructuredGridPanel);
         assertEquals("string \u2192 int", ArgumentEditorFactory.describeConstraint(argDef));
 
         editor.setValue(Map.of("fire", 10));
