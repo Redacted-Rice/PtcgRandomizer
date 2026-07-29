@@ -22,6 +22,29 @@ final class StructuredGridModel {
     record RawEntry(Object key, Object value) {
     }
 
+    record LayoutControlCounts(int entryBoxes, int removeButtons, int tableLevels) {
+    }
+
+    // Counts key/value entry fields, remove buttons, and TABLE levels (each adds an arrow column)
+    // required by a type's structured grid layout.
+    static LayoutControlCounts layoutControlCounts(TypeDefinition type) {
+        if (!type.isList() && !type.isTable()) {
+            return new LayoutControlCounts(1, 0, 0);
+        }
+        TypeDefinition child = type.isTable() ? type.getValueType() : type.getElementType();
+        if (type.isTable()) {
+            LayoutControlCounts childCounts = layoutControlCounts(child);
+            return new LayoutControlCounts(1 + childCounts.entryBoxes,
+                    1 + childCounts.removeButtons(), 1 + childCounts.tableLevels());
+        }
+        if (child.isComplex()) {
+            LayoutControlCounts childCounts = layoutControlCounts(child);
+            return new LayoutControlCounts(childCounts.entryBoxes(), 1 + childCounts.removeButtons(),
+                    childCounts.tableLevels());
+        }
+        return new LayoutControlCounts(1, 1, 0);
+    }
+
     // Total grid columns a type needs. Content columns first then one trailing "remove"
     // column on the right. TABLE levels add key/arrow before the value/nested band. Nested
     // LIST/TABLE levels add a separator column before their inner band.

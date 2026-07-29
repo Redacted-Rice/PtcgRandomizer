@@ -25,15 +25,16 @@ final class ColumnWidthPanel extends JPanel {
         add(content, BorderLayout.CENTER);
     }
 
+    int getDeclaredMinWidth() {
+        return minWidth;
+    }
+
     int getContentWidth() {
         if (getComponentCount() == 0) {
             return 0;
         }
         JComponent content = (JComponent) getComponent(0);
-        if (content instanceof WrappingLabel wrappingLabel) {
-            return wrappingLabel.getUnwrappedWidth();
-        }
-        return content.getPreferredSize().width;
+        return ColumnContentWidths.measure(content);
     }
 
     void setLayoutColumnWidth(int width) {
@@ -45,10 +46,6 @@ final class ColumnWidthPanel extends JPanel {
         revalidate();
     }
 
-    void clearLayoutColumnWidth() {
-        layoutColumnWidth = -1;
-    }
-
     @Override
     public Dimension getPreferredSize() {
         int width = resolvePreferredWidth(getContentWidth());
@@ -58,9 +55,8 @@ final class ColumnWidthPanel extends JPanel {
 
     @Override
     public Dimension getMinimumSize() {
-        int width = layoutColumnWidth >= 0 ? layoutColumnWidth : getContentWidth();
-        syncWrapWidth(clampWidth(width));
-        return new Dimension(clampWidth(width), getWrappedContentHeight());
+        syncWrapWidth(minWidth);
+        return new Dimension(minWidth, getWrappedContentHeight());
     }
 
     @Override

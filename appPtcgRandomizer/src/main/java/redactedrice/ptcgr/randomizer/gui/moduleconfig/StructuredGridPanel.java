@@ -128,11 +128,11 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
                 keyEditor.setValue(((StructuredGridModel.RawEntry) rawEntry).key());
                 keyEditor.setEditable(editable);
                 entry.keyEditor = keyEditor;
-                addExpandingSpanningCell(
+                addSpanningCell(
                         StructuredGridHelpers.wrapExpandableField(keyEditor.getComponent()),
-                        colOffset, row, entryRows, true);
+                        colOffset, row, entryRows, true, colOffset, true);
                 addSpanningCell(StructuredGridHelpers.createArrowLabel(), colOffset + 1, row,
-                        entryRows, true);
+                        entryRows, true, colOffset, false);
                 valueColOffset = colOffset + 2;
             }
 
@@ -150,7 +150,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
                 leafEditor.setValue(childValue);
                 leafEditor.setEditable(editable);
                 entry.leafEditor = leafEditor;
-                addLeafCell(leafEditor.getComponent(), valueColOffset, row);
+                addLeafCell(leafEditor.getComponent(), valueColOffset, row, colOffset);
                 addRemoveCell(removeButton, removeCol, row);
             }
 
@@ -180,8 +180,8 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         addButton.addActionListener(e -> addEntry(node));
         node.addButton = addButton;
 
-        int gridwidth = !collType.isTable() && childType.isComplex() ? 2 : 1;
-        addAddCell(addButton, colOffset, row, gridwidth);
+        int addGridwidth = !collType.isTable() && childType.isComplex() ? 2 : 1;
+        addAddCell(addButton, colOffset, row, addGridwidth, colOffset);
     }
 
     private void removeEntry(CollectionNode node, Entry entry) {
@@ -227,27 +227,19 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
     }
 
     private void addSpanningCell(JComponent component, int gridx, int gridy, int gridheight,
-            boolean centerVertical) {
+            boolean centerVertical, int bandStartCol, boolean expandHorizontal) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.gridheight = gridheight;
         gbc.anchor = centerVertical ? GridBagConstraints.CENTER : GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = cellInsets();
-        add(component, gbc);
-    }
-
-    private void addExpandingSpanningCell(JComponent component, int gridx, int gridy,
-            int gridheight, boolean centerVertical) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.gridheight = gridheight;
-        gbc.weightx = 1;
-        gbc.anchor = centerVertical ? GridBagConstraints.CENTER : GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = cellInsets();
+        if (expandHorizontal) {
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+        } else {
+            gbc.fill = GridBagConstraints.NONE;
+        }
+        gbc.insets = StructuredGridHelpers.cellInsets(gridx, bandStartCol);
         add(component, gbc);
     }
 
@@ -257,7 +249,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         gbc.gridy = gridy;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = cellInsets();
+        gbc.insets = StructuredGridHelpers.paddedCellInsets();
         add(button, gbc);
     }
 
@@ -290,30 +282,33 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         gbc.gridheight = gridheight;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.VERTICAL;
-        gbc.insets = cellInsets();
+        gbc.insets = StructuredGridHelpers.paddedCellInsets();
         add(cell, gbc);
     }
 
-    private void addLeafCell(JComponent component, int gridx, int gridy) {
+    private void addLeafCell(JComponent component, int gridx, int gridy, int bandStartCol) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = cellInsets();
+        gbc.insets = StructuredGridHelpers.cellInsets(gridx, bandStartCol);
         add(StructuredGridHelpers.wrapExpandableField(component), gbc);
     }
 
-    private void addAddCell(JButton button, int gridx, int gridy, int gridwidth) {
+    private void addAddCell(JButton button, int gridx, int gridy, int gridwidth,
+            int bandStartCol) {
+        JComponent cell = StructuredGridHelpers.wrapFixedSizeControl(button);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.gridwidth = gridwidth;
+        gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = cellInsets();
-        add(button, gbc);
+        gbc.insets = StructuredGridHelpers.cellInsets(gridx, bandStartCol);
+        add(cell, gbc);
     }
 
     private void addHorizontalSeparator(int colOffset, TypeDefinition collType, int gridy) {
@@ -336,11 +331,6 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         gbc.insets =
                 new Insets(0, StructuredGridHelpers.ROW_HGAP, 0, StructuredGridHelpers.ROW_HGAP);
         add(createVerticalLine(), gbc);
-    }
-
-    private static Insets cellInsets() {
-        return new Insets(StructuredGridHelpers.ROW_VGAP, StructuredGridHelpers.ROW_HGAP,
-                StructuredGridHelpers.ROW_VGAP, StructuredGridHelpers.ROW_HGAP);
     }
 
     private static JComponent createVerticalLine() {

@@ -24,14 +24,8 @@ final class ArgumentConstraintDescription {
 
     static String describe(ArgumentDefinition argDef) {
         TypeDefinition typeDef = argDef.getTypeDefinition();
-        if (typeDef.isList()) {
-            return StructuredTypeText.describeListType(typeDef);
-        }
-        if (typeDef.isTable()) {
-            return StructuredTypeText.describeTableType(typeDef);
-        }
-        if (typeDef.isEnum()) {
-            return StructuredTypeText.describeEnumType(typeDef.getEnumName());
+        if (typeDef.isList() || typeDef.isTable() || typeDef.isEnum()) {
+            return "";
         }
         return describe(typeDef.getBaseType(), typeDef.getConstraint());
     }
@@ -64,7 +58,7 @@ final class ArgumentConstraintDescription {
             case ENUM:
                 // Other primitive types with an inline values table, e.g.
                 // constraint = { type = "enum", values = { ... } }
-                return "custom enum";
+                return "Custom enum";
             case ANY:
             default:
                 return "";

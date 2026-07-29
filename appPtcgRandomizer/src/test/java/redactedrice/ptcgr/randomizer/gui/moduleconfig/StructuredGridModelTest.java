@@ -16,14 +16,22 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 class StructuredGridModelTest {
 
     @Test
-    void totalColumnsMatchExpectedLayouts() {
-        assertEquals(2,
-                StructuredGridModel.totalColumns(TypeDefinition.listOf(TypeDefinition.string())));
+    void layoutAndWidthHelpers_matchStructuredGridControls() {
+        assertEquals(new StructuredGridModel.LayoutControlCounts(1, 1, 0),
+                StructuredGridModel.layoutControlCounts(
+                        TypeDefinition.listOf(TypeDefinition.string())));
 
         TypeDefinition flatTable =
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer());
+        assertEquals(2, StructuredGridModel.totalColumns(
+                TypeDefinition.listOf(TypeDefinition.string())));
         assertEquals(4, StructuredGridModel.totalColumns(flatTable));
+        assertEquals(new StructuredGridModel.LayoutControlCounts(2, 1, 1),
+                StructuredGridModel.layoutControlCounts(flatTable));
+    }
 
+    @Test
+    void totalColumnsMatchNestedLayouts() {
         TypeDefinition listOfList =
                 TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer()));
         assertEquals(4, StructuredGridModel.totalColumns(listOfList));
