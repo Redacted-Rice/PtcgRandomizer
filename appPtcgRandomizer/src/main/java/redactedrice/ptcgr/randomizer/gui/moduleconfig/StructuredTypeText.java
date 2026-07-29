@@ -12,30 +12,22 @@ final class StructuredTypeText {
 
     private StructuredTypeText() {}
 
-    static String describeListType(TypeDefinition typeDef) {
-        return "List of " + describeStructuredShape(typeDef.getElementType());
-    }
-
-    static String describeTableType(TypeDefinition typeDef) {
-        return describeStructuredShape(typeDef.getKeyType()) + ARROW_SEPARATOR
-                + describeStructuredShape(typeDef.getValueType());
-    }
-
     static String describeStructuredShape(TypeDefinition typeDef) {
         if (typeDef.isList()) {
-            return describeListType(typeDef);
+            return "List of " + describeStructuredShape(typeDef.getElementType());
         }
         if (typeDef.isTable()) {
-            return describeTableType(typeDef);
+            return describeStructuredShape(typeDef.getKeyType()) + ARROW_SEPARATOR
+                    + describeStructuredShape(typeDef.getValueType());
         }
         return describeScalarShape(typeDef);
     }
 
-    static String describeEnumType(String enumName) {
+    private static String describeEnumType(String enumName) {
         if (enumName != null && !enumName.isBlank()) {
             return enumName;
         }
-        return "custom enum";
+        return "Custom enum";
     }
 
     private static String describeScalarShape(TypeDefinition typeDef) {

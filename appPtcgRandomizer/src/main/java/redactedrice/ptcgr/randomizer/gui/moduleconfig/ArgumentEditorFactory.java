@@ -116,6 +116,10 @@ public final class ArgumentEditorFactory {
         return "";
     }
 
+    public static String describeType(ArgumentDefinition argDef) {
+        return StructuredTypeText.describeStructuredShape(argDef.getTypeDefinition());
+    }
+
     public static String describeConstraint(ArgumentDefinition argDef) {
         return ArgumentConstraintDescription.describe(argDef);
     }

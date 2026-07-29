@@ -40,21 +40,24 @@ public class ModuleConfigDialog extends JDialog {
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_WIDTH = 940;
-    private static final int MIN_HEIGHT = 320;
     private static final int MAX_HEIGHT = 680;
 
     static final int ARGUMENT_COLUMN = 0;
     private static final int SEPARATOR_AFTER_ARGUMENT = 1;
-    static final int CONSTRAINTS_COLUMN = 2;
-    private static final int SEPARATOR_AFTER_CONSTRAINTS = 3;
-    static final int VALUE_COLUMN = 4;
-    private static final int COLUMN_COUNT = 5;
+    static final int TYPE_COLUMN = 2;
+    private static final int SEPARATOR_AFTER_TYPE = 3;
+    static final int CONSTRAINTS_COLUMN = 4;
+    private static final int SEPARATOR_AFTER_CONSTRAINTS = 5;
+    static final int VALUE_COLUMN = 6;
+    private static final int COLUMN_COUNT = 7;
 
-    private static final int ARGUMENT_COLUMN_MIN_WIDTH = 80;
+    private static final int ARGUMENT_COLUMN_MIN_WIDTH = 90;
     private static final int ARGUMENT_COLUMN_MAX_WIDTH = 150;
-    private static final int CONSTRAINTS_COLUMN_MIN_WIDTH = 80;
-    private static final int CONSTRAINTS_COLUMN_MAX_WIDTH = 200;
-    private static final int VALUE_COLUMN_MIN_WIDTH = 80;
+    private static final int TYPE_COLUMN_MIN_WIDTH = 60;
+    private static final int TYPE_COLUMN_MAX_WIDTH = 100;
+    private static final int CONSTRAINTS_COLUMN_MIN_WIDTH = 60;
+    private static final int CONSTRAINTS_COLUMN_MAX_WIDTH = 100;
+    private static final int VALUE_COLUMN_MIN_WIDTH = ValueColumnWidths.ENTRY_BOX_WIDTH;
     private static final double COLUMN_GROW_WEIGHT = 1;
 
     private static final int DIALOG_PADDING = 10;
@@ -69,18 +72,23 @@ public class ModuleConfigDialog extends JDialog {
     private static final ModuleConfigColumnWidths.ColumnSpec[] COLUMN_SPECS = {
             ModuleConfigColumnWidths.ColumnSpec.bounded(ARGUMENT_COLUMN_MIN_WIDTH,
                     ARGUMENT_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
+            ModuleConfigColumnWidths.ColumnSpec.bounded(TYPE_COLUMN_MIN_WIDTH,
+                    TYPE_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
             ModuleConfigColumnWidths.ColumnSpec.bounded(CONSTRAINTS_COLUMN_MIN_WIDTH,
                     CONSTRAINTS_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
             ModuleConfigColumnWidths.ColumnSpec.minOnly(VALUE_COLUMN_MIN_WIDTH,
                     COLUMN_GROW_WEIGHT),};
     private static final int COLUMN_HORIZONTAL_CHROME =
-            ModuleConfigColumnWidths.horizontalChrome(3, 2, CELL_PADDING_H, LINE_WIDTH);
+            ModuleConfigColumnWidths.horizontalChrome(4, 3, CELL_PADDING_H, LINE_WIDTH);
 
     private final Action action;
     private final boolean editable;
     private final EnumValuesProvider enumValuesProvider;
     private ArgumentValueEditor seedOffsetEditor;
     private final Map<String, ArgumentValueEditor> argumentEditors = new LinkedHashMap<>();
+    private final JPanel contentPanel;
+    private final JPanel buttonPanel;
+    private ModuleConfigGridPanel configGrid;
     private ConfigScrollPane rowsScrollPane;
     private JButton defaultButton;
 
@@ -92,17 +100,18 @@ public class ModuleConfigDialog extends JDialog {
         this.enumValuesProvider = enumValuesProvider;
 
         setLayout(new BorderLayout());
-        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBorder(BorderFactory.createEmptyBorder(DIALOG_PADDING, DIALOG_PADDING,
                 DIALOG_PADDING, DIALOG_PADDING));
         rowsScrollPane = buildRowsPanel();
         contentPanel.add(rowsScrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = buildButtonPanel();
+        buttonPanel = buildButtonPanel();
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(CONTENT_BUTTON_GAP, 0, 0, 0));
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(contentPanel, BorderLayout.CENTER);
 
+        setResizable(true);
         pack();
         applySizeConstraints();
         setLocationRelativeTo(owner);
@@ -125,7 +134,8 @@ public class ModuleConfigDialog extends JDialog {
     private ConfigScrollPane buildRowsPanel() {
         Module module = action.getModule();
 
-        JPanel grid = new ModuleConfigGridPanel(COLUMN_SPECS, COLUMN_HORIZONTAL_CHROME);
+        ModuleConfigGridPanel grid =
+                new ModuleConfigGridPanel(COLUMN_SPECS, COLUMN_HORIZONTAL_CHROME);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(CELL_PADDING_V, CELL_PADDING_H, CELL_PADDING_V, CELL_PADDING_H);
         gbc.anchor = GridBagConstraints.WEST;
@@ -152,8 +162,9 @@ public class ModuleConfigDialog extends JDialog {
             } else {
                 valueComponent = readOnlyValueLabel(action.getSeedOffset());
             }
-            row = addRow(grid, gbc, row, "Seed Offset", ArgumentEditorFactory.describeSeedOffset(),
-                    valueComponent);
+            row = addRow(grid, gbc, row, "Seed Offset", "int",
+                    ArgumentEditorFactory.describeSeedOffset(), valueComponent,
+                    TypeDefinition.integer());
             hasDataRow = true;
         }
 
@@ -174,35 +185,35 @@ public class ModuleConfigDialog extends JDialog {
                 valueComponent =
                         readOnlyValueLabel(argDef.getTypeDefinition(), action.getArgument(name));
             }
-            row = addRow(grid, gbc, row, name, ArgumentEditorFactory.describeConstraint(argDef),
-                    valueComponent);
+            row = addRow(grid, gbc, row, name, ArgumentEditorFactory.describeType(argDef),
+                    ArgumentEditorFactory.describeConstraint(argDef), valueComponent,
+                    argDef.getTypeDefinition());
             hasDataRow = true;
         }
 
         int bodyRowSpan = row;
         if (bodyRowSpan > 0) {
             addColumnSeparator(grid, gbc, 0, SEPARATOR_AFTER_ARGUMENT, bodyRowSpan);
+            addColumnSeparator(grid, gbc, 0, SEPARATOR_AFTER_TYPE, bodyRowSpan);
             addColumnSeparator(grid, gbc, 0, SEPARATOR_AFTER_CONSTRAINTS, bodyRowSpan);
         }
 
         addHorizontalLine(grid, gbc, row);
 
-        JPanel viewPanel = new JPanel(new BorderLayout());
-        viewPanel.setOpaque(false);
-        viewPanel.add(grid, BorderLayout.NORTH);
-
-        ConfigScrollPane scrollPane = new ConfigScrollPane(viewPanel);
+        ConfigScrollPane scrollPane = new ConfigScrollPane(grid);
         scrollPane.setBorder(BorderFactory.createLineBorder(LINE_COLOR, LINE_WIDTH));
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        configGrid = grid;
         return scrollPane;
     }
 
-    private void addHeaderRow(JPanel grid, GridBagConstraints gbc, int row) {
-        addCell(grid, gbc, row, ARGUMENT_COLUMN, headerLabel("Argument"),
-                GridBagConstraints.CENTER, true);
-        addCell(grid, gbc, row, CONSTRAINTS_COLUMN, headerLabel("Constraints"),
+    private void addHeaderRow(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row) {
+        addCell(grid, gbc, row, ARGUMENT_COLUMN, headerLabel("Argument"), GridBagConstraints.CENTER,
+                true);
+        addCell(grid, gbc, row, TYPE_COLUMN, headerLabel("Type"), GridBagConstraints.CENTER, true);
+        addCell(grid, gbc, row, CONSTRAINTS_COLUMN, headerLabel("Constraint"),
                 GridBagConstraints.CENTER, true);
         addCell(grid, gbc, row, VALUE_COLUMN, headerLabel("Value"), GridBagConstraints.CENTER,
                 true);
@@ -214,9 +225,14 @@ public class ModuleConfigDialog extends JDialog {
         return label;
     }
 
-    private void addCell(JPanel grid, GridBagConstraints gbc, int row, int column,
+    private void addCell(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, int column,
             JComponent content, int anchor, boolean fillHorizontal) {
-        JComponent cell = wrapForColumn(grid, column, content);
+        addCell(grid, gbc, row, column, content, anchor, fillHorizontal, null);
+    }
+
+    private void addCell(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, int column,
+            JComponent content, int anchor, boolean fillHorizontal, TypeDefinition valueType) {
+        JComponent cell = wrapForColumn(grid, column, content, valueType);
         gbc.gridx = column;
         gbc.gridy = row;
         gbc.gridwidth = 1;
@@ -230,44 +246,50 @@ public class ModuleConfigDialog extends JDialog {
     }
 
     private static boolean isDataColumn(int column) {
-        return column == ARGUMENT_COLUMN || column == CONSTRAINTS_COLUMN || column == VALUE_COLUMN;
+        return column == ARGUMENT_COLUMN || column == TYPE_COLUMN || column == CONSTRAINTS_COLUMN
+                || column == VALUE_COLUMN;
     }
 
-    private static JComponent wrapForColumn(JPanel grid, int column, JComponent content) {
+    private JComponent wrapForColumn(ModuleConfigGridPanel grid, int column, JComponent content,
+            TypeDefinition valueType) {
         if (!isDataColumn(column)) {
             return content;
         }
         ColumnWidthPanel panel = switch (column) {
             case ARGUMENT_COLUMN -> new ColumnWidthPanel(content, ARGUMENT_COLUMN_MIN_WIDTH,
                     ARGUMENT_COLUMN_MAX_WIDTH, true);
+            case TYPE_COLUMN -> new ColumnWidthPanel(content, TYPE_COLUMN_MIN_WIDTH,
+                    TYPE_COLUMN_MAX_WIDTH, true);
             case CONSTRAINTS_COLUMN -> new ColumnWidthPanel(content, CONSTRAINTS_COLUMN_MIN_WIDTH,
                     CONSTRAINTS_COLUMN_MAX_WIDTH, true);
-            case VALUE_COLUMN -> new ColumnWidthPanel(content, VALUE_COLUMN_MIN_WIDTH,
-                    Integer.MAX_VALUE, true);
+            case VALUE_COLUMN -> new ColumnWidthPanel(content,
+                    ValueColumnWidths.minimumWidth(valueType, editable), Integer.MAX_VALUE, true);
             default -> throw new IllegalArgumentException("Not a data column: " + column);
         };
-        if (grid instanceof ModuleConfigGridPanel configGrid) {
-            configGrid.registerColumnPanel(column, panel);
-        }
+        grid.registerColumnPanel(column, panel);
         return panel;
     }
 
-    private int addRow(JPanel grid, GridBagConstraints gbc, int row, String name,
-            String constraintDescription, JComponent valueComponent) {
+    private int addRow(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, String name,
+            String typeDescription, String constraintDescription, JComponent valueComponent,
+            TypeDefinition valueType) {
         addCell(grid, gbc, row, ARGUMENT_COLUMN, new WrappingLabel(name), GridBagConstraints.WEST,
                 true);
-        addCell(grid, gbc, row, CONSTRAINTS_COLUMN, WrappingLabel.constraints(constraintDescription),
+        addCell(grid, gbc, row, TYPE_COLUMN, new WrappingLabel(typeDescription),
                 GridBagConstraints.WEST, true);
+        addCell(grid, gbc, row, CONSTRAINTS_COLUMN,
+                WrappingLabel.constraints(constraintDescription), GridBagConstraints.WEST, true);
 
-        addCell(grid, gbc, row, VALUE_COLUMN, valueComponent, GridBagConstraints.WEST, true);
+        addCell(grid, gbc, row, VALUE_COLUMN, valueComponent, GridBagConstraints.WEST, true,
+                valueType);
 
         return row + 1;
     }
 
     // Solid vertical rules spanning the header and data rows between the top and bottom horizontal
     // lines.
-    private void addColumnSeparator(JPanel grid, GridBagConstraints gbc, int startRow, int column,
-            int rowSpan) {
+    private void addColumnSeparator(ModuleConfigGridPanel grid, GridBagConstraints gbc,
+            int startRow, int column, int rowSpan) {
         gbc.gridx = column;
         gbc.gridy = startRow;
         gbc.gridwidth = 1;
@@ -281,7 +303,7 @@ public class ModuleConfigDialog extends JDialog {
         gbc.gridheight = 1;
     }
 
-    private void addHorizontalLine(JPanel grid, GridBagConstraints gbc, int row) {
+    private void addHorizontalLine(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.gridwidth = COLUMN_COUNT;
@@ -350,29 +372,38 @@ public class ModuleConfigDialog extends JDialog {
     }
 
     private void applySizeConstraints() {
+        Dimension tablePref = tablePreferredSize();
+        rowsScrollPane.setPreferredSize(tablePref);
+        pack();
+
         Dimension preferred = getPreferredSize();
         int width = Math.min(preferred.width, MAX_WIDTH);
 
         if (preferred.height > MAX_HEIGHT) {
-            int chromeHeight = preferred.height - rowsScrollPane.getPreferredSize().height;
+            int chromeHeight = preferred.height - tablePref.height;
             int scrollHeight = MAX_HEIGHT - chromeHeight;
-            rowsScrollPane.setPreferredSize(new Dimension(rowsScrollPane.getPreferredSize().width,
-                    Math.max(MIN_HEIGHT / 2, scrollHeight)));
+            rowsScrollPane
+                    .setPreferredSize(new Dimension(tablePref.width, Math.max(0, scrollHeight)));
             pack();
             preferred = getPreferredSize();
+            tablePref = tablePreferredSize();
             resetScrollPosition();
         }
 
         int height = Math.min(preferred.height, MAX_HEIGHT);
 
-        Dimension scrollPref = rowsScrollPane.getPreferredSize();
-        Dimension slack = scrollBarSlack(scrollPref.width, scrollPref.height);
-        Dimension size = new Dimension(Math.min(width + slack.width, MAX_WIDTH + slack.width),
-                Math.min(height + slack.height, MAX_HEIGHT));
-        setMinimumSize(size);
-        setSize(size);
-        validate();
+        Dimension slack = scrollBarSlack(tablePref.width, tablePref.height);
+        setSize(new Dimension(Math.min(width + slack.width, MAX_WIDTH + slack.width),
+                Math.min(height + slack.height, MAX_HEIGHT)));
+
         resetScrollPosition();
+    }
+
+    private Dimension tablePreferredSize() {
+        Dimension gridPref = configGrid.getPreferredSize();
+        Insets border = rowsScrollPane.getBorder().getBorderInsets(rowsScrollPane);
+        return new Dimension(gridPref.width + border.left + border.right,
+                gridPref.height + border.top + border.bottom);
     }
 
     @Override
@@ -462,8 +493,8 @@ public class ModuleConfigDialog extends JDialog {
 
         private boolean suppressScrollRectToVisible = true;
 
-        ConfigScrollPane(JComponent view) {
-            super(view);
+        ConfigScrollPane(ModuleConfigGridPanel grid) {
+            super(grid);
         }
 
         void releaseInitialScrollLock() {

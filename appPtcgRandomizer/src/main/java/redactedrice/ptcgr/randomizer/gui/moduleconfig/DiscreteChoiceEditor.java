@@ -2,6 +2,7 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -23,6 +24,15 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
     private DiscreteChoiceEditor(boolean integer, List<Number> choices) {
         this.integer = integer;
         this.comboBox = new JComboBox<>(choices.toArray(new Number[0]));
+        comboBox.setPrototypeDisplayValue(widestChoice(choices));
+    }
+
+    private static Number widestChoice(List<Number> choices) {
+        if (choices.isEmpty()) {
+            return 0;
+        }
+        return choices.stream().max(Comparator.comparing(n -> n.toString().length()))
+                .orElse(choices.get(0));
     }
 
     public static DiscreteChoiceEditor forDiscreteRange(boolean integer, double min, double max,

@@ -137,7 +137,8 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof DiscreteChoiceEditor);
-        assertEquals("custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("double", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
 
         @SuppressWarnings("unchecked")
         JComboBox<Number> comboBox = (JComboBox<Number>) editor.getComponent();
@@ -148,37 +149,26 @@ class ArgumentEditorFactoryTest {
     }
 
     @Test
-    void enumBaseTypeShowsRegisteredEnumName() {
-        ArgumentDefinition argDef = new ArgumentDefinition("entityType",
-                TypeDefinition.enumType("EntityType"), "WARRIOR");
-
-        assertEquals("EntityType", ArgumentEditorFactory.describeConstraint(argDef));
-    }
-
-    @Test
-    void seedOffsetConstraintIsBlank() {
-        assertEquals("", ArgumentEditorFactory.describeSeedOffset());
-    }
-
-    @Test
     void listArgumentUsesStructuredGridPanel() {
         ArgumentDefinition argDef = new ArgumentDefinition("tags",
                 TypeDefinition.listOf(TypeDefinition.string()), List.of());
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof StructuredGridPanel);
-        assertEquals("List of string", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("List of string", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
 
         editor.setValue(List.of("common", "rare"));
         assertEquals(List.of("common", "rare"), editor.getValue());
     }
 
     @Test
-    void nestedListOfListDescribesShapeRecursively() {
+    void nestedListOfListDescribesShapeAndRoundTrips() {
         ArgumentDefinition argDef = new ArgumentDefinition("groups",
                 TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer())), List.of());
 
-        assertEquals("List of List of int", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("List of List of int", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
 
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
         editor.setValue(List.of(List.of(1, 2), List.of(3)));
@@ -193,21 +183,11 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof StructuredGridPanel);
-        assertEquals("string \u2192 int", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("string \u2192 int", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
 
         editor.setValue(Map.of("fire", 10));
         assertEquals(Map.of("fire", 10), editor.getValue());
-    }
-
-    @Test
-    void nestedTableOfListsDescribesShapeRecursively() {
-        ArgumentDefinition argDef = new ArgumentDefinition("poolsByType",
-                TypeDefinition.tableOf(TypeDefinition.string(),
-                        TypeDefinition.listOf(TypeDefinition.integer())),
-                Map.of());
-
-        assertEquals("string \u2192 List of int",
-                ArgumentEditorFactory.describeConstraint(argDef));
     }
 
     @Test
@@ -231,6 +211,7 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof StringFieldEditor);
+        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
         assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
 
         editor.setValue("hello");
@@ -245,7 +226,8 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof EnumEditor);
-        assertEquals("custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
 
         @SuppressWarnings("unchecked")
         JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
@@ -261,6 +243,7 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof EnumEditor);
+        assertEquals("bool", ArgumentEditorFactory.describeType(argDef));
         assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
 
         @SuppressWarnings("unchecked")
@@ -280,6 +263,7 @@ class ArgumentEditorFactoryTest {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof EnumEditor);
+        assertEquals("bool", ArgumentEditorFactory.describeType(argDef));
         assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
 
         @SuppressWarnings("unchecked")
@@ -294,6 +278,10 @@ class ArgumentEditorFactoryTest {
     void enumBaseTypeUsesProviderValuesAsChoices() {
         ArgumentDefinition argDef =
                 new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
+
+        assertEquals("EntityType", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
+
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef,
                 name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null);
 

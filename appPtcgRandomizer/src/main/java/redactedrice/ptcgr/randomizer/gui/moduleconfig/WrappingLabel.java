@@ -5,26 +5,29 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Insets;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
+import java.text.BreakIterator;
 
 import javax.swing.JTextArea;
-import javax.swing.text.View;
 
-// Read-only, word-wrapping label backed by JTextArea's built-in line wrapping. Column layout
-// drives the wrap width; height grows/shrinks as text reflows.
+// Read-only, word-wrapping label backed by JTextArea. Column layout drives the wrap width;
+// height grows/shrinks as text reflows. Text measurement uses LineBreakMeasurer so opening
+// widths and wrapped row heights match what will actually fit.
 final class WrappingLabel extends JTextArea {
     private static final long serialVersionUID = 1L;
+
+    // JTextArea paints slightly wider than FontMetrics alone so keep opening widths from clipping
+    private static final int TEXT_WIDTH_PADDING = 4;
 
     private int wrapWidth = -1;
 
     WrappingLabel(String text) {
         super(text == null ? "" : text);
         configureAsLabel();
-    }
-
-    static WrappingLabel header(String text) {
-        WrappingLabel label = new WrappingLabel(text);
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
-        return label;
     }
 
     static WrappingLabel constraints(String text) {
@@ -34,20 +37,22 @@ final class WrappingLabel extends JTextArea {
     }
 
     void setWrapWidth(int width) {
-        if (width <= 0 || wrapWidth == width) {
+        if (width <= 0) {
             return;
         }
         wrapWidth = width;
         revalidate();
+        repaint();
     }
 
     int getUnwrappedWidth() {
-        FontMetrics metrics = getFontMetrics(getFont());
-        int widestLine = 0;
-        for (String line : getText().split("\n", -1)) {
-            widestLine = Math.max(widestLine, metrics.stringWidth(line));
+        Font font = getFont();
+        FontRenderContext context = fontRenderContext();
+        int widest = 0;
+        for (String paragraph : getText().split("\n", -1)) {
+            widest = Math.max(widest, widestLineAdvance(paragraph, font, context));
         }
-        return widestLine;
+        return widest + TEXT_WIDTH_PADDING;
     }
 
     @Override
@@ -56,24 +61,83 @@ final class WrappingLabel extends JTextArea {
             return new Dimension(wrapWidth, wrappedTextHeight(wrapWidth));
         }
 
-        FontMetrics metrics = getFontMetrics(getFont());
-        return new Dimension(getUnwrappedWidth(), metrics.getHeight());
+        int unwrappedWidth = getUnwrappedWidth();
+        return new Dimension(unwrappedWidth, wrappedTextHeight(unwrappedWidth));
     }
 
     private int wrappedTextHeight(int width) {
-        int innerWidth = Math.max(0, width);
-        View root = getUI().getRootView(this);
-        if (root == null) {
-            return getFontMetrics(getFont()).getHeight();
+        return wrappedLineCount(width) * lineHeight();
+    }
+
+    private int wrappedLineCount(int width) {
+        if (width <= 0) {
+            return 1;
         }
-        root.setSize(innerWidth, 0);
-        float span = root.getPreferredSpan(View.Y_AXIS);
-        return (int) Math.ceil(span);
+        String text = getText();
+        if (text.isEmpty()) {
+            return 1;
+        }
+
+        Font font = getFont();
+        FontRenderContext context = fontRenderContext();
+        int lines = 0;
+        for (String paragraph : text.split("\n", -1)) {
+            lines += wrappedParagraphLineCount(paragraph, width, font, context);
+        }
+        return Math.max(1, lines);
+    }
+
+    private static int wrappedParagraphLineCount(String paragraph, int width, Font font,
+            FontRenderContext context) {
+        if (paragraph.isEmpty()) {
+            return 1;
+        }
+        AttributedCharacterIterator iterator = attributedIterator(paragraph, font);
+        BreakIterator lineBreak = BreakIterator.getLineInstance();
+        lineBreak.setText(paragraph);
+        LineBreakMeasurer measurer = new LineBreakMeasurer(iterator, lineBreak, context);
+        int layoutWidth = Math.max(1, width - TEXT_WIDTH_PADDING);
+        int lines = 0;
+        while (measurer.getPosition() < paragraph.length()) {
+            measurer.nextLayout(layoutWidth);
+            lines++;
+        }
+        return lines;
+    }
+
+    private static int widestLineAdvance(String paragraph, Font font, FontRenderContext context) {
+        if (paragraph.isEmpty()) {
+            return 0;
+        }
+        AttributedCharacterIterator iterator = attributedIterator(paragraph, font);
+        LineBreakMeasurer measurer = new LineBreakMeasurer(iterator, context);
+        int widest = 0;
+        while (measurer.getPosition() < paragraph.length()) {
+            widest = Math.max(widest,
+                    (int) Math.ceil(measurer.nextLayout(Float.MAX_VALUE).getAdvance()));
+        }
+        return widest;
+    }
+
+    private static AttributedCharacterIterator attributedIterator(String text, Font font) {
+        AttributedString attributed = new AttributedString(text);
+        attributed.addAttribute(TextAttribute.FONT, font);
+        return attributed.getIterator();
+    }
+
+    private FontRenderContext fontRenderContext() {
+        return getFontMetrics(getFont()).getFontRenderContext();
+    }
+
+    private int lineHeight() {
+        FontMetrics metrics = getFontMetrics(getFont());
+        return metrics.getHeight();
     }
 
     @Override
     public Dimension getMinimumSize() {
-        return getPreferredSize();
+        int height = wrapWidth > 0 ? wrappedTextHeight(wrapWidth) : lineHeight();
+        return new Dimension(0, height);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -14,6 +15,12 @@ public class EnumEditor implements ArgumentValueEditor {
 
     public EnumEditor(List<?> choices) {
         this.comboBox = new JComboBox<>(choices.toArray());
+        comboBox.setPrototypeDisplayValue(widestChoice(choices));
+    }
+
+    private static String widestChoice(List<?> choices) {
+        return choices.stream().map(String::valueOf).max(Comparator.comparingInt(String::length))
+                .orElse("");
     }
 
     @Override
