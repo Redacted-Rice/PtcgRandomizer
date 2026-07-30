@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.editor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -8,14 +8,16 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
+
 // Drop down editor for numeric constraints with a fixed, prepopulated set of choices:
 // DISCRETE_RANGE (min/max/step) and ENUM (explicit allowed numeric values). Both cases need to
 // normalize choices to a consistent int or double representation (see
-// NumericChoiceMatching.normalize()), which is
+// NumericEditing.normalize()), which is
 // specific to numeric types - for a fixed set of non-numeric choices (string/boolean enums, or
 // the ENUM base type) see EnumEditor instead.
 public class DiscreteChoiceEditor implements ArgumentValueEditor {
-    static final int MAX_DROPDOWN_CHOICES = 20;
+    private static final int MAX_DROPDOWN_CHOICES = 20;
 
     private final boolean integer;
     private final List<Number> choices;
@@ -36,11 +38,11 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
                 .orElse(choices.get(0));
     }
 
-    static boolean prefersDropdownForDiscreteRange(double min, double max, double step) {
+    public static boolean prefersDropdownForDiscreteRange(double min, double max, double step) {
         return discreteRangeStepCount(min, max, step) <= MAX_DROPDOWN_CHOICES;
     }
 
-    static int discreteRangeStepCount(double min, double max, double step) {
+    private static int discreteRangeStepCount(double min, double max, double step) {
         if (step <= 0) {
             return 1;
         }
@@ -64,7 +66,7 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         List<Number> choices = new ArrayList<>();
         for (Object value : allowedValues) {
             if (value instanceof Number) {
-                choices.add(NumericChoiceMatching.normalize(integer, (Number) value));
+                choices.add(NumericEditing.normalize(integer, (Number) value));
             }
         }
         return new DiscreteChoiceEditor(integer, choices);
@@ -75,14 +77,14 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         List<Number> choices = new ArrayList<>();
         if (step <= 0) {
             // Defensive fallback for a misconfigured module
-            choices.add(NumericChoiceMatching.normalize(integer, min));
+            choices.add(NumericEditing.normalize(integer, min));
             return choices;
         }
         BigDecimal current = BigDecimal.valueOf(min);
         BigDecimal maxBd = BigDecimal.valueOf(max);
         BigDecimal stepBd = BigDecimal.valueOf(step);
         while (current.compareTo(maxBd) <= 0) {
-            choices.add(NumericChoiceMatching.normalize(integer, current));
+            choices.add(NumericEditing.normalize(integer, current));
             current = current.add(stepBd);
         }
         return choices;
@@ -98,7 +100,7 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         if (!(value instanceof Number)) {
             return;
         }
-        Number nearest = NumericChoiceMatching.nearestChoice((Number) value, integer, choices);
+        Number nearest = NumericEditing.nearestChoice((Number) value, integer, choices);
         comboBox.setSelectedItem(nearest);
     }
 

@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.structured;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -9,10 +9,10 @@ import java.util.List;
 
 import javax.swing.JButton;
 
-final class StructuredGridTestSupport {
+public final class StructuredGridTestSupport {
     private StructuredGridTestSupport() {}
 
-    static JButton findAddButton(Component root) {
+    public static JButton findAddButton(Component root) {
         List<JButton> addButtons = findAddButtons(root);
         if (addButtons.isEmpty()) {
             throw new AssertionError("No add button found");
@@ -20,7 +20,7 @@ final class StructuredGridTestSupport {
         return addButtons.get(addButtons.size() - 1);
     }
 
-    static List<JButton> findAddButtons(Component root) {
+    public static List<JButton> findAddButtons(Component root) {
         List<JButton> addButtons = new ArrayList<>();
         for (JButton button : findComponents(root, JButton.class)) {
             if ("+ Add".equals(button.getText())) {
@@ -30,7 +30,7 @@ final class StructuredGridTestSupport {
         return addButtons;
     }
 
-    static List<JButton> findRemoveButtons(Component root) {
+    public static List<JButton> findRemoveButtons(Component root) {
         List<JButton> removeButtons = new ArrayList<>();
         for (JButton button : findComponents(root, JButton.class)) {
             if ("\u00D7".equals(button.getText())) {
@@ -40,11 +40,11 @@ final class StructuredGridTestSupport {
         return removeButtons;
     }
 
-    static boolean isFramedRemoveButton(JButton button) {
+    public static boolean isFramedRemoveButton(JButton button) {
         return !(button.getParent() instanceof StructuredGridPanel);
     }
 
-    static <T> List<T> findComponents(Component root, Class<T> type) {
+    public static <T> List<T> findComponents(Component root, Class<T> type) {
         List<T> found = new ArrayList<>();
         if (type.isInstance(root)) {
             found.add(type.cast(root));
@@ -57,7 +57,7 @@ final class StructuredGridTestSupport {
         return found;
     }
 
-    static void layoutFully(Component component) {
+    public static void layoutFully(Component component) {
         if (component instanceof Container container) {
             container.doLayout();
             for (Component child : container.getComponents()) {
@@ -66,7 +66,7 @@ final class StructuredGridTestSupport {
         }
     }
 
-    static GridBagConstraints gridBagConstraintsOf(Component component) {
+    public static GridBagConstraints gridBagConstraintsOf(Component component) {
         Component current = component;
         while (current != null) {
             Container parent = current.getParent();
@@ -79,7 +79,7 @@ final class StructuredGridTestSupport {
         throw new AssertionError("No StructuredGridPanel ancestor found for: " + component);
     }
 
-    static boolean isHorizontalSeparator(Component component) {
+    public static boolean isHorizontalSeparator(Component component) {
         if (!(component.getParent() instanceof StructuredGridPanel)) {
             return false;
         }
@@ -88,7 +88,7 @@ final class StructuredGridTestSupport {
                 && component.getPreferredSize().height == 1;
     }
 
-    static long countHorizontalSeparators(Component root) {
+    public static long countHorizontalSeparators(Component root) {
         long count = 0;
         if (root instanceof StructuredGridPanel panel) {
             for (Component child : panel.getComponents()) {

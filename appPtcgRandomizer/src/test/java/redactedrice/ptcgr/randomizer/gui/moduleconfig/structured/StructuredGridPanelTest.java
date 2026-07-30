@@ -1,18 +1,10 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.structured;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.countHorizontalSeparators;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.findAddButton;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.findAddButtons;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.findComponents;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.findRemoveButtons;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.gridBagConstraintsOf;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.isFramedRemoveButton;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.isHorizontalSeparator;
-import static redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredGridTestSupport.layoutFully;
+import static redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridTestSupport.*;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -26,9 +18,10 @@ import javax.swing.JTextField;
 
 import org.junit.jupiter.api.Test;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigGuiTestSupport;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
+public class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
 
     private static StructuredGridPanel stringListEditor() {
         return new StructuredGridPanel(TypeDefinition.listOf(TypeDefinition.string()), null);
@@ -49,29 +42,17 @@ class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void addDoesNotChangeStructureWhenAnotherFieldHasInvalidInput() {
-        StructuredGridPanel editor = intListEditor();
-        editor.setValue(List.of(1, 2));
-
-        List<JTextField> fields = findComponents(editor.getComponent(), JTextField.class);
-        fields.get(0).setText("");
-        findAddButton(editor.getComponent()).doClick();
-
-        fields = findComponents(editor.getComponent(), JTextField.class);
-        assertEquals(2, fields.size());
-    }
-
-    @Test
-    void removeDoesNotChangeStructureWhenAnotherFieldHasInvalidInput() {
+    void invalidInputBlocksStructuralChanges() {
         StructuredGridPanel editor = intListEditor();
         editor.setValue(List.of(1, 2, 3));
 
         List<JTextField> fields = findComponents(editor.getComponent(), JTextField.class);
         fields.get(0).setText("");
-        findRemoveButtons(editor.getComponent()).get(2).doClick();
+        findAddButton(editor.getComponent()).doClick();
+        assertEquals(3, findComponents(editor.getComponent(), JTextField.class).size());
 
-        fields = findComponents(editor.getComponent(), JTextField.class);
-        assertEquals(3, fields.size());
+        findRemoveButtons(editor.getComponent()).get(2).doClick();
+        assertEquals(3, findComponents(editor.getComponent(), JTextField.class).size());
     }
 
     @Test
@@ -320,54 +301,40 @@ class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void listHorizontalSeparatorsFollowNestedCollectionRules() {
-        StructuredGridPanel flatEditor = stringListEditor();
-        flatEditor.setValue(List.of("a", "b"));
-        assertEquals(0, countHorizontalSeparators(flatEditor.getComponent()));
+    void nestedCollectionsShowSeparatorsAboveAdd() {
+        StructuredGridPanel flatListEditor = stringListEditor();
+        flatListEditor.setValue(List.of("a", "b"));
+        assertEquals(0, countHorizontalSeparators(flatListEditor.getComponent()));
 
-        StructuredGridPanel emptyEditor = stringListEditor();
-        emptyEditor.setValue(List.of());
-        assertEquals(0, gridBagConstraintsOf(findAddButton(emptyEditor.getComponent())).gridy);
+        StructuredGridPanel emptyListEditor = stringListEditor();
+        emptyListEditor.setValue(List.of());
+        assertEquals(0, gridBagConstraintsOf(findAddButton(emptyListEditor.getComponent())).gridy);
 
-        StructuredGridPanel nestedEditor = nestedIntListEditor();
-        nestedEditor.setValue(List.of(List.of(1)));
-        JComponent nestedRoot = (JComponent) nestedEditor.getComponent();
-        int addRow = gridBagConstraintsOf(findAddButton(nestedRoot)).gridy;
-        boolean separatorAboveAdd = false;
-        for (java.awt.Component child : nestedRoot.getComponents()) {
-            GridBagConstraints constraints = gridBagConstraintsOf(child);
-            if (constraints.gridy == addRow - 1 && constraints.gridx == 0
-                    && isHorizontalSeparator(child)) {
-                separatorAboveAdd = true;
-            }
-        }
-        assertTrue(separatorAboveAdd);
-    }
+        StructuredGridPanel nestedListEditor = nestedIntListEditor();
+        nestedListEditor.setValue(List.of(List.of(1)));
+        assertTrue(separatorAboveAdd((JComponent) nestedListEditor.getComponent()));
 
-    @Test
-    void tableHorizontalSeparatorsFollowNestedCollectionRules() {
-        StructuredGridPanel flatEditor = stringIntTableEditor();
-        flatEditor.setValue(linkedMap("fire", 10, "water", 5));
-        assertEquals(0, countHorizontalSeparators(flatEditor.getComponent()));
+        StructuredGridPanel flatTableEditor = stringIntTableEditor();
+        flatTableEditor.setValue(linkedMap("fire", 10, "water", 5));
+        assertEquals(0, countHorizontalSeparators(flatTableEditor.getComponent()));
 
-        StructuredGridPanel nestedEditor =
+        StructuredGridPanel nestedTableEditor =
                 new StructuredGridPanel(TypeDefinition.tableOf(TypeDefinition.string(),
                         TypeDefinition.listOf(TypeDefinition.integer())), null);
-        Map<String, Object> value = new LinkedHashMap<>();
-        value.put("fire", List.of(1));
-        nestedEditor.setValue(value);
+        nestedTableEditor.setValue(Map.of("fire", List.of(1)));
+        assertTrue(separatorAboveAdd((JComponent) nestedTableEditor.getComponent()));
+    }
 
-        JComponent nestedRoot = (JComponent) nestedEditor.getComponent();
-        int addRow = gridBagConstraintsOf(findAddButton(nestedRoot)).gridy;
-        boolean separatorAboveAdd = false;
-        for (java.awt.Component child : nestedRoot.getComponents()) {
+    private static boolean separatorAboveAdd(JComponent root) {
+        int addRow = gridBagConstraintsOf(findAddButton(root)).gridy;
+        for (java.awt.Component child : root.getComponents()) {
             GridBagConstraints constraints = gridBagConstraintsOf(child);
             if (constraints.gridy == addRow - 1 && constraints.gridx == 0
                     && isHorizontalSeparator(child)) {
-                separatorAboveAdd = true;
+                return true;
             }
         }
-        assertTrue(separatorAboveAdd);
+        return false;
     }
 
     private static LinkedHashMap<String, Integer> linkedMap(Object... keysAndValues) {

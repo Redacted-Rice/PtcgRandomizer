@@ -1,7 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
-
-import javax.swing.*;
+import javax.swing.ListSelectionModel;
 
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.dualselector.ActionsTableModel.Columns;

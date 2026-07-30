@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 // Column cell wrapper that enforces min/max width and can be assigned a shared column width
 // during layout so every row in the column stays aligned.
-final class ColumnWidthPanel extends JPanel {
+public final class ColumnWidthPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private final int minWidth;
@@ -16,7 +16,7 @@ final class ColumnWidthPanel extends JPanel {
     private final boolean expandHorizontally;
     private int layoutColumnWidth = -1;
 
-    ColumnWidthPanel(JComponent content, int minWidth, int maxWidth, boolean expandHorizontally) {
+    public ColumnWidthPanel(JComponent content, int minWidth, int maxWidth, boolean expandHorizontally) {
         super(new BorderLayout());
         this.minWidth = minWidth;
         this.maxWidth = maxWidth;
@@ -25,19 +25,19 @@ final class ColumnWidthPanel extends JPanel {
         add(content, BorderLayout.CENTER);
     }
 
-    int getDeclaredMinWidth() {
+    public int getDeclaredMinWidth() {
         return minWidth;
     }
 
-    int getContentWidth() {
+    public int getContentWidth() {
         if (getComponentCount() == 0) {
             return 0;
         }
         JComponent content = (JComponent) getComponent(0);
-        return ColumnContentWidths.measure(content);
+        return ColumnSizing.measureContent(content);
     }
 
-    void setLayoutColumnWidth(int width) {
+    public void setLayoutColumnWidth(int width) {
         if (layoutColumnWidth == width) {
             return;
         }

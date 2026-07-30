@@ -3,6 +3,7 @@ package redactedrice.ptcgr.configs.modules;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.utils.WarningCollector;
@@ -10,10 +11,10 @@ import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 
 public final class ActionArgumentsConfig {
-    static final String SEED_OFFSET_KEY = "seedOffset";
+    private static final String SEED_OFFSET_KEY = "seedOffset";
     private final Integer seedOffset;
 
-    static final String ARGUMENTS_KEY = "arguments";
+    private static final String ARGUMENTS_KEY = "arguments";
     private final Map<String, Object> arguments;
 
     public ActionArgumentsConfig(Integer seedOffset, Map<String, Object> arguments) {

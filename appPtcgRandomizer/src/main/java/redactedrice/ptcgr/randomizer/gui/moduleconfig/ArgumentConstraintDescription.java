@@ -13,16 +13,16 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 // "Int min - Int max", "true / false", or "EntityType". Kept separate from URJ
 // ArgumentConstraint.getDescription() since that one is meant for log/error messages rather
 // than compact UI display and we have some special handling to do.
-final class ArgumentConstraintDescription {
+public final class ArgumentConstraintDescription {
     // Boolean is always a choice between exactly these two values regardless of what the argument
     // definition's other values as this is the only thing that makes sense for a configurable bool
-    static final List<Object> BOOLEAN_VALUES = List.of(Boolean.TRUE, Boolean.FALSE);
+    public static final List<Object> BOOLEAN_VALUES = List.of(Boolean.TRUE, Boolean.FALSE);
     private static final String BOOLEAN_DESCRIPTION =
             BOOLEAN_VALUES.stream().map(String::valueOf).collect(Collectors.joining(" / "));
 
     private ArgumentConstraintDescription() {}
 
-    static String describe(ArgumentDefinition argDef) {
+    public static String describe(ArgumentDefinition argDef) {
         TypeDefinition typeDef = argDef.getTypeDefinition();
         if (typeDef.isList() || typeDef.isTable() || typeDef.isEnum()) {
             return "";
@@ -34,14 +34,14 @@ final class ArgumentConstraintDescription {
     // range so editors and constraint labels use the same RANGE path as explicit bounds. Boolean
     // are similarly coerced/forced but that is done before this method is even called so no
     // logic needs to be here
-    static ArgumentConstraint forUi(ArgumentType baseType, ArgumentConstraint constraint) {
+    public static ArgumentConstraint forUi(ArgumentType baseType, ArgumentConstraint constraint) {
         if (baseType == ArgumentType.INTEGER && constraint.getType() == ConstraintType.ANY) {
             return ArgumentConstraint.range((double) Integer.MIN_VALUE, (double) Integer.MAX_VALUE);
         }
         return constraint;
     }
 
-    static String describe(ArgumentType baseType, ArgumentConstraint constraint) {
+    public static String describe(ArgumentType baseType, ArgumentConstraint constraint) {
         if (baseType == ArgumentType.BOOLEAN) {
             return BOOLEAN_DESCRIPTION;
         }
@@ -66,7 +66,7 @@ final class ArgumentConstraintDescription {
     }
 
     // Special formatting for bound values for ranges
-    static String formatBound(Double value, boolean integer) {
+    public static String formatBound(Double value, boolean integer) {
         if (value == null) {
             return "";
         }

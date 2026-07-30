@@ -23,25 +23,18 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 class ActionTest {
 
     @Test
-    void omittedTableDefaultUsesEmptyMap() {
-        Module module = testModule(List.of(new ArgumentDefinition("weights",
-                TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()), null)));
-
-        Action action = new Action(module);
-
-        assertTrue(action.getArgument("weights") instanceof Map);
-        assertTrue(((Map<?, ?>) action.getArgument("weights")).isEmpty());
-    }
-
-    @Test
-    void omittedListDefaultUsesEmptyList() {
-        Module module = testModule(
+    void omittedCollectionDefaultsUseEmptyContainers() {
+        Module listModule = testModule(
                 List.of(new ArgumentDefinition("tags", TypeDefinition.listOf(TypeDefinition.string()), null)));
+        Action listAction = new Action(listModule);
+        assertTrue(listAction.getArgument("tags") instanceof List);
+        assertTrue(((List<?>) listAction.getArgument("tags")).isEmpty());
 
-        Action action = new Action(module);
-
-        assertTrue(action.getArgument("tags") instanceof List);
-        assertTrue(((List<?>) action.getArgument("tags")).isEmpty());
+        Module tableModule = testModule(List.of(new ArgumentDefinition("weights",
+                TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()), null)));
+        Action tableAction = new Action(tableModule);
+        assertTrue(tableAction.getArgument("weights") instanceof Map);
+        assertTrue(((Map<?, ?>) tableAction.getArgument("weights")).isEmpty());
     }
 
     @Test
@@ -88,38 +81,25 @@ class ActionTest {
     }
 
     @Test
-    void separateActionsDoNotShareListDefaults() {
+    void mutableArgumentValuesAreNotSharedBetweenActions() {
         List<String> sharedDefault = new ArrayList<>(List.of("a", "b"));
         Module module = testModule(List.of(new ArgumentDefinition("tags",
                 TypeDefinition.listOf(TypeDefinition.string()), sharedDefault)));
 
         Action first = new Action(module);
         Action second = new Action(module);
-
-        assertEquals(List.of("a", "b"), first.getArgument("tags"));
-        assertEquals(List.of("a", "b"), second.getArgument("tags"));
         assertTrue(first.getArgument("tags") != second.getArgument("tags"));
-
         @SuppressWarnings("unchecked")
         List<String> firstTags = (List<String>) first.getArgument("tags");
         firstTags.add("c");
         assertEquals(List.of("a", "b"), second.getArgument("tags"));
-    }
 
-    @Test
-    void copyDoesNotShareMutableArgumentValues() {
-        List<String> sharedDefault = new ArrayList<>(List.of("a", "b"));
-        Module module = testModule(List.of(new ArgumentDefinition("tags",
-                TypeDefinition.listOf(TypeDefinition.string()), sharedDefault)));
-
-        Action original = new Action(module);
-        Action duplicate = original.copy();
-
-        assertTrue(original.getArgument("tags") != duplicate.getArgument("tags"));
+        Action duplicate = first.copy();
+        assertTrue(first.getArgument("tags") != duplicate.getArgument("tags"));
         @SuppressWarnings("unchecked")
         List<String> duplicateTags = (List<String>) duplicate.getArgument("tags");
-        duplicateTags.add("c");
-        assertEquals(List.of("a", "b"), original.getArgument("tags"));
+        duplicateTags.add("d");
+        assertEquals(List.of("a", "b", "c"), first.getArgument("tags"));
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {

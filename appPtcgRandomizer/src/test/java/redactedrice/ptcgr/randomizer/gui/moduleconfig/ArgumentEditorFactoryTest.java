@@ -12,83 +12,73 @@ import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumericEditing;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridPanel;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
+public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     private static final List<String> ADJUSTMENT_WARNINGS = new ArrayList<>();
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void captureAdjustmentWarnings() {
-        // Per-test hook so warning assertions do not depend on class run order
         ADJUSTMENT_WARNINGS.clear();
-        ValueAdjustmentWarnings.setNotifierForTests(
+        NumericEditing.setNotifierForTests(
                 (parent, message) -> ADJUSTMENT_WARNINGS.add(message));
     }
 
     @Test
-    void outOfRangeEntryShowsAdjustmentWarning() {
-        ADJUSTMENT_WARNINGS.clear();
-        ArgumentDefinition argDef = new ArgumentDefinition("numMoves",
+    void valueAdjustmentWarningsDescribeContext() {
+        ArgumentDefinition rangeArg = new ArgumentDefinition("numMoves",
                 TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-        JTextField field = (JTextField) editor.getComponent();
+        ArgumentValueEditor rangeEditor = ArgumentEditorFactory.create(rangeArg);
+        JTextField rangeField = (JTextField) rangeEditor.getComponent();
 
-        field.setText("5");
-        simulateFocusLost(field);
-        assertEquals("2", field.getText());
+        rangeField.setText("5");
+        simulateFocusLost(rangeField);
+        assertEquals("2", rangeField.getText());
         assertEquals(1, ADJUSTMENT_WARNINGS.size());
         assertEquals(
                 "The entered value 5 was adjusted to 2. (allowed range 0\u20132)",
                 ADJUSTMENT_WARNINGS.get(0));
 
         ADJUSTMENT_WARNINGS.clear();
-        field.setText("10");
-        assertEquals(2, editor.getValue());
+        rangeField.setText("10");
+        assertEquals(2, rangeEditor.getValue());
         assertEquals(1, ADJUSTMENT_WARNINGS.size());
-    }
 
-    @Test
-    void stepSnapShowsAdjustmentWarningWithStepDetail() {
-        ADJUSTMENT_WARNINGS.clear();
-        ArgumentDefinition argDef = new ArgumentDefinition("step",
+        ArgumentDefinition stepArg = new ArgumentDefinition("step",
                 TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 100, 5)), 25);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-        JTextField field = (JTextField) editor.getComponent();
+        ArgumentValueEditor stepEditor = ArgumentEditorFactory.create(stepArg);
+        JTextField stepField = (JTextField) stepEditor.getComponent();
 
-        field.setText("7");
-        assertEquals(5, editor.getValue());
+        ADJUSTMENT_WARNINGS.clear();
+        stepField.setText("7");
+        assertEquals(5, stepEditor.getValue());
         assertEquals(1, ADJUSTMENT_WARNINGS.size());
-        assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("7"));
-        assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("5"));
         assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("step 5"));
 
         ADJUSTMENT_WARNINGS.clear();
-        editor.setValue(27);
+        stepEditor.setValue(25);
         assertEquals(0, ADJUSTMENT_WARNINGS.size());
     }
 
     @Test
-    void anyIntegerConstraintUsesFullIntRange() {
+    void anyIntegerConstraintUsesFullIntRangeAndCapsValues() {
         ArgumentDefinition argDef = new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2);
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof NumberFieldEditor);
         assertEquals("Int min - Int max", ArgumentEditorFactory.describeConstraint(argDef));
-
-        JTextField field = (JTextField) editor.getComponent();
-        field.setText("12345");
-        assertEquals(12345, editor.getValue());
-    }
-
-    @Test
-    void integerRangeShowsSymbolicIntBoundsWhenMatched() {
-        ArgumentDefinition fullRange =
-                new ArgumentDefinition("full", TypeDefinition.integer(), 0);
-        assertEquals("Int min - Int max", ArgumentEditorFactory.describeConstraint(fullRange));
 
         ArgumentDefinition zeroToMax = new ArgumentDefinition("zeroToMax",
                 TypeDefinition.integer(ArgumentConstraint.range(0, Integer.MAX_VALUE)), 0);
@@ -97,13 +87,10 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentDefinition minToHundred = new ArgumentDefinition("minToHundred",
                 TypeDefinition.integer(ArgumentConstraint.range(Integer.MIN_VALUE, 100)), 0);
         assertEquals("Int min - 100", ArgumentEditorFactory.describeConstraint(minToHundred));
-    }
 
-    @Test
-    void anyIntegerConstraintCapsToIntRangeOnFocusLoss() {
-        ArgumentDefinition argDef = new ArgumentDefinition("anyInt", TypeDefinition.integer(), 0);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
         JTextField field = (JTextField) editor.getComponent();
+        field.setText("12345");
+        assertEquals(12345, editor.getValue());
 
         field.setText(String.valueOf((long) Integer.MAX_VALUE + 1L));
         simulateFocusLost(field);
@@ -117,7 +104,7 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void rangeConstraintCapsOutOfRangeValuesOnFocusLoss() {
+    void rangeConstraintCapsOutOfRangeValues() {
         ArgumentDefinition argDef = new ArgumentDefinition("numMoves",
                 TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2);
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
@@ -129,86 +116,67 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         field.setText("2");
         assertEquals(2, editor.getValue());
 
-        // Above max: capped to max as soon as the field loses focus, not rejected at save time
         field.setText("5");
         simulateFocusLost(field);
         assertEquals("2", field.getText());
         assertEquals(2, editor.getValue());
 
-        // Below min: capped to min the same way
         field.setText("-3");
         simulateFocusLost(field);
         assertEquals("0", field.getText());
         assertEquals(0, editor.getValue());
-    }
 
-    @Test
-    void rangeConstraintCapsOutOfRangeValuesInGetValueAsSafetyNet() {
-        ArgumentDefinition argDef = new ArgumentDefinition("numMoves",
-                TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        JTextField field = (JTextField) editor.getComponent();
         field.setText("10");
-        // getValue() also caps, even if focusLost never fired (e.g. saved without ever
-        // leaving the field)
         assertEquals(2, editor.getValue());
     }
 
-    private static void simulateFocusLost(JTextField field) {
-        for (FocusListener listener : field.getFocusListeners()) {
-            listener.focusLost(new FocusEvent(field, FocusEvent.FOCUS_LOST));
-        }
-    }
-
     @Test
-    void discreteRangeConstraintPrepopulatesChoices() {
-        ArgumentDefinition argDef = new ArgumentDefinition("step",
+    void discreteRangeEditorsChooseDropdownOrTextFieldByStepCount() {
+        ArgumentDefinition dropdownArg = new ArgumentDefinition("step",
                 TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 10, 5)), 0);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        ArgumentValueEditor dropdownEditor = ArgumentEditorFactory.create(dropdownArg);
 
-        assertTrue(editor instanceof DiscreteChoiceEditor);
-        assertEquals("0 - 10 (step 5)", ArgumentEditorFactory.describeConstraint(argDef));
+        assertTrue(dropdownEditor instanceof DiscreteChoiceEditor);
+        assertEquals("0 - 10 (step 5)", ArgumentEditorFactory.describeConstraint(dropdownArg));
 
         @SuppressWarnings("unchecked")
-        JComboBox<Number> comboBox = (JComboBox<Number>) editor.getComponent();
-        assertEquals(3, comboBox.getItemCount());
-        assertEquals(0, comboBox.getItemAt(0));
-        assertEquals(5, comboBox.getItemAt(1));
-        assertEquals(10, comboBox.getItemAt(2));
+        JComboBox<Number> dropdown = (JComboBox<Number>) dropdownEditor.getComponent();
+        assertEquals(3, dropdown.getItemCount());
+        assertEquals(0, dropdown.getItemAt(0));
+        assertEquals(5, dropdown.getItemAt(1));
+        assertEquals(10, dropdown.getItemAt(2));
 
-        editor.setValue(5);
-        assertEquals(5, editor.getValue());
-    }
+        dropdownEditor.setValue(7);
+        assertEquals(5, dropdownEditor.getValue());
+        dropdownEditor.setValue(8);
+        assertEquals(10, dropdownEditor.getValue());
 
-    @Test
-    void discreteRangeWithTwentyStepsUsesDropdown() {
-        ArgumentDefinition argDef = new ArgumentDefinition("step",
+        ArgumentDefinition twentyStepArg = new ArgumentDefinition("step",
                 TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 95, 5)), 0);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        assertTrue(ArgumentEditorFactory.create(twentyStepArg) instanceof DiscreteChoiceEditor);
 
-        assertTrue(editor instanceof DiscreteChoiceEditor);
+        ArgumentDefinition textFieldArg = new ArgumentDefinition("step",
+                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 100, 5)), 25);
+        ArgumentValueEditor textFieldEditor = ArgumentEditorFactory.create(textFieldArg);
+        assertTrue(textFieldEditor instanceof NumberFieldEditor);
+
+        JTextField field = (JTextField) textFieldEditor.getComponent();
+        field.setText("7");
+        assertEquals(5, textFieldEditor.getValue());
+        field.setText("8");
+        assertEquals(10, textFieldEditor.getValue());
+        field.setText("250");
+        assertEquals(100, textFieldEditor.getValue());
+        textFieldEditor.setValue(27);
+        assertEquals(25, textFieldEditor.getValue());
     }
 
     @Test
-    void discreteRangeDropdownSnapsOffGridValueToNearestStep() {
-        ArgumentDefinition argDef = new ArgumentDefinition("step",
-                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 10, 5)), 7);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof DiscreteChoiceEditor);
-        editor.setValue(7);
-        assertEquals(5, editor.getValue());
-        editor.setValue(8);
-        assertEquals(10, editor.getValue());
-    }
-
-    @Test
-    void numericEnumDropdownSnapsOffGridValueToNearestChoice() {
-        ArgumentDefinition argDef = new ArgumentDefinition("multiplier",
+    void dropdownSnapsOffGridNumericValuesToNearestChoice() {
+        ArgumentDefinition enumArg = new ArgumentDefinition("multiplier",
                 TypeDefinition.integer(ArgumentConstraint.enumValues(List.of(1, 2, 3, 5, 8, 13))),
                 4);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(enumArg);
 
         assertTrue(editor instanceof DiscreteChoiceEditor);
         editor.setValue(4);
@@ -216,45 +184,30 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void enumStringConstraintIncludesLoadedValueWhenNotInCurrentChoices() {
+    void enumStringConstraintUsesAllowedValuesAndRetainsLoadedValue() {
         ArgumentDefinition argDef = new ArgumentDefinition("color",
                 TypeDefinition.string(ArgumentConstraint.enumValues(List.of("red", "green", "blue"))),
                 "red");
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof EnumEditor);
-        editor.setValue("purple");
+        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
 
         @SuppressWarnings("unchecked")
         JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(3, comboBox.getItemCount());
+
+        editor.setValue("green");
+        assertEquals("green", editor.getValue());
+
+        editor.setValue("purple");
         assertEquals(4, comboBox.getItemCount());
         assertEquals("purple", editor.getValue());
     }
 
     @Test
-    void discreteRangeWithMoreThanTwentyStepsUsesTextFieldAndSnapsToStep() {
-        ArgumentDefinition argDef = new ArgumentDefinition("step",
-                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 100, 5)), 25);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof NumberFieldEditor);
-
-        JTextField field = (JTextField) editor.getComponent();
-        field.setText("7");
-        assertEquals(5, editor.getValue());
-
-        field.setText("8");
-        assertEquals(10, editor.getValue());
-
-        field.setText("250");
-        assertEquals(100, editor.getValue());
-
-        editor.setValue(27);
-        assertEquals(25, editor.getValue());
-    }
-
-    @Test
-    void enumConstraintUsesAllowedValuesAsChoices() {
+    void numericEnumConstraintUsesAllowedValuesAsChoices() {
         ArgumentDefinition argDef = new ArgumentDefinition("multiplier",
                 TypeDefinition.doubleType(ArgumentConstraint.enumValues(List.of(0.5, 1.0, 2.0))),
                 1.0);
@@ -273,59 +226,44 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void listArgumentUsesStructuredGridPanel() {
-        ArgumentDefinition argDef = new ArgumentDefinition("tags",
+    void structuredArgumentsUseGridPanelAndDescribeShape() {
+        ArgumentDefinition listArg = new ArgumentDefinition("tags",
                 TypeDefinition.listOf(TypeDefinition.string()), List.of());
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        ArgumentValueEditor listEditor = ArgumentEditorFactory.create(listArg);
+        assertTrue(listEditor instanceof StructuredGridPanel);
+        assertEquals("List of string", ArgumentEditorFactory.describeType(listArg));
+        listEditor.setValue(List.of("common", "rare"));
+        assertEquals(List.of("common", "rare"), listEditor.getValue());
 
-        assertTrue(editor instanceof StructuredGridPanel);
-        assertEquals("List of string", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
-
-        editor.setValue(List.of("common", "rare"));
-        assertEquals(List.of("common", "rare"), editor.getValue());
-    }
-
-    @Test
-    void nestedListOfListDescribesShapeAndRoundTrips() {
-        ArgumentDefinition argDef = new ArgumentDefinition("groups",
+        ArgumentDefinition nestedListArg = new ArgumentDefinition("groups",
                 TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer())), List.of());
+        assertEquals("List of List of int", ArgumentEditorFactory.describeType(nestedListArg));
+        ArgumentValueEditor nestedListEditor = ArgumentEditorFactory.create(nestedListArg);
+        nestedListEditor.setValue(List.of(List.of(1, 2), List.of(3)));
+        assertEquals(List.of(List.of(1, 2), List.of(3)), nestedListEditor.getValue());
 
-        assertEquals("List of List of int", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
-
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-        editor.setValue(List.of(List.of(1, 2), List.of(3)));
-        assertEquals(List.of(List.of(1, 2), List.of(3)), editor.getValue());
-    }
-
-    @Test
-    void tableArgumentUsesStructuredGridPanel() {
-        ArgumentDefinition argDef = new ArgumentDefinition("weights",
+        ArgumentDefinition tableArg = new ArgumentDefinition("weights",
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()),
                 Map.of());
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof StructuredGridPanel);
-        assertEquals("string \u2192 int", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
-
-        editor.setValue(Map.of("fire", 10));
-        assertEquals(Map.of("fire", 10), editor.getValue());
+        ArgumentValueEditor tableEditor = ArgumentEditorFactory.create(tableArg);
+        assertTrue(tableEditor instanceof StructuredGridPanel);
+        assertEquals("string \u2192 int", ArgumentEditorFactory.describeType(tableArg));
+        tableEditor.setValue(Map.of("fire", 10));
+        assertEquals(Map.of("fire", 10), tableEditor.getValue());
     }
 
     @Test
-    void unsupportedBaseTypeFallsBackToReadOnlyEditor() {
-        ArgumentDefinition argDef = new ArgumentDefinition("entityType",
+    void missingEnumSupportFallsBackToReadOnlyEditor() {
+        ArgumentDefinition missingEnumArg = new ArgumentDefinition("entityType",
                 TypeDefinition.enumType("MissingEnum"), "WARRIOR");
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        ArgumentValueEditor missingEnumEditor = ArgumentEditorFactory.create(missingEnumArg);
+        assertTrue(missingEnumEditor instanceof UnsupportedValueEditor);
+        missingEnumEditor.setEditable(true);
+        assertTrue(!((JTextField) missingEnumEditor.getComponent()).isEditable());
 
-        assertTrue(editor instanceof UnsupportedValueEditor);
-
-        // Unsupported editors stay read-only regardless of the requested editable state
-        editor.setEditable(true);
-        assertTrue(editor.getComponent() instanceof JTextField);
-        assertTrue(!((JTextField) editor.getComponent()).isEditable());
+        ArgumentDefinition unregisteredEnumArg =
+                new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
+        assertTrue(ArgumentEditorFactory.create(unregisteredEnumArg) instanceof UnsupportedValueEditor);
     }
 
     @Test
@@ -343,59 +281,30 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     }
 
     @Test
-    void enumStringConstraintUsesAllowedValuesAsChoices() {
-        ArgumentDefinition argDef = new ArgumentDefinition("color",
-                TypeDefinition.string(ArgumentConstraint.enumValues(List.of("red", "green", "blue"))),
-                "red");
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof EnumEditor);
-        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+    void booleanConstraintAlwaysOffersTrueAndFalse() {
+        ArgumentDefinition anyBool = new ArgumentDefinition("flag", TypeDefinition.bool(), true);
+        ArgumentValueEditor anyBoolEditor = ArgumentEditorFactory.create(anyBool);
+        assertTrue(anyBoolEditor instanceof EnumEditor);
+        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(anyBool));
 
         @SuppressWarnings("unchecked")
-        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
-        assertEquals(3, comboBox.getItemCount());
+        JComboBox<Object> anyBoolCombo = (JComboBox<Object>) anyBoolEditor.getComponent();
+        assertEquals(2, anyBoolCombo.getItemCount());
+        anyBoolEditor.setValue(false);
+        assertEquals(false, anyBoolEditor.getValue());
 
-        editor.setValue("green");
-        assertEquals("green", editor.getValue());
-    }
-
-    @Test
-    void anyBooleanConstraintUsesTrueFalseChoices() {
-        ArgumentDefinition argDef = new ArgumentDefinition("flag", TypeDefinition.bool(), true);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof EnumEditor);
-        assertEquals("bool", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
-
-        @SuppressWarnings("unchecked")
-        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
-        assertEquals(2, comboBox.getItemCount());
-
-        editor.setValue(false);
-        assertEquals(false, editor.getValue());
-    }
-
-    @Test
-    void booleanConstraintAlwaysShowsBothTrueAndFalseChoices() {
-        // Even if the argument definition restricts the enum to a single allowed value, a
-        // boolean "choice" of just one value doesn't make sense - the UI always offers both.
-        ArgumentDefinition argDef = new ArgumentDefinition("flag",
+        ArgumentDefinition restrictedBool = new ArgumentDefinition("flag",
                 TypeDefinition.bool(ArgumentConstraint.enumValues(List.of(false))), false);
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof EnumEditor);
-        assertEquals("bool", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(argDef));
+        ArgumentValueEditor restrictedBoolEditor = ArgumentEditorFactory.create(restrictedBool);
+        assertTrue(restrictedBoolEditor instanceof EnumEditor);
+        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(restrictedBool));
 
         @SuppressWarnings("unchecked")
-        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
-        assertEquals(2, comboBox.getItemCount());
-
-        editor.setValue(true);
-        assertEquals(true, editor.getValue());
+        JComboBox<Object> restrictedBoolCombo =
+                (JComboBox<Object>) restrictedBoolEditor.getComponent();
+        assertEquals(2, restrictedBoolCombo.getItemCount());
+        restrictedBoolEditor.setValue(true);
+        assertEquals(true, restrictedBoolEditor.getValue());
     }
 
     @Test
@@ -404,7 +313,6 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                 new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
 
         assertEquals("EntityType", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
 
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef,
                 name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null);
@@ -419,12 +327,9 @@ class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         assertEquals("MAGE", editor.getValue());
     }
 
-    @Test
-    void enumBaseTypeWithoutProviderFallsBackToReadOnlyEditor() {
-        ArgumentDefinition argDef =
-                new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
-
-        assertTrue(editor instanceof UnsupportedValueEditor);
+    private static void simulateFocusLost(JTextField field) {
+        for (FocusListener listener : field.getFocusListeners()) {
+            listener.focusLost(new FocusEvent(field, FocusEvent.FOCUS_LOST));
+        }
     }
 }

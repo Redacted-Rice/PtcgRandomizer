@@ -1,9 +1,12 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
+import java.awt.Component;
+import java.awt.Window;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
-import java.awt.*;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;

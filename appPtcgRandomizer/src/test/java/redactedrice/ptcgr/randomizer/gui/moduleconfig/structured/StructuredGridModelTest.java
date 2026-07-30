@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.structured;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,25 +13,21 @@ import org.junit.jupiter.api.Test;
 
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class StructuredGridModelTest {
+public class StructuredGridModelTest {
 
     @Test
-    void layoutAndWidthHelpers_matchStructuredGridControls() {
+    void layoutHelpersMatchStructuredGridShape() {
+        TypeDefinition listOfString = TypeDefinition.listOf(TypeDefinition.string());
         assertEquals(new StructuredGridModel.LayoutControlCounts(1, 1, 0),
-                StructuredGridModel.layoutControlCounts(
-                        TypeDefinition.listOf(TypeDefinition.string())));
+                StructuredGridModel.layoutControlCounts(listOfString));
+        assertEquals(2, StructuredGridModel.totalColumns(listOfString));
 
         TypeDefinition flatTable =
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer());
-        assertEquals(2, StructuredGridModel.totalColumns(
-                TypeDefinition.listOf(TypeDefinition.string())));
         assertEquals(4, StructuredGridModel.totalColumns(flatTable));
         assertEquals(new StructuredGridModel.LayoutControlCounts(2, 1, 1),
                 StructuredGridModel.layoutControlCounts(flatTable));
-    }
 
-    @Test
-    void totalColumnsMatchNestedLayouts() {
         TypeDefinition listOfList =
                 TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer()));
         assertEquals(4, StructuredGridModel.totalColumns(listOfList));

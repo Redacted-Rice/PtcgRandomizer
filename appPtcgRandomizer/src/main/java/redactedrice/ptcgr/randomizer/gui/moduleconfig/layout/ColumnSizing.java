@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.FontMetrics;
 import java.awt.Insets;
@@ -8,15 +8,39 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-// Measures natural content width for column width calculations. Uses component specific logic
-// so opening column widths fit labels, combo boxes, and text fields without clipping.
-final class ColumnContentWidths {
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridModel;
+import redactedrice.randomizer.lua.arguments.TypeDefinition;
+
+// Minimum widths and natural content measurement for module config columns.
+public final class ColumnSizing {
+    public static final int ENTRY_BOX_WIDTH = 80;
+    public static final int VIEW_MODE_MIN_WIDTH = 160;
+    public static final int REMOVE_BUTTON_WIDTH = 60;
+    public static final int TABLE_ARROW_WIDTH = 40;
+
     private static final int TEXT_WIDTH_PADDING = 4;
     private static final int COMBO_ARROW_PADDING = 20;
 
-    private ColumnContentWidths() {}
+    private ColumnSizing() {}
 
-    static int measure(JComponent content) {
+    public static int minimumValueWidth(TypeDefinition valueType) {
+        return minimumValueWidth(valueType, true);
+    }
+
+    public static int minimumValueWidth(TypeDefinition valueType, boolean editable) {
+        if (!editable) {
+            return VIEW_MODE_MIN_WIDTH;
+        }
+        if (valueType == null || (!valueType.isList() && !valueType.isTable())) {
+            return ENTRY_BOX_WIDTH;
+        }
+        StructuredGridModel.LayoutControlCounts counts =
+                StructuredGridModel.layoutControlCounts(valueType);
+        return counts.entryBoxes() * ENTRY_BOX_WIDTH + counts.removeButtons() * REMOVE_BUTTON_WIDTH
+                + counts.tableLevels() * TABLE_ARROW_WIDTH;
+    }
+
+    public static int measureContent(JComponent content) {
         if (content instanceof WrappingLabel wrappingLabel) {
             return wrappingLabel.getUnwrappedWidth();
         }
@@ -24,7 +48,7 @@ final class ColumnContentWidths {
             return measureComboBox(comboBox);
         }
         if (content instanceof JCheckBox) {
-            return ValueColumnWidths.REMOVE_BUTTON_WIDTH;
+            return REMOVE_BUTTON_WIDTH;
         }
         if (content instanceof JTextField textField) {
             return measureTextField(textField);
@@ -55,6 +79,6 @@ final class ColumnContentWidths {
         Insets insets = textField.getInsets();
         int measured = metrics.stringWidth(text == null ? "" : text) + insets.left + insets.right
                 + TEXT_WIDTH_PADDING;
-        return Math.max(measured, ValueColumnWidths.ENTRY_BOX_WIDTH);
+        return Math.max(measured, ENTRY_BOX_WIDTH);
     }
 }

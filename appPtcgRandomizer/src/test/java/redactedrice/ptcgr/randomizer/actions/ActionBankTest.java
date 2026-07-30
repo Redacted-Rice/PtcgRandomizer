@@ -18,11 +18,11 @@ import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
-import redactedrice.randomizer.utils.RandomizerBundledResources;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 class ActionBankTest {
     private File workDir;

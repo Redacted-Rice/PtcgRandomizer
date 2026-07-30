@@ -9,28 +9,26 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
-import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.utils.FileExtensionUtils;
-import redactedrice.ptcgr.utils.WarningCollector;
-import redactedrice.ptcgr.randomizer.actions.Action;
-import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.rom.RomData;
-import redactedrice.ptcgr.rom.RomIO;
-import redactedrice.randomizer.context.JavaContext;
-import redactedrice.randomizer.LuaRandomizerWrapper;
-import redactedrice.randomizer.lua.ExecutionResult;
-import redactedrice.randomizer.lua.ExecutionRequest;
-import redactedrice.randomizer.lua.requirements.CoreRequirements;
-import redactedrice.randomizer.utils.ErrorTracker;
-import redactedrice.randomizer.utils.Logger;
-
-import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
 import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
+import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
+import redactedrice.ptcgr.rom.RomData;
+import redactedrice.ptcgr.rom.RomIO;
+import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.context.JavaContext;
+import redactedrice.randomizer.lua.ExecutionRequest;
+import redactedrice.randomizer.lua.ExecutionResult;
+import redactedrice.randomizer.lua.requirements.CoreRequirements;
+import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.Logger;
 
 public class RandomizerCore {
     static final String SEED_LOG_EXTENSION = ".seed.txt";

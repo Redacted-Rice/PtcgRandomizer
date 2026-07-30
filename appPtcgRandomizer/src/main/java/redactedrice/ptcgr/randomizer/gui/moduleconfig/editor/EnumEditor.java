@@ -1,12 +1,13 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.editor;
 
 import java.util.Comparator;
 import java.util.List;
-
 import java.util.Objects;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 
 // Drop down editor for a fixed set of non-numeric choices: STRING/BOOLEAN ENUM constraints and
 // the ENUM base type (values pulled from a registered enum by name, e.g. via
