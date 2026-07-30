@@ -35,6 +35,7 @@ import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.randomizer.lua.Module;
+import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
@@ -235,6 +236,64 @@ class YamlIOTest {
         var actions = config.getActions(actionBank, warnings);
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
+    }
+
+    @Test
+    void loadCoercesStringYamlValueToModuleArgumentType() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: set_num_moves
+                    arguments:
+                      numMoves: "1"
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+                List.of(new ArgumentDefinition("numMoves",
+                        TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertEquals(1, actions.get(0).getArgument("numMoves"));
+    }
+
+    @Test
+    void loadWarnsAndKeepsDefaultForInvalidModuleArgumentValue() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: set_num_moves
+                    arguments:
+                      numMoves: "not-a-number"
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+                List.of(new ArgumentDefinition("numMoves",
+                        TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertEquals(2, actions.get(0).getArgument("numMoves"));
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("numMoves") && w.contains("invalid value")));
     }
 
     @Test

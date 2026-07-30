@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class StructuredGridPanelTest {
+class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
 
     private static StructuredGridPanel stringListEditor() {
         return new StructuredGridPanel(TypeDefinition.listOf(TypeDefinition.string()), null);
@@ -42,6 +42,36 @@ class StructuredGridPanelTest {
     private static StructuredGridPanel stringIntTableEditor() {
         return new StructuredGridPanel(
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()), null);
+    }
+
+    private static StructuredGridPanel intListEditor() {
+        return new StructuredGridPanel(TypeDefinition.listOf(TypeDefinition.integer()), null);
+    }
+
+    @Test
+    void addDoesNotChangeStructureWhenAnotherFieldHasInvalidInput() {
+        StructuredGridPanel editor = intListEditor();
+        editor.setValue(List.of(1, 2));
+
+        List<JTextField> fields = findComponents(editor.getComponent(), JTextField.class);
+        fields.get(0).setText("");
+        findAddButton(editor.getComponent()).doClick();
+
+        fields = findComponents(editor.getComponent(), JTextField.class);
+        assertEquals(2, fields.size());
+    }
+
+    @Test
+    void removeDoesNotChangeStructureWhenAnotherFieldHasInvalidInput() {
+        StructuredGridPanel editor = intListEditor();
+        editor.setValue(List.of(1, 2, 3));
+
+        List<JTextField> fields = findComponents(editor.getComponent(), JTextField.class);
+        fields.get(0).setText("");
+        findRemoveButtons(editor.getComponent()).get(2).doClick();
+
+        fields = findComponents(editor.getComponent(), JTextField.class);
+        assertEquals(3, fields.size());
     }
 
     @Test

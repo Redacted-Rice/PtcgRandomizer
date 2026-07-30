@@ -2,7 +2,6 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.math.BigDecimal;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -13,17 +12,26 @@ import javax.swing.text.DocumentFilter;
 
 // Free entry numeric field used for the ANY and RANGE constraints (and the seed offset, which
 // has no constraint at all). Restricts keystrokes to digits (plus a leading '-' and, for
-// doubles, a single decimal point). Out of range values are set to the closest bound.
+// doubles, a single decimal point). Out of range values are set to the closest bound and the
+// user is warned when their entry is adjusted.
 public class NumberFieldEditor implements ArgumentValueEditor {
     private final boolean integer;
     private final Double min;
     private final Double max;
+    private final Double step;
     private final JTextField field;
+    // If we set it in code, we want to supress user pop ups
+    private int suppressAdjustmentWarnings;
 
     public NumberFieldEditor(boolean integer, Double min, Double max) {
+        this(integer, min, max, null);
+    }
+
+    public NumberFieldEditor(boolean integer, Double min, Double max, Double step) {
         this.integer = integer;
         this.min = min;
         this.max = max;
+        this.step = step;
         this.field = new JTextField();
         ((AbstractDocument) field.getDocument())
                 .setDocumentFilter(new NumericDocumentFilter(integer));
@@ -42,10 +50,22 @@ public class NumberFieldEditor implements ArgumentValueEditor {
 
     @Override
     public void setValue(Object value) {
-        if (value == null) {
-            field.setText("");
-        } else {
+        suppressAdjustmentWarnings++;
+        try {
+            // Still normalize on load, just without warning the user about preset values
+            if (value == null) {
+                field.setText("");
+                return;
+            }
+            if (value instanceof Number number) {
+                double numeric = NumericChoiceMatching.applyBoundsAndStep(number.doubleValue(), min,
+                        max, step);
+                field.setText(formatFieldText(NumericDisplay.toTypedNumber(numeric, integer)));
+                return;
+            }
             field.setText(formatFieldText(value));
+        } finally {
+            suppressAdjustmentWarnings--;
         }
     }
 
@@ -61,9 +81,7 @@ public class NumberFieldEditor implements ArgumentValueEditor {
         // to the types min/max
         Number parsed;
         try {
-            double numeric = Double.parseDouble(text);
-            Double exceededBound = exceededBound(numeric);
-            parsed = boundToNumber(exceededBound != null ? exceededBound : numeric);
+            parsed = normalizeFieldText(text, false);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     integer ? "Value must be a whole number." : "Value must be a number.");
@@ -77,64 +95,47 @@ public class NumberFieldEditor implements ArgumentValueEditor {
         field.setEditable(editable);
     }
 
-    // Caps the fields current text to min/max on lost focus
+    // Caps and snaps the fields current text on lost focus, warning if the user typed off range
     private void capFieldTextToBounds() {
         String text = field.getText().trim();
         if (text.isEmpty() || text.equals("-")) {
             return;
         }
-        double numeric;
         try {
-            numeric = Double.parseDouble(text);
+            normalizeFieldText(text, true);
         } catch (NumberFormatException e) {
             return;
         }
-        Double exceededBound = exceededBound(numeric);
-        if (exceededBound != null) {
-            field.setText(formatFieldText(boundToNumber(exceededBound)));
+    }
+
+    // Parses the fields text, clamps/snaps it, and optionally rewrites the field when adjusted
+    private Number normalizeFieldText(String text, boolean updateFieldOnAdjust)
+            throws NumberFormatException {
+        double entered = Double.parseDouble(text);
+        double adjusted = NumericChoiceMatching.applyBoundsAndStep(entered, min, max, step);
+        if (Double.compare(adjusted, entered) != 0) {
+            warnIfUserValueAdjusted(entered, adjusted);
+            if (updateFieldOnAdjust) {
+                field.setText(formatFieldText(NumericDisplay.toTypedNumber(adjusted, integer)));
+            }
         }
+        return NumericDisplay.toTypedNumber(adjusted, integer);
+    }
+
+    // User typed edits only - preset load goes through setValue with warnings suppressed
+    private void warnIfUserValueAdjusted(double entered, double adjusted) {
+        if (suppressAdjustmentWarnings > 0) {
+            return;
+        }
+        ValueAdjustmentWarnings.showNumericAdjustment(field, entered, adjusted, integer, min, max,
+                step);
     }
 
     private String formatFieldText(Object value) {
-        if (integer && value instanceof Number) {
-            return String.valueOf(((Number) value).longValue());
-        }
-        if (value instanceof Number) {
-            double numeric = ((Number) value).doubleValue();
-            if (Double.isNaN(numeric) || Double.isInfinite(numeric)) {
-                return String.valueOf(numeric);
-            }
-            return BigDecimal.valueOf(numeric).stripTrailingZeros().toPlainString();
+        if (value instanceof Number number) {
+            return NumericDisplay.format(number.doubleValue(), integer);
         }
         return String.valueOf(value);
-    }
-
-    // Returns the bound the passed number falls outside of (min or max), or null if it's within
-    // range
-    private Double exceededBound(double number) {
-        if (Double.isNaN(number)) {
-            return min != null ? min : max;
-        }
-        if (Double.isInfinite(number)) {
-            if (number > 0) {
-                return max;
-            }
-            return min;
-        }
-        if (min != null && number < min) {
-            return min;
-        }
-        if (max != null && number > max) {
-            return max;
-        }
-        return null;
-    }
-
-    private Number boundToNumber(double value) {
-        if (integer) {
-            return Integer.valueOf((int) value);
-        }
-        return value;
     }
 
     private static class NumericDocumentFilter extends DocumentFilter {

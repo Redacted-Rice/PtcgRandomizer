@@ -85,7 +85,16 @@ public final class ActionArgumentsConfig {
                         + entry.getValue() + "); ignoring.");
                 continue;
             }
-            action.setArgument(name, entry.getValue());
+
+            ArgumentDefinition argDef = findArgument(module, name);
+            try {
+                action.setArgument(name, entry.getValue());
+            } catch (IllegalArgumentException ex) {
+                warnings.addWarning(entryLabel + ": argument \"" + name + "\" has invalid value ("
+                        + entry.getValue() + "); using default value ("
+                        + (argDef != null ? argDef.getDefaultValue() : "unknown") + "). "
+                        + (ex.getMessage() != null ? ex.getMessage() : ""));
+            }
         }
 
         for (ArgumentDefinition argDef : module.getArguments()) {
@@ -96,6 +105,15 @@ public final class ActionArgumentsConfig {
                         + ").");
             }
         }
+    }
+
+    private static ArgumentDefinition findArgument(Module module, String name) {
+        for (ArgumentDefinition argDef : module.getArguments()) {
+            if (argDef.getName().equals(name)) {
+                return argDef;
+            }
+        }
+        return null;
     }
 
     public Integer getSeedOffset() {

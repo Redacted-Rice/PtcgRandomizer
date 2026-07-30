@@ -10,21 +10,22 @@ import javax.swing.JComponent;
 
 // Drop down editor for numeric constraints with a fixed, prepopulated set of choices:
 // DISCRETE_RANGE (min/max/step) and ENUM (explicit allowed numeric values). Both cases need to
-// normalize choices to a consistent int or double representation (see normalize()), which is
+// normalize choices to a consistent int or double representation (see
+// NumericChoiceMatching.normalize()), which is
 // specific to numeric types - for a fixed set of non-numeric choices (string/boolean enums, or
 // the ENUM base type) see EnumEditor instead.
 public class DiscreteChoiceEditor implements ArgumentValueEditor {
-    // Safety cap so a misconfigured module (e.g. a tiny step over a huge range) can't
-    // generate an unusably long list of choices.
-    private static final int MAX_CHOICES = 100;
+    static final int MAX_DROPDOWN_CHOICES = 20;
 
     private final boolean integer;
+    private final List<Number> choices;
     private final JComboBox<Number> comboBox;
 
     private DiscreteChoiceEditor(boolean integer, List<Number> choices) {
         this.integer = integer;
-        this.comboBox = new JComboBox<>(choices.toArray(new Number[0]));
-        comboBox.setPrototypeDisplayValue(widestChoice(choices));
+        this.choices = List.copyOf(choices);
+        this.comboBox = new JComboBox<>(this.choices.toArray(new Number[0]));
+        comboBox.setPrototypeDisplayValue(widestChoice(this.choices));
     }
 
     private static Number widestChoice(List<Number> choices) {
@@ -33,6 +34,25 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         }
         return choices.stream().max(Comparator.comparing(n -> n.toString().length()))
                 .orElse(choices.get(0));
+    }
+
+    static boolean prefersDropdownForDiscreteRange(double min, double max, double step) {
+        return discreteRangeStepCount(min, max, step) <= MAX_DROPDOWN_CHOICES;
+    }
+
+    static int discreteRangeStepCount(double min, double max, double step) {
+        if (step <= 0) {
+            return 1;
+        }
+        BigDecimal current = BigDecimal.valueOf(min);
+        BigDecimal maxBd = BigDecimal.valueOf(max);
+        BigDecimal stepBd = BigDecimal.valueOf(step);
+        int count = 0;
+        while (current.compareTo(maxBd) <= 0) {
+            count++;
+            current = current.add(stepBd);
+        }
+        return count;
     }
 
     public static DiscreteChoiceEditor forDiscreteRange(boolean integer, double min, double max,
@@ -44,7 +64,7 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         List<Number> choices = new ArrayList<>();
         for (Object value : allowedValues) {
             if (value instanceof Number) {
-                choices.add(normalize(integer, (Number) value));
+                choices.add(NumericChoiceMatching.normalize(integer, (Number) value));
             }
         }
         return new DiscreteChoiceEditor(integer, choices);
@@ -55,25 +75,17 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
         List<Number> choices = new ArrayList<>();
         if (step <= 0) {
             // Defensive fallback for a misconfigured module
-            choices.add(normalize(integer, min));
+            choices.add(NumericChoiceMatching.normalize(integer, min));
             return choices;
         }
         BigDecimal current = BigDecimal.valueOf(min);
         BigDecimal maxBd = BigDecimal.valueOf(max);
         BigDecimal stepBd = BigDecimal.valueOf(step);
-        while (current.compareTo(maxBd) <= 0 && choices.size() < MAX_CHOICES) {
-            choices.add(normalize(integer, current));
+        while (current.compareTo(maxBd) <= 0) {
+            choices.add(NumericChoiceMatching.normalize(integer, current));
             current = current.add(stepBd);
         }
         return choices;
-    }
-
-    private static Number normalize(boolean integer, Number value) {
-        return integer ? (Number) value.intValue() : (Number) value.doubleValue();
-    }
-
-    private static Number normalize(boolean integer, BigDecimal value) {
-        return integer ? (Number) value.intValue() : (Number) value.doubleValue();
     }
 
     @Override
@@ -83,9 +95,11 @@ public class DiscreteChoiceEditor implements ArgumentValueEditor {
 
     @Override
     public void setValue(Object value) {
-        if (value instanceof Number) {
-            comboBox.setSelectedItem(normalize(integer, (Number) value));
+        if (!(value instanceof Number)) {
+            return;
         }
+        Number nearest = NumericChoiceMatching.nearestChoice((Number) value, integer, choices);
+        comboBox.setSelectedItem(nearest);
     }
 
     @Override

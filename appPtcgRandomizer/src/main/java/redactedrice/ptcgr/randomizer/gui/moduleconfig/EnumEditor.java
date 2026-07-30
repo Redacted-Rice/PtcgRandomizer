@@ -3,6 +3,8 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 import java.util.Comparator;
 import java.util.List;
 
+import java.util.Objects;
+
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
@@ -30,7 +32,14 @@ public class EnumEditor implements ArgumentValueEditor {
 
     @Override
     public void setValue(Object value) {
+        if (value == null) {
+            return;
+        }
         comboBox.setSelectedItem(value);
+        if (!Objects.equals(value, comboBox.getSelectedItem())) {
+            comboBox.insertItemAt(value, 0);
+            comboBox.setSelectedItem(value);
+        }
     }
 
     @Override
