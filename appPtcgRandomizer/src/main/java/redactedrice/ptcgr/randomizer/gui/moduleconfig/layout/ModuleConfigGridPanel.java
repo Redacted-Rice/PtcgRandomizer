@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -13,12 +13,13 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigColumnWidths.ColumnSpec;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigDialog;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths.ColumnSpec;
 
 // GridBagLayout table whose data columns share computed min/max widths. Implements Scrollable so
 // the view tracks the viewport while above the column minimum width, and keeps its width (with a
 // horizontal scrollbar) once the viewport would go narrower than the column minimums.
-final class ModuleConfigGridPanel extends JPanel implements Scrollable {
+public final class ModuleConfigGridPanel extends JPanel implements Scrollable {
     private static final long serialVersionUID = 1L;
 
     private final List<ColumnWidthPanel> argumentColumnPanels = new ArrayList<>();
@@ -30,14 +31,14 @@ final class ModuleConfigGridPanel extends JPanel implements Scrollable {
     private final int horizontalChrome;
     private int valueColumnMinimumWidth;
 
-    ModuleConfigGridPanel(ColumnSpec[] columnSpecs, int horizontalChrome) {
+    public ModuleConfigGridPanel(ColumnSpec[] columnSpecs, int horizontalChrome) {
         super(new GridBagLayout());
         this.columnSpecs = columnSpecs.clone();
         this.horizontalChrome = horizontalChrome;
         this.valueColumnMinimumWidth = columnSpecs[3].minWidth();
     }
 
-    void registerColumnPanel(int columnIndex, ColumnWidthPanel panel) {
+    public void registerColumnPanel(int columnIndex, ColumnWidthPanel panel) {
         switch (columnIndex) {
             case ModuleConfigDialog.ARGUMENT_COLUMN -> argumentColumnPanels.add(panel);
             case ModuleConfigDialog.TYPE_COLUMN -> typeColumnPanels.add(panel);
@@ -51,12 +52,12 @@ final class ModuleConfigGridPanel extends JPanel implements Scrollable {
         }
     }
 
-    int minimumContentWidth() {
+    public int minimumContentWidth() {
         return ModuleConfigColumnWidths.minimumContentWidth(effectiveColumnSpecs(),
                 horizontalChrome);
     }
 
-    int valueColumnMinimumWidth() {
+    public int valueColumnMinimumWidth() {
         return valueColumnMinimumWidth;
     }
 

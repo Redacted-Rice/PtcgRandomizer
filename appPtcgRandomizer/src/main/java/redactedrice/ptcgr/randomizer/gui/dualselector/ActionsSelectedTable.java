@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.randomizer.gui.dualselector;
 
-
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.dualselector.ActionsTableModel.Columns;
 

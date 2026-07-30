@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.configs.modules;
 
 import java.util.Map;
+
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.utils.WarningCollector;

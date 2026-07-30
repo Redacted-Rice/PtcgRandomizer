@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridPanel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredText;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentType;
@@ -29,7 +36,7 @@ public final class ArgumentEditorFactory {
     // are handled directly by StructuredGridPanels own recursion instead of by recursing through
     // here since they need row/column level control rather than an independent
     // ArgumentValueEditor component.
-    static ArgumentValueEditor createForType(TypeDefinition typeDef,
+    public static ArgumentValueEditor createForType(TypeDefinition typeDef,
             EnumValuesProvider enumValuesProvider) {
         return visitType(typeDef, new StructuredTypeVisitor<>() {
             @Override
@@ -68,7 +75,7 @@ public final class ArgumentEditorFactory {
 
     // Seed value used when a new row is added to a LIST or TABLE, so its editor starts with
     // something valid rather than null, which most editors can't render/save.
-    static Object defaultValueFor(TypeDefinition typeDef, EnumValuesProvider enumValuesProvider) {
+    public static Object defaultValueFor(TypeDefinition typeDef, EnumValuesProvider enumValuesProvider) {
         return visitType(typeDef, new StructuredTypeVisitor<>() {
             @Override
             public Object visitList(TypeDefinition type) {
@@ -113,7 +120,7 @@ public final class ArgumentEditorFactory {
     }
 
     public static String describeType(ArgumentDefinition argDef) {
-        return StructuredTypeText.describeStructuredShape(argDef.getTypeDefinition());
+        return StructuredText.describeStructuredShape(argDef.getTypeDefinition());
     }
 
     public static String describeConstraint(ArgumentDefinition argDef) {

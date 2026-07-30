@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -12,13 +12,13 @@ import javax.swing.JPanel;
 // entries are added/removed) - overriding getPreferredSize() here always reflects the wrapped
 // component's current natural size, only ever raising the width floor, never freezing a stale
 // snapshot of it.
-final class MinWidthPanel extends JPanel {
+public final class MinWidthPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private final int minWidth;
     private final boolean expandHorizontally;
 
-    MinWidthPanel(JComponent content, int minWidth, boolean expandHorizontally) {
+    public MinWidthPanel(JComponent content, int minWidth, boolean expandHorizontally) {
         super(new BorderLayout());
         this.minWidth = minWidth;
         this.expandHorizontally = expandHorizontally;

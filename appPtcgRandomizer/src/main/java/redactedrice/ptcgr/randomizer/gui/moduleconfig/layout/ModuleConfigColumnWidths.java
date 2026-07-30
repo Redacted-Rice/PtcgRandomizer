@@ -1,32 +1,32 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 // Computes shared widths for the module config columns. Opening widths use the widest cell
 // in each column (clamped to min/max); extra space grows columns proportionally by weight.
-final class ModuleConfigColumnWidths {
-    record ColumnSpec(int minWidth, int maxWidth, double weight) {
-        ColumnSpec {
+public final class ModuleConfigColumnWidths {
+    public record ColumnSpec(int minWidth, int maxWidth, double weight) {
+        public ColumnSpec {
             if (minWidth < 0 || maxWidth < minWidth || weight < 0) {
                 throw new IllegalArgumentException("Invalid column spec");
             }
         }
 
-        static ColumnSpec bounded(int minWidth, int maxWidth, double weight) {
+        public static ColumnSpec bounded(int minWidth, int maxWidth, double weight) {
             return new ColumnSpec(minWidth, maxWidth, weight);
         }
 
-        static ColumnSpec minOnly(int minWidth, double weight) {
+        public static ColumnSpec minOnly(int minWidth, double weight) {
             return new ColumnSpec(minWidth, Integer.MAX_VALUE, weight);
         }
     }
 
     private ModuleConfigColumnWidths() {}
 
-    static int horizontalChrome(int dataColumnCount, int separatorColumnCount, int cellPaddingH,
-            int lineWidth) {
+    public static int horizontalChrome(int dataColumnCount, int separatorColumnCount,
+            int cellPaddingH, int lineWidth) {
         return separatorColumnCount * lineWidth + dataColumnCount * (2 * cellPaddingH);
     }
 
-    static int[] compute(int availableWidth, int[] naturalWidths, ColumnSpec[] specs,
+    public static int[] compute(int availableWidth, int[] naturalWidths, ColumnSpec[] specs,
             int horizontalChrome) {
         if (naturalWidths.length != specs.length) {
             throw new IllegalArgumentException("naturalWidths and specs must match");
@@ -52,11 +52,11 @@ final class ModuleConfigColumnWidths {
         return widths;
     }
 
-    static int openingContentWidth(int[] naturalWidths, ColumnSpec[] specs, int horizontalChrome) {
+    public static int openingContentWidth(int[] naturalWidths, ColumnSpec[] specs, int horizontalChrome) {
         return horizontalChrome + sum(computeOpeningWidths(naturalWidths, specs));
     }
 
-    static int minimumContentWidth(ColumnSpec[] specs, int horizontalChrome) {
+    public static int minimumContentWidth(ColumnSpec[] specs, int horizontalChrome) {
         int total = 0;
         for (ColumnSpec spec : specs) {
             total += spec.minWidth;
@@ -64,7 +64,7 @@ final class ModuleConfigColumnWidths {
         return horizontalChrome + total;
     }
 
-    static int[] computeOpeningWidths(int[] naturalWidths, ColumnSpec[] specs) {
+    public static int[] computeOpeningWidths(int[] naturalWidths, ColumnSpec[] specs) {
         int[] widths = new int[specs.length];
         for (int i = 0; i < specs.length; i++) {
             widths[i] = openingWidth(naturalWidths[i], specs[i]);

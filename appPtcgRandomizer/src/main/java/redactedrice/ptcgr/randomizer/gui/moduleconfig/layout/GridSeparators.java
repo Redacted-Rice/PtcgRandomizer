@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -7,13 +7,13 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 // 1px grid lines shared by ModuleConfigDialog and StructuredGridPanel.
-final class GridSeparators {
+public final class GridSeparators {
     private static final Color LINE_COLOR = new Color(215, 215, 215);
     private static final int LINE_WIDTH = 1;
 
     private GridSeparators() {}
 
-    static JComponent verticalLine() {
+    public static JComponent verticalLine() {
         JPanel line = new JPanel();
         line.setBackground(LINE_COLOR);
         line.setOpaque(true);
@@ -23,7 +23,7 @@ final class GridSeparators {
         return line;
     }
 
-    static JComponent horizontalLine() {
+    public static JComponent horizontalLine() {
         JPanel line = new JPanel();
         line.setBackground(LINE_COLOR);
         line.setOpaque(true);

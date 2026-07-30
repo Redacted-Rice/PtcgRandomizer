@@ -2,11 +2,11 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.Component;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -29,6 +29,14 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ColumnSizing;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ColumnWidthPanel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.GridSeparators;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths.ColumnSpec;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigGridPanel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.WrappingLabel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredText;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
@@ -42,13 +50,13 @@ public class ModuleConfigDialog extends JDialog {
     private static final int MAX_WIDTH = 940;
     private static final int MAX_HEIGHT = 680;
 
-    static final int ARGUMENT_COLUMN = 0;
+    public static final int ARGUMENT_COLUMN = 0;
     private static final int SEPARATOR_AFTER_ARGUMENT = 1;
-    static final int TYPE_COLUMN = 2;
+    public static final int TYPE_COLUMN = 2;
     private static final int SEPARATOR_AFTER_TYPE = 3;
-    static final int CONSTRAINTS_COLUMN = 4;
+    public static final int CONSTRAINTS_COLUMN = 4;
     private static final int SEPARATOR_AFTER_CONSTRAINTS = 5;
-    static final int VALUE_COLUMN = 6;
+    public static final int VALUE_COLUMN = 6;
     private static final int COLUMN_COUNT = 7;
 
     private static final int ARGUMENT_COLUMN_MIN_WIDTH = 90;
@@ -57,7 +65,7 @@ public class ModuleConfigDialog extends JDialog {
     private static final int TYPE_COLUMN_MAX_WIDTH = 100;
     private static final int CONSTRAINTS_COLUMN_MIN_WIDTH = 60;
     private static final int CONSTRAINTS_COLUMN_MAX_WIDTH = 100;
-    private static final int VALUE_COLUMN_MIN_WIDTH = ValueColumnWidths.ENTRY_BOX_WIDTH;
+    private static final int VALUE_COLUMN_MIN_WIDTH = ColumnSizing.ENTRY_BOX_WIDTH;
     private static final double COLUMN_GROW_WEIGHT = 1;
 
     private static final int DIALOG_PADDING = 10;
@@ -69,15 +77,13 @@ public class ModuleConfigDialog extends JDialog {
     private static final int CELL_PADDING_V = 4;
     private static final int LINE_WIDTH = 1;
 
-    private static final ModuleConfigColumnWidths.ColumnSpec[] COLUMN_SPECS = {
-            ModuleConfigColumnWidths.ColumnSpec.bounded(ARGUMENT_COLUMN_MIN_WIDTH,
-                    ARGUMENT_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
-            ModuleConfigColumnWidths.ColumnSpec.bounded(TYPE_COLUMN_MIN_WIDTH,
-                    TYPE_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
-            ModuleConfigColumnWidths.ColumnSpec.bounded(CONSTRAINTS_COLUMN_MIN_WIDTH,
-                    CONSTRAINTS_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
-            ModuleConfigColumnWidths.ColumnSpec.minOnly(VALUE_COLUMN_MIN_WIDTH,
-                    COLUMN_GROW_WEIGHT),};
+    private static final ColumnSpec[] COLUMN_SPECS = {
+            ColumnSpec.bounded(ARGUMENT_COLUMN_MIN_WIDTH, ARGUMENT_COLUMN_MAX_WIDTH,
+                    COLUMN_GROW_WEIGHT),
+            ColumnSpec.bounded(TYPE_COLUMN_MIN_WIDTH, TYPE_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
+            ColumnSpec.bounded(CONSTRAINTS_COLUMN_MIN_WIDTH, CONSTRAINTS_COLUMN_MAX_WIDTH,
+                    COLUMN_GROW_WEIGHT),
+            ColumnSpec.minOnly(VALUE_COLUMN_MIN_WIDTH, COLUMN_GROW_WEIGHT),};
     private static final int COLUMN_HORIZONTAL_CHROME =
             ModuleConfigColumnWidths.horizontalChrome(4, 3, CELL_PADDING_H, LINE_WIDTH);
 
@@ -262,7 +268,7 @@ public class ModuleConfigDialog extends JDialog {
             case CONSTRAINTS_COLUMN -> new ColumnWidthPanel(content, CONSTRAINTS_COLUMN_MIN_WIDTH,
                     CONSTRAINTS_COLUMN_MAX_WIDTH, true);
             case VALUE_COLUMN -> new ColumnWidthPanel(content,
-                    ValueColumnWidths.minimumWidth(valueType, editable), Integer.MAX_VALUE, true);
+                    ColumnSizing.minimumValueWidth(valueType, editable), Integer.MAX_VALUE, true);
             default -> throw new IllegalArgumentException("Not a data column: " + column);
         };
         grid.registerColumnPanel(column, panel);
@@ -326,7 +332,7 @@ public class ModuleConfigDialog extends JDialog {
     // "fire → 10, water → (1, 2, 3)" for nested complex values.
     private static WrappingLabel readOnlyValueLabel(TypeDefinition typeDef, Object value) {
         if (typeDef.isList() || typeDef.isTable()) {
-            return new WrappingLabel(StructuredValueFormatting.format(typeDef, value));
+            return new WrappingLabel(StructuredText.formatValue(typeDef, value));
         }
         return readOnlyValueLabel(value);
     }
@@ -472,11 +478,11 @@ public class ModuleConfigDialog extends JDialog {
 
         private boolean suppressScrollRectToVisible = true;
 
-        ConfigScrollPane(ModuleConfigGridPanel grid) {
+        private ConfigScrollPane(ModuleConfigGridPanel grid) {
             super(grid);
         }
 
-        void releaseInitialScrollLock() {
+        private void releaseInitialScrollLock() {
             suppressScrollRectToVisible = false;
         }
 

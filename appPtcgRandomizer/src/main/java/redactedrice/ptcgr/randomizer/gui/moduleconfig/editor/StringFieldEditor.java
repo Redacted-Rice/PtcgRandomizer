@@ -1,7 +1,9 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.editor;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 
 // Free entry text field used for STRING arguments with the ANY constraint. Unlike
 // NumberFieldEditor there's no natural bound to enforce or keystroke filter to apply - any text

@@ -1,7 +1,9 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.editor;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 
 // Read only fallback when ArgumentEditorFactory cannot build an editable widget, most
 // commonly because an ENUM base type references a name that is not registered in the enum

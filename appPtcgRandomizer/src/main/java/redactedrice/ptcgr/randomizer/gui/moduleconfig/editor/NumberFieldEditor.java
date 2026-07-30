@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.editor;
 
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -9,6 +9,8 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
+
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 
 // Free entry numeric field used for the ANY and RANGE constraints (and the seed offset, which
 // has no constraint at all). Restricts keystrokes to digits (plus a leading '-' and, for
@@ -58,9 +60,9 @@ public class NumberFieldEditor implements ArgumentValueEditor {
                 return;
             }
             if (value instanceof Number number) {
-                double numeric = NumericChoiceMatching.applyBoundsAndStep(number.doubleValue(), min,
+                double numeric = NumericEditing.applyBoundsAndStep(number.doubleValue(), min,
                         max, step);
-                field.setText(formatFieldText(NumericDisplay.toTypedNumber(numeric, integer)));
+                field.setText(formatFieldText(NumericEditing.toTypedNumber(numeric, integer)));
                 return;
             }
             field.setText(formatFieldText(value));
@@ -112,14 +114,14 @@ public class NumberFieldEditor implements ArgumentValueEditor {
     private Number normalizeFieldText(String text, boolean updateFieldOnAdjust)
             throws NumberFormatException {
         double entered = Double.parseDouble(text);
-        double adjusted = NumericChoiceMatching.applyBoundsAndStep(entered, min, max, step);
+        double adjusted = NumericEditing.applyBoundsAndStep(entered, min, max, step);
         if (Double.compare(adjusted, entered) != 0) {
             warnIfUserValueAdjusted(entered, adjusted);
             if (updateFieldOnAdjust) {
-                field.setText(formatFieldText(NumericDisplay.toTypedNumber(adjusted, integer)));
+                field.setText(formatFieldText(NumericEditing.toTypedNumber(adjusted, integer)));
             }
         }
-        return NumericDisplay.toTypedNumber(adjusted, integer);
+        return NumericEditing.toTypedNumber(adjusted, integer);
     }
 
     // User typed edits only - preset load goes through setValue with warnings suppressed
@@ -127,13 +129,13 @@ public class NumberFieldEditor implements ArgumentValueEditor {
         if (suppressAdjustmentWarnings > 0) {
             return;
         }
-        ValueAdjustmentWarnings.showNumericAdjustment(field, entered, adjusted, integer, min, max,
+        NumericEditing.showAdjustmentWarning(field, entered, adjusted, integer, min, max,
                 step);
     }
 
     private String formatFieldText(Object value) {
         if (value instanceof Number number) {
-            return NumericDisplay.format(number.doubleValue(), integer);
+            return NumericEditing.format(number.doubleValue(), integer);
         }
         return String.valueOf(value);
     }

@@ -1,6 +1,5 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.structured;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +12,10 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentEditorFactory;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.GridSeparators;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Renders one top level LIST/TABLE argument's whole value as a single flattened GridBagLayout
@@ -26,7 +29,7 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 //
 // Also implements ArgumentValueEditor for top level LIST/TABLE module arguments (see
 // ArgumentEditorFactory).
-final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
+public final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
     private static final long serialVersionUID = 1L;
 
     private final TypeDefinition type;
@@ -36,7 +39,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
     private boolean editable = true;
     private CollectionNode root;
 
-    StructuredGridPanel(TypeDefinition type, EnumValuesProvider enumValuesProvider) {
+    public StructuredGridPanel(TypeDefinition type, EnumValuesProvider enumValuesProvider) {
         super(new GridBagLayout());
         setOpaque(false);
         this.type = type;
@@ -120,8 +123,8 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
 
             int valueColOffset = colOffset;
             if (collType.isTable()) {
-                ArgumentValueEditor keyEditor = ArgumentEditorFactory
-                        .createForType(collType.getKeyType(), enumValuesProvider);
+                ArgumentValueEditor keyEditor =
+                        ArgumentEditorFactory.createForType(collType.getKeyType(), enumValuesProvider);
                 keyEditor.setValue(((StructuredGridModel.RawEntry) rawEntry).key());
                 keyEditor.setEditable(editable);
                 entry.keyEditor = keyEditor;

@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,7 +17,7 @@ import javax.swing.JTextArea;
 // Read-only, word-wrapping label backed by JTextArea. Column layout drives the wrap width;
 // height grows/shrinks as text reflows. Text measurement uses LineBreakMeasurer so opening
 // widths and wrapped row heights match what will actually fit.
-final class WrappingLabel extends JTextArea {
+public final class WrappingLabel extends JTextArea {
     private static final long serialVersionUID = 1L;
 
     // JTextArea paints slightly wider than FontMetrics alone so keep opening widths from clipping
@@ -25,18 +25,18 @@ final class WrappingLabel extends JTextArea {
 
     private int wrapWidth = -1;
 
-    WrappingLabel(String text) {
+    public WrappingLabel(String text) {
         super(text == null ? "" : text);
         configureAsLabel();
     }
 
-    static WrappingLabel constraints(String text) {
+    public static WrappingLabel constraints(String text) {
         WrappingLabel label = new WrappingLabel(text);
         label.setForeground(Color.DARK_GRAY);
         return label;
     }
 
-    void setWrapWidth(int width) {
+    public void setWrapWidth(int width) {
         if (width <= 0) {
             return;
         }
@@ -45,7 +45,7 @@ final class WrappingLabel extends JTextArea {
         repaint();
     }
 
-    int getUnwrappedWidth() {
+    public int getUnwrappedWidth() {
         Font font = getFont();
         FontRenderContext context = fontRenderContext();
         int widest = 0;
