@@ -112,10 +112,6 @@ public final class ArgumentEditorFactory {
         return new NumberFieldEditor(true, (double) Integer.MIN_VALUE, (double) Integer.MAX_VALUE);
     }
 
-    public static String describeSeedOffset() {
-        return "";
-    }
-
     public static String describeType(ArgumentDefinition argDef) {
         return StructuredTypeText.describeStructuredShape(argDef.getTypeDefinition());
     }
@@ -155,8 +151,13 @@ public final class ArgumentEditorFactory {
             case RANGE:
                 return new NumberFieldEditor(integer, constraint.getMin(), constraint.getMax());
             case DISCRETE_RANGE:
-                return DiscreteChoiceEditor.forDiscreteRange(integer, constraint.getMin(),
-                        constraint.getMax(), constraint.getStep());
+                double min = constraint.getMin();
+                double max = constraint.getMax();
+                double step = constraint.getStep();
+                if (DiscreteChoiceEditor.prefersDropdownForDiscreteRange(min, max, step)) {
+                    return DiscreteChoiceEditor.forDiscreteRange(integer, min, max, step);
+                }
+                return new NumberFieldEditor(integer, min, max, step);
             case ENUM:
                 List<Object> allowed = constraint.getAllowedValues();
                 return DiscreteChoiceEditor.forEnumValues(integer,

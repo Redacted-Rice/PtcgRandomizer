@@ -29,7 +29,7 @@ public final class ActionConfig extends ModuleConfig {
         String entryLabel = moduleLabel(module);
         checkAndWarnModuleVersion(entryLabel, module, warnings);
 
-        Action action = new Action(module);
+        Action action = new Action(module, actionBank.getEnumRegistry());
         ActionArgumentsConfig config = getConfig();
         if (config.getSeedOffset() != null) {
             if (module.isSeeded()) {

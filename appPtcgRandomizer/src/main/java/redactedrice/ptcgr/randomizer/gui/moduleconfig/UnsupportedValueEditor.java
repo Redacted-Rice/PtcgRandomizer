@@ -3,10 +3,10 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-// Placeholder editor for argument types/constraints that don't have dedicated UI support yet
-// (e.g. STRING, BOOLEAN, LIST, MAP, GROUP, or the ENUM base type). Displays the current value
-// read only so the dialog can still render every argument without crashing, and support for
-// the type can be added later just by adding a case in ArgumentEditorFactory.
+// Read only fallback when ArgumentEditorFactory cannot build an editable widget, most
+// commonly because an ENUM base type references a name that is not registered in the enum
+// registry (misspelled id or enum registered only at runtime). Keeps the config dialog
+// renderable without crashing until the enum is available or a dedicated editor is added.
 public class UnsupportedValueEditor implements ArgumentValueEditor {
     private final JTextField field;
     private Object value;

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,58 @@ import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class ArgumentEditorFactoryTest {
+class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
+    private static final List<String> ADJUSTMENT_WARNINGS = new ArrayList<>();
+
+    @org.junit.jupiter.api.BeforeEach
+    void captureAdjustmentWarnings() {
+        // Per-test hook so warning assertions do not depend on class run order
+        ADJUSTMENT_WARNINGS.clear();
+        ValueAdjustmentWarnings.setNotifierForTests(
+                (parent, message) -> ADJUSTMENT_WARNINGS.add(message));
+    }
+
+    @Test
+    void outOfRangeEntryShowsAdjustmentWarning() {
+        ADJUSTMENT_WARNINGS.clear();
+        ArgumentDefinition argDef = new ArgumentDefinition("numMoves",
+                TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        JTextField field = (JTextField) editor.getComponent();
+
+        field.setText("5");
+        simulateFocusLost(field);
+        assertEquals("2", field.getText());
+        assertEquals(1, ADJUSTMENT_WARNINGS.size());
+        assertEquals(
+                "The entered value 5 was adjusted to 2. (allowed range 0\u20132)",
+                ADJUSTMENT_WARNINGS.get(0));
+
+        ADJUSTMENT_WARNINGS.clear();
+        field.setText("10");
+        assertEquals(2, editor.getValue());
+        assertEquals(1, ADJUSTMENT_WARNINGS.size());
+    }
+
+    @Test
+    void stepSnapShowsAdjustmentWarningWithStepDetail() {
+        ADJUSTMENT_WARNINGS.clear();
+        ArgumentDefinition argDef = new ArgumentDefinition("step",
+                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 100, 5)), 25);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+        JTextField field = (JTextField) editor.getComponent();
+
+        field.setText("7");
+        assertEquals(5, editor.getValue());
+        assertEquals(1, ADJUSTMENT_WARNINGS.size());
+        assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("7"));
+        assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("5"));
+        assertTrue(ADJUSTMENT_WARNINGS.get(0).contains("step 5"));
+
+        ADJUSTMENT_WARNINGS.clear();
+        editor.setValue(27);
+        assertEquals(0, ADJUSTMENT_WARNINGS.size());
+    }
 
     @Test
     void anyIntegerConstraintUsesFullIntRange() {
@@ -127,6 +179,78 @@ class ArgumentEditorFactoryTest {
 
         editor.setValue(5);
         assertEquals(5, editor.getValue());
+    }
+
+    @Test
+    void discreteRangeWithTwentyStepsUsesDropdown() {
+        ArgumentDefinition argDef = new ArgumentDefinition("step",
+                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 95, 5)), 0);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof DiscreteChoiceEditor);
+    }
+
+    @Test
+    void discreteRangeDropdownSnapsOffGridValueToNearestStep() {
+        ArgumentDefinition argDef = new ArgumentDefinition("step",
+                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 10, 5)), 7);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof DiscreteChoiceEditor);
+        editor.setValue(7);
+        assertEquals(5, editor.getValue());
+        editor.setValue(8);
+        assertEquals(10, editor.getValue());
+    }
+
+    @Test
+    void numericEnumDropdownSnapsOffGridValueToNearestChoice() {
+        ArgumentDefinition argDef = new ArgumentDefinition("multiplier",
+                TypeDefinition.integer(ArgumentConstraint.enumValues(List.of(1, 2, 3, 5, 8, 13))),
+                4);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof DiscreteChoiceEditor);
+        editor.setValue(4);
+        assertEquals(5, editor.getValue());
+    }
+
+    @Test
+    void enumStringConstraintIncludesLoadedValueWhenNotInCurrentChoices() {
+        ArgumentDefinition argDef = new ArgumentDefinition("color",
+                TypeDefinition.string(ArgumentConstraint.enumValues(List.of("red", "green", "blue"))),
+                "red");
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof EnumEditor);
+        editor.setValue("purple");
+
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
+        assertEquals(4, comboBox.getItemCount());
+        assertEquals("purple", editor.getValue());
+    }
+
+    @Test
+    void discreteRangeWithMoreThanTwentyStepsUsesTextFieldAndSnapsToStep() {
+        ArgumentDefinition argDef = new ArgumentDefinition("step",
+                TypeDefinition.integer(ArgumentConstraint.discreteRange(0, 100, 5)), 25);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
+
+        assertTrue(editor instanceof NumberFieldEditor);
+
+        JTextField field = (JTextField) editor.getComponent();
+        field.setText("7");
+        assertEquals(5, editor.getValue());
+
+        field.setText("8");
+        assertEquals(10, editor.getValue());
+
+        field.setText("250");
+        assertEquals(100, editor.getValue());
+
+        editor.setValue(27);
+        assertEquals(25, editor.getValue());
     }
 
     @Test

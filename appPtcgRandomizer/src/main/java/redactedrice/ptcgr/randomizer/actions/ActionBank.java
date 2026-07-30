@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
+import redactedrice.randomizer.context.EnumRegistry;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.ModuleRegistry;
 
@@ -31,7 +32,7 @@ public class ActionBank {
         }
         List<Module> modules = luaRandomizer.getAvailableModules();
         for (Module module : modules) {
-            Action action = new Action(module);
+            Action action = new Action(module, getEnumRegistry());
             allActions.put(action.getId(), action);
 
             String category = action.getCategory();
@@ -63,6 +64,13 @@ public class ActionBank {
         }
         EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
         return enumDefinition != null ? enumDefinition.getValues() : null;
+    }
+
+    public EnumRegistry getEnumRegistry() {
+        if (luaRandomizer == null) {
+            return new EnumRegistry();
+        }
+        return luaRandomizer.getSharedContext().getEnumRegistry();
     }
 
     public Module getScript(String scriptId) {

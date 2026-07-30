@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,6 +10,7 @@ import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
@@ -28,9 +28,6 @@ import redactedrice.randomizer.lua.arguments.TypeDefinition;
 // ArgumentEditorFactory).
 final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
     private static final long serialVersionUID = 1L;
-
-    private static final Color SEPARATOR_LINE_COLOR = new Color(215, 215, 215);
-    private static final int SEPARATOR_LINE_WIDTH = 1;
 
     private final TypeDefinition type;
     private final EnumValuesProvider enumValuesProvider;
@@ -185,9 +182,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
     }
 
     private void removeEntry(CollectionNode node, Entry entry) {
-        int index = node.entries.indexOf(entry);
-        rawValue = extractRawApplying(root, node, list -> list.remove(index));
-        rebuild();
+        applyStructuralChange(node, list -> list.remove(node.entries.indexOf(entry)));
     }
 
     private void addEntry(CollectionNode node) {
@@ -205,8 +200,20 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
             newRawEntry = new StructuredGridModel.RawEntry(defaultKey, defaultChildRaw);
         }
         final Object newRawEntryFinal = newRawEntry;
-        rawValue = extractRawApplying(root, node, list -> list.add(newRawEntryFinal));
-        rebuild();
+        applyStructuralChange(node, list -> list.add(newRawEntryFinal));
+    }
+
+    private void applyStructuralChange(CollectionNode target, Consumer<List<Object>> mutation) {
+        try {
+            rawValue = extractRawApplying(root, target, mutation);
+            rebuild();
+        } catch (IllegalArgumentException ex) {
+            showInvalidInput(ex.getMessage());
+        }
+    }
+
+    private void showInvalidInput(String message) {
+        JOptionPane.showMessageDialog(this, message, "Invalid Input", JOptionPane.ERROR_MESSAGE);
     }
 
     private List<Object> extractRawApplying(CollectionNode node, CollectionNode target,
@@ -266,7 +273,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         lineGbc.weighty = 1;
         lineGbc.fill = GridBagConstraints.VERTICAL;
         lineGbc.insets = new Insets(0, 0, 0, StructuredGridHelpers.ROW_HGAP);
-        cell.add(createVerticalLine(), lineGbc);
+        cell.add(GridSeparators.verticalLine(), lineGbc);
 
         GridBagConstraints buttonGbc = new GridBagConstraints();
         buttonGbc.gridx = 1;
@@ -319,7 +326,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets =
                 new Insets(StructuredGridHelpers.ROW_VGAP, 0, StructuredGridHelpers.ROW_VGAP, 0);
-        add(createHorizontalLine(), gbc);
+        add(GridSeparators.horizontalLine(), gbc);
     }
 
     private void addVerticalSeparator(int gridx, int gridy, int gridheight) {
@@ -330,27 +337,7 @@ final class StructuredGridPanel extends JPanel implements ArgumentValueEditor {
         gbc.fill = GridBagConstraints.VERTICAL;
         gbc.insets =
                 new Insets(0, StructuredGridHelpers.ROW_HGAP, 0, StructuredGridHelpers.ROW_HGAP);
-        add(createVerticalLine(), gbc);
-    }
-
-    private static JComponent createVerticalLine() {
-        JPanel line = new JPanel();
-        line.setBackground(SEPARATOR_LINE_COLOR);
-        line.setOpaque(true);
-        line.setPreferredSize(new Dimension(SEPARATOR_LINE_WIDTH, 0));
-        line.setMinimumSize(new Dimension(SEPARATOR_LINE_WIDTH, 0));
-        line.setMaximumSize(new Dimension(SEPARATOR_LINE_WIDTH, Integer.MAX_VALUE));
-        return line;
-    }
-
-    private static JComponent createHorizontalLine() {
-        JPanel line = new JPanel();
-        line.setBackground(SEPARATOR_LINE_COLOR);
-        line.setOpaque(true);
-        line.setPreferredSize(new Dimension(0, SEPARATOR_LINE_WIDTH));
-        line.setMinimumSize(new Dimension(0, SEPARATOR_LINE_WIDTH));
-        line.setMaximumSize(new Dimension(Integer.MAX_VALUE, SEPARATOR_LINE_WIDTH));
-        return line;
+        add(GridSeparators.verticalLine(), gbc);
     }
 
     private static final class CollectionNode {

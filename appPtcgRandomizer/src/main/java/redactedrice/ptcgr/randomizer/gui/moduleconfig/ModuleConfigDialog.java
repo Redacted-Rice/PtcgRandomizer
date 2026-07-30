@@ -162,8 +162,7 @@ public class ModuleConfigDialog extends JDialog {
             } else {
                 valueComponent = readOnlyValueLabel(action.getSeedOffset());
             }
-            row = addRow(grid, gbc, row, "Seed Offset", "int",
-                    ArgumentEditorFactory.describeSeedOffset(), valueComponent,
+            row = addRow(grid, gbc, row, "Seed Offset", "int", "", valueComponent,
                     TypeDefinition.integer());
             hasDataRow = true;
         }
@@ -299,7 +298,7 @@ public class ModuleConfigDialog extends JDialog {
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.VERTICAL;
         gbc.insets = new Insets(0, 0, 0, 0);
-        grid.add(createVerticalLine(), gbc);
+        grid.add(GridSeparators.verticalLine(), gbc);
         gbc.gridheight = 1;
     }
 
@@ -313,28 +312,8 @@ public class ModuleConfigDialog extends JDialog {
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 0, 0, 0);
-        grid.add(createHorizontalLine(), gbc);
+        grid.add(GridSeparators.horizontalLine(), gbc);
         gbc.gridwidth = 1;
-    }
-
-    private static JComponent createVerticalLine() {
-        JPanel line = new JPanel();
-        line.setBackground(LINE_COLOR);
-        line.setOpaque(true);
-        line.setPreferredSize(new Dimension(LINE_WIDTH, 0));
-        line.setMinimumSize(new Dimension(LINE_WIDTH, 0));
-        line.setMaximumSize(new Dimension(LINE_WIDTH, Integer.MAX_VALUE));
-        return line;
-    }
-
-    private static JComponent createHorizontalLine() {
-        JPanel line = new JPanel();
-        line.setBackground(LINE_COLOR);
-        line.setOpaque(true);
-        line.setPreferredSize(new Dimension(0, LINE_WIDTH));
-        line.setMinimumSize(new Dimension(0, LINE_WIDTH));
-        line.setMaximumSize(new Dimension(Integer.MAX_VALUE, LINE_WIDTH));
-        return line;
     }
 
     // Read only rows show the value as a plain label rather than a disabled input widget, so
@@ -465,18 +444,18 @@ public class ModuleConfigDialog extends JDialog {
             for (Map.Entry<String, ArgumentValueEditor> entry : argumentEditors.entrySet()) {
                 validatedArguments.put(entry.getKey(), entry.getValue().getValue());
             }
+            if (validatedSeedOffset != null) {
+                action.setSeedOffset(validatedSeedOffset);
+            }
+            for (Map.Entry<String, Object> entry : validatedArguments.entrySet()) {
+                action.setArgument(entry.getKey(), entry.getValue());
+            }
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Input",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        if (validatedSeedOffset != null) {
-            action.setSeedOffset(validatedSeedOffset);
-        }
-        for (Map.Entry<String, Object> entry : validatedArguments.entrySet()) {
-            action.setArgument(entry.getKey(), entry.getValue());
-        }
         dispose();
     }
 
