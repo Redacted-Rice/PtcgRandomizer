@@ -49,32 +49,22 @@ class ActionTest {
     }
 
     @Test
-    void setArgumentBlankStringForOptionalStringStoresNull() {
+    void optionalStringArgumentNormalizesBlankValues() {
         Module module = testModule(
                 List.of(new ArgumentDefinition("optionalFlag", TypeDefinition.string(), null)));
         Action action = new Action(module);
 
         action.setArgument("optionalFlag", "");
         assertEquals(null, action.getArgument("optionalFlag"));
-
         action.setArgument("optionalFlag", "   ");
         assertEquals(null, action.getArgument("optionalFlag"));
-
-        ExecutionRequest request = assertDoesNotThrow(action::toExecutionRequest);
-        assertTrue(request.getArguments().isEmpty());
-    }
-
-    @Test
-    void setArgumentNonBlankStringForOptionalStringIsStored() {
-        Module module = testModule(
-                List.of(new ArgumentDefinition("optionalFlag", TypeDefinition.string(), null)));
-        Action action = new Action(module);
+        ExecutionRequest blankRequest = assertDoesNotThrow(action::toExecutionRequest);
+        assertTrue(blankRequest.getArguments().isEmpty());
 
         action.setArgument("optionalFlag", "enabled");
         assertEquals("enabled", action.getArgument("optionalFlag"));
-
-        ExecutionRequest request = assertDoesNotThrow(action::toExecutionRequest);
-        assertEquals("enabled", request.getArguments().get("optionalFlag"));
+        ExecutionRequest enabledRequest = assertDoesNotThrow(action::toExecutionRequest);
+        assertEquals("enabled", enabledRequest.getArguments().get("optionalFlag"));
     }
 
     @Test

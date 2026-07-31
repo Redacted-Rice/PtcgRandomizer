@@ -12,26 +12,22 @@ import org.junit.jupiter.api.io.TempDir;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.utils.WarningCollector;
 
-class RulesYamlIOTest {
+class RulesConfigIOTest {
     @TempDir
     Path tempDir;
 
     @Test
-    void loadReturnsNullForNonMapping() throws IOException {
-        Path rulesFile = tempDir.resolve("test.yaml");
-        Files.writeString(rulesFile, "[]");
+    void yamlLoadAndSaveRoundTripMapping() throws IOException {
+        Path invalidFile = tempDir.resolve("invalid.yaml");
+        Files.writeString(invalidFile, "[]");
 
         WarningCollector warnings = new WarningCollector(null);
-        assertEquals(null, YamlIO.load(rulesFile.toFile(), warnings));
-    }
+        assertEquals(null, YamlIO.load(invalidFile.toFile(), warnings));
 
-    @Test
-    void saveRoundTripsMapping() throws IOException {
         Map<String, Object> root = RulesConfig.empty().convertToYamlMap();
         Path output = tempDir.resolve("saved_rules.yaml");
         YamlIO.save(output.toFile(), root);
 
-        WarningCollector warnings = new WarningCollector(null);
         Map<String, Object> reloaded = YamlIO.load(output.toFile(), warnings);
         assertEquals(root, reloaded);
     }

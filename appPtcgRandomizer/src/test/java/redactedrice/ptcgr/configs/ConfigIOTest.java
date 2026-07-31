@@ -38,7 +38,7 @@ import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-class YamlIOTest {
+class ConfigIOTest {
     @TempDir
     Path tempDir;
 
@@ -83,6 +83,7 @@ class YamlIOTest {
         Config config = new Config("123456789", Collections.emptyList(), List.of(), List.of(),
                 RulesConfig.empty());
         Map<String, Object> document = config.convertToYamlMap();
+        assertEquals(Config.CURRENT_FORMAT_VERSION, config.getFormatVersion());
         assertEquals(Config.CURRENT_FORMAT_VERSION, document.get("version"));
         assertEquals(PtcgRandomizerVersion.VERSION, document.get("appVersion"));
         assertEquals("123456789", document.get("seed"));
@@ -682,7 +683,9 @@ class YamlIOTest {
         WarningCollector warnings = new WarningCollector(null);
         Config loaded = loadConfig(output.toFile(), warnings);
         assertTrue(!warnings.hasWarnings());
-        assertEquals("TestMove", loaded.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
+        assertEquals("TestMove",
+                loaded.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
+                        .get("move"));
 
         Rules rules = new Rules();
         loaded.getRulesConfig().recreateRules(rules, cards, warnings);
@@ -707,7 +710,9 @@ class YamlIOTest {
         Config config = Config.fromAppState("42", List.of(),
                 testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
 
-        assertEquals("UserMove", config.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
+        assertEquals("UserMove",
+                config.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
+                        .get("move"));
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
         assertEquals(1, config.getRulesConfig().getMoveAssignmentConfigs().size());
     }
@@ -788,7 +793,9 @@ class YamlIOTest {
                 testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
 
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
-        assertEquals("TestMove", config.getRulesConfig().getMoveExclusionConfigs().get(0).getMove());
+        assertEquals("TestMove",
+                config.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
+                        .get("move"));
         assertTrue(config.getRulesConfig().getMoveAssignmentConfigs().isEmpty());
     }
 

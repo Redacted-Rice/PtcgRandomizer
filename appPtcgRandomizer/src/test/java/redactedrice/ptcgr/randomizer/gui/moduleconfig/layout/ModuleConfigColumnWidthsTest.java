@@ -15,19 +15,15 @@ public class ModuleConfigColumnWidthsTest {
     private static final int[] NATURAL = {120, 180, 80};
 
     @Test
-    void compute_respectsColumnBounds() {
+    void compute_respectsBoundsAndAvailableWidth() {
         assertArrayEquals(new int[] {100, 160, 60},
                 ModuleConfigColumnWidths.compute(0, new int[] {80, 140, 40}, SPECS, 50));
         assertArrayEquals(new int[] {120, 180, 120},
                 ModuleConfigColumnWidths.compute(0, new int[] {120, 180, 120}, SPECS, 50));
         assertArrayEquals(new int[] {200, 320, 120},
                 ModuleConfigColumnWidths.compute(0, new int[] {250, 400, 120}, SPECS, 50));
-    }
 
-    @Test
-    void compute_adjustsToAvailableWidth() {
         int chrome = 50;
-
         assertArrayEquals(new int[] {200, 320, 260},
                 ModuleConfigColumnWidths.compute(chrome + 200 + 320 + 260, NATURAL, SPECS, chrome));
         assertArrayEquals(new int[] {200, 290, 190},

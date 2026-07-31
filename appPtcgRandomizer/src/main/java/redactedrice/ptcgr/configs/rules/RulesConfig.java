@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveAssignment;
@@ -107,57 +108,29 @@ public final class RulesConfig {
 
     private static List<MoveExclusionConfig> parseMoveExclusions(Object value, String sourceLabel,
             WarningCollector warnings) {
-        if (value == null) {
-            return List.of();
-        }
-        if (!(value instanceof List<?> entries)) {
-            warnings.addWarning(sourceLabel + ": \"" + MOVE_EXCLUSIONS_KEY + "\" must be a list.");
-            return List.of();
-        }
-
         List<MoveExclusionConfig> exclusions = new ArrayList<>();
-        for (int i = 0; i < entries.size(); i++) {
-            Object entry = entries.get(i);
-            String entryLabel = MOVE_EXCLUSIONS_KEY + "[" + i + "]";
-            if (!(entry instanceof Map<?, ?> entryMap)) {
-                warnings.addWarning(sourceLabel + ":" + entryLabel + ": entry must be a mapping.");
-                continue;
-            }
-            @SuppressWarnings("unchecked")
-            MoveExclusionConfig parsed = MoveExclusionConfig
-                    .readFromLoadedYamlMap((Map<String, Object>) entryMap, warnings, entryLabel);
-            if (parsed != null) {
-                exclusions.add(parsed);
-            }
-        }
+        ParserHelpers.forEachEntryInList(value, MOVE_EXCLUSIONS_KEY, sourceLabel, warnings,
+                (fields, entryContext) -> {
+                    MoveExclusionConfig parsed = MoveExclusionConfig.readFromLoadedYamlMap(fields,
+                            warnings, entryContext);
+                    if (parsed != null) {
+                        exclusions.add(parsed);
+                    }
+                });
         return exclusions;
     }
 
     private static List<MoveAssignmentConfig> parseMoveAssignments(Object value, String sourceLabel,
             WarningCollector warnings) {
-        if (value == null) {
-            return List.of();
-        }
-        if (!(value instanceof List<?> entries)) {
-            warnings.addWarning(sourceLabel + ": \"" + MOVE_ASSIGNMENTS_KEY + "\" must be a list.");
-            return List.of();
-        }
-
         List<MoveAssignmentConfig> assignments = new ArrayList<>();
-        for (int i = 0; i < entries.size(); i++) {
-            Object entry = entries.get(i);
-            String entryLabel = MOVE_ASSIGNMENTS_KEY + "[" + i + "]";
-            if (!(entry instanceof Map<?, ?> entryMap)) {
-                warnings.addWarning(sourceLabel + ":" + entryLabel + ": entry must be a mapping.");
-                continue;
-            }
-            @SuppressWarnings("unchecked")
-            MoveAssignmentConfig parsed = MoveAssignmentConfig
-                    .readFromLoadedYamlMap((Map<String, Object>) entryMap, warnings, entryLabel);
-            if (parsed != null) {
-                assignments.add(parsed);
-            }
-        }
+        ParserHelpers.forEachEntryInList(value, MOVE_ASSIGNMENTS_KEY, sourceLabel, warnings,
+                (fields, entryContext) -> {
+                    MoveAssignmentConfig parsed = MoveAssignmentConfig.readFromLoadedYamlMap(fields,
+                            warnings, entryContext);
+                    if (parsed != null) {
+                        assignments.add(parsed);
+                    }
+                });
         return assignments;
     }
 

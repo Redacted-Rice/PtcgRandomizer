@@ -72,10 +72,6 @@ public class RandomizerCore {
         return actionBank;
     }
 
-    public LuaRandomizerWrapper getLuaRandomizer() {
-        return luaRandomizer;
-    }
-
     private void setupLuaRandomizer() {
         File randomizerDir = bundledResources.getRandomizerDir();
         File modulesDir = bundledResources.getModulesDir();
@@ -290,9 +286,5 @@ public class RandomizerCore {
                 Logger.error("  " + error);
             }
         }
-    }
-
-    public String getFileExtension() {
-        return PATCH_FILE_EXTENSION;
     }
 }
