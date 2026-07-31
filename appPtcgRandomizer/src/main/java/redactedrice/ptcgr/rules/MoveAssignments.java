@@ -5,7 +5,7 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;

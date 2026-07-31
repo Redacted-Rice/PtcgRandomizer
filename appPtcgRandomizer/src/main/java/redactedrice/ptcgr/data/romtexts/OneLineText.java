@@ -1,7 +1,7 @@
 package redactedrice.ptcgr.data.romtexts;
 
 
-import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 
 public class OneLineText extends OneBlockText {
     public OneLineText(int maxChars) {

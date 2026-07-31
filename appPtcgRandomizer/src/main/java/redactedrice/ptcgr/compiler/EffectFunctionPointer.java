@@ -12,7 +12,7 @@ import redactedrice.gbcframework.addressing.AssignedAddresses;
 import redactedrice.gbcframework.addressing.BankAddress;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.gbcframework.utils.RomUtils;
-import redactedrice.ptcgr.constants.DuelConstants.EffectFunctionTypes;
+import redactedrice.ptcgr.constants.romenums.EffectFunctionTypes;
 import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
 
 public class EffectFunctionPointer extends AddressRefInstruction {

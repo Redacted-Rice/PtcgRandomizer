@@ -2,7 +2,7 @@ package redactedrice.ptcgr.data.romtexts;
 
 
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 
 public class CardName extends OneLineText {
     public static final String CARD_NAME_NUMBER_SEPARATOR = "_";

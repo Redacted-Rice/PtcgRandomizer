@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusions;
-import redactedrice.ptcgr.constants.CardConstants.CardId;
-import redactedrice.ptcgr.constants.CardDataConstants.CardType;
-import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
+import redactedrice.ptcgr.constants.romenums.CardId;
+import redactedrice.ptcgr.constants.romenums.CardType;
+import redactedrice.ptcgr.constants.romenums.EvolutionStage;
+import redactedrice.ptcgr.data.support.NameWithLevel;
 import redactedrice.ptcgr.utils.WarningCollector;
 
 public class CardGroup<T extends Card> {
@@ -319,7 +319,7 @@ public class CardGroup<T extends Card> {
     }
 
     private MonsterCard findMonsterByNameWithLevel(String cardSpecifier) {
-        MonsterCard.NameWithLevel ref = MonsterCard.parseNameWithLevel(cardSpecifier);
+        NameWithLevel ref = MonsterCard.parseNameWithLevel(cardSpecifier);
         if (ref == null) {
             return null;
         }

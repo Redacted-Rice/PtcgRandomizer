@@ -6,26 +6,27 @@ import redactedrice.rompacker.HybridBlock;
 import redactedrice.rompacker.MovableBlock;
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.gbcframework.utils.ByteUtils;
-import redactedrice.ptcgr.constants.CardConstants.CardId;
-import redactedrice.ptcgr.constants.CardDataConstants.BoosterPack;
-import redactedrice.ptcgr.constants.CardDataConstants.CardRarity;
-import redactedrice.ptcgr.constants.CardDataConstants.CardSet;
-import redactedrice.ptcgr.constants.CardDataConstants.CardType;
+import redactedrice.ptcgr.constants.romenums.BoosterPack;
+import redactedrice.ptcgr.constants.romenums.CardId;
+import redactedrice.ptcgr.constants.romenums.CardRarity;
+import redactedrice.ptcgr.constants.romenums.CardSet;
+import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.data.romtexts.CardName;
+import redactedrice.ptcgr.data.support.CardIdSorter;
+import redactedrice.ptcgr.data.support.CardRomSorter;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
 import java.security.InvalidParameterException;
 import java.util.Comparator;
-
 import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
 
 public abstract class Card {
     public static final int CARD_COMMON_SIZE = 8;
-    public static final Comparator<Card> ID_SORTER = new IdSorter();
-    public static final Comparator<Card> ROM_SORTER = new RomSorter();
+    public static final Comparator<Card> ID_SORTER = new CardIdSorter();
+    public static final Comparator<Card> ROM_SORTER = new CardRomSorter();
 
     private int readFromAddress;
 
@@ -151,32 +152,5 @@ public abstract class Card {
         block.addByteSourceHint(new AddressRange(readFromAddress, readFromAddress + getSize()));
         block.appendInstruction(bytes.createRawByteInsruct());
         return block;
-    }
-
-    public static class IdSorter implements Comparator<Card> {
-        public int compare(Card c1, Card c2) {
-            return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
-        }
-    }
-
-    // This should be used if we randomize evos so we can shuffle poke to be next to each other
-    public static class RomSorter implements Comparator<Card> {
-        public int compare(Card c1, Card c2) {
-            // If either is an energy or trainer, the natural sort order will work
-            if (c1.type.isEnergyCard() || c2.type.isEnergyCard() || c1.type.isTrainerCard()
-                    || c2.type.isTrainerCard()) {
-                return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
-            }
-
-            // Otherwise both are monsters - sort by dex id then cardId if they are the same.
-            // This will allow us to reorder the monsters as we want
-            MonsterCard pc1 = (MonsterCard) c1;
-            MonsterCard pc2 = (MonsterCard) c2;
-            int pokedexCompare = ByteUtils.unsignedCompareBytes(pc1.dexNumber, pc2.dexNumber);
-            if (pokedexCompare == 0) {
-                return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
-            }
-            return pokedexCompare;
-        }
     }
 }

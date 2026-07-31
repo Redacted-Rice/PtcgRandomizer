@@ -12,10 +12,10 @@ import java.util.List;
 
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
-import redactedrice.ptcgr.constants.CardDataConstants.CardType;
-import redactedrice.ptcgr.constants.CardDataConstants.EnergyType;
-import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.constants.romenums.CardType;
+import redactedrice.ptcgr.constants.romenums.EnergyType;
+import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;

@@ -1,6 +1,6 @@
 package redactedrice.ptcgr.rules;
 
-import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.Move;
 
 public class MoveExclusion {

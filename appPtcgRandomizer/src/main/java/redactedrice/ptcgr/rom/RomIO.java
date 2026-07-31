@@ -17,7 +17,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.rompacker.Blocks;

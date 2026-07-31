@@ -7,7 +7,8 @@ import java.util.List;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.gbcframework.utils.StringUtils;
 import redactedrice.ptcgr.constants.CharMapConstants;
-import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.SpecialSymbol;
 import redactedrice.ptcgr.rom.Texts;
 
 public class RomText {
@@ -173,8 +174,8 @@ public class RomText {
                     + "split words over lines to get it to fit for \"" + text + "\"");
 
             // If all else fails, just pack as tight as possible
-            formatted = StringUtils.packFormatText(text, maxCharsPerLine, maxLinesPerBlock,
-                    maxBlocks);
+            formatted =
+                    StringUtils.packFormatText(text, maxCharsPerLine, maxLinesPerBlock, maxBlocks);
 
             if (formatted.isEmpty()) {
                 System.out.println("Failed to nicely pack rom text \""
@@ -351,7 +352,7 @@ public class RomText {
         // keep the formatting generic, we add the extra space in for all energies to assume the
         // "worst" case
         // TODO later: Could probably be slightly smarter about this
-        for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values()) {
+        for (SpecialSymbol specialSym : SpecialSymbol.values()) {
             // First remove in case this is called more than once or something
             text = text.replaceAll(specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR,
                     specialSym.getString());
@@ -369,7 +370,7 @@ public class RomText {
         // that means it displays as two spaces but if its an odd char, it displays as one space. To
         // keep the formatting generic, we add the extra space in for all energies to assume the
         // "worst" case
-        for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values()) {
+        for (SpecialSymbol specialSym : SpecialSymbol.values()) {
             text = text.replaceAll(specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR,
                     specialSym.getString());
         }

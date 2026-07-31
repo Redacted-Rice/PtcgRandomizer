@@ -7,11 +7,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
-
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridModel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.LayoutControlCounts;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridModel;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
-// Minimum widths and natural content measurement for module config columns.
+// Minimum widths and natural content measurement for module config ActionsTableColumn.
 public final class ColumnSizing {
     public static final int ENTRY_BOX_WIDTH = 80;
     public static final int VIEW_MODE_MIN_WIDTH = 160;
@@ -34,8 +34,7 @@ public final class ColumnSizing {
         if (valueType == null || (!valueType.isList() && !valueType.isTable())) {
             return ENTRY_BOX_WIDTH;
         }
-        StructuredGridModel.LayoutControlCounts counts =
-                StructuredGridModel.layoutControlCounts(valueType);
+        LayoutControlCounts counts = StructuredGridModel.layoutControlCounts(valueType);
         return counts.entryBoxes() * ENTRY_BOX_WIDTH + counts.removeButtons() * REMOVE_BUTTON_WIDTH
                 + counts.tableLevels() * TABLE_ARROW_WIDTH;
     }

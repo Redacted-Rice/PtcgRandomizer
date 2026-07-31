@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.junit.jupiter.api.Test;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths.ColumnSpec;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ColumnSpec;
 
 public class ModuleConfigColumnWidthsTest {
     private static final ColumnSpec[] SPECS = {

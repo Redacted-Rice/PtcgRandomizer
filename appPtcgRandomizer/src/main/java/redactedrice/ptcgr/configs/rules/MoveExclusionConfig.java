@@ -3,7 +3,7 @@ package redactedrice.ptcgr.configs.rules;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import redactedrice.ptcgr.configs.ParserHelpers;
-import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveExclusion;

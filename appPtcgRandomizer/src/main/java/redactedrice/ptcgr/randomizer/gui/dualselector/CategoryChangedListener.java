@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsListTableModel;
+
 public class CategoryChangedListener implements ActionListener {
     private ActionsListTableModel toUpdate;
 

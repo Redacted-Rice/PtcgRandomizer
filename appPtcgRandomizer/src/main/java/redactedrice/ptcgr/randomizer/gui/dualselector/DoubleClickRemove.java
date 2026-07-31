@@ -6,6 +6,9 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JTable;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableColumn;
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
+
 public class DoubleClickRemove extends MouseAdapter {
     private final JTable table;
     private final ActionsTableModel model;
@@ -19,7 +22,7 @@ public class DoubleClickRemove extends MouseAdapter {
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) { // Double-click detection
             int column = table.columnAtPoint(e.getPoint());
-            if (column == ActionsTableModel.Columns.CONFIG.getValue()) {
+            if (column == ActionsTableColumn.CONFIG.getValue()) {
                 return;
             }
             int row = table.rowAtPoint(e.getPoint());

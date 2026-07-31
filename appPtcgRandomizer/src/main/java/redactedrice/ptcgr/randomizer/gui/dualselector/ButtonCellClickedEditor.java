@@ -9,8 +9,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigDialog;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.ModuleConfigDialog;
 
 public class ButtonCellClickedEditor extends AbstractCellEditor implements TableCellEditor {
     private static final long serialVersionUID = 1L;

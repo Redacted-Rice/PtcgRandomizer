@@ -9,6 +9,8 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.TransferHandler;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
+
 public class ReorderableTableHandler extends TransferHandler {
     private static final long serialVersionUID = 1L;
     private final JTable table;

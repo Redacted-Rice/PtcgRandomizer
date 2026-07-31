@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.configs.YamlIO;
-import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;

@@ -25,7 +25,7 @@ import java.awt.FlowLayout;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
-import redactedrice.ptcgr.randomizer.gui.dualselector.DualTableSelector;
+import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.ptcgr.configs.YamlIO;
