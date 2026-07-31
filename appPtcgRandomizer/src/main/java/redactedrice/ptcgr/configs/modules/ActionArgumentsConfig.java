@@ -2,6 +2,7 @@ package redactedrice.ptcgr.configs.modules;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import redactedrice.ptcgr.configs.ParserHelpers;
@@ -87,13 +88,12 @@ public final class ActionArgumentsConfig {
                 continue;
             }
 
-            ArgumentDefinition argDef = findArgument(module, name);
             try {
                 action.setArgument(name, entry.getValue());
             } catch (IllegalArgumentException ex) {
                 warnings.addWarning(entryLabel + ": argument \"" + name + "\" has invalid value ("
                         + entry.getValue() + "); using default value ("
-                        + (argDef != null ? argDef.getDefaultValue() : "unknown") + "). "
+                        + formatFallbackValue(action.getArgument(name)) + "). "
                         + (ex.getMessage() != null ? ex.getMessage() : ""));
             }
         }
@@ -102,19 +102,23 @@ public final class ActionArgumentsConfig {
             String name = argDef.getName();
             if (!arguments.containsKey(name)) {
                 warnings.addWarning(entryLabel + ": argument \"" + name
-                        + "\" not specified; using default value (" + argDef.getDefaultValue()
-                        + ").");
+                        + "\" not specified; using default value ("
+                        + formatFallbackValue(action.getArgument(name)) + ").");
             }
         }
     }
 
-    private static ArgumentDefinition findArgument(Module module, String name) {
-        for (ArgumentDefinition argDef : module.getArguments()) {
-            if (argDef.getName().equals(name)) {
-                return argDef;
-            }
+    private static String formatFallbackValue(Object value) {
+        if (value == null) {
+            return "null";
         }
-        return null;
+        if (value instanceof List<?> list) {
+            return list.isEmpty() ? "[]" : list.toString();
+        }
+        if (value instanceof Map<?, ?> map) {
+            return map.isEmpty() ? "{}" : map.toString();
+        }
+        return String.valueOf(value);
     }
 
     public Integer getSeedOffset() {

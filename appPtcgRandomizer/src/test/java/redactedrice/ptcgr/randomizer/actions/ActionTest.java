@@ -49,6 +49,35 @@ class ActionTest {
     }
 
     @Test
+    void setArgumentBlankStringForOptionalStringStoresNull() {
+        Module module = testModule(
+                List.of(new ArgumentDefinition("optionalFlag", TypeDefinition.string(), null)));
+        Action action = new Action(module);
+
+        action.setArgument("optionalFlag", "");
+        assertEquals(null, action.getArgument("optionalFlag"));
+
+        action.setArgument("optionalFlag", "   ");
+        assertEquals(null, action.getArgument("optionalFlag"));
+
+        ExecutionRequest request = assertDoesNotThrow(action::toExecutionRequest);
+        assertTrue(request.getArguments().isEmpty());
+    }
+
+    @Test
+    void setArgumentNonBlankStringForOptionalStringIsStored() {
+        Module module = testModule(
+                List.of(new ArgumentDefinition("optionalFlag", TypeDefinition.string(), null)));
+        Action action = new Action(module);
+
+        action.setArgument("optionalFlag", "enabled");
+        assertEquals("enabled", action.getArgument("optionalFlag"));
+
+        ExecutionRequest request = assertDoesNotThrow(action::toExecutionRequest);
+        assertEquals("enabled", request.getArguments().get("optionalFlag"));
+    }
+
+    @Test
     void setArgumentNullForTableUsesEmptyMap() {
         Module module = testModule(List.of(new ArgumentDefinition("weights",
                 TypeDefinition.tableOf(TypeDefinition.string(), TypeDefinition.integer()), Map.of("a", 1))));
