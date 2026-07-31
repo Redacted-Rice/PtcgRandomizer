@@ -128,43 +128,25 @@ class RulesConfigTest {
     }
 
     @Test
-    void rejectsCardWithoutDisambiguator() throws IOException {
+    void rejectsCardWithoutNameAndLevel() throws IOException {
         CardGroup<MonsterCard> cards = new CardGroup<>();
-        WarningCollector warnings = new WarningCollector(null);
-        String yaml = """
-                moveExclusions:
-                  - remove_from_pool: true
-                    exclude_from_randomization: true
-                    card: SomeMonster
-                    move: TestMove
-                """;
-        RulesConfig config = readYaml(yaml, "test.yaml", warnings);
-        Rules rules = new Rules();
-        config.applyTo(rules, cards, warnings);
 
-        assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("must use name and level")));
-        assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
-    }
+        for (String cardSpecifier : List.of("SomeMonster", "SomeMonster_1")) {
+            WarningCollector warnings = new WarningCollector(null);
+            RulesConfig config = readYaml("""
+                    moveExclusions:
+                      - remove_from_pool: true
+                        exclude_from_randomization: true
+                        card: %s
+                        move: TestMove
+                    """.formatted(cardSpecifier), "test.yaml", warnings);
+            Rules rules = new Rules();
+            config.applyTo(rules, cards, warnings);
 
-    @Test
-    void rejectsPrintNumberCardSpecifier() throws IOException {
-        CardGroup<MonsterCard> cards = new CardGroup<>();
-        WarningCollector warnings = new WarningCollector(null);
-        String yaml = """
-                moveExclusions:
-                  - remove_from_pool: true
-                    exclude_from_randomization: true
-                    card: SomeMonster_1
-                    move: TestMove
-                """;
-        RulesConfig config = readYaml(yaml, "test.yaml", warnings);
-        Rules rules = new Rules();
-        config.applyTo(rules, cards, warnings);
-
-        assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("must use name and level")));
-        assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
+            assertTrue(warnings.getWarnings().stream()
+                    .anyMatch(w -> w.contains("must use name and level")));
+            assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
+        }
     }
 
     @Test
@@ -188,6 +170,9 @@ class RulesConfigTest {
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(CardId.MONSTER_146_1,
                 rules.getMoveExclusions().getAllExclusions().get(0).getCardId());
+        Map<String, Object> exclusionEntry = config.getMoveExclusionConfigs().get(0).convertToYamlMap();
+        assertEquals("SomeMonster lvl35", exclusionEntry.get("card"));
+        assertEquals("TestMove", exclusionEntry.get("move"));
     }
 
     @Test
@@ -236,7 +221,8 @@ class RulesConfigTest {
         slotOne.applyTo(rules, cards, warnings);
 
         assertEquals(0, rules.getMoveAssignments().getAllAssignments().get(0).getMoveSlot());
-        assertEquals("1", slotOne.getMoveAssignmentConfigs().get(0).getToMoveSlot());
+        assertEquals(1, slotOne.getMoveAssignmentConfigs().get(0).convertToYamlMap()
+                .get("to_move_slot"));
 
         RulesConfig slotTwo = readYaml("""
                 moveAssignments:
@@ -247,10 +233,8 @@ class RulesConfigTest {
         slotTwo.applyTo(rules, cards, warnings);
 
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().get(1).getMoveSlot());
-        MoveAssignmentConfig serialized = MoveAssignmentConfig.fromMoveAssignment(
-                rules.getMoveAssignments().getAllAssignments().get(1), cards);
-        assertEquals("2", serialized.getToMoveSlot());
-        assertEquals(2, serialized.convertToYamlMap().get("to_move_slot"));
+        assertEquals(2, slotTwo.getMoveAssignmentConfigs().get(0).convertToYamlMap()
+                .get("to_move_slot"));
     }
 
     @Test

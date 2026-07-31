@@ -76,7 +76,7 @@ public class FarCall extends Call {
         // If its not assigned, assume the worst
         if (!instructAddress.isFullAddress() || !found.isFullAddress()
                 || isFarJpCall(instructAddress, found)) {
-            return 4;
+            return getFarJpCallSize();
         }
 
         // "normal" call
@@ -87,12 +87,19 @@ public class FarCall extends Call {
         return !isValidCall(instructAddress, toGoTo);
     }
 
+    private static final int UNCONDITIONAL_FAR_JP_CALL_SIZE = 4;
+    private static final int JR_INSTRUCT_SIZE = 2;
+
     protected int getFarJpCallSize() {
         // To do a conditional farcall we need to do a JR before it
         if (getConditions() != InstructionConditions.NONE) {
-            return 6;
+            return UNCONDITIONAL_FAR_JP_CALL_SIZE + JR_INSTRUCT_SIZE;
         }
-        return 4;
+        return UNCONDITIONAL_FAR_JP_CALL_SIZE;
+    }
+
+    private static int getUnconditionalFarJpCallSize() {
+        return UNCONDITIONAL_FAR_JP_CALL_SIZE;
     }
 
     @Override
@@ -113,8 +120,7 @@ public class FarCall extends Call {
             // To do a conditional far jp/call we need to do a JR before it
             if (getConditions() != InstructionConditions.NONE) {
                 // Write a local JR to skip the far call
-                writeSize += Jr.write(writer, getConditions().negate(), (byte) 4); // 4 = size of
-                                                                                   // far call
+                writeSize += Jr.write(writer, getConditions().negate(), (byte) getUnconditionalFarJpCallSize());
             }
 
             writeSize += writeFarJpCall(writer, foundAddress);
@@ -135,6 +141,6 @@ public class FarCall extends Call {
 
         // Write the address after the rst. This is how this specific call works
         BlockGlobalAddress.write(writer, addressToCall);
-        return 4;
+        return UNCONDITIONAL_FAR_JP_CALL_SIZE;
     }
 }
