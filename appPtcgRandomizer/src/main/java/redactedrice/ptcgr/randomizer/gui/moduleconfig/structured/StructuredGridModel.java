@@ -105,10 +105,14 @@ public final class StructuredGridModel {
             LinkedHashMap<Object, Object> result = new LinkedHashMap<>();
             for (Object rawEntry : rawEntries) {
                 RawEntry pair = (RawEntry) rawEntry;
-                if (result.containsKey(pair.key())) {
-                    throw new IllegalArgumentException("Duplicate table key: " + pair.key());
+                Object key = pair.key();
+                if (key == null || (key instanceof String str && str.isBlank())) {
+                    throw new IllegalArgumentException("Table key cannot be empty.");
                 }
-                result.put(pair.key(), toPublicValue(valueType, pair.value()));
+                if (result.containsKey(key)) {
+                    throw new IllegalArgumentException("Duplicate table key: " + key);
+                }
+                result.put(key, toPublicValue(valueType, pair.value()));
             }
             return result;
         }

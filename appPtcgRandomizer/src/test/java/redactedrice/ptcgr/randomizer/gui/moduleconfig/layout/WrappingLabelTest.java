@@ -15,7 +15,8 @@ public class WrappingLabelTest {
         assertTrue(longLabel.getPreferredSize().height > unwrappedHeight);
         assertTrue(longLabel.getUnwrappedWidth() > 80);
 
-        WrappingLabel constraintLabel = WrappingLabel.constraints("Int min - Int max");
+        WrappingLabel constraintLabel =
+                WrappingLabel.constraints("0 - 2147483647 (step 5)");
         int lineHeight = constraintLabel.getFontMetrics(constraintLabel.getFont()).getHeight();
 
         constraintLabel.setWrapWidth(200);

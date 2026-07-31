@@ -41,7 +41,6 @@ module = {
 					type = "list",
 					elementDefinition = {
 						type = "int",
-						constraint = { type = "range", min = 1, max = 100 },
 					},
 				},
 			},

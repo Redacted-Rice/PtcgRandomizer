@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.event.FocusEvent;
@@ -8,12 +9,15 @@ import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.ZeroArgFunction;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
@@ -22,6 +26,9 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumericEditing;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridPanel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredText;
+import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
@@ -78,15 +85,17 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof NumberFieldEditor);
-        assertEquals("Int min - Int max", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("", ArgumentConstraintDescription.describe(argDef.getTypeDefinition()));
 
         ArgumentDefinition zeroToMax = new ArgumentDefinition("zeroToMax",
                 TypeDefinition.integer(ArgumentConstraint.range(0, Integer.MAX_VALUE)), 0);
-        assertEquals("0 - Int max", ArgumentEditorFactory.describeConstraint(zeroToMax));
+        assertEquals("0 - " + Integer.MAX_VALUE,
+                ArgumentConstraintDescription.describe(zeroToMax.getTypeDefinition()));
 
         ArgumentDefinition minToHundred = new ArgumentDefinition("minToHundred",
                 TypeDefinition.integer(ArgumentConstraint.range(Integer.MIN_VALUE, 100)), 0);
-        assertEquals("Int min - 100", ArgumentEditorFactory.describeConstraint(minToHundred));
+        assertEquals(Integer.MIN_VALUE + " - 100",
+                ArgumentConstraintDescription.describe(minToHundred.getTypeDefinition()));
 
         JTextField field = (JTextField) editor.getComponent();
         field.setText("12345");
@@ -110,7 +119,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof NumberFieldEditor);
-        assertEquals("0 - 2", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("0 - 2", ArgumentConstraintDescription.describe(argDef.getTypeDefinition()));
 
         JTextField field = (JTextField) editor.getComponent();
         field.setText("2");
@@ -137,7 +146,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor dropdownEditor = ArgumentEditorFactory.create(dropdownArg);
 
         assertTrue(dropdownEditor instanceof DiscreteChoiceEditor);
-        assertEquals("0 - 10 (step 5)", ArgumentEditorFactory.describeConstraint(dropdownArg));
+        assertEquals("0 - 10 (step 5)", ArgumentConstraintDescription.describe(dropdownArg.getTypeDefinition()));
 
         @SuppressWarnings("unchecked")
         JComboBox<Number> dropdown = (JComboBox<Number>) dropdownEditor.getComponent();
@@ -191,8 +200,8 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof EnumEditor);
-        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("string", StructuredText.describeStructuredShape(argDef.getTypeDefinition()));
+        assertEquals("Enum", ArgumentConstraintDescription.describe(argDef.getTypeDefinition()));
 
         @SuppressWarnings("unchecked")
         JComboBox<Object> comboBox = (JComboBox<Object>) editor.getComponent();
@@ -214,8 +223,8 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof DiscreteChoiceEditor);
-        assertEquals("double", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("Custom enum", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("double", StructuredText.describeStructuredShape(argDef.getTypeDefinition()));
+        assertEquals("Enum", ArgumentConstraintDescription.describe(argDef.getTypeDefinition()));
 
         @SuppressWarnings("unchecked")
         JComboBox<Number> comboBox = (JComboBox<Number>) editor.getComponent();
@@ -231,13 +240,13 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                 TypeDefinition.listOf(TypeDefinition.string()), List.of());
         ArgumentValueEditor listEditor = ArgumentEditorFactory.create(listArg);
         assertTrue(listEditor instanceof StructuredGridPanel);
-        assertEquals("List of string", ArgumentEditorFactory.describeType(listArg));
+        assertEquals("List of string", StructuredText.describeStructuredShape(listArg.getTypeDefinition()));
         listEditor.setValue(List.of("common", "rare"));
         assertEquals(List.of("common", "rare"), listEditor.getValue());
 
         ArgumentDefinition nestedListArg = new ArgumentDefinition("groups",
                 TypeDefinition.listOf(TypeDefinition.listOf(TypeDefinition.integer())), List.of());
-        assertEquals("List of List of int", ArgumentEditorFactory.describeType(nestedListArg));
+        assertEquals("List of List of int", StructuredText.describeStructuredShape(nestedListArg.getTypeDefinition()));
         ArgumentValueEditor nestedListEditor = ArgumentEditorFactory.create(nestedListArg);
         nestedListEditor.setValue(List.of(List.of(1, 2), List.of(3)));
         assertEquals(List.of(List.of(1, 2), List.of(3)), nestedListEditor.getValue());
@@ -247,7 +256,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                 Map.of());
         ArgumentValueEditor tableEditor = ArgumentEditorFactory.create(tableArg);
         assertTrue(tableEditor instanceof StructuredGridPanel);
-        assertEquals("string \u2192 int", ArgumentEditorFactory.describeType(tableArg));
+        assertEquals("string \u2192 int", StructuredText.describeStructuredShape(tableArg.getTypeDefinition()));
         tableEditor.setValue(Map.of("fire", 10));
         assertEquals(Map.of("fire", 10), tableEditor.getValue());
     }
@@ -273,19 +282,19 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef);
 
         assertTrue(editor instanceof StringFieldEditor);
-        assertEquals("string", ArgumentEditorFactory.describeType(argDef));
-        assertEquals("", ArgumentEditorFactory.describeConstraint(argDef));
+        assertEquals("string", StructuredText.describeStructuredShape(argDef.getTypeDefinition()));
+        assertEquals("", ArgumentConstraintDescription.describe(argDef.getTypeDefinition()));
 
         editor.setValue("hello");
         assertEquals("hello", editor.getValue());
     }
 
     @Test
-    void booleanConstraintAlwaysOffersTrueAndFalse() {
+    void booleanConstraintUsesAnyAndAllowsBothValues() {
         ArgumentDefinition anyBool = new ArgumentDefinition("flag", TypeDefinition.bool(), true);
         ArgumentValueEditor anyBoolEditor = ArgumentEditorFactory.create(anyBool);
         assertTrue(anyBoolEditor instanceof EnumEditor);
-        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(anyBool));
+        assertEquals("", ArgumentConstraintDescription.describe(anyBool.getTypeDefinition()));
 
         @SuppressWarnings("unchecked")
         JComboBox<Object> anyBoolCombo = (JComboBox<Object>) anyBoolEditor.getComponent();
@@ -297,7 +306,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                 TypeDefinition.bool(ArgumentConstraint.enumValues(List.of(false))), false);
         ArgumentValueEditor restrictedBoolEditor = ArgumentEditorFactory.create(restrictedBool);
         assertTrue(restrictedBoolEditor instanceof EnumEditor);
-        assertEquals("true / false", ArgumentEditorFactory.describeConstraint(restrictedBool));
+        assertEquals("", ArgumentConstraintDescription.describe(restrictedBool.getTypeDefinition()));
 
         @SuppressWarnings("unchecked")
         JComboBox<Object> restrictedBoolCombo =
@@ -312,7 +321,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         ArgumentDefinition argDef =
                 new ArgumentDefinition("entityType", TypeDefinition.enumType("EntityType"), "WARRIOR");
 
-        assertEquals("EntityType", ArgumentEditorFactory.describeType(argDef));
+        assertEquals("EntityType", StructuredText.describeStructuredShape(argDef.getTypeDefinition()));
 
         ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef,
                 name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null);
@@ -325,6 +334,77 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
 
         editor.setValue("MAGE");
         assertEquals("MAGE", editor.getValue());
+    }
+
+    @Test
+    void tableConstraintDescriptionShowsNestedConstraints() {
+        ArgumentDefinition typeWeights = new ArgumentDefinition("typeWeights",
+                TypeDefinition.tableOf(TypeDefinition.enumType("CardType"),
+                        TypeDefinition.integer(ArgumentConstraint.range(0, 10))),
+                Map.of());
+        assertEquals("Enum \u2192 0 - 10",
+                ArgumentConstraintDescription.describe(typeWeights.getTypeDefinition()));
+
+        ArgumentDefinition caps = new ArgumentDefinition("caps",
+                TypeDefinition.tableOf(TypeDefinition.string(),
+                        TypeDefinition.integer(ArgumentConstraint.range(1, 999))),
+                Map.of());
+        assertEquals("none \u2192 1 - 999",
+                ArgumentConstraintDescription.describe(caps.getTypeDefinition()));
+
+        ArgumentDefinition poolsByType = new ArgumentDefinition("poolsByType",
+                TypeDefinition.tableOf(TypeDefinition.string(),
+                        TypeDefinition.listOf(
+                                TypeDefinition.integer(ArgumentConstraint.range(1, 100)))),
+                Map.of());
+        assertEquals("none \u2192 1 - 100",
+                ArgumentConstraintDescription.describe(poolsByType.getTypeDefinition()));
+
+        ArgumentDefinition enumArg = new ArgumentDefinition("entityType",
+                TypeDefinition.enumType("EntityType"), "WARRIOR");
+        assertEquals("Enum", ArgumentConstraintDescription.describe(enumArg.getTypeDefinition()));
+    }
+
+    @Test
+    void warnsForBooleanAndStringConstraintsThatAreIgnored() {
+        Module module = testModule(List.of(
+                new ArgumentDefinition("enumBool",
+                        TypeDefinition.bool(ArgumentConstraint.enumValues(List.of(false))), false),
+                new ArgumentDefinition("badString",
+                        TypeDefinition.string(ArgumentConstraint.range(1, 5)), "a")));
+
+        WarningCollector warnings = new WarningCollector(null);
+        ArgumentConstraintDescription.checkModuleConstraints(module, warnings);
+
+        assertTrue(warnings.hasWarnings());
+        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("enumBool")));
+        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("badString")));
+    }
+
+    @Test
+    void doesNotWarnForSupportedConstraints() {
+        Module module = testModule(List.of(new ArgumentDefinition("flag", TypeDefinition.bool(), true),
+                new ArgumentDefinition("label", TypeDefinition.string(), "a"),
+                new ArgumentDefinition("color",
+                        TypeDefinition.string(
+                                ArgumentConstraint.enumValues(List.of("red", "blue"))),
+                        "red")));
+
+        WarningCollector warnings = new WarningCollector(null);
+        ArgumentConstraintDescription.checkModuleConstraints(module, warnings);
+
+        assertFalse(warnings.hasWarnings());
+    }
+
+    private static Module testModule(List<ArgumentDefinition> arguments) {
+        return new Module("test_module", "Test Module", "", Set.of("dev"), Set.of(), arguments,
+                new ZeroArgFunction() {
+                    @Override
+                    public LuaValue call() {
+                        return LuaValue.NIL;
+                    }
+                }, null, "test.lua", 0, false, false, null, "author", "1.0", Map.of(), null, null,
+                null);
     }
 
     private static void simulateFocusLost(JTextField field) {
