@@ -9,12 +9,12 @@ import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentEditorFactory;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.InvalidInputDialogs;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.GridSeparators;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
@@ -216,7 +216,7 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
     }
 
     private void showInvalidInput(String message) {
-        JOptionPane.showMessageDialog(this, message, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        InvalidInputDialogs.show(this, message);
     }
 
     private List<Object> extractRawApplying(CollectionNode node, CollectionNode target,
