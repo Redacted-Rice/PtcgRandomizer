@@ -292,7 +292,69 @@ class YamlIOTest {
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
         assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("numMoves") && w.contains("invalid value")));
+                .anyMatch(w -> w.contains("numMoves") && w.contains("invalid value")
+                        && w.contains("using default value (2)")));
+    }
+
+    @Test
+    void loadWarnsWithEmptyCollectionFallbackForInvalidListArgument() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: tag_module
+                    arguments:
+                      tags: "not-a-list"
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("tag_module", "0.9",
+                List.of(new ArgumentDefinition("tags",
+                        TypeDefinition.listOf(TypeDefinition.string()), null)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("tags") && w.contains("invalid value")
+                        && w.contains("using default value ([])")));
+    }
+
+    @Test
+    void loadWarnsWithEmptyCollectionFallbackForMissingListArgument() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 1
+                actions:
+                  - module: tag_module
+                    arguments: {}
+                prescripts: []
+                postscripts: []
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        WarningCollector warnings = new WarningCollector(null);
+        Config config = loadConfig(configFile.toFile(), warnings);
+        ActionBank actionBank = testActionBank("tag_module", "0.9",
+                List.of(new ArgumentDefinition("tags",
+                        TypeDefinition.listOf(TypeDefinition.string()), null)),
+                List.of(), List.of());
+        var actions = config.getActions(actionBank, warnings);
+
+        assertEquals(1, actions.size());
+        assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
+        assertTrue(warnings.getWarnings().stream()
+                .anyMatch(w -> w.contains("tags") && w.contains("not specified")
+                        && w.contains("using default value ([])")));
     }
 
     @Test
@@ -350,7 +412,8 @@ class YamlIOTest {
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
         assertTrue(warnings.getWarnings().stream()
-                .anyMatch(w -> w.contains("numMoves") && w.contains("not specified")));
+                .anyMatch(w -> w.contains("numMoves") && w.contains("not specified")
+                        && w.contains("using default value (2)")));
     }
 
     @Test

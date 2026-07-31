@@ -3,8 +3,9 @@ local module
 module = {
 	id = "dev_test_bool_args",
 	name = "[Dev] Boolean Argument Test",
-	description = "Exercises every boolean argument constraint type in the config UI",
+	description = "Exercises boolean argument constraint type in the config UI",
 	seeded = true,
+	defaultSeedOffset = 42,
 	groups = { "dev" },
 	modifies = {},
 	author = "PTCGR Dev Tools",

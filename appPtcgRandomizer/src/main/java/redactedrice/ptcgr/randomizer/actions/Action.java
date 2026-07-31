@@ -10,6 +10,7 @@ import redactedrice.randomizer.context.EnumRegistry;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
+import redactedrice.randomizer.lua.arguments.ArgumentType;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 public class Action {
@@ -95,12 +96,13 @@ public class Action {
                     "Unknown argument '" + name + "' for module '" + module.getId() + "'");
         }
 
+        Object normalized = normalizeUnsetScalarValue(value, argDef.getTypeDefinition());
         Object stored;
-        if (value == null) {
+        if (normalized == null) {
             stored = emptyValueForType(argDef.getTypeDefinition());
         } else {
             stored = copyArgumentValue(
-                    argDef.convertAndValidate(value, enumRegistry),
+                    argDef.convertAndValidate(normalized, enumRegistry),
                     argDef.getTypeDefinition());
         }
         arguments.put(name, stored);
@@ -196,6 +198,20 @@ public class Action {
             return new ArrayList<>();
         }
         return null;
+    }
+
+    // Blank scalar strings from the config UI (and YAML) mean "unset", same as null, so optional
+    // arguments keep being omitted at execution time rather than sent as "" (truthy in Lua).
+    private static Object normalizeUnsetScalarValue(Object value, TypeDefinition typeDef) {
+        if (value instanceof String str && str.isBlank() && isScalarString(typeDef)) {
+            return null;
+        }
+        return value;
+    }
+
+    private static boolean isScalarString(TypeDefinition typeDef) {
+        return !typeDef.isList() && !typeDef.isTable() && !typeDef.isEnum()
+                && typeDef.getBaseType() == ArgumentType.STRING;
     }
 
     private Map<String, Object> argumentsForExecution() {
