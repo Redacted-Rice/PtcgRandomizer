@@ -190,8 +190,10 @@ public class ModuleConfigDialog extends JDialog {
                 valueComponent =
                         readOnlyValueLabel(argDef.getTypeDefinition(), action.getArgument(name));
             }
-            row = addRow(grid, gbc, row, name, ArgumentEditorFactory.describeType(argDef),
-                    ArgumentEditorFactory.describeConstraint(argDef), valueComponent,
+            row = addRow(grid, gbc, row, name,
+                    StructuredText.describeStructuredShape(argDef.getTypeDefinition()),
+                    ArgumentConstraintDescription.describe(argDef.getTypeDefinition()),
+                    valueComponent,
                     argDef.getTypeDefinition());
             hasDataRow = true;
         }

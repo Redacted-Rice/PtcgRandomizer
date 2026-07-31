@@ -120,6 +120,11 @@ public class StructuredGridPanelTest extends ModuleConfigGuiTestSupport {
         fields.get(3).setText("2");
         assertThrows(IllegalArgumentException.class, editor::getValue);
 
+        editor.setValue(linkedMap("a", 1));
+        findAddButton(editor.getComponent()).doClick();
+        fields = findComponents(editor.getComponent(), JTextField.class);
+        assertThrows(IllegalArgumentException.class, editor::getValue);
+
         editor.setValue(new LinkedHashMap<String, Integer>());
         assertEquals(0, gridBagConstraintsOf(findAddButton(editor.getComponent())).gridy);
     }

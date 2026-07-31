@@ -18,6 +18,7 @@ import redactedrice.ptcgr.constants.CardDataConstants.EvolutionStage;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
@@ -49,6 +50,7 @@ public class RandomizerCore {
         bundledResources.installAll();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
+        checkLoadedModuleArgumentConstraints(actionBank);
         pendingRules = loadBundledDefaultRules(toCenterPopupsOn);
     }
 
@@ -123,6 +125,13 @@ public class RandomizerCore {
             warnings.logAndDisplay("module requirements", true);
         }
         logErrorTrackerMessages("Errors loading Lua modules:");
+    }
+
+    private void checkLoadedModuleArgumentConstraints(ActionBank bank) {
+        for (Action action : bank.get()) {
+            ArgumentConstraintDescription.checkModuleConstraints(action.getModule(), warnings);
+        }
+        warnings.logAndDisplay("loaded module scripts", true);
     }
 
     public boolean isRomLoaded() {

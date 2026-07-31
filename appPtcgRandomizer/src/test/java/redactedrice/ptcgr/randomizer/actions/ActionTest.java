@@ -62,6 +62,16 @@ class ActionTest {
     }
 
     @Test
+    void setArgumentAllowsBooleanValueRegardlessOfDeclaredEnumConstraint() {
+        Module module = testModule(List.of(new ArgumentDefinition("flag",
+                TypeDefinition.bool(ArgumentConstraint.enumValues(List.of(false))), false)));
+        Action action = new Action(module);
+
+        action.setArgument("flag", true);
+        assertEquals(true, action.getArgument("flag"));
+    }
+
+    @Test
     void setArgumentRejectsInvalidValue() {
         Module module = testModule(List.of(new ArgumentDefinition("numMoves",
                 TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)));

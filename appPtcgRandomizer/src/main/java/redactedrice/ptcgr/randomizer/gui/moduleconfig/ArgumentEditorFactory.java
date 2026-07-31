@@ -10,7 +10,6 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredGridPanel;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredText;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentType;
@@ -59,10 +58,9 @@ public final class ArgumentEditorFactory {
                 switch (type.getBaseType()) {
                     case INTEGER:
                     case DOUBLE:
-                        return createForNumeric(type.getBaseType() == ArgumentType.INTEGER,
-                                type.getConstraint());
+                        return createForNumeric(type);
                     case STRING:
-                        return createForString(type.getConstraint());
+                        return createForString(type);
                     case BOOLEAN:
                         return createForBoolean();
                     default:
@@ -119,14 +117,6 @@ public final class ArgumentEditorFactory {
         return new NumberFieldEditor(true, (double) Integer.MIN_VALUE, (double) Integer.MAX_VALUE);
     }
 
-    public static String describeType(ArgumentDefinition argDef) {
-        return StructuredText.describeStructuredShape(argDef.getTypeDefinition());
-    }
-
-    public static String describeConstraint(ArgumentDefinition argDef) {
-        return ArgumentConstraintDescription.describe(argDef);
-    }
-
     private static <T> T visitType(TypeDefinition typeDef, StructuredTypeVisitor<T> visitor) {
         if (typeDef.isList()) {
             return visitor.visitList(typeDef);
@@ -150,10 +140,13 @@ public final class ArgumentEditorFactory {
         T visitBase(TypeDefinition typeDef);
     }
 
-    private static ArgumentValueEditor createForNumeric(boolean integer,
-            ArgumentConstraint constraint) {
-        constraint = ArgumentConstraintDescription
-                .forUi(integer ? ArgumentType.INTEGER : ArgumentType.DOUBLE, constraint);
+    private static ArgumentValueEditor createForNumeric(TypeDefinition type) {
+        boolean integer = type.getBaseType() == ArgumentType.INTEGER;
+        ArgumentConstraint constraint = type.getEnforcedConstraint();
+        if (integer && constraint.getType() == ConstraintType.ANY) {
+            return new NumberFieldEditor(true, (double) Integer.MIN_VALUE,
+                    (double) Integer.MAX_VALUE);
+        }
         switch (constraint.getType()) {
             case RANGE:
                 return new NumberFieldEditor(integer, constraint.getMin(), constraint.getMax());
@@ -175,8 +168,8 @@ public final class ArgumentEditorFactory {
         }
     }
 
-    // Strings support ANY and ENUM. If its not an enum, its ANY
-    private static ArgumentValueEditor createForString(ArgumentConstraint constraint) {
+    private static ArgumentValueEditor createForString(TypeDefinition type) {
+        ArgumentConstraint constraint = type.getEnforcedConstraint();
         if (constraint.getType() == ConstraintType.ENUM) {
             List<Object> allowed = constraint.getAllowedValues();
             return new EnumEditor(allowed != null ? allowed : List.of());
@@ -184,9 +177,8 @@ public final class ArgumentEditorFactory {
         return new StringFieldEditor();
     }
 
-    // Boolean is always an enum
     private static ArgumentValueEditor createForBoolean() {
-        return new EnumEditor(ArgumentConstraintDescription.BOOLEAN_VALUES);
+        return new EnumEditor(List.of(Boolean.TRUE, Boolean.FALSE));
     }
 
     // ENUM type values come from an enum registered elsewhere (e.g. via context.registerEnum
