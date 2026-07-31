@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JTable;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
 
 public class CopySelectedListener implements ActionListener {
     private final JTable fromTable;

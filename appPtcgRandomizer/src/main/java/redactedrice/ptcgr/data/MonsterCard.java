@@ -11,10 +11,11 @@ import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
 import redactedrice.rompacker.Blocks;
 import redactedrice.gbcframework.utils.ByteUtils;
-import redactedrice.ptcgr.constants.CardDataConstants.*;
+import redactedrice.ptcgr.constants.romenums.*;
 import redactedrice.ptcgr.data.romtexts.CardName;
 import redactedrice.ptcgr.data.romtexts.MonsterCategory;
 import redactedrice.ptcgr.data.romtexts.PokeDescription;
+import redactedrice.ptcgr.data.support.NameWithLevel;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 import redactedrice.ptcgr.utils.WarningCollector;
@@ -26,9 +27,6 @@ public class MonsterCard extends Card {
     public static final int MAX_NUM_MOVES = 2;
     private static final Pattern NAME_WITH_LEVEL_PATTERN =
             Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
-
-    public record NameWithLevel(String name, int level) {
-    }
 
     // TODO Make some of these private to ensure safe values (e.g. multiple of 10 for hp?)
     private byte hp;

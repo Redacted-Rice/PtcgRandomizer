@@ -6,8 +6,8 @@ import javax.swing.JLabel;
 
 import org.junit.jupiter.api.Test;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigDialog;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths.ColumnSpec;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.ModuleConfigDialog;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ColumnSpec;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 public class ModuleConfigGridPanelTest {

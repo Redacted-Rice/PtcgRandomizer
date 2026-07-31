@@ -9,7 +9,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import redactedrice.ptcgr.constants.CardConstants.CardId;
+import redactedrice.ptcgr.constants.romenums.CardId;
+import redactedrice.ptcgr.data.support.NameWithLevel;
 import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.utils.WarningCollector;
 
@@ -33,7 +34,7 @@ class MonsterCardTest {
     @Test
     void nameWithLevelParsingAndLookup() {
         assertTrue(MonsterCard.isNameWithLevel("SomeMonster lvl65"));
-        MonsterCard.NameWithLevel ref = MonsterCard.parseNameWithLevel("SomeMonster lvl65");
+        NameWithLevel ref = MonsterCard.parseNameWithLevel("SomeMonster lvl65");
         assertEquals("SomeMonster", ref.name());
         assertEquals(65, ref.level());
         assertNull(MonsterCard.parseNameWithLevel("SomeMonster_1 lvl76"));

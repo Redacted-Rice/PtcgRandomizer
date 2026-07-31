@@ -12,9 +12,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-
-import redactedrice.ptcgr.constants.CardDataConstants.CardType;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;

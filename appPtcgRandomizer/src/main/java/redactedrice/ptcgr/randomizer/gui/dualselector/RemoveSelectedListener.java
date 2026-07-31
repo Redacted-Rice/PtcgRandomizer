@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JTable;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
+
 public class RemoveSelectedListener implements ActionListener {
     private final JTable table;
     private final ActionsTableModel model;

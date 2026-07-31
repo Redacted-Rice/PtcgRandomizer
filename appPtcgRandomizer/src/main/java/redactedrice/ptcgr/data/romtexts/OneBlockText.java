@@ -2,7 +2,7 @@ package redactedrice.ptcgr.data.romtexts;
 
 
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.CharMapConstants.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 import redactedrice.ptcgr.rom.Texts;
 
 public class OneBlockText extends RomText {
@@ -25,15 +25,13 @@ public class OneBlockText extends RomText {
     }
 
     public int readDataAndConvertIds(byte[] bytes, int textIdIndex, Texts idToText) {
-        int[] textIdIndexes = { textIdIndex
-        };
+        int[] textIdIndexes = {textIdIndex};
         readDataAndConvertIds(bytes, textIdIndexes, idToText);
         return textIdIndex + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
     }
 
     public int writeTextId(byte[] bytes, int textIdIndex) {
-        int[] textIdIndexes = { textIdIndex
-        };
+        int[] textIdIndexes = {textIdIndex};
         writeTextId(bytes, textIdIndexes);
         return textIdIndex + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
     }

@@ -16,18 +16,20 @@ import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.MovableBlock;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.CardDataConstants.*;
+import redactedrice.ptcgr.constants.romenums.*;
+import redactedrice.ptcgr.data.customcardeffects.CallForFamily;
 import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.ptcgr.data.romtexts.EffectDescription;
 import redactedrice.ptcgr.data.romtexts.MoveName;
 import redactedrice.ptcgr.data.romtexts.RomText;
+import redactedrice.ptcgr.data.support.MoveBasicSorter;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
 public class Move {
     public static final int TOTAL_SIZE_IN_BYTES = 19;
-    public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
+    public static final Comparator<Move> BASIC_SORTER = new MoveBasicSorter();
 
     EnumMap<EnergyType, Byte> energyCost;
     public MoveName name;
@@ -113,25 +115,8 @@ public class Move {
         return sourceMoveIndex;
     }
 
-    public static class BasicSorter implements Comparator<Move> {
-        public int compare(Move m1, Move m2) {
-            int compareVal = m1.name.toString().compareTo(m2.name.toString());
-
-            if (compareVal == 0) {
-                compareVal = m1.getDamageString().compareTo(m2.getDamageString());
-            }
-
-            if (compareVal == 0) {
-                compareVal = m1.getEnergyCostString(true, "")
-                        .compareTo(m2.getEnergyCostString(true, ""));
-            }
-
-            if (compareVal == 0) {
-                return m1.effect.toString().compareTo(m2.effect.toString());
-            }
-
-            return compareVal;
-        }
+    public String getEffectSortKey() {
+        return effect.toString();
     }
 
     public boolean isEmpty() {
@@ -309,7 +294,7 @@ public class Move {
             }
 
             CustomCardEffect custEffect =
-                    HardcodedEffects.CallForFamily.createMoveEffect(/* cards, */ basics, parser);
+                    CallForFamily.createMoveEffect(/* cards, */ basics, parser);
             List<MovableBlock> effectBlocks = custEffect.convertToBlocks();
             for (MovableBlock block : effectBlocks) {
                 blocks.addMovableBlock(block);

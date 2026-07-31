@@ -1,24 +1,8 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig.layout;
 
-// Computes shared widths for the module config columns. Opening widths use the widest cell
-// in each column (clamped to min/max); extra space grows columns proportionally by weight.
+// Computes shared widths for the module config ActionsTableColumn. Opening widths use the widest cell
+// in each column (clamped to min/max); extra space grows ActionsTableColumn proportionally by weight.
 public final class ModuleConfigColumnWidths {
-    public record ColumnSpec(int minWidth, int maxWidth, double weight) {
-        public ColumnSpec {
-            if (minWidth < 0 || maxWidth < minWidth || weight < 0) {
-                throw new IllegalArgumentException("Invalid column spec");
-            }
-        }
-
-        public static ColumnSpec bounded(int minWidth, int maxWidth, double weight) {
-            return new ColumnSpec(minWidth, maxWidth, weight);
-        }
-
-        public static ColumnSpec minOnly(int minWidth, double weight) {
-            return new ColumnSpec(minWidth, Integer.MAX_VALUE, weight);
-        }
-    }
-
     private ModuleConfigColumnWidths() {}
 
     public static int horizontalChrome(int dataColumnCount, int separatorColumnCount,
@@ -59,7 +43,7 @@ public final class ModuleConfigColumnWidths {
     public static int minimumContentWidth(ColumnSpec[] specs, int horizontalChrome) {
         int total = 0;
         for (ColumnSpec spec : specs) {
-            total += spec.minWidth;
+            total += spec.minWidth();
         }
         return horizontalChrome + total;
     }
@@ -73,13 +57,13 @@ public final class ModuleConfigColumnWidths {
     }
 
     private static int openingWidth(int naturalWidth, ColumnSpec spec) {
-        return Math.min(spec.maxWidth, Math.max(spec.minWidth, naturalWidth));
+        return Math.min(spec.maxWidth(), Math.max(spec.minWidth(), naturalWidth));
     }
 
     private static int[] minimumColumnWidths(ColumnSpec[] specs) {
         int[] widths = new int[specs.length];
         for (int i = 0; i < specs.length; i++) {
-            widths[i] = specs[i].minWidth;
+            widths[i] = specs[i].minWidth();
         }
         return widths;
     }
@@ -88,8 +72,8 @@ public final class ModuleConfigColumnWidths {
         while (slack > 0.5) {
             double totalWeight = 0;
             for (int i = 0; i < widths.length; i++) {
-                if (widths[i] < specs[i].maxWidth) {
-                    totalWeight += specs[i].weight;
+                if (widths[i] < specs[i].maxWidth()) {
+                    totalWeight += specs[i].weight();
                 }
             }
             if (totalWeight == 0) {
@@ -98,14 +82,14 @@ public final class ModuleConfigColumnWidths {
 
             double consumed = 0;
             for (int i = 0; i < widths.length; i++) {
-                if (widths[i] >= specs[i].maxWidth) {
+                if (widths[i] >= specs[i].maxWidth()) {
                     continue;
                 }
-                int growth = (int) Math.floor(slack * (specs[i].weight / totalWeight));
+                int growth = (int) Math.floor(slack * (specs[i].weight() / totalWeight));
                 if (growth <= 0) {
                     continue;
                 }
-                int updated = Math.min(specs[i].maxWidth, widths[i] + growth);
+                int updated = Math.min(specs[i].maxWidth(), widths[i] + growth);
                 consumed += updated - widths[i];
                 widths[i] = updated;
             }
@@ -121,7 +105,7 @@ public final class ModuleConfigColumnWidths {
     private static void addRemainderToLastExpandableColumn(int[] widths, ColumnSpec[] specs,
             double slack) {
         for (int i = widths.length - 1; i >= 0; i--) {
-            if (widths[i] < specs[i].maxWidth) {
+            if (widths[i] < specs[i].maxWidth()) {
                 widths[i] += (int) Math.ceil(slack);
                 return;
             }
@@ -132,8 +116,8 @@ public final class ModuleConfigColumnWidths {
         while (excess > 0.5) {
             double totalWeight = 0;
             for (int i = 0; i < widths.length; i++) {
-                if (widths[i] > specs[i].minWidth) {
-                    totalWeight += specs[i].weight;
+                if (widths[i] > specs[i].minWidth()) {
+                    totalWeight += specs[i].weight();
                 }
             }
             if (totalWeight == 0) {
@@ -142,14 +126,14 @@ public final class ModuleConfigColumnWidths {
 
             double consumed = 0;
             for (int i = 0; i < widths.length; i++) {
-                if (widths[i] <= specs[i].minWidth) {
+                if (widths[i] <= specs[i].minWidth()) {
                     continue;
                 }
-                int shrink = (int) Math.floor(excess * (specs[i].weight / totalWeight));
+                int shrink = (int) Math.floor(excess * (specs[i].weight() / totalWeight));
                 if (shrink <= 0) {
                     continue;
                 }
-                int updated = Math.max(specs[i].minWidth, widths[i] - shrink);
+                int updated = Math.max(specs[i].minWidth(), widths[i] - shrink);
                 consumed += widths[i] - updated;
                 widths[i] = updated;
             }
@@ -168,7 +152,7 @@ public final class ModuleConfigColumnWidths {
             int index = -1;
             int mostAboveMin = 0;
             for (int i = 0; i < widths.length; i++) {
-                int aboveMin = widths[i] - specs[i].minWidth;
+                int aboveMin = widths[i] - specs[i].minWidth();
                 if (aboveMin > mostAboveMin) {
                     mostAboveMin = aboveMin;
                     index = i;

@@ -13,10 +13,10 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigDialog;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ModuleConfigColumnWidths.ColumnSpec;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.ModuleConfigDialog;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.ColumnSpec;
 
-// GridBagLayout table whose data columns share computed min/max widths. Implements Scrollable so
+// GridBagLayout table whose data ActionsTableColumn share computed min/max widths. Implements Scrollable so
 // the view tracks the viewport while above the column minimum width, and keeps its width (with a
 // horizontal scrollbar) once the viewport would go narrower than the column minimums.
 public final class ModuleConfigGridPanel extends JPanel implements Scrollable {

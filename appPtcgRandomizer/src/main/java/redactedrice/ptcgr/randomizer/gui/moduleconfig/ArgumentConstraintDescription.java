@@ -1,6 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.structured.StructuredText;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;

@@ -17,7 +17,7 @@ import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.gbcframework.addressing.PrioritizedBankRange;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.EffectFunctionPointer;
-import redactedrice.ptcgr.constants.DuelConstants.EffectFunctionTypes;
+import redactedrice.ptcgr.constants.romenums.EffectFunctionTypes;
 import redactedrice.ptcgr.data.CardEffect;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.FixedBlock;
@@ -33,7 +33,7 @@ public class CustomCardEffect extends CardEffect {
     private static final String W_EFFECT_FUNCTIONS_BANK = "$ce22";
     private static final List<String> MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE = Arrays.asList(
     // @formatter:off
-            "MoreEffectBanksTweak_logicSeg:", 
+            "MoreEffectBanksTweak_logicSeg:",
                 "cp c",
                 "jr z, .default_bank",
                 "sub a, $80",
@@ -44,7 +44,7 @@ public class CustomCardEffect extends CardEffect {
                 // pointers, so we skip passed one of the inc hl. Otherwise it was
                 // one of the custom pointers so we need to increment 3 times
                 "pop af", // Get the flags back and see if it was a carry
-                "jr c, .inc_hl_twice",  
+                "jr c, .inc_hl_twice",
                 "inc hl",
             ".inc_hl_twice",
                 "inc hl",
@@ -70,12 +70,12 @@ public class CustomCardEffect extends CardEffect {
                 // @formatter:on
     );
 
-    private static final List<PrioritizedBankRange> effectFunctionPrefs = Arrays.asList(
-            new PrioritizedBankRange(1, (byte) 0xb, (byte) 0xc),
-            new PrioritizedBankRange(2, (byte) 0xa, (byte) 0xb));
+    private static final List<PrioritizedBankRange> effectFunctionPrefs =
+            Arrays.asList(new PrioritizedBankRange(1, (byte) 0xb, (byte) 0xc),
+                    new PrioritizedBankRange(2, (byte) 0xa, (byte) 0xb));
 
-    private static final PrioritizedBankRange effectCommandPref = new PrioritizedBankRange(1,
-            (byte) 6, (byte) 7);
+    private static final PrioritizedBankRange effectCommandPref =
+            new PrioritizedBankRange(1, (byte) 6, (byte) 7);
 
     String id;
     private EnumMap<EffectFunctionTypes, EffectFunction> effects;
@@ -99,21 +99,15 @@ public class CustomCardEffect extends CardEffect {
 
     public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks, InstructionParser parser) {
         /*
-         * Skip over
-         * ld a, BANK("Effect Functions") (2 bytes)
-         * ld [wEffectFunctionsBank], a (3 bytes)
+         * Skip over ld a, BANK("Effect Functions") (2 bytes) ld [wEffectFunctionsBank], a (3 bytes)
          * We add an empty block because the replacement block will handle placing in nops for us to
          * get it to the correct size
          */
         blocks.addBlankedBlock(new AddressRange(0x300d, 0x300d + 5));
 
         /*
-         * replace
-         * cp c
-         * jr z, .matching_command_found
-         * inc hl
-         * inc hl
-         * with our custom logic that handles other banks
+         * replace cp c jr z, .matching_command_found inc hl inc hl with our custom logic that
+         * handles other banks
          */
         UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(
                 new ParserCodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE, parser), 0, (byte) 0x0,
@@ -123,10 +117,9 @@ public class CustomCardEffect extends CardEffect {
 
         // Create the block to jump to our new logic and make sure it fits nicely into
         // the existing instructions
-        FixedBlock jumpToLogicBlock = new FixedBlock(
-                new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg")
-                        .appendInstructionInline(new Jp(logicBlock.getId())),
-                0x3016);
+        FixedBlock jumpToLogicBlock =
+                new FixedBlock(new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg")
+                        .appendInstructionInline(new Jp(logicBlock.getId())), 0x3016);
         blocks.addFixedBlock(jumpToLogicBlock);
         blocks.addBlankedBlock(jumpToLogicBlock.createBlankedRangeForBlock(5));
     }
