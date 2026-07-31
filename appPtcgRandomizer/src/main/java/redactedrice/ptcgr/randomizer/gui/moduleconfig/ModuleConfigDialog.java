@@ -19,7 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.InvalidInputDialogs;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -440,6 +440,20 @@ public class ModuleConfigDialog extends JDialog {
         return new Dimension(extraWidth, extraHeight);
     }
 
+    ArgumentValueEditor argumentEditor(String name) {
+        ArgumentValueEditor editor = argumentEditors.get(name);
+        if (editor == null) {
+            throw new IllegalArgumentException(
+                    "No editor for argument \"" + name + "\" on module \""
+                            + action.getModuleId() + "\"");
+        }
+        return editor;
+    }
+
+    void confirmEdits() {
+        saveAndClose();
+    }
+
     private void saveAndClose() {
         Integer validatedSeedOffset = null;
         Map<String, Object> validatedArguments = new LinkedHashMap<>();
@@ -457,8 +471,7 @@ public class ModuleConfigDialog extends JDialog {
                 action.setArgument(entry.getKey(), entry.getValue());
             }
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Input",
-                    JOptionPane.ERROR_MESSAGE);
+            InvalidInputDialogs.show(this, ex.getMessage());
             return;
         }
 

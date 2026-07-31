@@ -6,14 +6,16 @@ import org.junit.jupiter.api.BeforeAll;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumericEditing;
 
 public abstract class ModuleConfigGuiTestSupport {
-    // Value adjustment popups block automated GUI tests on machines with a display
+    // Modal dialogs block automated GUI tests on machines with a display
     @BeforeAll
-    public static void suppressValueAdjustmentPopups() {
+    public static void suppressGuiDialogs() {
         NumericEditing.setNotifierForTests((parent, message) -> {});
+        InvalidInputDialogs.setNotifierForTests((parent, message) -> {});
     }
 
     @AfterAll
-    public static void restoreValueAdjustmentPopups() {
+    public static void restoreGuiDialogs() {
         NumericEditing.resetNotifierForTests();
+        InvalidInputDialogs.resetNotifierForTests();
     }
 }
