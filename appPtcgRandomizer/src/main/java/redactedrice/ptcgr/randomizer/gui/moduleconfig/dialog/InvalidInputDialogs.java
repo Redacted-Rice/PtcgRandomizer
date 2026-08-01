@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog;
 
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;

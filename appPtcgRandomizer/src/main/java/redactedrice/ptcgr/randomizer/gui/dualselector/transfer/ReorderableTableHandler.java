@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.dualselector;
+package redactedrice.ptcgr.randomizer.gui.dualselector.transfer;
 
 
 import java.awt.datatransfer.Transferable;

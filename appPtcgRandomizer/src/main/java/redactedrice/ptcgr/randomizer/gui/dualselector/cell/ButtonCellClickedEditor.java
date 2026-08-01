@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.dualselector;
+package redactedrice.ptcgr.randomizer.gui.dualselector.cell;
 
 import java.awt.Component;
 import java.awt.Window;

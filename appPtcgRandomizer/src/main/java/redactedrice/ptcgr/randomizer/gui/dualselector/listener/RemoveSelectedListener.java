@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.dualselector;
+package redactedrice.ptcgr.randomizer.gui.dualselector.listener;
 
 
 import java.awt.event.ActionEvent;
