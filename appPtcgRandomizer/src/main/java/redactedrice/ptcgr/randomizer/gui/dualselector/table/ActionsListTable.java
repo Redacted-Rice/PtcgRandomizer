@@ -3,9 +3,9 @@ package redactedrice.ptcgr.randomizer.gui.dualselector.table;
 import javax.swing.ListSelectionModel;
 
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.randomizer.gui.dualselector.ButtonCellClickedEditor;
-import redactedrice.ptcgr.randomizer.gui.dualselector.ButtonCellRenderer;
-import redactedrice.ptcgr.randomizer.gui.dualselector.DoubleClickCopy;
+import redactedrice.ptcgr.randomizer.gui.dualselector.cell.ButtonCellClickedEditor;
+import redactedrice.ptcgr.randomizer.gui.dualselector.cell.ButtonCellRenderer;
+import redactedrice.ptcgr.randomizer.gui.dualselector.listener.DoubleClickCopy;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableColumn;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
 

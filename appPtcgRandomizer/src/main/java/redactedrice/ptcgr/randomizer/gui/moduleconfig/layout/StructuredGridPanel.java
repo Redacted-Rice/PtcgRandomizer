@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.InvalidInputDialogs;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.InvalidInputDialogs;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.factory.ArgumentEditorFactory;
 
 import redactedrice.randomizer.lua.arguments.TypeDefinition;

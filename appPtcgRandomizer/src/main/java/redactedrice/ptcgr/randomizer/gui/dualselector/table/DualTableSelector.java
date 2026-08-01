@@ -19,18 +19,18 @@ import javax.swing.JTable;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.randomizer.gui.dualselector.CategoryChangedListener;
-import redactedrice.ptcgr.randomizer.gui.dualselector.CopySelectedListener;
-import redactedrice.ptcgr.randomizer.gui.dualselector.RemoveSelectedListener;
-import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionSelectedTableModel;
+import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CategoryChangedListener;
+import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CopySelectedListener;
+import redactedrice.ptcgr.randomizer.gui.dualselector.listener.RemoveSelectedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsListTableModel;
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsSelectedTableModel;
 
 public class DualTableSelector extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final ActionSelectedTableModel selectedModel;
+    private final ActionsSelectedTableModel selectedModel;
 
     public DualTableSelector(ActionBank actions) {
-        selectedModel = new ActionSelectedTableModel();
+        selectedModel = new ActionsSelectedTableModel();
         createUI(actions);
     }
 

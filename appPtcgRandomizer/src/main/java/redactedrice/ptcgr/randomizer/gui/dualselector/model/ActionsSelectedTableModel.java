@@ -5,10 +5,10 @@ import java.util.List;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 
-public class ActionSelectedTableModel extends ActionsTableModel {
+public class ActionsSelectedTableModel extends ActionsTableModel {
     private static final long serialVersionUID = 1L;
 
-    public ActionSelectedTableModel() {
+    public ActionsSelectedTableModel() {
         data.add(null);
     }
 
