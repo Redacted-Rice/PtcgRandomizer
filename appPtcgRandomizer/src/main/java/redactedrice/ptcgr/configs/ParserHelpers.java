@@ -3,7 +3,7 @@ package redactedrice.ptcgr.configs;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public final class ParserHelpers {
     private ParserHelpers() {}
@@ -12,13 +12,12 @@ public final class ParserHelpers {
         return sourceLabel + ":" + entryPath;
     }
 
-    public static void forEachEntryInList(Object rawList, String listFieldName, String sourceLabel,
-            WarningCollector warnings, BiConsumer<Map<String, Object>, String> handler) {
+    public static void forEachEntryInList(Object rawList, String listFieldName, String sourceLabel, BiConsumer<Map<String, Object>, String> handler) {
         if (rawList == null) {
             return;
         }
         if (!(rawList instanceof List<?> entries)) {
-            warnings.addWarning(sourceLabel + ": \"" + listFieldName + "\" must be a list.");
+            IssueTracker.addWarning(sourceLabel + ": \"" + listFieldName + "\" must be a list.");
             return;
         }
 
@@ -26,7 +25,7 @@ public final class ParserHelpers {
             String entryContext = entryContext(sourceLabel, listFieldName + "[" + i + "]");
             Object entry = entries.get(i);
             if (!(entry instanceof Map<?, ?> entryMap)) {
-                warnings.addWarning(entryContext + ": entry must be a mapping.");
+                IssueTracker.addWarning(entryContext + ": entry must be a mapping.");
                 continue;
             }
 
@@ -37,7 +36,7 @@ public final class ParserHelpers {
     }
 
     public static boolean parseBoolean(Object value, boolean defaultValue, String fieldName,
-            String entryLabel, WarningCollector warnings) {
+            String entryLabel) {
         if (value == null) {
             return defaultValue;
         }
@@ -45,7 +44,7 @@ public final class ParserHelpers {
             return bool;
         }
 
-        warnings.addWarning(entryLabel + ": field \"" + fieldName
+        IssueTracker.addWarning(entryLabel + ": field \"" + fieldName
                 + "\" must be a boolean; false will be assumed.");
         return false;
     }
@@ -57,16 +56,15 @@ public final class ParserHelpers {
         return value.toString().trim();
     }
 
-    public static String parseRequiredString(Object value, String fieldName, String entryLabel,
-            WarningCollector warnings) {
+    public static String parseRequiredString(Object value, String fieldName, String entryLabel) {
         if (value == null) {
-            warnings.addWarning(entryLabel + ": missing required field \"" + fieldName + "\".");
+            IssueTracker.addWarning(entryLabel + ": missing required field \"" + fieldName + "\".");
             return null;
         }
 
         String trimmed = value.toString().trim();
         if (trimmed.isEmpty()) {
-            warnings.addWarning(entryLabel + ": required field \"" + fieldName + "\" is empty.");
+            IssueTracker.addWarning(entryLabel + ": required field \"" + fieldName + "\" is empty.");
             return null;
         }
         return trimmed;

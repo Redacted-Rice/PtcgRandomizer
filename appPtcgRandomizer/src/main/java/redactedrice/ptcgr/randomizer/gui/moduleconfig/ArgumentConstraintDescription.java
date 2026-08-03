@@ -1,7 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
@@ -25,30 +25,29 @@ public final class ArgumentConstraintDescription {
         return formatStructuredConstraints(typeDef);
     }
 
-    public static void checkModuleConstraints(Module module, WarningCollector warnings) {
-        if (module == null || warnings == null) {
+    public static void checkModuleConstraints(Module module) {
+        if (module == null) {
             return;
         }
         for (ArgumentDefinition argDef : module.getArguments()) {
-            checkType(module, argDef.getName(), argDef.getTypeDefinition(), warnings);
+            checkType(module, argDef.getName(), argDef.getTypeDefinition());
         }
     }
 
-    private static void checkType(Module module, String path, TypeDefinition typeDef,
-            WarningCollector warnings) {
+    private static void checkType(Module module, String path, TypeDefinition typeDef) {
         if (typeDef.isList()) {
-            checkType(module, path + "[]", typeDef.getElementType(), warnings);
+            checkType(module, path + "[]", typeDef.getElementType());
             return;
         }
         if (typeDef.isTable()) {
-            checkType(module, path + " (key)", typeDef.getKeyType(), warnings);
-            checkType(module, path + " (value)", typeDef.getValueType(), warnings);
+            checkType(module, path + " (key)", typeDef.getKeyType());
+            checkType(module, path + " (value)", typeDef.getValueType());
             return;
         }
         if (!typeDef.isPrimitive() || !typeDef.declaresIgnoredConstraint()) {
             return;
         }
-        warnings.addWarning(String.format(
+        IssueTracker.addWarning(String.format(
                 "Module \"%s\" (%s) argument \"%s\": %s type only supports ANY constraint; ignoring %s.",
                 module.getName(), module.getId(), path,
                 typeDef.getBaseType().name().toLowerCase(),

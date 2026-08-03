@@ -18,7 +18,7 @@ import org.yaml.snakeyaml.Yaml;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 class YamlIOTest {
     @TempDir
@@ -51,12 +51,12 @@ class YamlIOTest {
         Path configFile = tempDir.resolve("ptcgr_configs.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         Config config = Config.readFromLoadedYamlMap(
-                YamlIO.load(tempDir.resolve("ptcgr_configs").toFile(), warnings),
-                tempDir.resolve("ptcgr_configs.yaml").getFileName().toString(), warnings);
+                YamlIO.load(tempDir.resolve("ptcgr_configs").toFile()),
+                tempDir.resolve("ptcgr_configs.yaml").getFileName().toString());
 
-        assertTrue(!warnings.hasWarnings());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals("7", config.getSeed());
     }
 
@@ -83,8 +83,8 @@ class YamlIOTest {
         Path invalidFile = tempDir.resolve("invalid.yaml");
         Files.writeString(invalidFile, "[]");
 
-        WarningCollector warnings = new WarningCollector(null);
-        assertEquals(null, YamlIO.load(invalidFile.toFile(), warnings));
+        IssueTracker.clear();
+        assertEquals(null, YamlIO.load(invalidFile.toFile()));
     }
 
     @Test
@@ -93,8 +93,8 @@ class YamlIOTest {
         Path output = tempDir.resolve("saved_rules.yaml");
         YamlIO.save(output.toFile(), root);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Map<String, Object> reloaded = YamlIO.load(output.toFile(), warnings);
+        IssueTracker.clear();
+        Map<String, Object> reloaded = YamlIO.load(output.toFile());
         assertEquals(root, reloaded);
     }
 }

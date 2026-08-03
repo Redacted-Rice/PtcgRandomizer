@@ -20,7 +20,7 @@ import redactedrice.randomizer.context.EnumDefinition;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
-import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 class ActionBankTest {
@@ -57,10 +57,10 @@ class ActionBankTest {
             // so they're resolvable by name for the config UI's ENUM argument dropdowns.
             wrapper.getSharedContext().registerEnum(CardType.class);
 
-            ErrorTracker.clearErrors();
+            IssueTracker.clear();
             wrapper.loadModules();
-            assertFalse(ErrorTracker.hasErrors(),
-                    () -> "Module requirement validation failed: " + ErrorTracker.getErrors());
+            assertFalse(IssueTracker.hasErrors(),
+                    () -> "Module requirement validation failed: " + IssueTracker.getErrors());
 
             ActionBank actionBank = new ActionBank(wrapper);
 

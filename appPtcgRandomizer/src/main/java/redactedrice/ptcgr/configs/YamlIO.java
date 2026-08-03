@@ -9,7 +9,7 @@ import java.util.Map;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 /**
  * Reads and writes files as YAML.
@@ -34,7 +34,7 @@ public final class YamlIO {
         }
     }
 
-    public static Map<String, Object> load(File file, WarningCollector warnings)
+    public static Map<String, Object> load(File file)
             throws IOException {
         File yamlFile = FileExtensionUtils.ensureExtension(file, FILE_EXTENSION);
         try (FileInputStream input = new FileInputStream(yamlFile)) {
@@ -42,7 +42,7 @@ public final class YamlIO {
             Yaml yaml = new Yaml();
             Object loaded = yaml.load(input);
             if (!(loaded instanceof Map<?, ?> loadedMap)) {
-                warnings.addWarning(yamlFile.getName() + ": config file root must be a mapping.");
+                IssueTracker.addWarning(yamlFile.getName() + ": config file root must be a mapping.");
                 return null;
             }
 

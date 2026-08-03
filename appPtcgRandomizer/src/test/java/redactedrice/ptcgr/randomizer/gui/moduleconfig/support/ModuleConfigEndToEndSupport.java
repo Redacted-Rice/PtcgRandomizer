@@ -12,7 +12,7 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.ModuleConfigDialog;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
-import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 public final class ModuleConfigEndToEndSupport {
@@ -39,11 +39,11 @@ public final class ModuleConfigEndToEndSupport {
                 new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
         wrapper.getSharedContext().registerEnum(CardType.class);
 
-        ErrorTracker.clearErrors();
+        IssueTracker.clear();
         wrapper.loadModules();
-        if (ErrorTracker.hasErrors()) {
+        if (IssueTracker.hasErrors()) {
             throw new IllegalStateException(
-                    "Module requirement validation failed: " + ErrorTracker.getErrors());
+                    "Module requirement validation failed: " + IssueTracker.getErrors());
         }
 
         return new DevModuleEnvironment(new ActionBank(wrapper));

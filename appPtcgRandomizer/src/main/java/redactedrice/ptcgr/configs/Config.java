@@ -11,7 +11,7 @@ import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 
 /**
@@ -87,22 +87,21 @@ public final class Config {
                 convertScripts(actionBank.getPostScripts()), rulesConfig);
     }
 
-    public static Config readFromLoadedYamlMap(Map<String, Object> root, String sourceLabel,
-            WarningCollector warnings) {
+    public static Config readFromLoadedYamlMap(Map<String, Object> root, String sourceLabel) {
         if (root == null) {
-            warnings.addWarning(sourceLabel + ": config file is empty.");
+            IssueTracker.addWarning(sourceLabel + ": config file is empty.");
             return empty();
         }
 
-        int formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY), warnings);
-        String appVersion = parseAppVersion(root.get(APP_VERSION_KEY), warnings);
-        String seed = parseSeed(root.get(SEED_KEY), warnings);
-        List<ActionConfig> actions = parseActions(root.get(ACTIONS_KEY), warnings);
+        int formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY));
+        String appVersion = parseAppVersion(root.get(APP_VERSION_KEY));
+        String seed = parseSeed(root.get(SEED_KEY));
+        List<ActionConfig> actions = parseActions(root.get(ACTIONS_KEY));
         List<ScriptConfig> preScripts =
-                parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY, warnings);
+                parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY);
         List<ScriptConfig> postScripts =
-                parseScripts(root.get(POSTSCRIPTS_KEY), POSTSCRIPTS_KEY, warnings);
-        RulesConfig rules = parseRules(root.get(RULES_KEY), sourceLabel, warnings);
+                parseScripts(root.get(POSTSCRIPTS_KEY), POSTSCRIPTS_KEY);
+        RulesConfig rules = parseRules(root.get(RULES_KEY), sourceLabel);
         return new Config(formatVersion, appVersion, seed, actions, preScripts, postScripts, rules);
     }
 
@@ -166,10 +165,10 @@ public final class Config {
         return rulesConfig;
     }
 
-    public List<Action> getActions(ActionBank actionBank, WarningCollector warnings) {
+    public List<Action> getActions(ActionBank actionBank) {
         List<Action> actions = new ArrayList<>();
         for (ActionConfig actionConfig : getActionConfigs()) {
-            Action action = actionConfig.toAction(actionBank, warnings);
+            Action action = actionConfig.toAction(actionBank);
             if (action != null) {
                 actions.add(action);
             }
@@ -177,69 +176,68 @@ public final class Config {
         return actions;
     }
 
-    public void checkScripts(ActionBank actionBank, WarningCollector warnings) {
+    public void checkScripts(ActionBank actionBank) {
         ScriptConfig.checkAndWarnDifferences(PRESCRIPTS_KEY, preScriptConfigs,
-                actionBank.getPreScripts(), actionBank, warnings);
+                actionBank.getPreScripts(), actionBank);
         ScriptConfig.checkAndWarnDifferences(POSTSCRIPTS_KEY, postScriptConfigs,
-                actionBank.getPostScripts(), actionBank, warnings);
+                actionBank.getPostScripts(), actionBank);
     }
 
-    private static int parseFormatVersion(Object value, WarningCollector warnings) {
+    private static int parseFormatVersion(Object value) {
         Integer version = ParserHelpers.parseInteger(value);
         if (version == null) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     "Missing or invalid version; assuming version " + CURRENT_FORMAT_VERSION + ".");
             return CURRENT_FORMAT_VERSION;
         }
         if (version > CURRENT_FORMAT_VERSION) {
-            warnings.addWarning("Config version " + version + " is newer than supported version "
+            IssueTracker.addWarning("Config version " + version + " is newer than supported version "
                     + CURRENT_FORMAT_VERSION + ".");
         }
         return version;
     }
 
-    private static void checkAndWarnAppVersionMismatch(String savedAppVersion,
-            WarningCollector warnings) {
+    private static void checkAndWarnAppVersionMismatch(String savedAppVersion) {
         if (savedAppVersion == null || savedAppVersion.isBlank()) {
-            warnings.addWarning("Config is missing an appVersion.");
+            IssueTracker.addWarning("Config is missing an appVersion.");
             return;
         }
         if (!savedAppVersion.equals(PtcgRandomizerVersion.VERSION)) {
-            warnings.addWarning("Config was saved with PtcgRandomizer " + savedAppVersion
+            IssueTracker.addWarning("Config was saved with PtcgRandomizer " + savedAppVersion
                     + "; current version is " + PtcgRandomizerVersion.VERSION + ".");
         }
     }
 
-    private static String parseAppVersion(Object value, WarningCollector warnings) {
+    private static String parseAppVersion(Object value) {
         if (value == null) {
-            warnings.addWarning("Config is missing an appVersion.");
+            IssueTracker.addWarning("Config is missing an appVersion.");
             return null;
         }
         if (value instanceof String appVersionText) {
             if (appVersionText.isBlank()) {
-                warnings.addWarning("appVersion cannot be blank.");
+                IssueTracker.addWarning("appVersion cannot be blank.");
                 return null;
             }
-            checkAndWarnAppVersionMismatch(appVersionText, warnings);
+            checkAndWarnAppVersionMismatch(appVersionText);
             return appVersionText;
         }
         if (value instanceof Number number) {
             String appVersion = String.valueOf(number);
-            checkAndWarnAppVersionMismatch(appVersion, warnings);
+            checkAndWarnAppVersionMismatch(appVersion);
             return appVersion;
         }
-        warnings.addWarning("appVersion must be a string or number.");
+        IssueTracker.addWarning("appVersion must be a string or number.");
         return null;
     }
 
-    private static String parseSeed(Object value, WarningCollector warnings) {
+    private static String parseSeed(Object value) {
         if (value == null) {
-            warnings.addWarning("Config is missing seed; \"Random\" will be used.");
+            IssueTracker.addWarning("Config is missing seed; \"Random\" will be used.");
             return "Random";
         }
         if (value instanceof String seedText) {
             if (seedText.isBlank()) {
-                warnings.addWarning("Config seed cannot be blank; \"Random\" will be used.");
+                IssueTracker.addWarning("Config seed cannot be blank; \"Random\" will be used.");
                 return "Random";
             }
             return seedText;
@@ -247,17 +245,17 @@ public final class Config {
         if (value instanceof Number number) {
             return String.valueOf(number.longValue());
         }
-        warnings.addWarning("Config seed must be a string or number; \"Random\" will be used.");
+        IssueTracker.addWarning("Config seed must be a string or number; \"Random\" will be used.");
         return "Random";
     }
 
-    private static List<ActionConfig> parseActions(Object value, WarningCollector warnings) {
+    private static List<ActionConfig> parseActions(Object value) {
         if (value == null) {
-            warnings.addWarning("Config is missing actions; ignoring actions.");
+            IssueTracker.addWarning("Config is missing actions; ignoring actions.");
             return List.of();
         }
         if (!(value instanceof List<?> actionNodes)) {
-            warnings.addWarning("Actions must be a list; ignoring actions.");
+            IssueTracker.addWarning("Actions must be a list; ignoring actions.");
             return List.of();
         }
 
@@ -266,12 +264,12 @@ public final class Config {
             Object actionNode = actionNodes.get(i);
             String entryLabel = ACTIONS_KEY + "[" + i + "]";
             if (!(actionNode instanceof Map<?, ?> actionMap)) {
-                warnings.addWarning(entryLabel + ": action entry must be a mapping.");
+                IssueTracker.addWarning(entryLabel + ": action entry must be a mapping.");
                 continue;
             }
             @SuppressWarnings("unchecked")
             ActionConfig parsed = ActionConfig
-                    .readFromLoadedYamlMap((Map<String, Object>) actionMap, warnings, entryLabel);
+                    .readFromLoadedYamlMap((Map<String, Object>) actionMap, entryLabel);
             if (parsed != null) {
                 actions.add(parsed);
             }
@@ -279,15 +277,14 @@ public final class Config {
         return actions;
     }
 
-    private static List<ScriptConfig> parseScripts(Object value, String sectionKey,
-            WarningCollector warnings) {
+    private static List<ScriptConfig> parseScripts(Object value, String sectionKey) {
         if (value == null) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     "Config is missing " + sectionKey + "; ignoring " + sectionKey + ".");
             return List.of();
         }
         if (!(value instanceof List<?> scriptNodes)) {
-            warnings.addWarning(sectionKey + " must be a list; ignoring " + sectionKey + ".");
+            IssueTracker.addWarning(sectionKey + " must be a list; ignoring " + sectionKey + ".");
             return List.of();
         }
 
@@ -296,12 +293,12 @@ public final class Config {
             Object scriptNode = scriptNodes.get(i);
             String entryLabel = sectionKey + "[" + i + "]";
             if (!(scriptNode instanceof Map<?, ?> scriptMap)) {
-                warnings.addWarning(entryLabel + ": script entry must be a mapping.");
+                IssueTracker.addWarning(entryLabel + ": script entry must be a mapping.");
                 continue;
             }
             @SuppressWarnings("unchecked")
             ScriptConfig parsed = ScriptConfig
-                    .readFromLoadedYamlMap((Map<String, Object>) scriptMap, warnings, entryLabel);
+                    .readFromLoadedYamlMap((Map<String, Object>) scriptMap, entryLabel);
             if (parsed != null) {
                 scripts.add(parsed);
             }
@@ -309,18 +306,17 @@ public final class Config {
         return scripts;
     }
 
-    private static RulesConfig parseRules(Object value, String sourceLabel,
-            WarningCollector warnings) {
+    private static RulesConfig parseRules(Object value, String sourceLabel) {
         if (value == null) {
             return RulesConfig.empty();
         }
         if (!(value instanceof Map<?, ?> rulesMap)) {
-            warnings.addWarning("Rules must be a mapping; using empty rules.");
+            IssueTracker.addWarning("Rules must be a mapping; using empty rules.");
             return RulesConfig.empty();
         }
 
         @SuppressWarnings("unchecked")
         Map<String, Object> typedRules = (Map<String, Object>) rulesMap;
-        return RulesConfig.readFromLoadedYamlMap(typedRules, sourceLabel, warnings);
+        return RulesConfig.readFromLoadedYamlMap(typedRules, sourceLabel);
     }
 }

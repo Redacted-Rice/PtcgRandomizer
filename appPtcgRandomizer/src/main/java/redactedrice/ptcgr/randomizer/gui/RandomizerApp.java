@@ -27,9 +27,10 @@ import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.Config;
+import redactedrice.randomizer.utils.IssueTracker;
 
 import java.util.List;
 import java.util.Map;
@@ -253,15 +254,15 @@ public class RandomizerApp {
         File configFile = FileExtensionUtils.ensureExtension(loadConfigChooser.getSelectedFile(),
                 YamlIO.FILE_EXTENSION);
         try {
-            WarningCollector warnings = new WarningCollector(frmTradingCard);
-            Map<String, Object> yaml = YamlIO.load(configFile, warnings);
-            Config config = Config.readFromLoadedYamlMap(yaml, configFile.getName(), warnings);
+            IssueTracker.clear();
+            Map<String, Object> yaml = YamlIO.load(configFile);
+            Config config = Config.readFromLoadedYamlMap(yaml, configFile.getName());
             saveSetSeedVal.setText(config.getSeed());
-            config.checkScripts(randomizer.getActionBank(), warnings);
-            randomizer.replacePendingRules(config.getRulesConfig());
-            List<Action> actions = config.getActions(randomizer.getActionBank(), warnings);
+            config.checkScripts(randomizer.getActionBank());
+            List<Action> actions = config.getActions(randomizer.getActionBank());
             dualPanel.setSelectedActions(actions);
-            warnings.logAndDisplay("config load", true);
+            IssuePresenter.displayWarnings(frmTradingCard, "config load");
+            randomizer.replacePendingRules(config.getRulesConfig());
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),

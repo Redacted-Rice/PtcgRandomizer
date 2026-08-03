@@ -15,7 +15,7 @@ import org.junit.jupiter.api.TestInfo;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
-import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.IssueTracker;
 
 class PtcgBundledResourcesRequirementsTest {
     private File workDir;
@@ -53,12 +53,12 @@ class PtcgBundledResourcesRequirementsTest {
         LuaRandomizerWrapper wrapper =
                 new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
 
-        ErrorTracker.clearErrors();
+        IssueTracker.clear();
         int loaded = wrapper.loadModules();
 
         assertTrue(loaded > 0, "Expected bundled modules to load");
-        assertFalse(ErrorTracker.hasErrors(),
-                () -> "Module requirement validation failed: " + ErrorTracker.getErrors());
+        assertFalse(IssueTracker.hasErrors(),
+                () -> "Module requirement validation failed: " + IssueTracker.getErrors());
     }
 
     @Test
@@ -107,12 +107,12 @@ class PtcgBundledResourcesRequirementsTest {
             LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
                     null, null, requirements);
 
-            ErrorTracker.clearErrors();
+            IssueTracker.clear();
             int loaded = wrapper.loadModules();
 
             assertTrue(loaded > 0, "Expected bundled and dev modules to load");
-            assertFalse(ErrorTracker.hasErrors(),
-                    () -> "Module requirement validation failed: " + ErrorTracker.getErrors());
+            assertFalse(IssueTracker.hasErrors(),
+                    () -> "Module requirement validation failed: " + IssueTracker.getErrors());
             assertNotNull(wrapper.getModule("dev_test_int_args"));
             assertNotNull(wrapper.getModule("dev_test_double_args"));
             assertNotNull(wrapper.getModule("dev_test_string_args"));

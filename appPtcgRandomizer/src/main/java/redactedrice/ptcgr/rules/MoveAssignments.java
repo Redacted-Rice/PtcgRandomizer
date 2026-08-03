@@ -9,7 +9,7 @@ import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public class MoveAssignments {
     private static final String ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX = ":assignment";
@@ -30,13 +30,13 @@ public class MoveAssignments {
         assignmentsByCardId.clear();
     }
 
-    public void assignSpecifiedMoves(CardGroup<MonsterCard> cards, WarningCollector warnings) {
+    public void assignSpecifiedMoves(CardGroup<MonsterCard> cards) {
         CardGroup<MonsterCard> foundCards = cards.withIds(assignmentsByCardId.keySet());
         for (MonsterCard card : foundCards.iterable()) {
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
                 // There shouldn't be any locked moves at this point but override anyways
-                card.setMove(assign.getMove(), assign.getMoveSlot(), true, warnings);
+                card.setMove(assign.getMove(), assign.getMoveSlot(), true);
                 card.setMoveLockedViaAssignment(assign.getMoveSlot(), true);
             }
         }
@@ -69,7 +69,7 @@ public class MoveAssignments {
     }
 
     // Internal function behind all the adding fns
-    private void add(MoveAssignment assignment, String cardLabel, WarningCollector warnings) {
+    private void add(MoveAssignment assignment, String cardLabel) {
         List<MoveAssignment> cardAssignments = assignmentsByCardId
                 .computeIfAbsent(assignment.getCardId(), ll -> new LinkedList<>());
         for (MoveAssignment existing : cardAssignments) {
@@ -79,34 +79,25 @@ public class MoveAssignments {
             if (existing.hasSameSettings(assignment)) {
                 return;
             }
-            warnConflictingAssignment(assignment, cardLabel, warnings);
+            warnConflictingAssignment(assignment, cardLabel);
             return;
         }
         cardAssignments.add(assignment);
     }
 
-    public void add(MoveAssignment assignment, WarningCollector warnings) {
-        add(assignment, assignment.getCardId().toString(), warnings);
+    public void add(MoveAssignment assignment) {
+        add(assignment, assignment.getCardId().toString());
     }
 
     public void addMoveAssignment(MonsterCard targetCard, int moveSlot0Based, Move move,
             String sourceFileName) {
-        addMoveAssignment(targetCard, moveSlot0Based, move, sourceFileName, null);
-    }
-
-    public void addMoveAssignment(MonsterCard targetCard, int moveSlot0Based, Move move,
-            String sourceFileName, WarningCollector warnings) {
         MoveAssignment assign =
                 new MoveAssignment(targetCard.id, moveSlot0Based, move, sourceFileName);
-        add(assign, targetCard.name.toString(), warnings);
+        add(assign, targetCard.name.toString());
     }
 
-    private static void warnConflictingAssignment(MoveAssignment assignment, String cardLabel,
-            WarningCollector warnings) {
-        if (warnings == null) {
-            return;
-        }
-        warnings.addWarning("Conflicting assignment for card \"" + cardLabel + "\" at slot "
+    private static void warnConflictingAssignment(MoveAssignment assignment, String cardLabel) {
+        IssueTracker.addWarning("Conflicting assignment for card \"" + cardLabel + "\" at slot "
                 + (assignment.getMoveSlot() + 1) + " in " + assignment.getSourceFileName()
                 + "; keeping the first entry and ignoring the duplicate.");
     }

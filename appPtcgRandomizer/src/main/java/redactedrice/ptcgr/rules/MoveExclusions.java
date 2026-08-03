@@ -10,7 +10,7 @@ import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public class MoveExclusions {
     private final Map<CardId, List<MoveExclusion>> exclByCardId;
@@ -96,13 +96,6 @@ public class MoveExclusions {
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
             boolean excludeFromRandomization, String sourceFileName, CardGroup<MonsterCard> cards,
             MoveAssignments assignments) {
-        addMoveExclusion(cardId, moveName, removeFromPool, excludeFromRandomization, sourceFileName,
-                cards, assignments, null);
-    }
-
-    public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
-            boolean excludeFromRandomization, String sourceFileName, CardGroup<MonsterCard> cards,
-            MoveAssignments assignments, WarningCollector warnings) {
         MoveExclusion excl = new MoveExclusion(cardId, moveName, removeFromPool,
                 excludeFromRandomization, sourceFileName);
         List<MoveExclusion> bucket;
@@ -121,12 +114,10 @@ public class MoveExclusions {
             if (existing.hasSameSettings(excl)) {
                 return;
             }
-            if (warnings != null) {
-                String targetLabel = excl.isCardIdSet() ? "card \"" + cardId + "\"" : "move";
-                warnings.addWarning("Conflicting exclusion for " + targetLabel + " \"" + moveName
-                        + "\" in " + sourceFileName
-                        + "; keeping the first entry and ignoring the duplicate.");
-            }
+            String targetLabel = excl.isCardIdSet() ? "card \"" + cardId + "\"" : "move";
+            IssueTracker.addWarning("Conflicting exclusion for " + targetLabel + " \"" + moveName
+                    + "\" in " + sourceFileName
+                    + "; keeping the first entry and ignoring the duplicate.");
             return;
         }
         add(excl, cards, assignments);
