@@ -18,7 +18,7 @@ import javax.swing.JTextField;
 
 import org.junit.jupiter.api.Test;
 
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigGuiTestSupport;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigGuiTestSupport;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridModel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridPanel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridTestSupport;
