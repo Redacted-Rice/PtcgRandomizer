@@ -1,4 +1,4 @@
-package redactedrice.ptcgr.randomizer.gui.moduleconfig;
+package redactedrice.ptcgr.randomizer.gui.moduleconfig.factory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,15 +19,18 @@ import org.junit.jupiter.api.Test;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumericEditing;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.factory.ArgumentEditorFactory;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridPanel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridPanel;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigGuiTestSupport;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;

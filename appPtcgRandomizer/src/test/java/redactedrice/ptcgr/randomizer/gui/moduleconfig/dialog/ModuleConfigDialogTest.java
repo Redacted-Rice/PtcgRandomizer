@@ -19,9 +19,9 @@ import redactedrice.ptcgr.configs.modules.ActionArgumentsConfig;
 import redactedrice.ptcgr.configs.modules.ActionConfig;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigEndToEndSupport;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.ModuleConfigGuiTestSupport;
-import redactedrice.ptcgr.randomizer.gui.moduleconfig.DevModuleEnvironment;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.DevModuleEnvironment;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigEndToEndSupport;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigGuiTestSupport;
 import redactedrice.ptcgr.utils.WarningCollector;
 import redactedrice.randomizer.lua.ExecutionRequest;
 
