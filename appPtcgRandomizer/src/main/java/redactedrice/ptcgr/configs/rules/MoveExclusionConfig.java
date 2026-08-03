@@ -7,7 +7,7 @@ import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveExclusion;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public final class MoveExclusionConfig {
     static final String REMOVE_FROM_POOL_KEY = "remove_from_pool";
@@ -43,16 +43,14 @@ public final class MoveExclusionConfig {
                 exclusion.isExcludeFromRandomization(), exclusion.getMoveName(), cardSpecifier);
     }
 
-    public static MoveExclusionConfig readFromLoadedYamlMap(Map<String, Object> node,
-            WarningCollector warnings, String entryLabel) {
+    public static MoveExclusionConfig readFromLoadedYamlMap(Map<String, Object> node, String entryLabel) {
         boolean removeFromPool = ParserHelpers.parseBoolean(node.get(REMOVE_FROM_POOL_KEY), false,
-                REMOVE_FROM_POOL_KEY, entryLabel, warnings);
+                REMOVE_FROM_POOL_KEY, entryLabel);
         boolean excludeFromRandomization =
                 ParserHelpers.parseBoolean(node.get(EXCLUDE_FROM_RANDOMIZATION_KEY), false,
-                        EXCLUDE_FROM_RANDOMIZATION_KEY, entryLabel, warnings);
+                        EXCLUDE_FROM_RANDOMIZATION_KEY, entryLabel);
 
-        String move = ParserHelpers.parseRequiredString(node.get(MOVE_KEY), MOVE_KEY, entryLabel,
-                warnings);
+        String move = ParserHelpers.parseRequiredString(node.get(MOVE_KEY), MOVE_KEY, entryLabel);
         if (move == null) {
             return null;
         }
@@ -77,10 +75,10 @@ public final class MoveExclusionConfig {
     }
 
     public MoveExclusion toMoveExclusion(CardGroup<MonsterCard> cards, String sourceLabel,
-            String entryContext, WarningCollector warnings) {
+            String entryContext) {
         if (card.isEmpty()) {
             if (!cards.isKnownMoveName(move)) {
-                warnings.addWarning(entryContext + ": failed to find any card with move \"" + move
+                IssueTracker.addWarning(entryContext + ": failed to find any card with move \"" + move
                         + "\"; entry skipped.");
                 return null;
             }
@@ -88,13 +86,13 @@ public final class MoveExclusionConfig {
                     sourceLabel);
         }
 
-        MonsterCard monsterCard = cards.resolveCard(card, entryContext, warnings);
+        MonsterCard monsterCard = cards.resolveCard(card, entryContext);
         if (monsterCard == null) {
             return null;
         }
 
         if (!cards.cardHasMove(monsterCard, move)) {
-            warnings.addWarning(entryContext + ": failed to find move \"" + move + "\" on card \""
+            IssueTracker.addWarning(entryContext + ": failed to find move \"" + move + "\" on card \""
                     + card + "\"; entry skipped.");
             return null;
         }

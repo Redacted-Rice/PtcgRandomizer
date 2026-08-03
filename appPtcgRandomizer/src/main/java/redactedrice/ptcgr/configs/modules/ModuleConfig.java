@@ -2,7 +2,7 @@ package redactedrice.ptcgr.configs.modules;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 
 class ModuleConfig {
@@ -25,15 +25,15 @@ class ModuleConfig {
         return node;
     }
 
-    static String parseModule(Object value, WarningCollector warnings, String entryLabel) {
+    static String parseModule(Object value, String entryLabel) {
         if (!(value instanceof String moduleName) || moduleName.isBlank()) {
-            warnings.addWarning(entryLabel + ": missing or invalid module name.");
+            IssueTracker.addWarning(entryLabel + ": missing or invalid module name.");
             return null;
         }
         return moduleName;
     }
 
-    static String parseVersion(Object value, WarningCollector warnings, String entryLabel) {
+    static String parseVersion(Object value, String entryLabel) {
         if (value == null) {
             return null;
         }
@@ -43,24 +43,23 @@ class ModuleConfig {
         if (value instanceof Number number) {
             return String.valueOf(number);
         }
-        warnings.addWarning(entryLabel + ": version must be a string or number.");
+        IssueTracker.addWarning(entryLabel + ": version must be a string or number.");
         return null;
     }
 
-    protected void checkAndWarnModuleVersion(String entryLabel, Module module,
-            WarningCollector warnings) {
+    protected void checkAndWarnModuleVersion(String entryLabel, Module module) {
         if (version == null || version.isBlank()) {
-            warnings.addWarning(entryLabel + " does not record a version.");
+            IssueTracker.addWarning(entryLabel + " does not record a version.");
             return;
         }
         if (UNKNOWN_VERSION.equals(version)) {
-            warnings.addWarning(entryLabel + " was saved with an unknown version.");
+            IssueTracker.addWarning(entryLabel + " was saved with an unknown version.");
             return;
         }
 
         String currentVersion = module.getVersion();
         if (!version.equals(currentVersion)) {
-            warnings.addWarning(entryLabel + " was saved as version " + version
+            IssueTracker.addWarning(entryLabel + " was saved as version " + version
                     + "; current version is " + currentVersion + ".");
         }
     }

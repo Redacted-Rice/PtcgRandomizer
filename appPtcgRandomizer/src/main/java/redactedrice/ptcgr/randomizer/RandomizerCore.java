@@ -22,13 +22,13 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescript
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.ExecutionResult;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
-import redactedrice.randomizer.utils.ErrorTracker;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.Logger;
 
 public class RandomizerCore {
@@ -42,28 +42,29 @@ public class RandomizerCore {
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
     private final PtcgBundledResources bundledResources;
-    WarningCollector warnings;
+    private final Component popupParent;
 
     public RandomizerCore(Component toCenterPopupsOn) {
-        warnings = new WarningCollector(toCenterPopupsOn);
+        popupParent = toCenterPopupsOn;
         bundledResources = new PtcgBundledResources();
         bundledResources.installAll();
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
         checkLoadedModuleArgumentConstraints(actionBank);
-        pendingRules = loadBundledDefaultRules(toCenterPopupsOn);
+        pendingRules = loadBundledDefaultRules();
     }
 
-    private RulesConfig loadBundledDefaultRules(Component toCenterPopupsOn) {
+    private RulesConfig loadBundledDefaultRules() {
+        IssueTracker.clear();
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
-            RulesConfig bundled = RulesConfig.readFromLoadedYamlMap(
-                    YamlIO.load(rulesFile, warnings), "Unsupported moves", warnings);
-            warnings.logAndDisplay("default rules", true);
+            RulesConfig bundled =
+                    RulesConfig.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
+            IssuePresenter.displayWarnings(popupParent, "default rules");
             return bundled;
         } catch (IOException e) {
-            warnings.addWarning("Failed to load bundled default rules: " + e.getMessage());
-            warnings.logAndDisplay("default rules", true);
+            IssueTracker.addWarning("Failed to load bundled default rules: " + e.getMessage());
+            IssuePresenter.displayWarnings(popupParent, "default rules");
             return RulesConfig.empty();
         }
     }
@@ -107,6 +108,7 @@ public class RandomizerCore {
 
         Logger.setEnabled(true);
 
+        IssueTracker.clear();
         int loadedCount = luaRandomizer.loadModules();
         if (loadedCount > 0) {
             System.out.println("Loaded " + loadedCount + " Lua modules");
@@ -114,20 +116,16 @@ public class RandomizerCore {
             System.out.println("No Lua modules found in " + modulesDir.getAbsolutePath());
         }
 
-        if (ErrorTracker.hasErrors()) {
-            for (String error : ErrorTracker.getErrors()) {
-                warnings.addWarning("Module requirement validation failed: " + error);
-            }
-            warnings.logAndDisplay("module requirements", true);
-        }
-        logErrorTrackerMessages("Errors loading Lua modules:");
+        // Already logged on add. Popup summarizes then clears the phase store
+        IssuePresenter.finishPhase(popupParent, "module load");
     }
 
     private void checkLoadedModuleArgumentConstraints(ActionBank bank) {
+        IssueTracker.clear();
         for (Action action : bank.get()) {
-            ArgumentConstraintDescription.checkModuleConstraints(action.getModule(), warnings);
+            ArgumentConstraintDescription.checkModuleConstraints(action.getModule());
         }
-        warnings.logAndDisplay("loaded module scripts", true);
+        IssuePresenter.displayWarnings(popupParent, "loaded module scripts");
     }
 
     public boolean isRomLoaded() {
@@ -137,8 +135,9 @@ public class RandomizerCore {
     public boolean openRom(File romFile, Component toCenterPopupsOn) {
         try {
             romData = RomIO.readFromFile(romFile);
-            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards(), warnings);
-            warnings.logAndDisplay("loaded rules", true);
+            IssueTracker.clear();
+            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
+            IssuePresenter.displayWarnings(toCenterPopupsOn, "loaded rules");
             return true;
         } catch (IOException e) {
             romData = null;
@@ -154,8 +153,9 @@ public class RandomizerCore {
     public void replacePendingRules(RulesConfig rulesConfig) {
         pendingRules = rulesConfig;
         if (romData != null) {
-            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards(), warnings);
-            warnings.logAndDisplay("loaded rules", true);
+            IssueTracker.clear();
+            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
+            IssuePresenter.displayWarnings(popupParent, "loaded rules");
         }
     }
 
@@ -219,7 +219,8 @@ public class RandomizerCore {
         // Ensure the rom data is back to the original data (for multiple randomizations
         // without reloading) and prepare it to be modified which includes reapplying
         // the rules
-        romData.prepareForModification(warnings);
+        IssueTracker.clear();
+        romData.prepareForModification();
 
         // Expose objects to be modified
         // TODO later: Add original vs modified and add more
@@ -234,35 +235,26 @@ public class RandomizerCore {
 
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
-        boolean success = true;
         for (Action action : actions) {
             ExecutionRequest request = action.toExecutionRequest();
             if (luaRandomizer.getModule(request.getModuleId()) == null) {
-                Logger.error("Module not found: " + request.getModuleId());
-                success = false;
+                IssueTracker.addError("Module not found: " + request.getModuleId());
                 continue;
             }
             executionRequests.add(request);
         }
 
         if (executionRequests.isEmpty()) {
+            IssuePresenter.finishPhase(popupParent, "randomize");
             return false;
         }
 
-        // Execute modules and check for errors
+        // Execute modules — failures are logged immediately via IssueTracker.addError
         List<ExecutionResult> results =
                 luaRandomizer.executeModules(executionRequests, context, seed);
-        logErrorTrackerMessages("Errors executing Lua modules:");
-        if (ErrorTracker.hasErrors()) {
-            success = false;
-        }
 
         for (ExecutionResult result : results) {
-            if (!result.isSuccess()) {
-                Logger.error(
-                        "Module " + result.getModuleId() + " failed: " + result.getErrorMessage());
-                success = false;
-            } else {
+            if (result.isSuccess()) {
                 ExecutionRequest request = result.getRequest();
                 if (request != null && request.usesSeed()) {
                     Logger.info("Module " + result.getModuleId() + " executed with seed "
@@ -271,20 +263,15 @@ public class RandomizerCore {
                     Logger.info("Module " + result.getModuleId() + " executed");
                 }
             }
+            // Failures already logged/collected when ModuleExecutor called IssueTracker.addError
         }
+
+        boolean success = !IssueTracker.hasErrors();
+        IssuePresenter.finishPhase(popupParent, "randomize");
         return success;
     }
 
     private static boolean hasSelectedActions(List<Action> actions) {
         return actions != null && !actions.isEmpty();
-    }
-
-    private static void logErrorTrackerMessages(String heading) {
-        if (ErrorTracker.hasErrors()) {
-            Logger.error(heading);
-            for (String error : ErrorTracker.getErrors()) {
-                Logger.error("  " + error);
-            }
-        }
     }
 }

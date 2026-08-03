@@ -31,7 +31,7 @@ import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
@@ -104,9 +104,9 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
-        assertTrue(!warnings.hasWarnings());
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals("987654321", config.getSeed());
         assertEquals(PtcgRandomizerVersion.VERSION, config.getAppVersion());
         assertEquals(1, config.getActionConfigs().size());
@@ -131,15 +131,15 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         assertEquals(1, config.getActionConfigs().size());
         assertEquals(1, config.getActionConfigs().get(0).getConfig().getArguments().get("numMoves"));
 
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
     }
@@ -160,13 +160,13 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
@@ -188,17 +188,17 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("numMoves") && w.contains("invalid value")
                         && w.contains("using default value (2)")));
     }
@@ -219,17 +219,17 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("tag_module", "0.9",
                 List.of(new ArgumentDefinition("tags",
                         TypeDefinition.listOf(TypeDefinition.string()), null)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("tags") && w.contains("invalid value")
                         && w.contains("using default value ([])")));
     }
@@ -249,17 +249,17 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("tag_module", "0.9",
                 List.of(new ArgumentDefinition("tags",
                         TypeDefinition.listOf(TypeDefinition.string()), null)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("tags") && w.contains("not specified")
                         && w.contains("using default value ([])")));
     }
@@ -281,16 +281,16 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("bogusArg") && w.contains("ignoring")));
     }
 
@@ -309,16 +309,16 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank, warnings);
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("numMoves") && w.contains("not specified")
                         && w.contains("using default value (2)")));
     }
@@ -340,9 +340,9 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
-        assertTrue(!warnings.hasWarnings());
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals(1, config.getPreScriptConfigs().size());
         assertEquals("changedetector_setup", config.getPreScriptConfigs().get(0).getModule());
         assertEquals(1, config.getPostScriptConfigs().size());
@@ -364,9 +364,9 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
-        assertTrue(!warnings.hasWarnings());
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals("987654321", config.getSeed());
         assertEquals(1, config.getActionConfigs().size());
         assertEquals("shuffle_hp", config.getActionConfigs().get(0).getModule());
@@ -382,15 +382,15 @@ class ConfigTest {
 
         ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
 
-        WarningCollector warnings = new WarningCollector(null);
-        var actions = config.getActions(actionBank, warnings);
+        IssueTracker.clear();
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("was saved as version 0.1")));
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("current version is 0.9")));
-        assertFalse(warnings.getWarnings().stream().anyMatch(w -> w.contains("appVersion")));
+        assertFalse(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("appVersion")));
     }
 
     @Test
@@ -403,12 +403,12 @@ class ConfigTest {
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")),
                 List.of(scriptWithVersion("changedetector_detect", "0.2", "module")));
 
-        WarningCollector warnings = new WarningCollector(null);
-        config.checkScripts(actionBank, warnings);
+        IssueTracker.clear();
+        config.checkScripts(actionBank);
 
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("prescripts")
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("prescripts")
                 && w.contains("changedetector_setup") && w.contains("0.0")));
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("postscripts")
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("postscripts")
                 && w.contains("changedetector_detect") && w.contains("0.2")));
     }
 
@@ -420,10 +420,10 @@ class ConfigTest {
 
         ActionBank actionBank = testActionBank(null, null, List.of(), List.of(), List.of());
 
-        WarningCollector warnings = new WarningCollector(null);
-        config.checkScripts(actionBank, warnings);
+        IssueTracker.clear();
+        config.checkScripts(actionBank);
 
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("missing_prescript") && w.contains("not loaded")));
     }
 
@@ -434,10 +434,10 @@ class ConfigTest {
         ActionBank actionBank = testActionBank(null, null, List.of(),
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")), List.of());
 
-        WarningCollector warnings = new WarningCollector(null);
-        config.checkScripts(actionBank, warnings);
+        IssueTracker.clear();
+        config.checkScripts(actionBank);
 
-        assertTrue(warnings.getWarnings().stream().anyMatch(
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(
                 w -> w.contains("changedetector_setup") && w.contains("not in the config")));
     }
 
@@ -454,10 +454,10 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
 
-        assertTrue(!warnings.hasWarnings());
+        assertTrue(!IssueTracker.hasWarnings());
         assertTrue(config.getPreScriptConfigs().isEmpty());
         assertTrue(config.getPostScriptConfigs().isEmpty());
     }
@@ -475,12 +475,12 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        loadConfig(configFile.toFile());
 
         assertTrue(
-                warnings.getWarnings().stream().anyMatch(w -> w.contains("PtcgRandomizer 0.1.0")));
-        assertTrue(warnings.getWarnings().stream()
+                IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("PtcgRandomizer 0.1.0")));
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains(PtcgRandomizerVersion.VERSION)));
     }
 
@@ -496,10 +496,10 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        loadConfig(configFile.toFile(), warnings);
+        IssueTracker.clear();
+        loadConfig(configFile.toFile());
 
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("Config is missing an appVersion")));
     }
 
@@ -516,9 +516,9 @@ class ConfigTest {
         Path configFile = tempDir.resolve("config.yaml");
         Files.writeString(configFile, yaml);
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config config = loadConfig(configFile.toFile(), warnings);
-        assertTrue(!warnings.hasWarnings());
+        IssueTracker.clear();
+        Config config = loadConfig(configFile.toFile());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals("42", config.getSeed());
     }
 
@@ -530,11 +530,11 @@ class ConfigTest {
 
         ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
 
-        WarningCollector warnings = new WarningCollector(null);
-        var actions = config.getActions(actionBank, warnings);
+        IssueTracker.clear();
+        var actions = config.getActions(actionBank);
 
         assertEquals(1, actions.size());
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("does not record a version")));
     }
 
@@ -561,12 +561,12 @@ class ConfigTest {
             }
         };
 
-        WarningCollector warnings = new WarningCollector(null);
-        var actions = config.getActions(actionBank, warnings);
+        IssueTracker.clear();
+        var actions = config.getActions(actionBank);
 
         assertTrue(actions.isEmpty());
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("missing_module")));
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("skipped")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("missing_module")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("skipped")));
     }
 
     @Test
@@ -580,23 +580,23 @@ class ConfigTest {
                                 "card", "SomeMonster lvl35", "move", "TestMove")),
                         "moveAssignments", List.of(Map.of("to_card", "SomeMonster lvl35",
                                 "to_move_slot", 1, "move", "TestMove"))),
-                "config.yaml", new WarningCollector(null));
+                "config.yaml");
 
         Config config = new Config("1", List.of(), List.of(), List.of(), rulesPreset);
         Path output = tempDir.resolve("config.yaml");
         YamlIO.save(output.toFile(), config.convertToYamlMap());
 
-        WarningCollector warnings = new WarningCollector(null);
-        Config loaded = loadConfig(output.toFile(), warnings);
-        assertTrue(!warnings.hasWarnings());
+        IssueTracker.clear();
+        Config loaded = loadConfig(output.toFile());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals("TestMove",
                 loaded.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
                         .get("move"));
 
         Rules rules = new Rules();
-        loaded.getRulesConfig().recreateRules(rules, cards, warnings);
+        loaded.getRulesConfig().recreateRules(rules, cards);
 
-        assertTrue(!warnings.hasWarnings());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
     }
@@ -611,7 +611,7 @@ class ConfigTest {
                                 "moveAssignments",
                                 List.of(Map.of("to_card", "SomeMonster lvl35", "to_move_slot", 1,
                                         "move", "TestMove"))),
-                        "config.yaml", new WarningCollector(null));
+                        "config.yaml");
 
         Config config = Config.fromAppState("42", List.of(),
                 testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
@@ -630,7 +630,7 @@ class ConfigTest {
                         List.of(Map.of("remove_from_pool", true, "exclude_from_randomization", true,
                                 "move", "UserMove")),
                         "moveAssignments", List.of()),
-                "config.yaml", new WarningCollector(null));
+                "config.yaml");
 
         Config config = Config.fromAppState("42", List.of(),
                 testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
@@ -646,17 +646,17 @@ class ConfigTest {
         RulesConfig rulesPreset = RulesConfig.readFromLoadedYamlMap(Map.of("moveExclusions",
                 List.of(Map.of("remove_from_pool", true, "exclude_from_randomization", true, "card",
                         "SomeMonster lvl35", "move", "TestMove")),
-                "moveAssignments", List.of()), "config.yaml", new WarningCollector(null));
+                "moveAssignments", List.of()), "config.yaml");
         Config config = new Config("1", List.of(), List.of(), List.of(), rulesPreset);
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
                 "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, cards, warnings);
+        config.getRulesConfig().recreateRules(rules, cards);
 
-        assertTrue(!warnings.hasWarnings());
+        assertTrue(!IssueTracker.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals("TestMove", rules.getMoveExclusions().getAllExclusions().get(0).getMoveName());
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
@@ -667,14 +667,14 @@ class ConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         Config config = new Config("1", List.of(), List.of(), List.of(), RulesConfig.empty());
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
                 "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, cards, warnings);
+        config.getRulesConfig().recreateRules(rules, cards);
 
-        assertTrue(!warnings.hasWarnings());
+        assertTrue(!IssueTracker.hasWarnings());
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
     }
@@ -690,10 +690,9 @@ class ConfigTest {
                     move: TestMove
                 """);
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig rulesPreset = RulesConfig.readFromLoadedYamlMap(
-                YamlIO.load(rulesFile.toFile(), warnings), rulesFile.getFileName().toString(),
-                warnings);
+                YamlIO.load(rulesFile.toFile()), rulesFile.getFileName().toString());
 
         Config config = Config.fromAppState("42", List.of(),
                 testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
@@ -716,8 +715,8 @@ class ConfigTest {
         return card;
     }
 
-    private static Config loadConfig(File file, WarningCollector warnings) throws Exception {
-        return Config.readFromLoadedYamlMap(YamlIO.load(file, warnings), file.getName(), warnings);
+    private static Config loadConfig(File file) throws Exception {
+        return Config.readFromLoadedYamlMap(YamlIO.load(file), file.getName());
     }
 
     private static ActionBank testActionBank(String moduleId, String version,

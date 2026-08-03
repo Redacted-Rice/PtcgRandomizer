@@ -10,7 +10,7 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveAssignment;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public final class RulesConfig {
     private final String sourceLabel;
@@ -32,16 +32,15 @@ public final class RulesConfig {
         return new RulesConfig("", List.of(), List.of());
     }
 
-    public static RulesConfig readFromLoadedYamlMap(Map<String, Object> node, String sourceLabel,
-            WarningCollector warnings) {
+    public static RulesConfig readFromLoadedYamlMap(Map<String, Object> node, String sourceLabel) {
         if (node == null || node.isEmpty()) {
-            warnings.addWarning("Rules must be a mapping; using empty rules.");
+            IssueTracker.addWarning("Rules must be a mapping; using empty rules.");
             return empty();
         }
 
         return new RulesConfig(sourceLabel,
-                parseMoveExclusions(node.get(MOVE_EXCLUSIONS_KEY), sourceLabel, warnings),
-                parseMoveAssignments(node.get(MOVE_ASSIGNMENTS_KEY), sourceLabel, warnings));
+                parseMoveExclusions(node.get(MOVE_EXCLUSIONS_KEY), sourceLabel),
+                parseMoveAssignments(node.get(MOVE_ASSIGNMENTS_KEY), sourceLabel));
     }
 
     public Map<String, Object> convertToYamlMap() {
@@ -51,16 +50,16 @@ public final class RulesConfig {
         return node;
     }
 
-    public void applyTo(Rules rules, CardGroup<MonsterCard> cards, WarningCollector warnings) {
+    public void applyTo(Rules rules, CardGroup<MonsterCard> cards) {
         if (rules == null) {
-            warnings.addWarning("Cannot apply rules because no ROM is loaded.");
+            IssueTracker.addWarning("Cannot apply rules because no ROM is loaded.");
             return;
         }
 
         for (int i = 0; i < moveExclusionConfigs.size(); i++) {
             String entryContext = sourceLabel + ":" + MOVE_EXCLUSIONS_KEY + "[" + i + "]";
             MoveExclusion exclusion = moveExclusionConfigs.get(i).toMoveExclusion(cards,
-                    sourceLabel, entryContext, warnings);
+                    sourceLabel, entryContext);
             if (exclusion != null) {
                 rules.addMoveExclusion(exclusion, cards);
             }
@@ -68,21 +67,20 @@ public final class RulesConfig {
         for (int i = 0; i < moveAssignmentConfigs.size(); i++) {
             String entryContext = sourceLabel + ":" + MOVE_ASSIGNMENTS_KEY + "[" + i + "]";
             MoveAssignment assignment = moveAssignmentConfigs.get(i).toMoveAssignment(cards,
-                    sourceLabel, entryContext, warnings);
+                    sourceLabel, entryContext);
             if (assignment != null) {
-                rules.addMoveAssignment(assignment, warnings);
+                rules.addMoveAssignment(assignment);
             }
         }
     }
 
-    public void recreateRules(Rules rules, CardGroup<MonsterCard> cards,
-            WarningCollector warnings) {
+    public void recreateRules(Rules rules, CardGroup<MonsterCard> cards) {
         if (rules == null) {
-            warnings.addWarning("Cannot apply rules because no ROM is loaded.");
+            IssueTracker.addWarning("Cannot apply rules because no ROM is loaded.");
             return;
         }
         rules.clear();
-        applyTo(rules, cards, warnings);
+        applyTo(rules, cards);
     }
 
     public RulesConfig mergedWith(RulesConfig other) {
@@ -106,13 +104,11 @@ public final class RulesConfig {
         return moveAssignmentConfigs;
     }
 
-    private static List<MoveExclusionConfig> parseMoveExclusions(Object value, String sourceLabel,
-            WarningCollector warnings) {
+    private static List<MoveExclusionConfig> parseMoveExclusions(Object value, String sourceLabel) {
         List<MoveExclusionConfig> exclusions = new ArrayList<>();
-        ParserHelpers.forEachEntryInList(value, MOVE_EXCLUSIONS_KEY, sourceLabel, warnings,
+        ParserHelpers.forEachEntryInList(value, MOVE_EXCLUSIONS_KEY, sourceLabel,
                 (fields, entryContext) -> {
-                    MoveExclusionConfig parsed = MoveExclusionConfig.readFromLoadedYamlMap(fields,
-                            warnings, entryContext);
+                    MoveExclusionConfig parsed = MoveExclusionConfig.readFromLoadedYamlMap(fields, entryContext);
                     if (parsed != null) {
                         exclusions.add(parsed);
                     }
@@ -120,13 +116,11 @@ public final class RulesConfig {
         return exclusions;
     }
 
-    private static List<MoveAssignmentConfig> parseMoveAssignments(Object value, String sourceLabel,
-            WarningCollector warnings) {
+    private static List<MoveAssignmentConfig> parseMoveAssignments(Object value, String sourceLabel) {
         List<MoveAssignmentConfig> assignments = new ArrayList<>();
-        ParserHelpers.forEachEntryInList(value, MOVE_ASSIGNMENTS_KEY, sourceLabel, warnings,
+        ParserHelpers.forEachEntryInList(value, MOVE_ASSIGNMENTS_KEY, sourceLabel,
                 (fields, entryContext) -> {
-                    MoveAssignmentConfig parsed = MoveAssignmentConfig.readFromLoadedYamlMap(fields,
-                            warnings, entryContext);
+                    MoveAssignmentConfig parsed = MoveAssignmentConfig.readFromLoadedYamlMap(fields, entryContext);
                     if (parsed != null) {
                         assignments.add(parsed);
                     }

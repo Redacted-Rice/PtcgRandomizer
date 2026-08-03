@@ -20,7 +20,7 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 class RulesConfigTest {
     @TempDir
@@ -31,12 +31,12 @@ class RulesConfigTest {
         Files.writeString(rulesFile, yaml);
     }
 
-    private RulesConfig readYaml(String yaml, String sourceFileName, WarningCollector warnings)
+    private RulesConfig readYaml(String yaml, String sourceFileName)
             throws IOException {
         writeYaml(yaml, sourceFileName);
         Map<String, Object> node =
-                YamlIO.load(tempDir.resolve(sourceFileName).toFile(), warnings);
-        return RulesConfig.readFromLoadedYamlMap(node, sourceFileName, warnings);
+                YamlIO.load(tempDir.resolve(sourceFileName).toFile());
+        return RulesConfig.readFromLoadedYamlMap(node, sourceFileName);
     }
 
     private MonsterCard someMonster(int level, CardId id, String moveName) {
@@ -58,42 +58,42 @@ class RulesConfigTest {
 
     @Test
     void rejectsNonMappingRoot() throws IOException {
-        WarningCollector warnings = new WarningCollector(null);
-        readYaml("[]", "test.yaml", warnings);
+        IssueTracker.clear();
+        readYaml("[]", "test.yaml");
 
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("must be a mapping")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("must be a mapping")));
     }
 
     @Test
     void rejectsExclusionWithoutMove() throws IOException {
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         String yaml = """
                 moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                 """;
-        RulesConfig config = readYaml(yaml, "test.yaml", warnings);
+        RulesConfig config = readYaml(yaml, "test.yaml");
 
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("missing required field \"move\"")));
         assertTrue(config.getMoveExclusionConfigs().isEmpty());
     }
 
     @Test
     void rejectsUnknownMoveOnEmptyCardPool() throws IOException {
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         String yaml = """
                 moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     move: Ember
                 """;
-        RulesConfig config = readYaml(yaml, "sources.yaml", warnings);
+        RulesConfig config = readYaml(yaml, "sources.yaml");
 
         Rules rules = new Rules();
-        config.applyTo(rules, new CardGroup<>(), warnings);
+        config.applyTo(rules, new CardGroup<>());
 
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("failed to find any card")));
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
     }
@@ -106,21 +106,20 @@ class RulesConfigTest {
             Files.copy(in, defaultFile);
         }
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig config = RulesConfig.readFromLoadedYamlMap(
-                YamlIO.load(defaultFile.toFile(), warnings), defaultFile.getFileName().toString(),
-                warnings);
+                YamlIO.load(defaultFile.toFile()), defaultFile.getFileName().toString());
         Rules rules = new Rules();
-        config.applyTo(rules, new CardGroup<>(), warnings);
+        config.applyTo(rules, new CardGroup<>());
 
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> !w.isBlank()));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> !w.isBlank()));
     }
 
     @Test
     void mergedConfigsCombineRuleFiles() throws IOException {
-        WarningCollector warnings = new WarningCollector(null);
-        RulesConfig first = readYaml("moveExclusions: []\n", "base_rules.yaml", warnings);
-        RulesConfig second = readYaml("moveAssignments: []\n", "extra_rules.yaml", warnings);
+        IssueTracker.clear();
+        RulesConfig first = readYaml("moveExclusions: []\n", "base_rules.yaml");
+        RulesConfig second = readYaml("moveAssignments: []\n", "extra_rules.yaml");
         RulesConfig combined = first.mergedWith(second);
 
         assertTrue(combined.getMoveExclusionConfigs().isEmpty());
@@ -132,18 +131,18 @@ class RulesConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
 
         for (String cardSpecifier : List.of("SomeMonster", "SomeMonster_1")) {
-            WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
             RulesConfig config = readYaml("""
                     moveExclusions:
                       - remove_from_pool: true
                         exclude_from_randomization: true
                         card: %s
                         move: TestMove
-                    """.formatted(cardSpecifier), "test.yaml", warnings);
+                    """.formatted(cardSpecifier), "test.yaml");
             Rules rules = new Rules();
-            config.applyTo(rules, cards, warnings);
+            config.applyTo(rules, cards);
 
-            assertTrue(warnings.getWarnings().stream()
+            assertTrue(IssueTracker.getWarnings().stream()
                     .anyMatch(w -> w.contains("must use name and level")));
             assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         }
@@ -155,7 +154,7 @@ class RulesConfigTest {
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
         cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         String yaml = """
                 moveExclusions:
                   - remove_from_pool: true
@@ -163,9 +162,9 @@ class RulesConfigTest {
                     card: SomeMonster lvl35
                     move: TestMove
                 """;
-        RulesConfig config = readYaml(yaml, "test.yaml", warnings);
+        RulesConfig config = readYaml(yaml, "test.yaml");
         Rules rules = new Rules();
-        config.applyTo(rules, cards, warnings);
+        config.applyTo(rules, cards);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(CardId.MONSTER_146_1,
@@ -180,7 +179,7 @@ class RulesConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         String yaml = """
                 moveExclusions:
                   - remove_from_pool: true
@@ -192,12 +191,12 @@ class RulesConfigTest {
                     to_move_slot: 1
                     move: TestMove
                 """;
-        RulesConfig config = readYaml(yaml, "rules.yaml", warnings);
+        RulesConfig config = readYaml(yaml, "rules.yaml");
         RulesConfig saved = RulesConfig.readFromLoadedYamlMap(config.convertToYamlMap(),
-                "config.yaml", warnings);
+                "config.yaml");
 
         Rules rules = new Rules();
-        saved.applyTo(rules, cards, warnings);
+        saved.applyTo(rules, cards);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
@@ -210,15 +209,15 @@ class RulesConfigTest {
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
         cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig slotOne = readYaml("""
                 moveAssignments:
                   - to_card: SomeMonster lvl35
                     to_move_slot: 1
                     move: TestMove
-                """, "slot_one.yaml", warnings);
+                """, "slot_one.yaml");
         Rules rules = new Rules();
-        slotOne.applyTo(rules, cards, warnings);
+        slotOne.applyTo(rules, cards);
 
         assertEquals(0, rules.getMoveAssignments().getAllAssignments().get(0).getMoveSlot());
         assertEquals(1, slotOne.getMoveAssignmentConfigs().get(0).convertToYamlMap()
@@ -229,8 +228,8 @@ class RulesConfigTest {
                   - to_card: SomeMonster lvl37
                     to_move_slot: 2
                     move: OtherMove
-                """, "slot_two.yaml", warnings);
-        slotTwo.applyTo(rules, cards, warnings);
+                """, "slot_two.yaml");
+        slotTwo.applyTo(rules, cards);
 
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().get(1).getMoveSlot());
         assertEquals(2, slotTwo.getMoveAssignmentConfigs().get(0).convertToYamlMap()
@@ -242,29 +241,29 @@ class RulesConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig config = readYaml("""
                 moveAssignments:
                   - to_card: SomeMonster lvl35
                     to_move_slot: 0
                     move: TestMove
-                """, "bad_slot.yaml", warnings);
+                """, "bad_slot.yaml");
         Rules rules = new Rules();
-        config.applyTo(rules, cards, warnings);
+        config.applyTo(rules, cards);
 
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("out of range")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("out of range")));
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
     }
 
     @Test
     void convertToYamlMapIncludesEmptyAssignments() throws IOException {
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig config = readYaml("""
                 moveExclusions:
                   - remove_from_pool: true
                     exclude_from_randomization: true
                     move: TestMove
-                """, "rules.yaml", warnings);
+                """, "rules.yaml");
 
         assertEquals(1, config.getMoveExclusionConfigs().size());
         assertTrue(config.getMoveAssignmentConfigs().isEmpty());
@@ -280,7 +279,7 @@ class RulesConfigTest {
         card.setMoves(List.of(card.getMove(0), otherMove));
         cards.add(card);
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig config = readYaml("""
                 moveAssignments:
                   - to_card: SomeMonster lvl35
@@ -289,12 +288,12 @@ class RulesConfigTest {
                   - to_card: SomeMonster lvl35
                     to_move_slot: 1
                     move: OtherMove
-                """, "conflict.yaml", warnings);
+                """, "conflict.yaml");
         Rules rules = new Rules();
-        config.applyTo(rules, cards, warnings);
+        config.applyTo(rules, cards);
 
         assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
-        assertTrue(warnings.getWarnings().stream()
+        assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("Conflicting assignment")));
     }
 
@@ -303,7 +302,7 @@ class RulesConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         Rules rules = new Rules();
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
                 "old.yaml", cards, rules.getMoveAssignments());
@@ -311,7 +310,7 @@ class RulesConfigTest {
                 cards.withId(CardId.MONSTER_146_1).getMoveWithName("TestMove"), "old.yaml");
 
         RulesConfig replacement = RulesConfig.empty();
-        replacement.recreateRules(rules, cards, warnings);
+        replacement.recreateRules(rules, cards);
 
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
@@ -322,7 +321,7 @@ class RulesConfigTest {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         RulesConfig config = readYaml("""
                 moveExclusions:
                   - remove_from_pool: true
@@ -330,15 +329,15 @@ class RulesConfigTest {
                     card: SomeMonster lvl35
                     move: TestMove
                 moveAssignments: []
-                """, "rules.yaml", warnings);
+                """, "rules.yaml");
 
         Path output = tempDir.resolve("saved_rules.yaml");
         YamlIO.save(output.toFile(), config.convertToYamlMap());
 
         RulesConfig reloaded = RulesConfig.readFromLoadedYamlMap(
-                YamlIO.load(output.toFile(), warnings), output.getFileName().toString(), warnings);
+                YamlIO.load(output.toFile()), output.getFileName().toString());
         Rules rules = new Rules();
-        reloaded.applyTo(rules, cards, warnings);
+        reloaded.applyTo(rules, cards);
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
     }

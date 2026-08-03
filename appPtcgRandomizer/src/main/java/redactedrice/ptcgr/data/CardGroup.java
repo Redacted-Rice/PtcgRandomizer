@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.data;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +16,7 @@ import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.data.support.NameWithLevel;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public class CardGroup<T extends Card> {
     private EnumMap<CardId, T> cardsById;
@@ -228,32 +227,30 @@ public class CardGroup<T extends Card> {
         return false;
     }
 
-    public MonsterCard resolveCard(String cardSpecifier, String entryContext,
-            WarningCollector warnings) {
+    public MonsterCard resolveCard(String cardSpecifier, String entryContext) {
         String trimmed = cardSpecifier.trim();
         if (!MonsterCard.isNameWithLevel(trimmed)) {
             String exampleName = trimmed.isEmpty() ? "SomeMonster" : trimmed;
-            warnings.addWarning(entryContext + ": monster card \"" + cardSpecifier
+            IssueTracker.addWarning(entryContext + ": monster card \"" + cardSpecifier
                     + "\" must use name and level (e.g. \"" + exampleName + " lvl65\").");
             return null;
         }
 
         MonsterCard card = findMonsterByNameWithLevel(trimmed);
         if (card == null) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     entryContext + ": failed to resolve card \"" + cardSpecifier + "\".");
         }
         return card;
     }
 
-    public Move resolveMoveOnCard(MonsterCard hostCard, String moveName, String entryContext,
-            WarningCollector warnings) {
+    public Move resolveMoveOnCard(MonsterCard hostCard, String moveName, String entryContext) {
         Move moveWithName = hostCard.getMoveWithName(moveName);
         if (moveWithName != null) {
             return moveWithName;
         }
 
-        warnings.addWarning(entryContext + ": failed to find move \"" + moveName + "\" on card \""
+        IssueTracker.addWarning(entryContext + ": failed to find move \"" + moveName + "\" on card \""
                 + hostCard.name + "\".");
         return null;
     }
@@ -261,19 +258,18 @@ public class CardGroup<T extends Card> {
     /**
      * Assignment target slots are 1 based in files. Internal storage is 0 based.
      */
-    public int parseMoveSlotId(String slotSpecifier, String entryContext,
-            WarningCollector warnings) {
+    public int parseMoveSlotId(String slotSpecifier, String entryContext) {
         try {
             int oneBasedSlot = Integer.parseInt(slotSpecifier);
             if (oneBasedSlot >= 1 && oneBasedSlot <= MonsterCard.MAX_NUM_MOVES) {
                 return oneBasedSlot - 1;
             }
 
-            warnings.addWarning(entryContext + ": to_move_slot \"" + slotSpecifier
+            IssueTracker.addWarning(entryContext + ": to_move_slot \"" + slotSpecifier
                     + "\" is out of range; use " + 1 + "-" + MonsterCard.MAX_NUM_MOVES + ".");
             return -1;
         } catch (NumberFormatException ignored) {
-            warnings.addWarning(entryContext + ": to_move_slot must be a 1-based slot number (1-"
+            IssueTracker.addWarning(entryContext + ": to_move_slot must be a 1-based slot number (1-"
                     + MonsterCard.MAX_NUM_MOVES + ").");
             return -1;
         }
@@ -288,9 +284,9 @@ public class CardGroup<T extends Card> {
      * is used and a warning is logged if more than one card matches.
      */
     public Move resolveMoveByName(String moveName, MonsterCard optionalFromCard,
-            String entryContext, WarningCollector warnings) {
+            String entryContext) {
         if (optionalFromCard != null) {
-            return resolveMoveOnCard(optionalFromCard, moveName, entryContext, warnings);
+            return resolveMoveOnCard(optionalFromCard, moveName, entryContext);
         }
 
         MonsterCard firstHost = null;
@@ -302,7 +298,7 @@ public class CardGroup<T extends Card> {
                 continue;
             }
             if (firstHost != null) {
-                warnings.addWarning(entryContext + ": move \"" + moveName
+                IssueTracker.addWarning(entryContext + ": move \"" + moveName
                         + "\" was found on multiple cards; using the first match.");
                 return firstHost.getMoveWithName(moveName);
             }
@@ -310,7 +306,7 @@ public class CardGroup<T extends Card> {
         }
 
         if (firstHost == null) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     entryContext + ": failed to find move \"" + moveName + "\" on any card.");
             return null;
         }

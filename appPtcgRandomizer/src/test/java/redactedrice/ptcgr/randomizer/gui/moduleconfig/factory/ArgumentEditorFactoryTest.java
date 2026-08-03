@@ -31,7 +31,7 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEdi
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridPanel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigGuiTestSupport;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
@@ -385,12 +385,12 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                 new ArgumentDefinition("badString",
                         TypeDefinition.string(ArgumentConstraint.range(1, 5)), "a")));
 
-        WarningCollector warnings = new WarningCollector(null);
-        ArgumentConstraintDescription.checkModuleConstraints(module, warnings);
+        IssueTracker.clear();
+        ArgumentConstraintDescription.checkModuleConstraints(module);
 
-        assertTrue(warnings.hasWarnings());
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("enumBool")));
-        assertTrue(warnings.getWarnings().stream().anyMatch(w -> w.contains("badString")));
+        assertTrue(IssueTracker.hasWarnings());
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("enumBool")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("badString")));
     }
 
     @Test
@@ -403,10 +403,10 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                                         ArgumentConstraint.enumValues(List.of("red", "blue"))),
                                 "red")));
 
-        WarningCollector warnings = new WarningCollector(null);
-        ArgumentConstraintDescription.checkModuleConstraints(module, warnings);
+        IssueTracker.clear();
+        ArgumentConstraintDescription.checkModuleConstraints(module);
 
-        assertFalse(warnings.hasWarnings());
+        assertFalse(IssueTracker.hasWarnings());
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {

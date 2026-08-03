@@ -18,7 +18,7 @@ import redactedrice.ptcgr.data.romtexts.PokeDescription;
 import redactedrice.ptcgr.data.support.NameWithLevel;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.Logger;
 
 public class MonsterCard extends Card {
@@ -166,18 +166,14 @@ public class MonsterCard extends Card {
      * Expanding the count exposes existing (cleared) slots as empty until setMove fills them.
      */
     public boolean setNumMoves(int numMoves) {
-        return setNumMoves(numMoves, false, null);
-    }
-
-    public boolean setNumMoves(int numMoves, WarningCollector warnings) {
-        return setNumMoves(numMoves, false, warnings);
+        return setNumMoves(numMoves, false);
     }
 
     /**
      * Sets how many move slots are active. Reducing the count refuses to clear locked assignment
      * slots unless forceOverride is true.
      */
-    public boolean setNumMoves(int numMoves, boolean forceOverride, WarningCollector warnings) {
+    public boolean setNumMoves(int numMoves, boolean forceOverride) {
         if (numMoves < 0 || numMoves > MAX_NUM_MOVES) {
             return false;
         }
@@ -186,7 +182,7 @@ public class MonsterCard extends Card {
             for (int moveIndex = numMoves; moveIndex < this.numMoves; moveIndex++) {
                 if (moves[moveIndex].isLockedViaAssignment()) {
                     if (!forceOverride) {
-                        warnLockedMoveClearBlocked(moveIndex, warnings);
+                        warnLockedMoveClearBlocked(moveIndex);
                         return false;
                     }
                     Logger.info("Clearing locked assignment on \"" + toNameWithLevelSpecifier()
@@ -199,14 +195,9 @@ public class MonsterCard extends Card {
         return true;
     }
 
-    private void warnLockedMoveClearBlocked(int moveIndex, WarningCollector warnings) {
-        String message = "Refusing to reduce move count on \"" + toNameWithLevelSpecifier()
-                + "\" because slot " + (moveIndex + 1) + " has a locked assignment.";
-        if (warnings != null) {
-            warnings.addWarning(message);
-        } else {
-            Logger.warn(message);
-        }
+    private void warnLockedMoveClearBlocked(int moveIndex) {
+        IssueTracker.addWarning("Refusing to reduce move count on \"" + toNameWithLevelSpecifier()
+                + "\" because slot " + (moveIndex + 1) + " has a locked assignment.");
     }
 
     /** Returns the 0-based indexes of active move slots locked via assignment. */
@@ -256,22 +247,17 @@ public class MonsterCard extends Card {
      * true.
      */
     public boolean setMove(Move move, int moveSlot) {
-        return setMove(move, moveSlot, false, null);
+        return setMove(move, moveSlot, false);
     }
 
     public boolean setMove(Move move, int moveSlot, boolean forceOverride) {
-        return setMove(move, moveSlot, forceOverride, null);
-    }
-
-    public boolean setMove(Move move, int moveSlot, boolean forceOverride,
-            WarningCollector warnings) {
         if (moveSlot < 0 || moveSlot >= moves.length) {
             return false;
         }
 
         if (moves[moveSlot].isLockedViaAssignment()) {
             if (!forceOverride) {
-                warnLockedMoveOverwriteBlocked(moveSlot, warnings);
+                warnLockedMoveOverwriteBlocked(moveSlot);
                 return false;
             }
             Logger.info("Overwriting locked assignment on \"" + toNameWithLevelSpecifier()
@@ -283,14 +269,9 @@ public class MonsterCard extends Card {
         return true;
     }
 
-    private void warnLockedMoveOverwriteBlocked(int moveIndex, WarningCollector warnings) {
-        String message = "Refusing to overwrite locked assignment on \""
-                + toNameWithLevelSpecifier() + "\" in slot " + (moveIndex + 1) + ".";
-        if (warnings != null) {
-            warnings.addWarning(message);
-        } else {
-            Logger.warn(message);
-        }
+    private void warnLockedMoveOverwriteBlocked(int moveIndex) {
+        IssueTracker.addWarning("Refusing to overwrite locked assignment on \""
+                + toNameWithLevelSpecifier() + "\" in slot " + (moveIndex + 1) + ".");
     }
 
     public void setMoveLockedViaAssignment(int moveSlot, boolean locked) {
@@ -318,15 +299,10 @@ public class MonsterCard extends Card {
      * @return 0-based indexes of slots that were successfully updated
      */
     public List<Integer> setMoves(List<Move> newMoves) {
-        return setMoves(newMoves, false, null);
+        return setMoves(newMoves, false);
     }
 
     public List<Integer> setMoves(List<Move> newMoves, boolean forceOverride) {
-        return setMoves(newMoves, forceOverride, null);
-    }
-
-    public List<Integer> setMoves(List<Move> newMoves, boolean forceOverride,
-            WarningCollector warnings) {
         if (newMoves.size() > moves.length) {
             throw new IllegalArgumentException(
                     "Bad number of moves (" + newMoves.size() + ") was passed!");
@@ -334,12 +310,12 @@ public class MonsterCard extends Card {
 
         List<Integer> setIndexes = new ArrayList<>();
         for (int moveIndex = 0; moveIndex < newMoves.size(); moveIndex++) {
-            if (setMove(newMoves.get(moveIndex), moveIndex, forceOverride, warnings)) {
+            if (setMove(newMoves.get(moveIndex), moveIndex, forceOverride)) {
                 setIndexes.add(moveIndex);
             }
         }
         for (int moveIndex = newMoves.size(); moveIndex < moves.length; moveIndex++) {
-            if (setMove(new Move(this, moveIndex), moveIndex, forceOverride, warnings)) {
+            if (setMove(new Move(this, moveIndex), moveIndex, forceOverride)) {
                 setIndexes.add(moveIndex);
             }
         }

@@ -22,7 +22,7 @@ import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.DevModuleEnvironment;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigEndToEndSupport;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.support.ModuleConfigGuiTestSupport;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.ExecutionRequest;
 
 class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
@@ -57,9 +57,9 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
         assertEquals(5, action.getArgument("enumInt"));
 
         ActionConfig preset = ActionConfig.fromAction(action);
-        WarningCollector warnings = new WarningCollector(null);
-        Action reloaded = preset.toAction(actionBank, warnings);
-        assertFalse(warnings.hasWarnings());
+        IssueTracker.clear();
+        Action reloaded = preset.toAction(actionBank);
+        assertFalse(IssueTracker.hasWarnings());
         assertEquals(42, reloaded.getArgument("anyInt"));
         assertEquals(8, reloaded.getArgument("rangeInt"));
         assertEquals(30, reloaded.getArgument("discreteInt"));
@@ -86,9 +86,9 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
         assertEquals(List.of(20, 40), action.getArgument("rangeIntList"));
 
         ActionConfig preset = ActionConfig.fromAction(action);
-        WarningCollector warnings = new WarningCollector(null);
-        Action reloaded = preset.toAction(actionBank, warnings);
-        assertFalse(warnings.hasWarnings());
+        IssueTracker.clear();
+        Action reloaded = preset.toAction(actionBank);
+        assertFalse(IssueTracker.hasWarnings());
         assertEquals(List.of("alpha", "beta"), reloaded.getArgument("anyStringList"));
         assertEquals(List.of(20, 40), reloaded.getArgument("rangeIntList"));
 
@@ -103,7 +103,7 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
 
         assertEquals(150, ((Map<?, ?>) tableAction.getArgument("caps")).get("hp"));
         ActionConfig tablePreset = ActionConfig.fromAction(tableAction);
-        Action reloadedTable = tablePreset.toAction(actionBank, new WarningCollector(null));
+        Action reloadedTable = tablePreset.toAction(actionBank);
         assertEquals(150, ((Map<?, ?>) reloadedTable.getArgument("caps")).get("hp"));
     }
 
@@ -120,13 +120,13 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
                 "discreteInt", 25,
                 "enumInt", 3));
 
-        WarningCollector loadWarnings = new WarningCollector(null);
+        IssueTracker.clear();
         ActionConfig preset =
-                ActionConfig.readFromLoadedYamlMap(yamlNode, loadWarnings, "test entry");
+                ActionConfig.readFromLoadedYamlMap(yamlNode, "test entry");
         assertNotNull(preset);
-        assertFalse(loadWarnings.hasWarnings());
+        assertFalse(IssueTracker.hasWarnings());
 
-        Action action = preset.toAction(actionBank, loadWarnings);
+        Action action = preset.toAction(actionBank);
         assertEquals(3, action.getSeedOffset());
         assertEquals(7, action.getArgument("rangeInt"));
 
@@ -139,7 +139,7 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
         assertEquals(9, saved.getArguments().get("rangeInt"));
 
         ActionConfig roundTripped = new ActionConfig(preset.getModule(), preset.getVersion(), saved);
-        Action reloaded = roundTripped.toAction(actionBank, new WarningCollector(null));
+        Action reloaded = roundTripped.toAction(actionBank);
         assertEquals(9, reloaded.getArgument("rangeInt"));
         assertEquals(3, reloaded.getSeedOffset());
     }
@@ -152,12 +152,12 @@ class ModuleConfigDialogTest extends ModuleConfigGuiTestSupport {
                 "version", "0.1",
                 "arguments", Map.of("rangeInt", 99));
 
-        WarningCollector warnings = new WarningCollector(null);
+        IssueTracker.clear();
         ActionConfig preset =
-                ActionConfig.readFromLoadedYamlMap(yamlNode, warnings, "test entry");
-        Action action = preset.toAction(actionBank, warnings);
+                ActionConfig.readFromLoadedYamlMap(yamlNode, "test entry");
+        Action action = preset.toAction(actionBank);
 
-        assertTrue(warnings.hasWarnings());
+        assertTrue(IssueTracker.hasWarnings());
         assertEquals(5, action.getArgument("rangeInt"));
     }
 

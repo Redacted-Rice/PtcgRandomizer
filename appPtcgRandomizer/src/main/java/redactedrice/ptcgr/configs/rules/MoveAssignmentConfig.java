@@ -7,7 +7,7 @@ import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.rules.MoveAssignment;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 
 public final class MoveAssignmentConfig {
     static final String TO_CARD_KEY = "to_card";
@@ -39,13 +39,11 @@ public final class MoveAssignmentConfig {
                 fromCardSpecifier);
     }
 
-    public static MoveAssignmentConfig readFromLoadedYamlMap(Map<String, Object> node,
-            WarningCollector warnings, String entryLabel) {
+    public static MoveAssignmentConfig readFromLoadedYamlMap(Map<String, Object> node, String entryLabel) {
         String toCard = ParserHelpers.parseRequiredString(node.get(TO_CARD_KEY), TO_CARD_KEY,
-                entryLabel, warnings);
-        String toMoveSlot = parseMoveSlot(node.get(TO_MOVE_SLOT_KEY), entryLabel, warnings);
-        String move = ParserHelpers.parseRequiredString(node.get(MOVE_KEY), MOVE_KEY, entryLabel,
-                warnings);
+                entryLabel);
+        String toMoveSlot = parseMoveSlot(node.get(TO_MOVE_SLOT_KEY), entryLabel);
+        String move = ParserHelpers.parseRequiredString(node.get(MOVE_KEY), MOVE_KEY, entryLabel);
         if (toCard == null || toMoveSlot == null || move == null) {
             return null;
         }
@@ -66,34 +64,33 @@ public final class MoveAssignmentConfig {
     }
 
     public MoveAssignment toMoveAssignment(CardGroup<MonsterCard> cards, String sourceLabel,
-            String entryContext, WarningCollector warnings) {
-        MonsterCard targetCard = cards.resolveCard(toCard, entryContext, warnings);
+            String entryContext) {
+        MonsterCard targetCard = cards.resolveCard(toCard, entryContext);
         if (targetCard == null) {
             return null;
         }
 
-        int moveSlot = cards.parseMoveSlotId(toMoveSlot, entryContext, warnings);
+        int moveSlot = cards.parseMoveSlotId(toMoveSlot, entryContext);
         if (moveSlot < 0) {
             return null;
         }
 
         MonsterCard hostCard =
-                fromCard.isEmpty() ? null : cards.resolveCard(fromCard, entryContext, warnings);
+                fromCard.isEmpty() ? null : cards.resolveCard(fromCard, entryContext);
         if (!fromCard.isEmpty() && hostCard == null) {
             return null;
         }
 
-        Move moveToAssign = cards.resolveMoveByName(move, hostCard, entryContext, warnings);
+        Move moveToAssign = cards.resolveMoveByName(move, hostCard, entryContext);
         if (moveToAssign == null) {
             return null;
         }
         return new MoveAssignment(targetCard.id, moveSlot, moveToAssign, sourceLabel);
     }
 
-    private static String parseMoveSlot(Object value, String entryLabel,
-            WarningCollector warnings) {
+    private static String parseMoveSlot(Object value, String entryLabel) {
         if (value == null) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     entryLabel + ": missing required field \"" + TO_MOVE_SLOT_KEY + "\".");
             return null;
         }
@@ -102,7 +99,7 @@ public final class MoveAssignmentConfig {
         }
         String trimmed = value.toString().trim();
         if (trimmed.isEmpty()) {
-            warnings.addWarning(
+            IssueTracker.addWarning(
                     entryLabel + ": required field \"" + TO_MOVE_SLOT_KEY + "\" is empty.");
             return null;
         }

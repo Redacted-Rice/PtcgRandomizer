@@ -4,7 +4,7 @@ import java.util.Map;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.utils.WarningCollector;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 
 public final class ActionConfig extends ModuleConfig {
@@ -20,15 +20,15 @@ public final class ActionConfig extends ModuleConfig {
                 ActionArgumentsConfig.fromAction(action));
     }
 
-    public Action toAction(ActionBank actionBank, WarningCollector warnings) {
+    public Action toAction(ActionBank actionBank) {
         Module module = actionBank.getModule(getModule());
         if (module == null) {
-            warnings.addWarning("Missing module \"" + getModule() + "\"; it will be skipped.");
+            IssueTracker.addWarning("Missing module \"" + getModule() + "\"; it will be skipped.");
             return null;
         }
 
         String entryLabel = moduleLabel(module);
-        checkAndWarnModuleVersion(entryLabel, module, warnings);
+        checkAndWarnModuleVersion(entryLabel, module);
 
         Action action = new Action(module, actionBank.getEnumRegistry());
         ActionArgumentsConfig config = getConfig();
@@ -36,11 +36,11 @@ public final class ActionConfig extends ModuleConfig {
             if (module.isSeeded()) {
                 action.setSeedOffset(config.getSeedOffset());
             } else {
-                warnings.addWarning(
+                IssueTracker.addWarning(
                         entryLabel + " does not use seed offsets; ignoring seedOffset.");
             }
         }
-        config.applyToAction(action, module, warnings, entryLabel);
+        config.applyToAction(action, module, entryLabel);
         return action;
     }
 
@@ -50,17 +50,16 @@ public final class ActionConfig extends ModuleConfig {
         return node;
     }
 
-    public static ActionConfig readFromLoadedYamlMap(Map<String, Object> node,
-            WarningCollector warnings, String entryLabel) {
-        String module = parseModule(node.get(MODULE_KEY), warnings, entryLabel);
+    public static ActionConfig readFromLoadedYamlMap(Map<String, Object> node, String entryLabel) {
+        String module = parseModule(node.get(MODULE_KEY), entryLabel);
         if (module == null) {
-            warnings.addWarning(entryLabel + ": missing or invalid module name.");
+            IssueTracker.addWarning(entryLabel + ": missing or invalid module name.");
             return null;
         }
-        String version = parseVersion(node.get(VERSION_KEY), warnings, entryLabel);
+        String version = parseVersion(node.get(VERSION_KEY), entryLabel);
 
         ActionArgumentsConfig readConfig =
-                ActionArgumentsConfig.readFromLoadedYamlMap(node, warnings, entryLabel);
+                ActionArgumentsConfig.readFromLoadedYamlMap(node, entryLabel);
         return new ActionConfig(module, version, readConfig);
     }
 
