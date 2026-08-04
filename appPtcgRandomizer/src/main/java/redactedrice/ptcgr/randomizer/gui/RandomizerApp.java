@@ -15,6 +15,7 @@ import java.io.IOException;
 import javax.swing.JTabbedPane;
 import javax.swing.JLabel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -31,6 +32,8 @@ import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.Config;
 import redactedrice.randomizer.utils.IssueTracker;
+import redactedrice.randomizer.utils.LogLevel;
+import redactedrice.randomizer.utils.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,7 @@ public class RandomizerApp {
     private JButton openRomButton;
 
     private RandomizerCore randomizer;
+    private JComboBox<LogLevel> logLevelCombo;
     private JCheckBox saveLogDetailsBox;
     private JCheckBox saveSettingsBox;
     private JTextField saveSetSeedVal;
@@ -112,6 +116,18 @@ public class RandomizerApp {
         saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
         frmTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
         saveRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
+
+        JPanel logLevelPanel = new JPanel(new BorderLayout(0, 0));
+        saveRomPanel.add(logLevelPanel);
+        JLabel logLevelLbl = new JLabel("Log level: ");
+        logLevelPanel.add(logLevelLbl, BorderLayout.WEST);
+        logLevelCombo = new JComboBox<>(LogLevel.values());
+        logLevelCombo.setSelectedItem(LogLevel.INFO);
+        logLevelCombo.setToolTipText(
+                "Minimum log level for console and detail log file. DEBUG includes verbose module output.");
+        logLevelCombo.addActionListener(e -> applyLogLevelFromUi());
+        logLevelPanel.add(logLevelCombo, BorderLayout.CENTER);
+        applyLogLevelFromUi();
 
         saveLogDetailsBox = new JCheckBox("Log Randomizations");
         saveLogDetailsBox.setToolTipText(
@@ -242,7 +258,18 @@ public class RandomizerApp {
         Settings settings = new Settings();
         settings.setSeed(saveSetSeedVal.getText());
         settings.setLogDetails(saveLogDetailsBox.isSelected());
+        settings.setLogLevel(getSelectedLogLevel());
+        applyLogLevelFromUi();
         return settings;
+    }
+
+    private LogLevel getSelectedLogLevel() {
+        Object selected = logLevelCombo.getSelectedItem();
+        return selected instanceof LogLevel level ? level : LogLevel.INFO;
+    }
+
+    private void applyLogLevelFromUi() {
+        Logger.setMinLogLevel(getSelectedLogLevel());
     }
 
     private void loadConfigsFromFile() {

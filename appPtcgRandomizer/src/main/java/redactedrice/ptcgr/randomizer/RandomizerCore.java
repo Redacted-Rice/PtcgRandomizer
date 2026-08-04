@@ -187,6 +187,7 @@ public class RandomizerCore {
 
         OutputStream detailLogStream = null;
         try {
+            Logger.setMinLogLevel(settings.getLogLevel());
             if (settings.isLogDetails()) {
                 detailLogStream = new FileOutputStream(romBasePath + LOG_FILE_EXTENSION);
                 Logger.addStreamForAllLevels(detailLogStream);
