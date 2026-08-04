@@ -35,6 +35,21 @@ public class Texts {
         reverseMap.put("", (short) 0);
     }
 
+    public Texts copy() {
+        Texts copy = new Texts();
+        copy.textMap.clear();
+        copy.reverseMap.clear();
+        copy.textMap.putAll(textMap);
+        copy.reverseMap.putAll(reverseMap);
+        for (Map.Entry<Short, AddressRange> entry : idToRangeMap.entrySet()) {
+            AddressRange range = entry.getValue();
+            copy.idToRangeMap.put(entry.getKey(),
+                    range == null ? null : new AddressRange(range));
+        }
+        copy.origPtrsRange = origPtrsRange == null ? null : new AddressRange(origPtrsRange);
+        return copy;
+    }
+
     public void setOrigPtrsRange(AddressRange range) {
         origPtrsRange = range;
     }

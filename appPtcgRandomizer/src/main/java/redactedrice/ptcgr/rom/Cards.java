@@ -22,6 +22,15 @@ public class Cards {
         origPtrsRange = null;
     }
 
+    public Cards copy() {
+        Cards copy = new Cards();
+        for (Card card : allCards.iterable()) {
+            copy.allCards.add(card.copy());
+        }
+        copy.origPtrsRange = origPtrsRange == null ? null : new AddressRange(origPtrsRange);
+        return copy;
+    }
+
     public void setOrigPtrsRange(AddressRange range) {
         origPtrsRange = range;
     }

@@ -78,6 +78,19 @@ class MonsterCardTest {
     }
 
     @Test
+    void copyPreservesLockedViaAssignment() {
+        MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
+        card.setMove(namedMove("AssignedMove"), 1);
+        card.setMoveLockedViaAssignment(1, true);
+
+        MonsterCard copied = card.copy();
+
+        assertTrue(copied.getMove(1).isLockedViaAssignment());
+        assertEquals("AssignedMove", copied.getMove(1).name.toString());
+        assertEquals(List.of(1), copied.getLockedMoveIndexes());
+    }
+
+    @Test
     void lockedSlotOverrideRespectsForceFlag() {
         MonsterCard card = someMonster(35, CardId.MONSTER_146_1);
         card.setMove(namedMove("AssignedMove"), 0);

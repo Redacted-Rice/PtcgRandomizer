@@ -20,9 +20,19 @@ public class RandomizationData {
         this.blocks = new Blocks();
     }
 
-    public void prepareForRandomization(Rules rules) {
+    /** Deep copies cards, texts, and blanked ROM ranges. Shares the Rules reference. */
+    public RandomizationData copy() {
+        RandomizationData copy = new RandomizationData();
+        copy.idsToText = idsToText.copy();
+        copy.allCards = allCards.copy();
+        copy.blocks = blocks.copy();
+        copy.rules = rules;
+        return copy;
+    }
+
+    /** Associates rules for move pool queries without applying assignments. */
+    public void bindRules(Rules rules) {
         this.rules = rules;
-        rules.applyTo(allCards.cards().monsterCards());
     }
 
     public List<Card> getRandomizableCards() {
@@ -36,16 +46,15 @@ public class RandomizationData {
     /**
      * Returns move slots for randomization.
      *
-     * @param includeAssigned when true, assigned slots are included (pool mode); when false they are
-     *        excluded (target mode)
+     * @param includeAssigned when true, assigned slots are included (pool mode); when false they
+     *        are excluded (target mode)
      * @param includeEmpty when true, empty move slots are included
      */
     public List<Move> getRandomizableMoves(boolean includeAssigned, boolean includeEmpty) {
         if (rules == null) {
             return Collections.emptyList();
         }
-        MoveAssignments moveAssignments =
-                includeAssigned ? null : rules.getMoveAssignments();
+        MoveAssignments moveAssignments = includeAssigned ? null : rules.getMoveAssignments();
         return allCards.cards().getRandomizableMoves(rules.getMoveExclusions(), moveAssignments,
                 includeEmpty);
     }

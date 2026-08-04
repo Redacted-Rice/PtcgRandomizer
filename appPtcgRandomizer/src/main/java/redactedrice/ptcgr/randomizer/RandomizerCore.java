@@ -137,6 +137,7 @@ public class RandomizerCore {
             romData = RomIO.readFromFile(romFile);
             IssueTracker.clear();
             pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
+            romData.applyRulesToOriginal();
             IssuePresenter.displayWarnings(toCenterPopupsOn, "loaded rules");
             return true;
         } catch (IOException e) {
@@ -147,14 +148,16 @@ public class RandomizerCore {
     }
 
     /**
-     * Replaces session rules from a config (or other source). If a ROM is already loaded, runtime
-     * rules are recreated from the new config.
+     * Replaces session rules from a config (or other source). If a ROM is already loaded, original
+     * is rebuilt from the stored ROM bytes and the new rules are applied.
      */
     public void replacePendingRules(RulesConfig rulesConfig) {
         pendingRules = rulesConfig;
         if (romData != null) {
             IssueTracker.clear();
+            romData.reloadOriginalFromRom();
             pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
+            romData.applyRulesToOriginal();
             IssuePresenter.displayWarnings(popupParent, "loaded rules");
         }
     }
@@ -218,8 +221,7 @@ public class RandomizerCore {
         int seed = settings.getSeedValue();
 
         // Ensure the rom data is back to the original data (for multiple randomizations
-        // without reloading) and prepare it to be modified which includes reapplying
-        // the rules
+        // without reloading) by copying the already ruled original into modified
         IssueTracker.clear();
         romData.prepareForModification();
 

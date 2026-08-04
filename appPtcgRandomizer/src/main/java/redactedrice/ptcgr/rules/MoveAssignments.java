@@ -35,7 +35,8 @@ public class MoveAssignments {
         for (MonsterCard card : foundCards.iterable()) {
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
-                // There shouldn't be any locked moves at this point but override anyways
+                // original/modified are copied with rules already applied. forceOverride is
+                // only defensive if something left locks on a fresh card instance.
                 card.setMove(assign.getMove(), assign.getMoveSlot(), true);
                 card.setMoveLockedViaAssignment(assign.getMoveSlot(), true);
             }
