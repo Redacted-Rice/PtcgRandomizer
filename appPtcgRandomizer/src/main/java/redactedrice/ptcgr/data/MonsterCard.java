@@ -82,8 +82,13 @@ public class MonsterCard extends Card {
         setHp(toCopy.getHp());
         stage = toCopy.stage;
         prevEvoName = new CardName(toCopy.prevEvoName);
-        // Set the moves. THis will copy and retarget the moves metadata
+        // Set the moves. This will copy and retarget the moves metadata
         setMoves(toCopy.getAllMoves(true));
+        // Copy over if its locked as well - this is not done as part of typical move copying as its
+        // more metadata about the move for this specific card
+        for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
+            setMoveLockedViaAssignment(moveIndex, toCopy.moves[moveIndex].isLockedViaAssignment());
+        }
         retreatCost = toCopy.retreatCost;
         weakness = toCopy.weakness;
         resistance = toCopy.resistance;
