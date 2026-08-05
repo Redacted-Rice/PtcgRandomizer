@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.LogLevel;
 
 /**
@@ -137,10 +138,7 @@ public final class AppPreferences {
             return prefs;
         }
 
-        Object versionValue = root.get(FORMAT_VERSION_KEY);
-        if (versionValue instanceof Number number) {
-            prefs.formatVersion = number.intValue();
-        }
+        prefs.formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY));
 
         prefs.logLevel = parseLogLevel(root.get(LOG_LEVEL_KEY));
         prefs.logDetails =
@@ -193,6 +191,20 @@ public final class AppPreferences {
         putIfNotNull(root, LOAD_CONFIG_DIRECTORY_KEY, loadConfigDirectory);
         putIfNotNull(root, LOAD_CONFIG_FILE_NAME_KEY, loadConfigFileName);
         return root;
+    }
+
+    private static int parseFormatVersion(Object value) {
+        Integer version = ParserHelpers.parseInteger(value);
+        if (version == null) {
+            IssueTracker.addWarning(
+                    "Missing or invalid version; assuming version " + CURRENT_FORMAT_VERSION + ".");
+            return CURRENT_FORMAT_VERSION;
+        }
+        if (version > CURRENT_FORMAT_VERSION) {
+            IssueTracker.addWarning("App preferences version " + version
+                    + " is newer than supported version " + CURRENT_FORMAT_VERSION + ".");
+        }
+        return version;
     }
 
     private static LogLevel parseLogLevel(Object value) {

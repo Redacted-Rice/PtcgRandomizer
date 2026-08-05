@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,11 +17,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
+import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.LogLevel;
 
 class AppPreferencesTest {
     @TempDir
     Path tempDir;
+
+    @BeforeEach
+    void setUp() {
+        IssueTracker.clear();
+    }
+
+    @AfterEach
+    void tearDown() {
+        IssueTracker.clear();
+    }
 
     @Test
     void loadDefaultsUsesBuiltInValues() {
@@ -83,6 +97,42 @@ class AppPreferencesTest {
         assertEquals("ptcg_randomize.yaml", reloaded.getSaveConfigFileName());
         assertEquals(loadDir.toFile().getAbsolutePath(), reloaded.getLoadConfigDirectory());
         assertEquals("last.yaml", reloaded.getLoadConfigFileName());
+    }
+
+    @Test
+    void readFromLoadedYamlMapWarnsOnMissingVersion() {
+        AppPreferences prefs = AppPreferences.readFromLoadedYamlMap(Map.of("logLevel", "INFO"));
+
+        assertEquals(AppPreferences.CURRENT_FORMAT_VERSION, prefs.convertToYamlMap().get("version"));
+        assertTrue(IssueTracker.hasWarnings());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("Missing or invalid version")));
+    }
+
+    @Test
+    void readFromLoadedYamlMapWarnsOnNewerVersion() {
+        AppPreferences prefs =
+                AppPreferences.readFromLoadedYamlMap(Map.of("version", 99, "logLevel", "INFO"));
+
+        assertEquals(99, prefs.convertToYamlMap().get("version"));
+        assertTrue(IssueTracker.hasWarnings());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("newer than supported version")));
+    }
+
+    @Test
+    void loadWarnsOnInvalidBooleanFields() throws IOException {
+        Path prefsFile = tempDir.resolve(AppPreferences.DEFAULT_FILE_NAME);
+        Files.writeString(prefsFile, """
+                version: 1
+                logDetails: not-a-bool
+                """);
+
+        AppPreferences.load(prefsFile.toFile());
+
+        assertTrue(IssueTracker.hasWarnings());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("logDetails") && w.contains("boolean")));
     }
 
     @Test

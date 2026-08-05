@@ -68,7 +68,7 @@ class YamlIOTest {
         YamlIO.save(output.toFile(), config.convertToYamlMap());
 
         String yamlText = Files.readString(output);
-        assertTrue(yamlText.startsWith("# PTCG Randomizer config\n"));
+        assertTrue(yamlText.startsWith("# PTCGR Randomization config\n"));
 
         @SuppressWarnings("unchecked")
         Map<String, Object> loaded =

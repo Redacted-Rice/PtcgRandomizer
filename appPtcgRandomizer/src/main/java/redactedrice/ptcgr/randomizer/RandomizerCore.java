@@ -3,9 +3,11 @@ package redactedrice.ptcgr.randomizer;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -173,8 +175,8 @@ public class RandomizerCore {
         String romBasePath = romFile.getPath();
         romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
 
-        FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
-        try {
+        Path seedFilePath = Path.of(romBasePath + SEED_LOG_EXTENSION);
+        try (var seedFile = Files.newBufferedWriter(seedFilePath, StandardCharsets.UTF_8)) {
             String seedText = settings.getSeedString();
             String seedVal = String.valueOf(settings.getSeedValue());
             if (!seedText.equals(seedVal)) {
@@ -182,8 +184,6 @@ public class RandomizerCore {
             } else {
                 seedFile.write("Seed value: " + seedText);
             }
-        } finally {
-            seedFile.close();
         }
 
         OutputStream detailLogStream = null;

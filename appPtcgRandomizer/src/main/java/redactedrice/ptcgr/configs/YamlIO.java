@@ -1,9 +1,11 @@
 package redactedrice.ptcgr.configs;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 
 import org.yaml.snakeyaml.DumperOptions;
@@ -33,7 +35,7 @@ public final class YamlIO {
         options.setPrettyFlow(true);
         Yaml yaml = new Yaml(options);
 
-        try (FileWriter writer = new FileWriter(file)) {
+        try (Writer writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
             writer.write(header);
             yaml.dump(contents, writer);
         }
@@ -41,10 +43,11 @@ public final class YamlIO {
 
     public static Map<String, Object> load(File file) throws IOException {
         File yamlFile = FileExtensionUtils.ensureExtension(file, FILE_EXTENSION);
-        try (FileInputStream input = new FileInputStream(yamlFile)) {
+        try (Reader reader =
+                Files.newBufferedReader(yamlFile.toPath(), StandardCharsets.UTF_8)) {
 
             Yaml yaml = new Yaml();
-            Object loaded = yaml.load(input);
+            Object loaded = yaml.load(reader);
             if (!(loaded instanceof Map<?, ?> loadedMap)) {
                 IssueTracker
                         .addWarning(yamlFile.getName() + ": config file root must be a mapping.");
