@@ -1,6 +1,9 @@
 package redactedrice.ptcgr.randomizer.gui;
 
 import java.awt.EventQueue;
+import java.awt.Rectangle;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
@@ -30,6 +33,7 @@ import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
+import redactedrice.ptcgr.configs.AppPreferences;
 import redactedrice.ptcgr.configs.Config;
 import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.LogLevel;
@@ -53,6 +57,8 @@ public class RandomizerApp {
     private JButton openRomButton;
 
     private RandomizerCore randomizer;
+    private AppPreferences appPreferences;
+    private String lastOpenedRomPath;
     private JComboBox<LogLevel> logLevelCombo;
     private JCheckBox saveLogDetailsBox;
     private JCheckBox saveSettingsBox;
@@ -93,24 +99,18 @@ public class RandomizerApp {
         frmTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 
         randomizer = new RandomizerCore(frmTradingCard);
+        appPreferences = loadAppPreferences();
+        lastOpenedRomPath = appPreferences.getLastRomPath();
 
         openRomChooser = new JFileChooser();
-        openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        openRomChooser.setSelectedFile(new File(DEFAULT_ROM_NAME));
-
         saveRomChooser = new JFileChooser();
-        saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        saveRomChooser.setSelectedFile(new File(RandomizerCore.DEFAULT_PATCH_BASE_NAME));
-
         saveConfigChooser = new JFileChooser();
-        saveConfigChooser.setCurrentDirectory(new File(".")); // Jar location by default
-        saveConfigChooser.setSelectedFile(new File(YamlIO.DEFAULT_FILE_NAME));
-        saveConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
-
         loadConfigChooser = new JFileChooser();
-        loadConfigChooser.setCurrentDirectory(new File("."));
-        loadConfigChooser.setSelectedFile(new File(YamlIO.DEFAULT_FILE_NAME));
+        saveConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
         loadConfigChooser.setFileFilter(new FileNameExtensionFilter("YAML files", "yaml", "yml"));
+
+        applyFileChooserPreferences();
+        applyWindowPreferences();
 
         JPanel saveRomPanel = new JPanel();
         saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
@@ -122,10 +122,13 @@ public class RandomizerApp {
         JLabel logLevelLbl = new JLabel("Log level: ");
         logLevelPanel.add(logLevelLbl, BorderLayout.WEST);
         logLevelCombo = new JComboBox<>(LogLevel.values());
-        logLevelCombo.setSelectedItem(LogLevel.INFO);
+        logLevelCombo.setSelectedItem(appPreferences.getLogLevel());
         logLevelCombo.setToolTipText(
                 "Minimum log level for console and detail log file. DEBUG includes verbose module output.");
-        logLevelCombo.addActionListener(e -> applyLogLevelFromUi());
+        logLevelCombo.addActionListener(e -> {
+            applyLogLevelFromUi();
+            saveAppPreferencesQuietly();
+        });
         logLevelPanel.add(logLevelCombo, BorderLayout.CENTER);
         applyLogLevelFromUi();
 
@@ -133,13 +136,15 @@ public class RandomizerApp {
         saveLogDetailsBox.setToolTipText(
                 "Write a detailed log of randomization changes alongside the patch file.");
         saveRomPanel.add(saveLogDetailsBox);
-        saveLogDetailsBox.setSelected(true);
+        saveLogDetailsBox.setSelected(appPreferences.isLogDetails());
+        saveLogDetailsBox.addActionListener(e -> saveAppPreferencesQuietly());
 
         saveSettingsBox = new JCheckBox("Save Settings");
         saveSettingsBox.setToolTipText(
                 "Save the config settings to a file that can be loaded to repeat the same randomization again later.");
         saveRomPanel.add(saveSettingsBox);
-        saveSettingsBox.setSelected(true);
+        saveSettingsBox.setSelected(appPreferences.isSaveSettings());
+        saveSettingsBox.addActionListener(e -> saveAppPreferencesQuietly());
 
         JPanel saveSetSeedPanel = new JPanel();
         saveRomPanel.add(saveSetSeedPanel);
@@ -209,6 +214,8 @@ public class RandomizerApp {
                         JOptionPane.showMessageDialog(frmTradingCard,
                                 "Randomization failed. See the log for module errors; no patch was written.",
                                 "Randomization Failed", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        saveAppPreferencesQuietly();
                     }
                 }
             } catch (IOException e1) {
@@ -235,8 +242,11 @@ public class RandomizerApp {
                     JOptionPane.showMessageDialog(frmTradingCard,
                             "Could not open the selected ROM file.", "Open ROM Failed",
                             JOptionPane.ERROR_MESSAGE);
+                } else {
+                    lastOpenedRomPath = openRomChooser.getSelectedFile().getAbsolutePath();
+                    updateRomLoadedState();
+                    saveAppPreferencesQuietly();
                 }
-                updateRomLoadedState();
             }
         });
         openRomPanel.add(openRomButton);
@@ -251,7 +261,78 @@ public class RandomizerApp {
         dualPanel = new DualTableSelector(randomizer.getActionBank());
         actionsTab.addTab("Actions", null, dualPanel, null);
 
+        frmTradingCard.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveAppPreferencesQuietly();
+            }
+        });
+
         openRomIfExists();
+    }
+
+    private AppPreferences loadAppPreferences() {
+        try {
+            return AppPreferences.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return AppPreferences.loadDefaults();
+        }
+    }
+
+    private void applyFileChooserPreferences() {
+        applyChooserDirectory(openRomChooser, appPreferences.getOpenRomDirectory());
+        openRomChooser.setSelectedFile(appPreferences.resolveOpenRomFile(DEFAULT_ROM_NAME));
+
+        applyChooserDirectory(saveRomChooser, appPreferences.getPatchDirectory());
+        saveRomChooser.setSelectedFile(appPreferences.resolvePatchFile());
+
+        applyChooserDirectory(saveConfigChooser, appPreferences.getSaveConfigDirectory());
+        saveConfigChooser.setSelectedFile(appPreferences.resolveSaveConfigFile());
+
+        applyChooserDirectory(loadConfigChooser, appPreferences.getLoadConfigDirectory());
+        loadConfigChooser.setSelectedFile(appPreferences.resolveLoadConfigFile());
+    }
+
+    private void applyChooserDirectory(JFileChooser chooser, String directoryPath) {
+        if (directoryPath != null) {
+            File dir = new File(directoryPath);
+            if (dir.isDirectory()) {
+                chooser.setCurrentDirectory(dir);
+                return;
+            }
+        }
+        chooser.setCurrentDirectory(new File(".")); // jar location by default
+    }
+
+    private void applyWindowPreferences() {
+        Integer x = appPreferences.getWindowX();
+        Integer y = appPreferences.getWindowY();
+        Integer width = appPreferences.getWindowWidth();
+        Integer height = appPreferences.getWindowHeight();
+        if (x != null && y != null && width != null && height != null && width > 0
+                && height > 0) {
+            frmTradingCard.setBounds(x, y, width, height);
+        }
+    }
+
+    private void saveAppPreferencesQuietly() {
+        try {
+            captureAppPreferencesFromUi().save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private AppPreferences captureAppPreferencesFromUi() {
+        Rectangle bounds = frmTradingCard.getBounds();
+        return AppPreferences.fromAppState(getSelectedLogLevel(), saveLogDetailsBox.isSelected(),
+                saveSettingsBox.isSelected(), bounds.x, bounds.y, bounds.width, bounds.height,
+                lastOpenedRomPath, openRomChooser.getCurrentDirectory(),
+                openRomChooser.getSelectedFile(), saveRomChooser.getCurrentDirectory(),
+                saveRomChooser.getSelectedFile(), saveConfigChooser.getCurrentDirectory(),
+                saveConfigChooser.getSelectedFile(), loadConfigChooser.getCurrentDirectory(),
+                loadConfigChooser.getSelectedFile());
     }
 
     private Settings createSettingsFromState() {
@@ -290,6 +371,7 @@ public class RandomizerApp {
             dualPanel.setSelectedActions(actions);
             randomizer.replacePendingRules(config.getRulesConfig());
             IssuePresenter.finishPhase(frmTradingCard, "config load");
+            saveAppPreferencesQuietly();
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
@@ -298,8 +380,12 @@ public class RandomizerApp {
     }
 
     private void openRomIfExists() {
-        File defaultRom = new File(DEFAULT_ROM_NAME);
-        if (defaultRom.exists() && randomizer.openRom(defaultRom, frmTradingCard)) {
+        File rom = appPreferences.resolveLastRomFile();
+        if (rom == null) {
+            rom = new File(DEFAULT_ROM_NAME);
+        }
+        if (rom.exists() && randomizer.openRom(rom, frmTradingCard)) {
+            lastOpenedRomPath = rom.getAbsolutePath();
             updateRomLoadedState();
         }
     }
