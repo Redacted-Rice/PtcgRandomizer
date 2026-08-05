@@ -26,9 +26,9 @@ class YamlIOTest {
 
     @Test
     void ensureYamlExtensionAddsExtensionWhenMissing() {
-        File file = new File("configs/ptcgr_configs");
+        File file = new File("configs/ptcgr_randomize");
         File resolved = FileExtensionUtils.ensureExtension(file, YamlIO.FILE_EXTENSION);
-        assertEquals("ptcgr_configs.yaml", resolved.getName());
+        assertEquals("ptcgr_randomize.yaml", resolved.getName());
     }
 
     @Test
@@ -48,13 +48,13 @@ class YamlIOTest {
                 prescripts: []
                 postscripts: []
                 """.formatted(PtcgRandomizerVersion.VERSION);
-        Path configFile = tempDir.resolve("ptcgr_configs.yaml");
+        Path configFile = tempDir.resolve("ptcgr_randomize.yaml");
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
         Config config = Config.readFromLoadedYamlMap(
-                YamlIO.load(tempDir.resolve("ptcgr_configs").toFile()),
-                tempDir.resolve("ptcgr_configs.yaml").getFileName().toString());
+                YamlIO.load(tempDir.resolve("ptcgr_randomize").toFile()),
+                tempDir.resolve("ptcgr_randomize.yaml").getFileName().toString());
 
         assertTrue(!IssueTracker.hasWarnings());
         assertEquals("7", config.getSeed());

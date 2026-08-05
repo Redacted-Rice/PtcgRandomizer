@@ -16,12 +16,17 @@ import redactedrice.randomizer.utils.IssueTracker;
  */
 public final class YamlIO {
     public static final String FILE_EXTENSION = ".yaml";
-    public static final String DEFAULT_BASE_NAME = "ptcgr_configs";
+    public static final String DEFAULT_BASE_NAME = "ptcgr_randomize";
     public static final String DEFAULT_FILE_NAME = DEFAULT_BASE_NAME + FILE_EXTENSION;
 
     private YamlIO() {}
 
     public static void save(File file, Map<String, Object> contents) throws IOException {
+        save(file, contents, "# PTCGR Randomization config\n");
+    }
+
+    public static void save(File file, Map<String, Object> contents, String header)
+            throws IOException {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setIndent(2);
@@ -29,20 +34,20 @@ public final class YamlIO {
         Yaml yaml = new Yaml(options);
 
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("# PTCG Randomizer config\n");
+            writer.write(header);
             yaml.dump(contents, writer);
         }
     }
 
-    public static Map<String, Object> load(File file)
-            throws IOException {
+    public static Map<String, Object> load(File file) throws IOException {
         File yamlFile = FileExtensionUtils.ensureExtension(file, FILE_EXTENSION);
         try (FileInputStream input = new FileInputStream(yamlFile)) {
 
             Yaml yaml = new Yaml();
             Object loaded = yaml.load(input);
             if (!(loaded instanceof Map<?, ?> loadedMap)) {
-                IssueTracker.addWarning(yamlFile.getName() + ": config file root must be a mapping.");
+                IssueTracker
+                        .addWarning(yamlFile.getName() + ": config file root must be a mapping.");
                 return null;
             }
 
