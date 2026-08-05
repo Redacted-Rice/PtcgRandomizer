@@ -288,8 +288,8 @@ public class RandomizerApp {
             config.checkScripts(randomizer.getActionBank());
             List<Action> actions = config.getActions(randomizer.getActionBank());
             dualPanel.setSelectedActions(actions);
-            IssuePresenter.displayWarnings(frmTradingCard, "config load");
             randomizer.replacePendingRules(config.getRulesConfig());
+            IssuePresenter.finishPhase(frmTradingCard, "config load");
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),

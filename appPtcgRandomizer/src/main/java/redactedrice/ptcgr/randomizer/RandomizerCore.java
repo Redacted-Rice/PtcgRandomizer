@@ -154,11 +154,9 @@ public class RandomizerCore {
     public void replacePendingRules(RulesConfig rulesConfig) {
         pendingRules = rulesConfig;
         if (romData != null) {
-            IssueTracker.clear();
             romData.reloadOriginalFromRom();
             pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
             romData.applyRulesToOriginal();
-            IssuePresenter.displayWarnings(popupParent, "loaded rules");
         }
     }
 
@@ -205,9 +203,6 @@ public class RandomizerCore {
                 Logger.clearAllStreams();
             }
         }
-        // TODO later: Due to an error, the same data was being written more than once
-        // and when this happened, the text for some cards compoundly got worse.
-        // Need to look into why this is happening and if it still is
         RomIO.writePatch(romData, romFile);
         return true;
     }
@@ -220,8 +215,8 @@ public class RandomizerCore {
         // get and store the base seed
         int seed = settings.getSeedValue();
 
-        // Ensure the rom data is back to the original data (for multiple randomizations
-        // without reloading) by copying the already ruled original into modified
+        // Rebuild original from ROM bytes, reapply rules, then copy into modified so each
+        // randomization is isolated from prior runs (and from any Lua writes to original)
         IssueTracker.clear();
         romData.prepareForModification();
 

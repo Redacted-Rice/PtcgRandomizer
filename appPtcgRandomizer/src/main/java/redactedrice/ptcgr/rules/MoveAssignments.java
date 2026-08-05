@@ -35,8 +35,8 @@ public class MoveAssignments {
         for (MonsterCard card : foundCards.iterable()) {
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
-                // original/modified are copied with rules already applied. forceOverride is
-                // only defensive if something left locks on a fresh card instance.
+                // Cards are freshly parsed (or copied from a freshly ruled original). forceOverride
+                // is only defensive if something left locks on the card instance.
                 card.setMove(assign.getMove(), assign.getMoveSlot(), true);
                 card.setMoveLockedViaAssignment(assign.getMoveSlot(), true);
             }
