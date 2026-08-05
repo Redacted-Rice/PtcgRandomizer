@@ -5,12 +5,13 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.Rules;
 
 public class RomData {
-    // Kept in memory so original can be rebuilt when rules change without reopening the file
+    // Kept in memory so original can be rebuilt without reopening the file
     public final byte[] rawBytes;
     public final Rules rules;
-    // Ruled baseline for Lua "original"; rebuilt from rawBytes on ROM load / rules change
+    // Ruled baseline for Lua "original"; rebuilt from rawBytes on ROM load, rules change, and
+    // each randomization pass (after early load validates that rules apply cleanly)
     public RandomizationData original;
-    // Deep copy of original for each randomization pass
+    // Deep copy of the freshly ruled original for each randomization pass
     public RandomizationData modified;
 
     public RomData(byte[] rawBytes, RandomizationData original) {
@@ -35,17 +36,19 @@ public class RomData {
 
     /**
      * Applies current rules (assignments/locks) to original. Call after the rules config has been
-     * loaded into rules, on ROM open or rules change
+     * loaded into rules, on ROM open, rules change, or each randomization pass.
      */
     public void applyRulesToOriginal() {
         rules.applyTo(original.allCards.cards().monsterCards());
     }
 
     /**
-     * Regenerates modified as a deep copy of the original with rules already applied. Does not re
-     * parse the ROM or re apply rules
+     * Rebuilds original from ROM bytes, reapplies the current rules, then regenerates modified as
+     * a deep copy. Isolates each randomization from prior Lua mutations of original/modified.
      */
     public void prepareForModification() {
+        reloadOriginalFromRom();
+        applyRulesToOriginal();
         modified = original.copy();
         modified.bindRules(rules);
     }
