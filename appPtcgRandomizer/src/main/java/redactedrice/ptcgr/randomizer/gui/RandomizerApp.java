@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -139,9 +140,9 @@ public class RandomizerApp {
         saveLogDetailsBox.setSelected(appPreferences.isLogDetails());
         saveLogDetailsBox.addActionListener(e -> saveAppPreferencesQuietly());
 
-        saveSettingsBox = new JCheckBox("Save Settings");
+        saveSettingsBox = new JCheckBox("Save Randomization Config");
         saveSettingsBox.setToolTipText(
-                "Save the config settings to a file that can be loaded to repeat the same randomization again later.");
+                "Save the randomization config to a YAML file that can be loaded to repeat the same randomization again later.");
         saveRomPanel.add(saveSettingsBox);
         saveSettingsBox.setSelected(appPreferences.isSaveSettings());
         saveSettingsBox.addActionListener(e -> saveAppPreferencesQuietly());
@@ -203,10 +204,12 @@ public class RandomizerApp {
                                 "Config Save Failed", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
+                    saveAppPreferencesQuietly();
                 }
 
                 int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    saveAppPreferencesQuietly();
                     File saveFile = FileExtensionUtils.ensureExtension(
                             saveRomChooser.getSelectedFile(), RandomizerCore.PATCH_FILE_EXTENSION);
                     if (!randomizer.randomizeAndSaveRom(saveFile, settings,
@@ -214,8 +217,6 @@ public class RandomizerApp {
                         JOptionPane.showMessageDialog(frmTradingCard,
                                 "Randomization failed. See the log for module errors; no patch was written.",
                                 "Randomization Failed", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        saveAppPreferencesQuietly();
                     }
                 }
             } catch (IOException e1) {
@@ -273,9 +274,13 @@ public class RandomizerApp {
 
     private AppPreferences loadAppPreferences() {
         try {
-            return AppPreferences.load();
+            IssueTracker.clear();
+            AppPreferences prefs = AppPreferences.load();
+            IssuePresenter.finishPhase(frmTradingCard, "app preferences load");
+            return prefs;
         } catch (IOException e) {
             e.printStackTrace();
+            IssuePresenter.finishPhase(frmTradingCard, "app preferences load");
             return AppPreferences.loadDefaults();
         }
     }
@@ -302,7 +307,7 @@ public class RandomizerApp {
                 return;
             }
         }
-        chooser.setCurrentDirectory(new File(".")); // jar location by default
+        chooser.setCurrentDirectory(AppPreferences.defaultFile().getParentFile());
     }
 
     private void applyWindowPreferences() {
@@ -312,8 +317,17 @@ public class RandomizerApp {
         Integer height = appPreferences.getWindowHeight();
         if (x != null && y != null && width != null && height != null && width > 0
                 && height > 0) {
-            frmTradingCard.setBounds(x, y, width, height);
+            frmTradingCard.setBounds(clampToVisibleScreen(new Rectangle(x, y, width, height)));
         }
+    }
+
+    private static Rectangle clampToVisibleScreen(Rectangle bounds) {
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int width = Math.min(bounds.width, screen.width);
+        int height = Math.min(bounds.height, screen.height);
+        int x = Math.max(screen.x, Math.min(bounds.x, screen.x + screen.width - width));
+        int y = Math.max(screen.y, Math.min(bounds.y, screen.y + screen.height - height));
+        return new Rectangle(x, y, width, height);
     }
 
     private void saveAppPreferencesQuietly() {
@@ -325,7 +339,7 @@ public class RandomizerApp {
     }
 
     private AppPreferences captureAppPreferencesFromUi() {
-        Rectangle bounds = frmTradingCard.getBounds();
+        Rectangle bounds = clampToVisibleScreen(frmTradingCard.getBounds());
         return AppPreferences.fromAppState(getSelectedLogLevel(), saveLogDetailsBox.isSelected(),
                 saveSettingsBox.isSelected(), bounds.x, bounds.y, bounds.width, bounds.height,
                 lastOpenedRomPath, openRomChooser.getCurrentDirectory(),
