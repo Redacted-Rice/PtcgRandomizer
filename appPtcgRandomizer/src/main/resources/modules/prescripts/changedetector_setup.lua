@@ -149,15 +149,34 @@ function script.buildMoveSlotSummarySettings(slotConfigs)
 		summaryGroups = {},
 	}
 	local detailKeys = {}
+	local suffixSet = {}
+	local warnedSuffixes = {}
+
+	for _, suffix in ipairs(script.moveFieldSuffixes) do
+		suffixSet[suffix] = true
+	end
 
 	for _, slotConfig in ipairs(slotConfigs or {}) do
 		local prefix = "move" .. slotConfig.slot
 		local detailSuffixes = slotConfig.detail or {}
 
 		for _, suffix in ipairs(detailSuffixes) do
-			local fieldKey = prefix .. "_" .. suffix
-			table.insert(overrides.detail, fieldKey)
-			detailKeys[fieldKey] = true
+			if not suffixSet[suffix] then
+				if not warnedSuffixes[suffix] then
+					warnedSuffixes[suffix] = true
+					logger.warn(
+						"Change detector: unknown move field suffix '"
+							.. tostring(suffix)
+							.. "' (expected one of: "
+							.. table.concat(script.moveFieldSuffixes, ", ")
+							.. ")"
+					)
+				end
+			else
+				local fieldKey = prefix .. "_" .. suffix
+				table.insert(overrides.detail, fieldKey)
+				detailKeys[fieldKey] = true
+			end
 		end
 
 		for _, suffix in ipairs(script.moveFieldSuffixes) do
@@ -250,9 +269,9 @@ function script.setupChangeDetection(context)
 	changedetector.configure(isActive)
 
     -- Expose these functions on the change detector object
-	--changedetector.buildMoveSlotSummarySettings = script.buildMoveSlotSummarySettings
-	--changedetector.buildMoveSlotConfigs = script.buildMoveSlotConfigs
-	--changedetector.pushMoveChangeDisplay = script.pushMoveChangeDisplay
+	changedetector.buildMoveSlotSummarySettings = script.buildMoveSlotSummarySettings
+	changedetector.buildMoveSlotConfigs = script.buildMoveSlotConfigs
+	changedetector.pushMoveChangeDisplay = script.pushMoveChangeDisplay
 
     -- Just set it up anyways in case later someone wants to enable it for
     -- some things but not others or we want to use it for specific modules for debug

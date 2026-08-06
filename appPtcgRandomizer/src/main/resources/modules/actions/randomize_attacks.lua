@@ -18,7 +18,7 @@ module = {
 }
 
 function module.randomizeAttacks(context)
-	randomizer.changedetector.pushMoveChangeDisplay({ "name", "damage" })
+	randomizer.changedetector.pushMoveChangeDisplay({ "name", "energyCost", "damage" })
 
 	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
 	-- randomize moves actually allowed to be randomized
