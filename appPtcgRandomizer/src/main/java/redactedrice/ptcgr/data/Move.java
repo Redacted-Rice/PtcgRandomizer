@@ -119,6 +119,26 @@ public class Move {
         return effect.toString();
     }
 
+    public byte getEffect1Byte() {
+        return MoveEffect1.storeAsByte(effect1);
+    }
+
+    public byte getEffect2Byte() {
+        return MoveEffect2.storeAsByte(effect2);
+    }
+
+    public byte getEffect3Byte() {
+        return MoveEffect3.storeAsByte(effect3);
+    }
+
+    public byte getUnknownByte() {
+        return unknownByte;
+    }
+
+    public byte getAnimation() {
+        return animation;
+    }
+
     public boolean isEmpty() {
         return name.isEmpty();
     }

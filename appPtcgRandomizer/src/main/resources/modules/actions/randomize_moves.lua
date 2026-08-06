@@ -18,6 +18,8 @@ module = {
 }
 
 function module.randomizeMoves(context)
+	randomizer.changedetector.pushMoveChangeDisplay({ "name", "damage" })
+
 	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
 	-- randomize moves actually allowed to be randomized
 	local moveTargets = randomizer.list(context.modified:getRandomizableMoves(false, false))
