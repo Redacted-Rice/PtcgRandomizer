@@ -33,6 +33,9 @@ function script.detectAndLogChanges(context)
 
 		logger.info(changedetector.formatChangesTable(changes, formatOptions))
 	end
+
+	-- Pop any temporary display overrides a module pushed before detect ran
+	changedetector.popDisplaySettings("Monster Cards")
 end
 
 return script

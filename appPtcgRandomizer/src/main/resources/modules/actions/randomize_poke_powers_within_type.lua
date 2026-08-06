@@ -18,6 +18,8 @@ module = {
 }
 
 function module.randomizePokePowersWithinType(context)
+	randomizer.changedetector.pushMoveChangeDisplay({ "name" })
+
 	-- Get the moves we are randomizing -- do not include assigned moves or empty moves so we only
 	-- randomize moves actually allowed to be randomized
 	local powerTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):filter("isPokePower")
