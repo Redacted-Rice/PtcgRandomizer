@@ -11,7 +11,7 @@ script = {
 	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.2.0",
-		PtcgrChangeDetectorSetup = "0.7",
+		PtcgrChangeDetectorSetup = "0.9",
 	},
 	execute = function(context, args)
 		return script.takeSnapshots(context, args)

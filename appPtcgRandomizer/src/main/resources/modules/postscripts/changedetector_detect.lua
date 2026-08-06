@@ -11,7 +11,7 @@ script = {
 	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.2.0",
-		PtcgrChangeDetectorSetup = "0.7",
+		PtcgrChangeDetectorSetup = "0.9",
 		PtcgrChangeDetectorSnapshot = "0.9",
 	},
 	execute = function(context, args)
@@ -21,21 +21,30 @@ script = {
 
 function script.detectAndLogChanges(context)
 	local changedetector = randomizer.changedetector
+	local entryName = changedetector.monsterCardsEntry
 
-	local changes = changedetector.detectChanges()
-	if changedetector.hasChanges(changes) then
-		local formatOptions = {
-			leadingNewline = true,
-		}
-		if context.executionModule then
-			formatOptions.moduleName = context.executionModule
+	local ok, err = pcall(function()
+		local changes = changedetector.detectChanges()
+		if changedetector.hasChanges(changes) then
+			local formatOptions = {
+				leadingNewline = true,
+			}
+			if context.executionModule then
+				formatOptions.moduleName = context.executionModule
+			end
+
+			logger.info(changedetector.formatChangesTable(changes, formatOptions))
 		end
-
-		logger.info(changedetector.formatChangesTable(changes, formatOptions))
-	end
+	end)
 
 	-- Pop any temporary display overrides a module pushed before detect ran
-	changedetector.popDisplaySettings("Monster Cards")
+	if entryName then
+		changedetector.popDisplaySettings(entryName)
+	end
+
+	if not ok then
+		error(err)
+	end
 end
 
 return script

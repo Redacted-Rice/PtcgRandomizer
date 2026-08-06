@@ -19,6 +19,7 @@ module = {
 
 -- TODO later: Add args/options
 function module.shuffleNumMoves(context)
+	randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 
 	local numMovesPool = randomizer.list(context.original:getRandomizableMonsterCards()):select("getNumMoves")
 	local monsterMod = context.modified:getRandomizableMonsterCards()
