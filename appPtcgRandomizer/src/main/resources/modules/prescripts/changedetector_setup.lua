@@ -268,7 +268,8 @@ function script.setupChangeDetection(context)
 	local isActive = context.config and context.config.changeDetectionActive or false
 	changedetector.configure(isActive)
 
-    -- Expose these functions on the change detector object
+    -- Expose these on the change detector object for other scripts
+	changedetector.monsterCardsEntry = script.monsterCardsEntry
 	changedetector.buildMoveSlotSummarySettings = script.buildMoveSlotSummarySettings
 	changedetector.buildMoveSlotConfigs = script.buildMoveSlotConfigs
 	changedetector.pushMoveChangeDisplay = script.pushMoveChangeDisplay
