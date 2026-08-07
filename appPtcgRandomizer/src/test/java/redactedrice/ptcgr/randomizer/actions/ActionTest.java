@@ -138,7 +138,6 @@ class ActionTest {
                     public LuaValue call() {
                         return LuaValue.NIL;
                     }
-                }, null, "test.lua", 0, false, false, null, "author", "1.0", Map.of(), null, null,
-                null);
+                }, null, "test.lua", 0, false, false, null, "author", "1.0", Map.of(), null, null, null, null, null);
     }
 }

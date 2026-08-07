@@ -11,7 +11,10 @@ module = {
 	version = "0.5",
 	requires = {
 		PtcgRandomizer = "0.2.0",
-		set_evo_line_metadata = "0.9",
+	},
+	needs = {
+		{ name = "evoLineId", type = "integer" },
+		{ name = "evoLineMaxStage", type = "EvolutionStage" },
 	},
 	-- TODO later: Make this an arg or split scripts back out
 	useRomPools = true,

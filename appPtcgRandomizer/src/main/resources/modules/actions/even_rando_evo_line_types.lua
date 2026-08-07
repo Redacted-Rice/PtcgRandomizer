@@ -11,7 +11,9 @@ module = {
 	version = "0.5",
 	requires = {
 		PtcgRandomizer = "0.2.0",
-		set_evo_line_metadata = "0.9",
+	},
+	needs = {
+		{ name = "evoLineId", type = "integer" },
 	},
 	execute = function(context, args)
 		return module.randomizeEvoLineTypes(context, args)

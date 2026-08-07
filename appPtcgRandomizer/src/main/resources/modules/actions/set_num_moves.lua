@@ -13,6 +13,9 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.2.0",
 	},
+	provides = {
+		{ name = "numMoves", type = "integer" },
+	},
 	arguments = {
 		{
 			name = "numMoves",
