@@ -18,6 +18,7 @@ import org.luaj.vm2.LuaValue;
 
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.lua.sandbox.LuaSandbox;
+import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 class ChangeDetectorSetupTest {
     private File workDir;
@@ -30,11 +31,10 @@ class ChangeDetectorSetupTest {
 
     @Test
     void moveSummaryLayoutTestsPassInLua() throws IOException {
-        PtcgBundledResources resources = new PtcgBundledResources(workDir);
-        resources.installAll();
+        PtcgBundledResources.main(new String[] { workDir.getAbsolutePath() });
 
-        File randomizerDir = resources.getRandomizerDir();
-        File modulesDir = resources.getModulesDir();
+        File randomizerDir = RandomizerBundledResources.getInstalledDir(workDir);
+        File modulesDir = new File(workDir, PtcgBundledResources.MODULES_DIR_NAME);
         File luaTestDir = new File(workDir, "lua-tests");
         luaTestDir.mkdirs();
 
