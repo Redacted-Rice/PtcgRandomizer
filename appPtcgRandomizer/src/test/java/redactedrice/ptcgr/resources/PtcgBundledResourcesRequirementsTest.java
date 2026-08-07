@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.TestInfo;
 
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.lua.ExecutionRequest;
+import redactedrice.randomizer.lua.Issue;
 import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.IssueTracker;
 
@@ -34,31 +37,23 @@ class PtcgBundledResourcesRequirementsTest {
 
     @Test
     void bundledModulesPassRequirementValidation() {
-        PtcgBundledResources resources = new PtcgBundledResources(workDir);
-        resources.installAll();
+        loadBundledModules();
+    }
 
-        File randomizerDir = resources.getRandomizerDir();
-        File modulesDir = resources.getModulesDir();
+    @Test
+    void bundledModulesPassDynamicVarExecutionOrderValidation() {
+        LuaRandomizerWrapper wrapper = loadBundledModules();
 
-        List<String> allowedDirectories = new ArrayList<>();
-        allowedDirectories.add(randomizerDir.getAbsolutePath());
-        allowedDirectories.add(modulesDir.getAbsolutePath());
+        List<ExecutionRequest> requests = List.of(
+                ExecutionRequest.forUnseededModule(wrapper.getModule("set_evo_line_metadata"),
+                        Map.of()),
+                ExecutionRequest.forUnseededModule(wrapper.getModule("fix_evo_line_hp"),
+                        Map.of()));
 
-        List<String> searchPaths = List.of(modulesDir.getAbsolutePath());
+        List<Issue> issues = wrapper.validateExecutionPlan(requests);
 
-        CoreRequirements requirements = new CoreRequirements();
-        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
-                PtcgRandomizerVersion.VERSION, true);
-
-        LuaRandomizerWrapper wrapper =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
-
-        IssueTracker.clear();
-        int loaded = wrapper.loadModules();
-
-        assertTrue(loaded > 0, "Expected bundled modules to load");
-        assertFalse(IssueTracker.hasErrors(),
-                () -> "Module requirement validation failed: " + IssueTracker.getErrors());
+        assertTrue(issues.stream().noneMatch(Issue::isError),
+                () -> "Execution order validation failed: " + issues);
     }
 
     @Test
@@ -123,5 +118,34 @@ class PtcgBundledResourcesRequirementsTest {
         } finally {
             System.clearProperty("ptcgr.devModules");
         }
+    }
+
+    private LuaRandomizerWrapper loadBundledModules() {
+        PtcgBundledResources resources = new PtcgBundledResources(workDir);
+        resources.installAll();
+
+        File randomizerDir = resources.getRandomizerDir();
+        File modulesDir = resources.getModulesDir();
+
+        List<String> allowedDirectories = new ArrayList<>();
+        allowedDirectories.add(randomizerDir.getAbsolutePath());
+        allowedDirectories.add(modulesDir.getAbsolutePath());
+
+        List<String> searchPaths = List.of(modulesDir.getAbsolutePath());
+
+        CoreRequirements requirements = new CoreRequirements();
+        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
+                PtcgRandomizerVersion.VERSION, true);
+
+        LuaRandomizerWrapper wrapper =
+                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
+
+        IssueTracker.clear();
+        int loaded = wrapper.loadModules();
+
+        assertTrue(loaded > 0, "Expected bundled modules to load");
+        assertFalse(IssueTracker.hasErrors(),
+                () -> "Module requirement validation failed: " + IssueTracker.getErrors());
+        return wrapper;
     }
 }

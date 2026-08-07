@@ -1,5 +1,5 @@
 -- Enforces non-decreasing HP up each evolution line by stage.
--- Run after HP randomization and set_evo_line_metadata.
+-- Run after HP randomization. Needs evoLineId on each card.
 local randomizer = require("randomizer")
 
 local module
