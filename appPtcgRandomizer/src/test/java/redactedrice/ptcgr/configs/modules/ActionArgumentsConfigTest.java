@@ -25,8 +25,7 @@ class ActionArgumentsConfigTest {
                     public LuaValue call() {
                         return LuaValue.NIL;
                     }
-                }, null, "test.lua", 0, true, true, null, "author", "0.9", Map.of(), null, null,
-                null);
+                }, null, "test.lua", 0, true, true, null, "author", "0.9", Map.of(), null, null, null, null, null);
         Action action = new Action(module);
         action.setArgument("numMoves", 1);
 

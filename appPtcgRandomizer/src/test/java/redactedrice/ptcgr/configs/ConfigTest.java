@@ -776,7 +776,7 @@ class ConfigTest {
                         return LuaValue.NIL;
                     }
                 }, null, "test.lua", 0, true, true, null, "author", version, Map.of(), null,
-                null, null);
+                null, null, null, null);
     }
 
     private static Module scriptWithVersion(String id, String version, String when) {
@@ -785,6 +785,6 @@ class ConfigTest {
             public LuaValue call() {
                 return LuaValue.NIL;
             }
-        }, null, "test.lua", 0, false, false, when, "author", version, Map.of(), null, null, null);
+        }, null, "test.lua", 0, false, false, when, "author", version, Map.of(), null, null, null, null, null);
     }
 }

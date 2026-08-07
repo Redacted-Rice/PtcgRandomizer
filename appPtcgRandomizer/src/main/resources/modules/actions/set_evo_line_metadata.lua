@@ -14,6 +14,10 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.2.0",
 	},
+	provides = {
+		{ name = "evoLineId", type = "integer" },
+		{ name = "evoLineMaxStage", type = "EvolutionStage" },
+	},
 	seeded = false,
 	execute = function(context, args)
 		return module.setEvoLineMetadata(context, args)
