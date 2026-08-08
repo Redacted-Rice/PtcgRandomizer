@@ -22,8 +22,16 @@ public final class MoveExclusionConfig {
     static final String CARD_KEY = "card";
     private final String card;
 
+    private final String sourceLabel;
+
     public MoveExclusionConfig(boolean removeFromPool, boolean excludeFromRandomization,
             String move, String card) {
+        this("", removeFromPool, excludeFromRandomization, move, card);
+    }
+
+    public MoveExclusionConfig(String sourceLabel, boolean removeFromPool,
+            boolean excludeFromRandomization, String move, String card) {
+        this.sourceLabel = sourceLabel != null ? sourceLabel : "";
         this.removeFromPool = removeFromPool;
         this.excludeFromRandomization = excludeFromRandomization;
         this.move = move;
@@ -39,11 +47,12 @@ public final class MoveExclusionConfig {
                 cardSpecifier = monster.toNameWithLevelSpecifier();
             }
         }
-        return new MoveExclusionConfig(exclusion.isRemoveFromPool(),
+        return new MoveExclusionConfig(exclusion.getSourceFileName(), exclusion.isRemoveFromPool(),
                 exclusion.isExcludeFromRandomization(), exclusion.getMoveName(), cardSpecifier);
     }
 
-    public static MoveExclusionConfig readFromLoadedYamlMap(Map<String, Object> node, String entryLabel) {
+    public static MoveExclusionConfig readFromLoadedYamlMap(Map<String, Object> node,
+            String entryLabel, String sourceLabel) {
         boolean removeFromPool = ParserHelpers.parseBoolean(node.get(REMOVE_FROM_POOL_KEY), false,
                 REMOVE_FROM_POOL_KEY, entryLabel);
         boolean excludeFromRandomization =
@@ -56,7 +65,8 @@ public final class MoveExclusionConfig {
         }
 
         String card = ParserHelpers.parseOptionalString(node.get(CARD_KEY));
-        return new MoveExclusionConfig(removeFromPool, excludeFromRandomization, move, card);
+        return new MoveExclusionConfig(sourceLabel, removeFromPool, excludeFromRandomization, move,
+                card);
     }
 
     public Map<String, Object> convertToYamlMap() {
@@ -76,6 +86,7 @@ public final class MoveExclusionConfig {
 
     public MoveExclusion toMoveExclusion(CardGroup<MonsterCard> cards, String sourceLabel,
             String entryContext) {
+        String effectiveSource = this.sourceLabel.isEmpty() ? sourceLabel : this.sourceLabel;
         if (card.isEmpty()) {
             if (!cards.isKnownMoveName(move)) {
                 IssueTracker.addWarning(entryContext + ": failed to find any card with move \"" + move
@@ -83,7 +94,7 @@ public final class MoveExclusionConfig {
                 return null;
             }
             return new MoveExclusion(CardId.NO_CARD, move, removeFromPool, excludeFromRandomization,
-                    sourceLabel);
+                    effectiveSource);
         }
 
         MonsterCard monsterCard = cards.resolveCard(card, entryContext);
@@ -98,7 +109,7 @@ public final class MoveExclusionConfig {
         }
 
         return new MoveExclusion(monsterCard.id, move, removeFromPool, excludeFromRandomization,
-                sourceLabel);
+                effectiveSource);
     }
 
     public boolean isRemoveFromPool() {
@@ -115,5 +126,9 @@ public final class MoveExclusionConfig {
 
     public String getCard() {
         return card;
+    }
+
+    public String getSourceLabel() {
+        return sourceLabel;
     }
 }

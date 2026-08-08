@@ -16,6 +16,9 @@ import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.constants.romenums.CardType;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
+import redactedrice.ptcgr.rules.MoveAssignment;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.randomizer.actions.Action;
@@ -164,6 +167,17 @@ public class RandomizerCore {
 
     public RulesConfig getPendingRules() {
         return pendingRules;
+    }
+
+    public List<MoveAssignment> getMoveAssignments() {
+        if (romData == null) {
+            return List.of();
+        }
+        return romData.rules.getMoveAssignments().getAllAssignments();
+    }
+
+    public CardGroup<MonsterCard> getOriginalMonsterCards() {
+        return romData != null ? romData.getOriginalMonsterCards() : null;
     }
 
     public boolean randomizeAndSaveRom(File romFile, Settings settings, List<Action> actions)

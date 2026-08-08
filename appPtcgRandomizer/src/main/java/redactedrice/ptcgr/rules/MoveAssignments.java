@@ -57,7 +57,15 @@ public class MoveAssignments {
     }
 
     public static String exclusionSourceForAssignment(MoveAssignment assign) {
-        return exclusionSourceForAssignment(assign.getSourceFileName());
+        return exclusionSourceLabel(assign.getSourceFileName());
+    }
+
+    public static String exclusionSourceLabel(String sourceFileName) {
+        if (isAssignmentDerivedExclusionSource(sourceFileName)) {
+            return sourceFileName.substring(0,
+                    sourceFileName.length() - ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX.length());
+        }
+        return sourceFileName;
     }
 
     public static String exclusionSourceForAssignment(String sourceFileName) {
