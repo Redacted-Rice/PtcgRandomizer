@@ -108,7 +108,9 @@ public final class RulesConfig {
         List<MoveExclusionConfig> exclusions = new ArrayList<>();
         ParserHelpers.forEachEntryInList(value, MOVE_EXCLUSIONS_KEY, sourceLabel,
                 (fields, entryContext) -> {
-                    MoveExclusionConfig parsed = MoveExclusionConfig.readFromLoadedYamlMap(fields, entryContext);
+                    MoveExclusionConfig parsed =
+                            MoveExclusionConfig.readFromLoadedYamlMap(fields, entryContext,
+                                    sourceLabel);
                     if (parsed != null) {
                         exclusions.add(parsed);
                     }

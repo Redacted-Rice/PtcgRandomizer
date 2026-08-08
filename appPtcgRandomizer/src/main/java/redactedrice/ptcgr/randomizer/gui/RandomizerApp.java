@@ -31,6 +31,7 @@ import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
+import redactedrice.ptcgr.randomizer.gui.rules.RulesPanel;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
@@ -65,6 +66,7 @@ public class RandomizerApp {
     private JCheckBox saveSettingsBox;
     private JTextField saveSetSeedVal;
     private DualTableSelector dualPanel;
+    private RulesPanel rulesPanel;
 
     /**
      * Launch the application.
@@ -259,8 +261,19 @@ public class RandomizerApp {
         JTabbedPane actionsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(actionsTab, BorderLayout.CENTER);
 
+        rulesPanel = new RulesPanel(randomizer);
+        actionsTab.addTab("Rules", null, rulesPanel,
+                "Move exclusions and assignments applied during randomization");
+
         dualPanel = new DualTableSelector(randomizer.getActionBank());
         actionsTab.addTab("Actions", null, dualPanel, null);
+        actionsTab.setSelectedComponent(dualPanel);
+
+        actionsTab.addChangeListener(e -> {
+            if (actionsTab.getSelectedComponent() == rulesPanel) {
+                rulesPanel.refresh();
+            }
+        });
 
         frmTradingCard.addWindowListener(new WindowAdapter() {
             @Override
@@ -384,6 +397,7 @@ public class RandomizerApp {
             List<Action> actions = config.getActions(randomizer.getActionBank());
             dualPanel.setSelectedActions(actions);
             randomizer.replacePendingRules(config.getRulesConfig());
+            rulesPanel.refresh();
             IssuePresenter.finishPhase(frmTradingCard, "config load");
             saveAppPreferencesQuietly();
         } catch (IOException ioError) {
@@ -406,5 +420,6 @@ public class RandomizerApp {
 
     private void updateRomLoadedState() {
         openRomButton.setText(randomizer.isRomLoaded() ? OPEN_NEW_ROM_TEXT : OPEN_ROM_TEXT);
+        rulesPanel.refresh();
     }
 }
