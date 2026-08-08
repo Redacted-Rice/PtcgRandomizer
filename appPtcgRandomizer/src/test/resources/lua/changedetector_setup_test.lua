@@ -142,7 +142,7 @@ local card = {
 	name = { toString = function()
 		return "Bulbasaur"
 	end },
-	getMove = function(index)
+	getMove = function(self, index)
 		if index == 0 then
 			return makeMove(moveState)
 		end
