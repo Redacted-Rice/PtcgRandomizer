@@ -34,6 +34,9 @@ public final class AppPreferences {
     static final String SAVE_CONFIG_FILE_NAME_KEY = "saveConfigFileName";
     static final String LOAD_CONFIG_DIRECTORY_KEY = "loadConfigDirectory";
     static final String LOAD_CONFIG_FILE_NAME_KEY = "loadConfigFileName";
+    static final String EXPORT_USER_RULES_DIRECTORY_KEY = "exportUserRulesDirectory";
+    static final String EXPORT_USER_RULES_FILE_NAME_KEY = "exportUserRulesFileName";
+    private static final String DEFAULT_EXPORT_USER_RULES_FILE_NAME = "user_config.yaml";
 
     private int formatVersion = CURRENT_FORMAT_VERSION;
     private LogLevel logLevel = LogLevel.INFO;
@@ -52,12 +55,14 @@ public final class AppPreferences {
     private String saveConfigFileName;
     private String loadConfigDirectory;
     private String loadConfigFileName;
+    private String exportUserRulesDirectory;
+    private String exportUserRulesFileName;
 
     public static File defaultFile() {
         return new File(resolveAppDirectory(), DEFAULT_FILE_NAME);
     }
 
-    static File resolveAppDirectory() {
+    public static File resolveAppDirectory() {
         try {
             var codeSource = AppPreferences.class.getProtectionDomain().getCodeSource();
             if (codeSource != null && codeSource.getLocation() != null) {
@@ -111,7 +116,8 @@ public final class AppPreferences {
             boolean saveSettings, int windowX, int windowY, int windowWidth, int windowHeight,
             String lastRomPath, File openRomDirectory, File openRomFile, File patchDirectory,
             File patchFile, File saveConfigDirectory, File saveConfigFile,
-            File loadConfigDirectory, File loadConfigFile) {
+            File loadConfigDirectory, File loadConfigFile, File exportUserRulesDirectory,
+            File exportUserRulesFile) {
         AppPreferences prefs = new AppPreferences();
         prefs.setLogLevel(logLevel);
         prefs.setLogDetails(logDetails);
@@ -129,6 +135,8 @@ public final class AppPreferences {
         prefs.setSaveConfigFileName(nameOrNull(saveConfigFile));
         prefs.setLoadConfigDirectory(pathOrNull(loadConfigDirectory));
         prefs.setLoadConfigFileName(nameOrNull(loadConfigFile));
+        prefs.setExportUserRulesDirectory(pathOrNull(exportUserRulesDirectory));
+        prefs.setExportUserRulesFileName(nameOrNull(exportUserRulesFile));
         return prefs;
     }
 
@@ -168,6 +176,10 @@ public final class AppPreferences {
                 ParserHelpers.parseOptionalString(root.get(LOAD_CONFIG_DIRECTORY_KEY)));
         prefs.loadConfigFileName =
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(LOAD_CONFIG_FILE_NAME_KEY)));
+        prefs.exportUserRulesDirectory = emptyToNull(ParserHelpers
+                .parseOptionalString(root.get(EXPORT_USER_RULES_DIRECTORY_KEY)));
+        prefs.exportUserRulesFileName = emptyToNull(ParserHelpers
+                .parseOptionalString(root.get(EXPORT_USER_RULES_FILE_NAME_KEY)));
         return prefs;
     }
 
@@ -190,6 +202,8 @@ public final class AppPreferences {
         putIfNotNull(root, SAVE_CONFIG_FILE_NAME_KEY, saveConfigFileName);
         putIfNotNull(root, LOAD_CONFIG_DIRECTORY_KEY, loadConfigDirectory);
         putIfNotNull(root, LOAD_CONFIG_FILE_NAME_KEY, loadConfigFileName);
+        putIfNotNull(root, EXPORT_USER_RULES_DIRECTORY_KEY, exportUserRulesDirectory);
+        putIfNotNull(root, EXPORT_USER_RULES_FILE_NAME_KEY, exportUserRulesFileName);
         return root;
     }
 
@@ -371,6 +385,22 @@ public final class AppPreferences {
         this.loadConfigFileName = emptyToNull(loadConfigFileName);
     }
 
+    public String getExportUserRulesDirectory() {
+        return exportUserRulesDirectory;
+    }
+
+    public void setExportUserRulesDirectory(String exportUserRulesDirectory) {
+        this.exportUserRulesDirectory = emptyToNull(exportUserRulesDirectory);
+    }
+
+    public String getExportUserRulesFileName() {
+        return exportUserRulesFileName;
+    }
+
+    public void setExportUserRulesFileName(String exportUserRulesFileName) {
+        this.exportUserRulesFileName = emptyToNull(exportUserRulesFileName);
+    }
+
     public File resolveLastRomFile() {
         if (lastRomPath != null) {
             File rom = new File(lastRomPath);
@@ -395,6 +425,23 @@ public final class AppPreferences {
 
     public File resolveLoadConfigFile() {
         return resolveNamedFile(loadConfigDirectory, loadConfigFileName, YamlIO.DEFAULT_FILE_NAME);
+    }
+
+    public File resolveExportUserRulesFile() {
+        return resolveNamedFile(exportUserRulesDirectory, exportUserRulesFileName,
+                DEFAULT_EXPORT_USER_RULES_FILE_NAME);
+    }
+
+    public static void applyChooserDirectory(javax.swing.JFileChooser chooser,
+            String directoryPath) {
+        if (directoryPath != null) {
+            File dir = new File(directoryPath);
+            if (dir.isDirectory()) {
+                chooser.setCurrentDirectory(dir);
+                return;
+            }
+        }
+        chooser.setCurrentDirectory(resolveAppDirectory());
     }
 
     private static File resolveNamedFile(String directoryPath, String fileName, String defaultName) {

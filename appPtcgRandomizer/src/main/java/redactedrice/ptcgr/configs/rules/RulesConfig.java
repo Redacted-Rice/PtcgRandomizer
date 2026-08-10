@@ -73,7 +73,7 @@ public final class RulesConfig {
             MoveAssignment assignment = moveAssignmentConfigs.get(i).toMoveAssignment(cards,
                     sourceLabel, entryContext);
             if (assignment != null) {
-                rules.addMoveAssignment(assignment);
+                rules.addMoveAssignment(assignment, cards);
             }
         }
     }

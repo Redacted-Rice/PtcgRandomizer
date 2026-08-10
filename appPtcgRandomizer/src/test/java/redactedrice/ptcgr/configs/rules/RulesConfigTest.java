@@ -21,7 +21,9 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.rules.MoveAssignment;
+import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
+import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.randomizer.utils.IssueTracker;
 
@@ -477,6 +479,75 @@ class RulesConfigTest {
 
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+    }
+
+    @Test
+    void conflictingAssignmentWarningUsesCardNameWithLevel() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        MonsterCard card = cards.withId(CardId.MONSTER_146_1);
+        Move otherMove = card.getMove(1);
+        otherMove.name.setText("OtherMove");
+        card.setMoves(List.of(card.getMove(0), otherMove));
+
+        IssueTracker.clear();
+        MoveAssignments assignments = new MoveAssignments();
+        assignments.addMoveAssignment(card, 0, card.getMoveWithName("TestMove"), "user added");
+        assignments.add(new MoveAssignment(card.id, 0, otherMove, "user added"), cards);
+
+        assertEquals(1, assignments.getAllAssignments().size());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("SomeMonster lvl35")));
+    }
+
+    @Test
+    void tryAddAllowsSameMoveFromDifferentSource() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
+        MoveExclusions exclusions = new MoveExclusions();
+        MoveAssignments assignments = new MoveAssignments();
+        exclusions.addMoveExclusion(CardId.NO_CARD, "TestMove", true, true, "bundled.yaml", cards,
+                assignments);
+        assertEquals(1, exclusions.getAllExclusions().size());
+
+        MoveExclusion userAdded = new MoveExclusion(CardId.NO_CARD, "TestMove", true, true,
+                "user added");
+        assertTrue(exclusions.tryAdd(userAdded, cards, assignments));
+        assertEquals(2, exclusions.getAllExclusions().size());
+    }
+
+    @Test
+    void tryAddRejectsDuplicateExclusionWithWarning() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
+        IssueTracker.clear();
+        MoveExclusions exclusions = new MoveExclusions();
+        MoveAssignments assignments = new MoveAssignments();
+        MoveExclusion exclusion = new MoveExclusion(CardId.NO_CARD, "TestMove", true, true,
+                "user added");
+        assertTrue(exclusions.tryAdd(exclusion, cards, assignments));
+        assertFalse(exclusions.tryAdd(exclusion, cards, assignments));
+
+        assertEquals(1, exclusions.getAllExclusions().size());
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate exclusion")));
+    }
+
+    @Test
+    void duplicateAssignmentWarnsAndRejects() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        MonsterCard card = cards.withId(CardId.MONSTER_146_1);
+
+        IssueTracker.clear();
+        MoveAssignments assignments = new MoveAssignments();
+        Move move = card.getMoveWithName("TestMove");
+        assertTrue(assignments.add(new MoveAssignment(card.id, 0, move, "user added"), cards));
+        assertFalse(assignments.add(new MoveAssignment(card.id, 0, move, "user added"), cards));
+
+        assertEquals(1, assignments.getAllAssignments().size());
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate assignment")));
     }
 
     @Test

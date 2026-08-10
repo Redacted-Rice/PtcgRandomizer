@@ -67,6 +67,38 @@ public class MoveExclusions {
         }
     }
 
+    public boolean tryAdd(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments) {
+        if (!exclusion.isCardIdSet() && !exclusion.isMoveNameSet()) {
+            return false;
+        }
+
+        List<MoveExclusion> bucket = existingBucket(exclusion);
+        if (bucket != null) {
+            for (MoveExclusion existing : bucket) {
+                if (!existing.hasSameTarget(exclusion)) {
+                    continue;
+                }
+                if (existing.getSourceFileName().equals(exclusion.getSourceFileName())) {
+                    if (existing.hasSameSettings(exclusion)) {
+                        warnDuplicateExclusion(exclusion, cards);
+                        return false;
+                    }
+                    warnConflictingExclusion(exclusion, cards);
+                    return false;
+                }
+                if (existing.hasSameSettings(exclusion)) {
+                    continue;
+                }
+                warnConflictingExclusion(exclusion, cards);
+                return false;
+            }
+        }
+
+        add(exclusion, cards, assignments);
+        return true;
+    }
+
     public void addExclusionOnly(MoveExclusion exclusion) {
         List<MoveExclusion> bucket;
         if (exclusion.isCardIdSet()) {
@@ -137,28 +169,45 @@ public class MoveExclusions {
             MoveAssignments assignments) {
         MoveExclusion excl = new MoveExclusion(cardId, moveName, removeFromPool,
                 excludeFromRandomization, sourceFileName);
-        List<MoveExclusion> bucket;
-        if (excl.isCardIdSet()) {
-            bucket = exclByCardId.computeIfAbsent(excl.getCardId(), ll -> new LinkedList<>());
-        } else if (excl.isMoveNameSet()) {
-            bucket = exclByMoveName.computeIfAbsent(excl.getMoveName(), ll -> new LinkedList<>());
-        } else {
-            return;
-        }
+        tryAdd(excl, cards, assignments);
+    }
 
-        for (MoveExclusion existing : bucket) {
-            if (!existing.hasSameTarget(excl)) {
-                continue;
-            }
-            if (existing.hasSameSettings(excl)) {
-                return;
-            }
-            String targetLabel = excl.isCardIdSet() ? "card \"" + cardId + "\"" : "move";
-            IssueTracker.addWarning("Conflicting exclusion for " + targetLabel + " \"" + moveName
-                    + "\" in " + sourceFileName
-                    + "; keeping the first entry and ignoring the duplicate.");
-            return;
+    private List<MoveExclusion> existingBucket(MoveExclusion exclusion) {
+        if (exclusion.isCardIdSet()) {
+            return exclByCardId.get(exclusion.getCardId());
         }
-        add(excl, cards, assignments);
+        if (exclusion.isMoveNameSet()) {
+            return exclByMoveName.get(exclusion.getMoveName());
+        }
+        return null;
+    }
+
+    private void warnConflictingExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
+        String targetLabel = describeExclusionTarget(exclusion, cards);
+        IssueTracker.addWarning("Conflicting exclusion for " + targetLabel + " in "
+                + exclusion.getSourceFileName()
+                + "; keeping the first entry and ignoring the duplicate.");
+    }
+
+    private void warnDuplicateExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
+        String targetLabel = describeExclusionTarget(exclusion, cards);
+        IssueTracker.addWarning("Duplicate exclusion for " + targetLabel + " in "
+                + exclusion.getSourceFileName() + "; entry already exists.");
+    }
+
+    private static String describeExclusionTarget(MoveExclusion exclusion,
+            CardGroup<MonsterCard> cards) {
+        if (exclusion.hasCardSpecifier()) {
+            return "card \"" + exclusion.getCardSpecifier() + "\" move \""
+                    + exclusion.getMoveName() + "\"";
+        }
+        if (exclusion.isCardIdSet() && cards != null) {
+            MonsterCard card = cards.withId(exclusion.getCardId());
+            if (card != null) {
+                return "card \"" + card.toNameWithLevelSpecifier() + "\" move \""
+                        + exclusion.getMoveName() + "\"";
+            }
+        }
+        return "move \"" + exclusion.getMoveName() + "\"";
     }
 }
