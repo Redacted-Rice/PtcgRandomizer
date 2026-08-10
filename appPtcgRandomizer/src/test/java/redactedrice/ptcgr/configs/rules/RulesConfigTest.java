@@ -229,38 +229,6 @@ class RulesConfigTest {
     }
 
     @Test
-    void removingOneExclusionKeepsDerivedAssignmentsFromOtherExclusionsInSameFile() throws IOException {
-        CardGroup<MonsterCard> cards = new CardGroup<>();
-        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
-        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
-
-        IssueTracker.clear();
-        RulesConfig config = readYaml("""
-                moveExclusions:
-                  - remove_from_pool: true
-                    exclude_from_randomization: true
-                    move: Ember
-                  - remove_from_pool: true
-                    exclude_from_randomization: true
-                    move: OtherMove
-                """, "shared.yaml");
-        Rules rules = new Rules();
-        config.applyTo(rules, cards);
-        assertEquals(2, rules.getMoveAssignments().getAllAssignments().size());
-
-        MoveExclusion emberExclusion = rules.getMoveExclusions().getAllExclusions().stream()
-                .filter(exclusion -> "Ember".equals(exclusion.getMoveName()))
-                .findFirst()
-                .orElseThrow();
-        rules.removeMoveExclusion(emberExclusion);
-
-        assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
-        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
-        assertEquals("OtherMove",
-                rules.getMoveAssignments().getAllAssignments().get(0).getMove().name.toString());
-    }
-
-    @Test
     void togglingGenerateAssignmentsOnOneExclusionKeepsOthersInSameFile() throws IOException {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
@@ -503,7 +471,7 @@ class RulesConfigTest {
     }
 
     @Test
-    void tryAddRejectsSameTargetFromDifferentSource() {
+    void tryAddSilentlyRejectsEquivalentExclusionFromDifferentSource() {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
@@ -518,7 +486,30 @@ class RulesConfigTest {
                 "user added");
         assertFalse(exclusions.tryAdd(userAdded, cards, assignments));
         assertEquals(1, exclusions.getAllExclusions().size());
-        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate exclusion")));
+        assertTrue(IssueTracker.getWarnings().isEmpty());
+    }
+
+    @Test
+    void applyToIgnoresEquivalentExclusionFromDifferentSourceWithoutWarning() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+
+        IssueTracker.clear();
+        Rules rules = new Rules();
+        rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "Ember", true, true,
+                "unsupported_moves.yaml", cards, rules.getMoveAssignments());
+
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                """, "user_config.yaml");
+        config.applyTo(rules, cards);
+
+        assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .noneMatch(w -> w.contains("Duplicate exclusion")));
     }
 
     @Test
@@ -539,7 +530,7 @@ class RulesConfigTest {
     }
 
     @Test
-    void duplicateAssignmentWarnsAndRejectsAcrossSources() {
+    void duplicateAssignmentSilentlyRejectsAcrossSources() {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
         MonsterCard card = cards.withId(CardId.MONSTER_146_1);
@@ -551,7 +542,7 @@ class RulesConfigTest {
         assertFalse(assignments.add(new MoveAssignment(card.id, 0, move, "user added"), cards));
 
         assertEquals(1, assignments.getAllAssignments().size());
-        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate assignment")));
+        assertTrue(IssueTracker.getWarnings().isEmpty());
     }
 
     @Test

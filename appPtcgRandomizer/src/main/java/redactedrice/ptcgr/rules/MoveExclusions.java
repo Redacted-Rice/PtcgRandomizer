@@ -69,6 +69,11 @@ public class MoveExclusions {
 
     public boolean tryAdd(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
             MoveAssignments assignments) {
+        return tryAdd(exclusion, cards, assignments, true);
+    }
+
+    public boolean tryAdd(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments, boolean warnOnEquivalentDuplicate) {
         if (!exclusion.isCardIdSet() && !exclusion.isMoveNameSet()) {
             return false;
         }
@@ -80,7 +85,10 @@ public class MoveExclusions {
                     continue;
                 }
                 if (existing.hasSameSettings(exclusion)) {
-                    warnDuplicateExclusion(exclusion, cards);
+                    if (warnOnEquivalentDuplicate
+                            && existing.getSourceFileName().equals(exclusion.getSourceFileName())) {
+                        warnDuplicateExclusion(exclusion, cards);
+                    }
                     return false;
                 }
                 warnConflictingExclusion(exclusion, cards);

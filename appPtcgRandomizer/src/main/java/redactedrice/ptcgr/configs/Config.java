@@ -206,6 +206,14 @@ public final class Config {
         return root;
     }
 
+    public static Map<String, Object> convertActionsOnlyToYamlMap(List<Action> actions) {
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put(FORMAT_VERSION_KEY, CURRENT_FORMAT_VERSION);
+        root.put(APP_VERSION_KEY, PtcgRandomizerVersion.VERSION);
+        root.put(ACTIONS_KEY, convertToYamlMapActions(convertActions(actions)));
+        return root;
+    }
+
     public boolean isValid() {
         return metadataValid;
     }
@@ -216,6 +224,10 @@ public final class Config {
 
     public boolean hasActions() {
         return actionsLoaded;
+    }
+
+    public boolean hasActionsSection() {
+        return actionsLoaded || preScriptsLoaded || postScriptsLoaded;
     }
 
     public boolean hasPreScripts() {

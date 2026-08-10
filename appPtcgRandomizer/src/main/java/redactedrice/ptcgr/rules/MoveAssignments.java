@@ -72,15 +72,26 @@ public class MoveAssignments {
     }
 
     public boolean add(MoveAssignment assignment, CardGroup<MonsterCard> cards) {
-        return add(assignment, describeCard(assignment.getCardId(), cards));
+        return add(assignment, cards, true);
+    }
+
+    public boolean add(MoveAssignment assignment, CardGroup<MonsterCard> cards,
+            boolean warnOnEquivalentDuplicate) {
+        return add(assignment, describeCard(assignment.getCardId(), cards),
+                warnOnEquivalentDuplicate);
     }
 
     public boolean add(MoveAssignment assignment) {
-        return add(assignment, (CardGroup<MonsterCard>) null);
+        return add(assignment, (CardGroup<MonsterCard>) null, true);
     }
 
     // Internal function behind all the adding fns
     private boolean add(MoveAssignment assignment, String cardLabel) {
+        return add(assignment, cardLabel, true);
+    }
+
+    private boolean add(MoveAssignment assignment, String cardLabel,
+            boolean warnOnEquivalentDuplicate) {
         List<MoveAssignment> cardAssignments = assignmentsByCardId
                 .computeIfAbsent(assignment.getCardId(), ll -> new LinkedList<>());
         for (MoveAssignment existing : cardAssignments) {
@@ -88,7 +99,10 @@ public class MoveAssignments {
                 continue;
             }
             if (existing.hasSameSettings(assignment)) {
-                warnDuplicateAssignment(assignment, cardLabel);
+                if (warnOnEquivalentDuplicate && existing.getSourceFileName()
+                        .equals(assignment.getSourceFileName())) {
+                    warnDuplicateAssignment(assignment, cardLabel);
+                }
                 return false;
             }
             warnConflictingAssignment(assignment, cardLabel);

@@ -34,11 +34,21 @@ public class Rules {
     }
 
     public boolean addMoveExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
-        return moveExclusions.tryAdd(exclusion, cards, moveAssignments);
+        return addMoveExclusion(exclusion, cards, true);
+    }
+
+    public boolean addMoveExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            boolean warnOnEquivalentDuplicate) {
+        return moveExclusions.tryAdd(exclusion, cards, moveAssignments, warnOnEquivalentDuplicate);
     }
 
     public boolean addMoveAssignment(MoveAssignment assignment, CardGroup<MonsterCard> cards) {
-        return moveAssignments.add(assignment, cards);
+        return addMoveAssignment(assignment, cards, true);
+    }
+
+    public boolean addMoveAssignment(MoveAssignment assignment, CardGroup<MonsterCard> cards,
+            boolean warnOnEquivalentDuplicate) {
+        return moveAssignments.add(assignment, cards, warnOnEquivalentDuplicate);
     }
 
     public boolean addMoveAssignment(MoveAssignment assignment) {

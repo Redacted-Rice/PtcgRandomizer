@@ -61,7 +61,13 @@ public class RandomizerCore {
     }
 
     private void loadBundledDefaultRules() {
+        resetRulesToBundledDefaults(popupParent);
+    }
+
+    /** Clears user rules and reloads the shipped unsupported-moves exclusions. */
+    public void resetRulesToBundledDefaults(Component warningParent) {
         IssueTracker.clear();
+        Component parent = warningParent != null ? warningParent : popupParent;
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
             Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(rulesFile),
@@ -70,10 +76,11 @@ public class RandomizerCore {
             if (loaded.isValid() && loaded.hasRules()) {
                 loaded.getRulesConfig().applyTo(rules, null);
             }
-            IssuePresenter.displayWarnings(popupParent, "default rules");
+            rules.syncWithCards(getReferenceMonsterCards());
+            IssuePresenter.displayWarnings(parent, "default rules");
         } catch (IOException e) {
             IssueTracker.addWarning("Failed to load bundled default rules: " + e.getMessage());
-            IssuePresenter.displayWarnings(popupParent, "default rules");
+            IssuePresenter.displayWarnings(parent, "default rules");
         }
     }
 

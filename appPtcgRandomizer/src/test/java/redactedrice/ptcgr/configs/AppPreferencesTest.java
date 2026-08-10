@@ -71,7 +71,8 @@ class AppPreferencesTest {
         AppPreferences original = AppPreferences.fromAppState(LogLevel.DEBUG, false, false, 10, 20,
                 800, 600, romFile.getAbsolutePath(), romDir.toFile(), romFile, outDir.toFile(),
                 patchFile, cfgDir.toFile(), saveConfigFile, loadDir.toFile(), loadConfigFile,
-                cfgDir.toFile(), new File("user_config.yaml"));
+                cfgDir.toFile(), new File("user_config.yaml"), cfgDir.toFile(),
+                new File("actions_config.yaml"));
 
         File output = tempDir.resolve(AppPreferences.DEFAULT_FILE_NAME).toFile();
         original.save(output);
@@ -162,6 +163,7 @@ class AppPreferencesTest {
         assertEquals(YamlIO.DEFAULT_FILE_NAME, prefs.resolveSaveConfigFile().getName());
         assertEquals(YamlIO.DEFAULT_FILE_NAME, prefs.resolveLoadConfigFile().getName());
         assertEquals("user_config.yaml", prefs.resolveExportUserRulesFile().getName());
+        assertEquals("actions_config.yaml", prefs.resolveExportActionsFile().getName());
         assertEquals("ptcg.gbc", prefs.resolveOpenRomFile("ptcg.gbc").getName());
     }
 
