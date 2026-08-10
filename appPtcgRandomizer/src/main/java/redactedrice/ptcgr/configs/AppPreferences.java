@@ -36,7 +36,10 @@ public final class AppPreferences {
     static final String LOAD_CONFIG_FILE_NAME_KEY = "loadConfigFileName";
     static final String EXPORT_USER_RULES_DIRECTORY_KEY = "exportUserRulesDirectory";
     static final String EXPORT_USER_RULES_FILE_NAME_KEY = "exportUserRulesFileName";
-    private static final String DEFAULT_EXPORT_USER_RULES_FILE_NAME = "user_config.yaml";
+    static final String EXPORT_ACTIONS_DIRECTORY_KEY = "exportActionsDirectory";
+    static final String EXPORT_ACTIONS_FILE_NAME_KEY = "exportActionsFileName";
+    private static final String DEFAULT_EXPORT_USER_RULES_FILE_NAME = "user_rules.yaml";
+    private static final String DEFAULT_EXPORT_ACTIONS_FILE_NAME = "user_actions.yaml";
 
     private int formatVersion = CURRENT_FORMAT_VERSION;
     private LogLevel logLevel = LogLevel.INFO;
@@ -57,6 +60,8 @@ public final class AppPreferences {
     private String loadConfigFileName;
     private String exportUserRulesDirectory;
     private String exportUserRulesFileName;
+    private String exportActionsDirectory;
+    private String exportActionsFileName;
 
     public static File defaultFile() {
         return new File(resolveAppDirectory(), DEFAULT_FILE_NAME);
@@ -115,9 +120,9 @@ public final class AppPreferences {
     public static AppPreferences fromAppState(LogLevel logLevel, boolean logDetails,
             boolean saveSettings, int windowX, int windowY, int windowWidth, int windowHeight,
             String lastRomPath, File openRomDirectory, File openRomFile, File patchDirectory,
-            File patchFile, File saveConfigDirectory, File saveConfigFile,
-            File loadConfigDirectory, File loadConfigFile, File exportUserRulesDirectory,
-            File exportUserRulesFile) {
+            File patchFile, File saveConfigDirectory, File saveConfigFile, File loadConfigDirectory,
+            File loadConfigFile, File exportUserRulesDirectory, File exportUserRulesFile,
+            File exportActionsDirectory, File exportActionsFile) {
         AppPreferences prefs = new AppPreferences();
         prefs.setLogLevel(logLevel);
         prefs.setLogDetails(logDetails);
@@ -137,6 +142,8 @@ public final class AppPreferences {
         prefs.setLoadConfigFileName(nameOrNull(loadConfigFile));
         prefs.setExportUserRulesDirectory(pathOrNull(exportUserRulesDirectory));
         prefs.setExportUserRulesFileName(nameOrNull(exportUserRulesFile));
+        prefs.setExportActionsDirectory(pathOrNull(exportActionsDirectory));
+        prefs.setExportActionsFileName(nameOrNull(exportActionsFile));
         return prefs;
     }
 
@@ -149,17 +156,16 @@ public final class AppPreferences {
         prefs.formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY));
 
         prefs.logLevel = parseLogLevel(root.get(LOG_LEVEL_KEY));
-        prefs.logDetails =
-                ParserHelpers.parseBoolean(root.get(LOG_DETAILS_KEY), true, LOG_DETAILS_KEY,
-                        "app preferences");
-        prefs.saveSettings =
-                ParserHelpers.parseBoolean(root.get(SAVE_SETTINGS_KEY), true, SAVE_SETTINGS_KEY,
-                        "app preferences");
+        prefs.logDetails = ParserHelpers.parseBoolean(root.get(LOG_DETAILS_KEY), true,
+                LOG_DETAILS_KEY, "app preferences");
+        prefs.saveSettings = ParserHelpers.parseBoolean(root.get(SAVE_SETTINGS_KEY), true,
+                SAVE_SETTINGS_KEY, "app preferences");
         prefs.windowX = ParserHelpers.parseInteger(root.get(WINDOW_X_KEY));
         prefs.windowY = ParserHelpers.parseInteger(root.get(WINDOW_Y_KEY));
         prefs.windowWidth = ParserHelpers.parseInteger(root.get(WINDOW_WIDTH_KEY));
         prefs.windowHeight = ParserHelpers.parseInteger(root.get(WINDOW_HEIGHT_KEY));
-        prefs.lastRomPath = emptyToNull(ParserHelpers.parseOptionalString(root.get(LAST_ROM_PATH_KEY)));
+        prefs.lastRomPath =
+                emptyToNull(ParserHelpers.parseOptionalString(root.get(LAST_ROM_PATH_KEY)));
         prefs.openRomDirectory =
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(OPEN_ROM_DIRECTORY_KEY)));
         prefs.openRomFileName =
@@ -168,18 +174,22 @@ public final class AppPreferences {
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(PATCH_DIRECTORY_KEY)));
         prefs.patchFileName =
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(PATCH_FILE_NAME_KEY)));
-        prefs.saveConfigDirectory = emptyToNull(
-                ParserHelpers.parseOptionalString(root.get(SAVE_CONFIG_DIRECTORY_KEY)));
+        prefs.saveConfigDirectory =
+                emptyToNull(ParserHelpers.parseOptionalString(root.get(SAVE_CONFIG_DIRECTORY_KEY)));
         prefs.saveConfigFileName =
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(SAVE_CONFIG_FILE_NAME_KEY)));
-        prefs.loadConfigDirectory = emptyToNull(
-                ParserHelpers.parseOptionalString(root.get(LOAD_CONFIG_DIRECTORY_KEY)));
+        prefs.loadConfigDirectory =
+                emptyToNull(ParserHelpers.parseOptionalString(root.get(LOAD_CONFIG_DIRECTORY_KEY)));
         prefs.loadConfigFileName =
                 emptyToNull(ParserHelpers.parseOptionalString(root.get(LOAD_CONFIG_FILE_NAME_KEY)));
-        prefs.exportUserRulesDirectory = emptyToNull(ParserHelpers
-                .parseOptionalString(root.get(EXPORT_USER_RULES_DIRECTORY_KEY)));
-        prefs.exportUserRulesFileName = emptyToNull(ParserHelpers
-                .parseOptionalString(root.get(EXPORT_USER_RULES_FILE_NAME_KEY)));
+        prefs.exportUserRulesDirectory = emptyToNull(
+                ParserHelpers.parseOptionalString(root.get(EXPORT_USER_RULES_DIRECTORY_KEY)));
+        prefs.exportUserRulesFileName = emptyToNull(
+                ParserHelpers.parseOptionalString(root.get(EXPORT_USER_RULES_FILE_NAME_KEY)));
+        prefs.exportActionsDirectory = emptyToNull(
+                ParserHelpers.parseOptionalString(root.get(EXPORT_ACTIONS_DIRECTORY_KEY)));
+        prefs.exportActionsFileName = emptyToNull(
+                ParserHelpers.parseOptionalString(root.get(EXPORT_ACTIONS_FILE_NAME_KEY)));
         return prefs;
     }
 
@@ -204,6 +214,8 @@ public final class AppPreferences {
         putIfNotNull(root, LOAD_CONFIG_FILE_NAME_KEY, loadConfigFileName);
         putIfNotNull(root, EXPORT_USER_RULES_DIRECTORY_KEY, exportUserRulesDirectory);
         putIfNotNull(root, EXPORT_USER_RULES_FILE_NAME_KEY, exportUserRulesFileName);
+        putIfNotNull(root, EXPORT_ACTIONS_DIRECTORY_KEY, exportActionsDirectory);
+        putIfNotNull(root, EXPORT_ACTIONS_FILE_NAME_KEY, exportActionsFileName);
         return root;
     }
 
@@ -401,6 +413,22 @@ public final class AppPreferences {
         this.exportUserRulesFileName = emptyToNull(exportUserRulesFileName);
     }
 
+    public String getExportActionsDirectory() {
+        return exportActionsDirectory;
+    }
+
+    public void setExportActionsDirectory(String exportActionsDirectory) {
+        this.exportActionsDirectory = emptyToNull(exportActionsDirectory);
+    }
+
+    public String getExportActionsFileName() {
+        return exportActionsFileName;
+    }
+
+    public void setExportActionsFileName(String exportActionsFileName) {
+        this.exportActionsFileName = emptyToNull(exportActionsFileName);
+    }
+
     public File resolveLastRomFile() {
         if (lastRomPath != null) {
             File rom = new File(lastRomPath);
@@ -416,7 +444,8 @@ public final class AppPreferences {
     }
 
     public File resolvePatchFile() {
-        return resolveNamedFile(patchDirectory, patchFileName, RandomizerCore.DEFAULT_PATCH_BASE_NAME);
+        return resolveNamedFile(patchDirectory, patchFileName,
+                RandomizerCore.DEFAULT_PATCH_BASE_NAME);
     }
 
     public File resolveSaveConfigFile() {
@@ -432,6 +461,11 @@ public final class AppPreferences {
                 DEFAULT_EXPORT_USER_RULES_FILE_NAME);
     }
 
+    public File resolveExportActionsFile() {
+        return resolveNamedFile(exportActionsDirectory, exportActionsFileName,
+                DEFAULT_EXPORT_ACTIONS_FILE_NAME);
+    }
+
     public static void applyChooserDirectory(javax.swing.JFileChooser chooser,
             String directoryPath) {
         if (directoryPath != null) {
@@ -444,7 +478,8 @@ public final class AppPreferences {
         chooser.setCurrentDirectory(resolveAppDirectory());
     }
 
-    private static File resolveNamedFile(String directoryPath, String fileName, String defaultName) {
+    private static File resolveNamedFile(String directoryPath, String fileName,
+            String defaultName) {
         String name = fileName != null && !fileName.isBlank() ? fileName : defaultName;
         if (directoryPath != null && !directoryPath.isBlank()) {
             File dir = new File(directoryPath);

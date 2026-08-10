@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.randomizer.gui.rules;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -15,6 +16,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -22,6 +24,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
@@ -50,6 +53,9 @@ public class RulesPanel extends JPanel {
 
     public static final String USER_ADDED_SOURCE = "user added";
 
+    private static final String ASSIGNMENTS_NO_ROM_PLACEHOLDER =
+            "Open a ROM to view and edit move assignments.";
+
     private static final int SECTION_SCROLL_WIDTH = 1000;
     private static final int SECTION_SCROLL_HEIGHT = 180;
 
@@ -60,13 +66,18 @@ public class RulesPanel extends JPanel {
     private static final Comparator<String> MOVE_NAME_ORDER =
             String.CASE_INSENSITIVE_ORDER;
 
+    private static final String DEFAULT_EXPORT_ALL_RULES_FILE_NAME = "all_rules.yaml";
+
     private final JFileChooser exportUserRulesChooser = new JFileChooser();
+    private final JFileChooser exportAllRulesChooser = new JFileChooser();
     private final RandomizerCore randomizerCore;
     private final AppPreferences appPreferences;
     private final RandomizerApp app;
     private final MoveExclusionsTableModel exclusionsModel;
     private final MoveAssignmentsTableModel assignmentsModel;
     private JButton addAssignmentButton;
+    private CardLayout assignmentsContentLayout;
+    private JPanel assignmentsContentPanel;
 
     public RulesPanel(RandomizerCore randomizerCore, AppPreferences appPreferences,
             RandomizerApp app) {
@@ -74,6 +85,8 @@ public class RulesPanel extends JPanel {
         this.appPreferences = appPreferences;
         this.app = app;
         exportUserRulesChooser.setFileFilter(
+                new FileNameExtensionFilter("YAML files", "yaml", "yml"));
+        exportAllRulesChooser.setFileFilter(
                 new FileNameExtensionFilter("YAML files", "yaml", "yml"));
         applyExportChooserPreferences();
         exclusionsModel = new MoveExclusionsTableModel();
@@ -86,6 +99,18 @@ public class RulesPanel extends JPanel {
         AppPreferences.applyChooserDirectory(exportUserRulesChooser,
                 appPreferences.getExportUserRulesDirectory());
         exportUserRulesChooser.setSelectedFile(appPreferences.resolveExportUserRulesFile());
+        AppPreferences.applyChooserDirectory(exportAllRulesChooser,
+                appPreferences.getExportUserRulesDirectory());
+        exportAllRulesChooser.setSelectedFile(resolveExportAllRulesFile());
+    }
+
+    private File resolveExportAllRulesFile() {
+        File userRulesFile = appPreferences.resolveExportUserRulesFile();
+        File directory = userRulesFile.getParentFile();
+        if (directory != null && directory.isDirectory()) {
+            return new File(directory, DEFAULT_EXPORT_ALL_RULES_FILE_NAME);
+        }
+        return new File(DEFAULT_EXPORT_ALL_RULES_FILE_NAME);
     }
 
     public File getExportUserRulesDirectory() {
@@ -107,6 +132,15 @@ public class RulesPanel extends JPanel {
         if (addAssignmentButton != null) {
             addAssignmentButton.setEnabled(randomizerCore.isRomLoaded());
         }
+        updateAssignmentsContentVisibility();
+    }
+
+    private void updateAssignmentsContentVisibility() {
+        if (assignmentsContentLayout == null) {
+            return;
+        }
+        String card = randomizerCore.isRomLoaded() ? "table" : "placeholder";
+        assignmentsContentLayout.show(assignmentsContentPanel, card);
     }
 
     private List<AssignmentRow> buildAssignmentRows() {
@@ -142,8 +176,7 @@ public class RulesPanel extends JPanel {
 
         JPanel exclusionsSection = createSection("Move Exclusions", exclusionsTable,
                 () -> addExclusion());
-        JPanel assignmentsSection = createSection("Move Assignments", assignmentsTable,
-                () -> addAssignment());
+        JPanel assignmentsSection = createAssignmentsSection(assignmentsTable);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, exclusionsSection,
                 assignmentsSection);
@@ -152,12 +185,46 @@ public class RulesPanel extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JButton exportAllButton = new JButton("Export All Rules");
+        exportAllButton.setToolTipText(
+                "Save all active exclusions and assignments to a YAML file.");
+        exportAllButton.addActionListener(event -> exportAllRules());
+        footer.add(exportAllButton);
         JButton exportButton = new JButton("Export Added Rules");
         exportButton.setToolTipText(
                 "Save user added exclusions and assignments to a YAML file.");
         exportButton.addActionListener(event -> exportUserAddedRules());
         footer.add(exportButton);
         add(footer, BorderLayout.SOUTH);
+    }
+
+    private void exportAllRules() {
+        RulesConfig exportConfig = RulesConfig.fromRules(randomizerCore.getRules(),
+                randomizerCore.getReferenceMonsterCards());
+        if (exportConfig.getMoveExclusionConfigs().isEmpty()
+                && exportConfig.getMoveAssignmentConfigs().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "There are no rules to export.",
+                    "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        applyExportChooserPreferences();
+        if (exportAllRulesChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File exportPath = FileExtensionUtils.ensureExtension(
+                exportAllRulesChooser.getSelectedFile(), YamlIO.FILE_EXTENSION);
+        try {
+            YamlIO.save(exportPath, Config.convertRulesOnlyToYamlMap(exportConfig));
+            appPreferences.setExportUserRulesDirectory(
+                    exportAllRulesChooser.getCurrentDirectory().getAbsolutePath());
+            app.saveAppPreferencesQuietly();
+        } catch (IOException error) {
+            error.printStackTrace();
+            JOptionPane.showMessageDialog(this, error.getMessage(), "Export Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void exportUserAddedRules() {
@@ -262,6 +329,43 @@ public class RulesPanel extends JPanel {
         }
     }
 
+    private JPanel createAssignmentsSection(JTable table) {
+        JPanel section = new JPanel(new GridBagLayout());
+        section.setBorder(BorderFactory.createTitledBorder("Move Assignments"));
+
+        GridBagConstraints contentConstraints = new GridBagConstraints();
+        contentConstraints.gridx = 0;
+        contentConstraints.gridy = 0;
+        contentConstraints.weightx = 1;
+        contentConstraints.weighty = 1;
+        contentConstraints.fill = GridBagConstraints.BOTH;
+        contentConstraints.insets = new Insets(0, 4, 4, 4);
+
+        assignmentsContentLayout = new CardLayout();
+        assignmentsContentPanel = new JPanel(assignmentsContentLayout);
+
+        JLabel placeholder = new JLabel(ASSIGNMENTS_NO_ROM_PLACEHOLDER, SwingConstants.CENTER);
+        assignmentsContentPanel.add(placeholder, "placeholder");
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(SECTION_SCROLL_WIDTH, SECTION_SCROLL_HEIGHT));
+        assignmentsContentPanel.add(scrollPane, "table");
+        section.add(assignmentsContentPanel, contentConstraints);
+
+        GridBagConstraints addConstraints = new GridBagConstraints();
+        addConstraints.gridx = 0;
+        addConstraints.gridy = 1;
+        addConstraints.anchor = GridBagConstraints.EAST;
+        addConstraints.insets = new Insets(0, 4, 4, 4);
+
+        addAssignmentButton = StructuredGridHelpers.createAddButton(true);
+        addAssignmentButton.addActionListener(event -> addAssignment());
+        addAssignmentButton.setEnabled(randomizerCore.isRomLoaded());
+        section.add(addAssignmentButton, addConstraints);
+        updateAssignmentsContentVisibility();
+        return section;
+    }
+
     private JPanel createSection(String title, JTable table, Runnable onAdd) {
         JPanel section = new JPanel(new GridBagLayout());
         section.setBorder(BorderFactory.createTitledBorder(title));
@@ -287,10 +391,6 @@ public class RulesPanel extends JPanel {
         JButton addButton = StructuredGridHelpers.createAddButton(true);
         addButton.addActionListener(event -> onAdd.run());
         section.add(addButton, addConstraints);
-        if ("Move Assignments".equals(title)) {
-            addAssignmentButton = addButton;
-            addButton.setEnabled(randomizerCore.isRomLoaded());
-        }
         return section;
     }
 

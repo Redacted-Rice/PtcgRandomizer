@@ -7,30 +7,49 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
+import redactedrice.ptcgr.configs.AppPreferences;
+import redactedrice.ptcgr.configs.Config;
+import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
+import redactedrice.ptcgr.randomizer.gui.RandomizerApp;
 import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CategoryChangedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CopySelectedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.listener.RemoveSelectedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsListTableModel;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsSelectedTableModel;
+import redactedrice.ptcgr.utils.FileExtensionUtils;
 
 public class DualTableSelector extends JPanel {
     private static final long serialVersionUID = 1L;
     private final ActionsSelectedTableModel selectedModel;
+    private final AppPreferences appPreferences;
+    private final RandomizerApp app;
+    private final JFileChooser exportActionsChooser = new JFileChooser();
 
-    public DualTableSelector(ActionBank actions) {
+    public DualTableSelector(ActionBank actions, AppPreferences appPreferences, RandomizerApp app) {
+        this.appPreferences = appPreferences;
+        this.app = app;
         selectedModel = new ActionsSelectedTableModel();
+        exportActionsChooser.setFileFilter(
+                new FileNameExtensionFilter("YAML files", "yaml", "yml"));
+        applyExportChooserPreferences();
         createUI(actions);
     }
 
@@ -40,6 +59,48 @@ public class DualTableSelector extends JPanel {
 
     public void setSelectedActions(List<Action> actions) {
         selectedModel.setRows(actions);
+    }
+
+    void applyExportChooserPreferences() {
+        AppPreferences.applyChooserDirectory(exportActionsChooser,
+                appPreferences.getExportActionsDirectory());
+        exportActionsChooser.setSelectedFile(appPreferences.resolveExportActionsFile());
+    }
+
+    public File getExportActionsDirectory() {
+        return exportActionsChooser.getCurrentDirectory();
+    }
+
+    public File getExportActionsSelectedFile() {
+        return exportActionsChooser.getSelectedFile();
+    }
+
+    private void exportActions() {
+        List<Action> actions = getSelectedActions();
+        if (actions.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Add at least one module to the selected list.",
+                    "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        applyExportChooserPreferences();
+        if (exportActionsChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File exportPath = FileExtensionUtils.ensureExtension(
+                exportActionsChooser.getSelectedFile(), YamlIO.FILE_EXTENSION);
+        try {
+            YamlIO.save(exportPath, Config.convertActionsOnlyToYamlMap(actions));
+            appPreferences.setExportActionsDirectory(
+                    exportActionsChooser.getCurrentDirectory().getAbsolutePath());
+            appPreferences.setExportActionsFileName(exportPath.getName());
+            app.saveAppPreferencesQuietly();
+        } catch (IOException error) {
+            error.printStackTrace();
+            JOptionPane.showMessageDialog(this, error.getMessage(), "Export Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void createUI(ActionBank actions) {
@@ -177,9 +238,18 @@ public class DualTableSelector extends JPanel {
 
         // Use BorderLayout for the main DualTablePanel: add the topPanel in the NORTH and
         // the columnsPanel in the CENTER.
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 8));
+        setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         add(topPanel, BorderLayout.NORTH);
         add(columnsPanel, BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JButton exportButton = new JButton("Export Actions");
+        exportButton.setToolTipText(
+                "Save the selected module list and settings to a YAML file.");
+        exportButton.addActionListener(event -> exportActions());
+        footer.add(exportButton);
+        add(footer, BorderLayout.SOUTH);
         setVisible(true);
     }
 }

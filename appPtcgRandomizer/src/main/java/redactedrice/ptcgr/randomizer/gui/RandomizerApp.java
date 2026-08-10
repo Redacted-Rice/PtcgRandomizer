@@ -43,6 +43,7 @@ import redactedrice.randomizer.utils.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class RandomizerApp {
 
@@ -258,6 +259,12 @@ public class RandomizerApp {
         importConfigsButton.addActionListener(event -> importConfigsFromFile());
         openRomPanel.add(importConfigsButton);
 
+        JButton resetConfigsButton = new JButton("Reset Configs");
+        resetConfigsButton.setToolTipText(
+                "Reset selected config sections back to their default values.");
+        resetConfigsButton.addActionListener(event -> resetConfigsToDefaults());
+        openRomPanel.add(resetConfigsButton);
+
         JTabbedPane actionsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(actionsTab, BorderLayout.CENTER);
 
@@ -265,7 +272,7 @@ public class RandomizerApp {
         actionsTab.addTab("Rules", null, rulesPanel,
                 "Move exclusions and assignments applied during randomization");
 
-        dualPanel = new DualTableSelector(randomizer.getActionBank());
+        dualPanel = new DualTableSelector(randomizer.getActionBank(), appPreferences, this);
         actionsTab.addTab("Actions", null, dualPanel, null);
         actionsTab.setSelectedComponent(dualPanel);
 
@@ -354,7 +361,9 @@ public class RandomizerApp {
                 saveConfigChooser.getSelectedFile(), loadConfigChooser.getCurrentDirectory(),
                 loadConfigChooser.getSelectedFile(),
                 rulesPanel.getExportUserRulesDirectory(),
-                rulesPanel.getExportUserRulesSelectedFile());
+                rulesPanel.getExportUserRulesSelectedFile(),
+                dualPanel.getExportActionsDirectory(),
+                dualPanel.getExportActionsSelectedFile());
     }
 
     private Settings createSettingsFromState() {
@@ -392,17 +401,19 @@ public class RandomizerApp {
                 IssuePresenter.finishPhase(frmTradingCard, "config import");
                 return;
             }
-            if (loaded.hasSeed()) {
-                saveSetSeedVal.setText(loaded.getSeed());
+            if (!loaded.hasRules() && !loaded.hasActionsSection() && !loaded.hasSeed()) {
+                JOptionPane.showMessageDialog(frmTradingCard,
+                        "The selected file does not contain any importable config sections.",
+                        "Nothing to Import", JOptionPane.INFORMATION_MESSAGE);
+                return;
             }
-            loaded.checkScripts(randomizer.getActionBank());
-            if (loaded.hasActions()) {
-                dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
+
+            Optional<ConfigSectionsDialog.Selection> selection =
+                    ConfigSectionsDialog.showImport(frmTradingCard, loaded);
+            if (selection.isEmpty()) {
+                return;
             }
-            if (loaded.hasRules()) {
-                randomizer.mergeRulesFromConfig(loaded.getRulesConfig());
-            }
-            rulesPanel.refresh();
+            applyImportedConfig(loaded, selection.get());
             IssuePresenter.finishPhase(frmTradingCard, "config import");
             saveAppPreferencesQuietly();
         } catch (IOException ioError) {
@@ -410,6 +421,49 @@ public class RandomizerApp {
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
                     "Config Import Failed", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void applyImportedConfig(Config loaded, ConfigSectionsDialog.Selection selection) {
+        if (selection.generalSettings() && loaded.hasSeed()) {
+            saveSetSeedVal.setText(loaded.getSeed());
+        }
+        if (selection.actions()) {
+            if (loaded.hasActions() || loaded.hasPreScripts() || loaded.hasPostScripts()) {
+                loaded.checkScripts(randomizer.getActionBank());
+            }
+            if (loaded.hasActions()) {
+                dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
+            }
+        }
+        if (selection.rules() && loaded.hasRules()) {
+            randomizer.mergeRulesFromConfig(loaded.getRulesConfig());
+        }
+        rulesPanel.refresh();
+    }
+
+    private void resetConfigsToDefaults() {
+        Optional<ConfigSectionsDialog.Selection> selection =
+                ConfigSectionsDialog.showReset(frmTradingCard);
+        if (selection.isEmpty()) {
+            return;
+        }
+
+        ConfigSectionsDialog.Selection chosen = selection.get();
+        if (chosen.generalSettings()) {
+            saveSetSeedVal.setText("Random");
+            logLevelCombo.setSelectedItem(LogLevel.INFO);
+            saveLogDetailsBox.setSelected(true);
+            saveSettingsBox.setSelected(true);
+            applyLogLevelFromUi();
+        }
+        if (chosen.actions()) {
+            dualPanel.setSelectedActions(List.of());
+        }
+        if (chosen.rules()) {
+            randomizer.resetRulesToBundledDefaults(frmTradingCard);
+        }
+        rulesPanel.refresh();
+        saveAppPreferencesQuietly();
     }
 
     private void openRomIfExists() {

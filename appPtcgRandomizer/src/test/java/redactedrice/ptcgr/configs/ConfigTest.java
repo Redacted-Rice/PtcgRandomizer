@@ -598,6 +598,46 @@ class ConfigTest {
     }
 
     @Test
+    void convertActionsOnlyToYamlMapUsesConfigStructure() {
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
+        Action action = actionBank.getModule("shuffle_hp") != null
+                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
+                : null;
+        assertTrue(action != null);
+
+        Map<String, Object> document = Config.convertActionsOnlyToYamlMap(List.of(action));
+
+        assertEquals(Config.CURRENT_FORMAT_VERSION, document.get("version"));
+        assertEquals(PtcgRandomizerVersion.VERSION, document.get("appVersion"));
+        assertFalse(document.containsKey("seed"));
+        assertFalse(document.containsKey("rules"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> actions = (List<Map<String, Object>>) document.get("actions");
+        assertEquals(1, actions.size());
+        assertEquals("shuffle_hp", actions.get(0).get("module"));
+    }
+
+    @Test
+    void actionsOnlyExportRoundTripsThroughPartialImport() throws Exception {
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
+        Action action = actionBank.getModule("shuffle_hp") != null
+                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
+                : null;
+        assertTrue(action != null);
+
+        Path actionsFile = tempDir.resolve("actions_config.yaml");
+        YamlIO.save(actionsFile.toFile(), Config.convertActionsOnlyToYamlMap(List.of(action)));
+
+        IssueTracker.clear();
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(actionsFile.toFile()),
+                actionsFile.getFileName().toString());
+
+        assertTrue(!IssueTracker.hasWarnings());
+        assertTrue(loaded.hasActions());
+        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+    }
+
+    @Test
     void rulesOnlyExportRoundTripsThroughPartialImport() throws Exception {
         RulesConfig rules = new RulesConfig("user added",
                 List.of(new MoveExclusionConfig("user added", true, true, "TestMove",

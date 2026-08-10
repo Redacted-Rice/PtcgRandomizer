@@ -93,7 +93,7 @@ public final class RulesConfig {
                 MoveExclusion exclusion = moveExclusionConfigs.get(i).toMoveExclusion(cards,
                         sourceLabel, entryContext);
                 if (exclusion != null) {
-                    rules.addMoveExclusion(exclusion, cards);
+                    rules.addMoveExclusion(exclusion, cards, false);
                 }
             }
         }
@@ -103,7 +103,7 @@ public final class RulesConfig {
                 MoveAssignment assignment = moveAssignmentConfigs.get(i).toMoveAssignment(cards,
                         sourceLabel, entryContext);
                 if (assignment != null) {
-                    rules.addMoveAssignment(assignment, cards);
+                    rules.addMoveAssignment(assignment, cards, false);
                 }
             }
         }
