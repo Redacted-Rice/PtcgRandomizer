@@ -17,9 +17,7 @@ import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 
-/**
- * In memory representation of saved randomizer settings. Used for both saving and loading.
- */
+/** App config for save and load. Load only applies sections that were in the file. */
 public final class Config {
     public static final int CURRENT_FORMAT_VERSION = 1;
 
@@ -44,6 +42,13 @@ public final class Config {
     static final String RULES_KEY = "rules";
     private final RulesConfig rulesConfig;
 
+    private final boolean metadataValid;
+    private final boolean seedLoaded;
+    private final boolean actionsLoaded;
+    private final boolean preScriptsLoaded;
+    private final boolean postScriptsLoaded;
+    private final boolean rulesLoaded;
+
     public Config(String seed, List<ActionConfig> actionConfigs,
             List<ScriptConfig> preScriptConfigs, List<ScriptConfig> postScriptConfigs,
             RulesConfig rulesConfig) {
@@ -54,6 +59,15 @@ public final class Config {
     public Config(int formatVersion, String appVersion, String seed,
             List<ActionConfig> actionConfigs, List<ScriptConfig> preScriptConfigs,
             List<ScriptConfig> postScriptConfigs, RulesConfig rulesConfig) {
+        this(formatVersion, appVersion, seed, actionConfigs, preScriptConfigs, postScriptConfigs,
+                rulesConfig, true, true, true, true, true, true);
+    }
+
+    private Config(int formatVersion, String appVersion, String seed,
+            List<ActionConfig> actionConfigs, List<ScriptConfig> preScriptConfigs,
+            List<ScriptConfig> postScriptConfigs, RulesConfig rulesConfig, boolean metadataValid,
+            boolean seedLoaded, boolean actionsLoaded, boolean preScriptsLoaded,
+            boolean postScriptsLoaded, boolean rulesLoaded) {
         this.formatVersion = formatVersion;
         this.appVersion = appVersion;
         this.seed = Objects.requireNonNull(seed, "seed");
@@ -61,6 +75,67 @@ public final class Config {
         this.preScriptConfigs = List.copyOf(preScriptConfigs);
         this.postScriptConfigs = List.copyOf(postScriptConfigs);
         this.rulesConfig = Objects.requireNonNull(rulesConfig, "rulesConfig");
+        this.metadataValid = metadataValid;
+        this.seedLoaded = seedLoaded;
+        this.actionsLoaded = actionsLoaded;
+        this.preScriptsLoaded = preScriptsLoaded;
+        this.postScriptsLoaded = postScriptsLoaded;
+        this.rulesLoaded = rulesLoaded;
+    }
+
+    public static Config readFromLoadedYamlMap(Map<String, Object> root, String sourceLabel) {
+        if (root == null || root.isEmpty()) {
+            IssueTracker.addWarning(sourceLabel + ": file is empty.");
+            return invalidLoad();
+        }
+
+        if (!root.containsKey(FORMAT_VERSION_KEY)) {
+            IssueTracker.addWarning(
+                    sourceLabel + ": missing required field \"" + FORMAT_VERSION_KEY + "\".");
+            return invalidLoad();
+        }
+
+        if (!root.containsKey(APP_VERSION_KEY)) {
+            IssueTracker.addWarning(
+                    sourceLabel + ": missing required field \"" + APP_VERSION_KEY + "\".");
+            return invalidLoad();
+        }
+
+        int formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY), sourceLabel);
+        String appVersion = parseAppVersion(root.get(APP_VERSION_KEY), sourceLabel);
+        if (appVersion == null) {
+            return invalidLoad();
+        }
+
+        boolean seedLoaded = root.containsKey(SEED_KEY);
+        boolean actionsLoaded = root.containsKey(ACTIONS_KEY);
+        boolean preScriptsLoaded = root.containsKey(PRESCRIPTS_KEY);
+        boolean postScriptsLoaded = root.containsKey(POSTSCRIPTS_KEY);
+        boolean rulesLoaded = root.containsKey(RULES_KEY);
+
+        String seed = seedLoaded
+                ? parseSeedValue(root.get(SEED_KEY), sourceLabel)
+                : "Random";
+        List<ActionConfig> actions = actionsLoaded
+                ? parseActions(root.get(ACTIONS_KEY), sourceLabel)
+                : List.of();
+        List<ScriptConfig> preScripts = preScriptsLoaded
+                ? parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY, sourceLabel)
+                : List.of();
+        List<ScriptConfig> postScripts = postScriptsLoaded
+                ? parseScripts(root.get(POSTSCRIPTS_KEY), POSTSCRIPTS_KEY, sourceLabel)
+                : List.of();
+        RulesConfig rules = rulesLoaded
+                ? parseRules(root.get(RULES_KEY), sourceLabel)
+                : RulesConfig.empty();
+
+        return new Config(formatVersion, appVersion, seed, actions, preScripts, postScripts, rules,
+                true, seedLoaded, actionsLoaded, preScriptsLoaded, postScriptsLoaded, rulesLoaded);
+    }
+
+    private static Config invalidLoad() {
+        return new Config(CURRENT_FORMAT_VERSION, null, "Random", List.of(), List.of(), List.of(),
+                RulesConfig.empty(), false, false, false, false, false, false);
     }
 
     private static List<ActionConfig> convertActions(List<Action> actions) {
@@ -89,24 +164,6 @@ public final class Config {
         return new Config(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed,
                 convertActions(actions), convertScripts(actionBank.getPreScripts()),
                 convertScripts(actionBank.getPostScripts()), rulesConfig);
-    }
-
-    public static Config readFromLoadedYamlMap(Map<String, Object> root, String sourceLabel) {
-        if (root == null) {
-            IssueTracker.addWarning(sourceLabel + ": config file is empty.");
-            return empty();
-        }
-
-        int formatVersion = parseFormatVersion(root.get(FORMAT_VERSION_KEY));
-        String appVersion = parseAppVersion(root.get(APP_VERSION_KEY));
-        String seed = parseSeed(root.get(SEED_KEY));
-        List<ActionConfig> actions = parseActions(root.get(ACTIONS_KEY));
-        List<ScriptConfig> preScripts =
-                parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY);
-        List<ScriptConfig> postScripts =
-                parseScripts(root.get(POSTSCRIPTS_KEY), POSTSCRIPTS_KEY);
-        RulesConfig rules = parseRules(root.get(RULES_KEY), sourceLabel);
-        return new Config(formatVersion, appVersion, seed, actions, preScripts, postScripts, rules);
     }
 
     private static List<Map<String, Object>> convertToYamlMapActions(
@@ -139,6 +196,38 @@ public final class Config {
         root.put(POSTSCRIPTS_KEY, convertToYamlMapScripts(postScriptConfigs));
         root.put(RULES_KEY, rulesConfig.convertToYamlMap());
         return root;
+    }
+
+    public static Map<String, Object> convertRulesOnlyToYamlMap(RulesConfig rulesConfig) {
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put(FORMAT_VERSION_KEY, CURRENT_FORMAT_VERSION);
+        root.put(APP_VERSION_KEY, PtcgRandomizerVersion.VERSION);
+        root.put(RULES_KEY, rulesConfig.convertToYamlMap());
+        return root;
+    }
+
+    public boolean isValid() {
+        return metadataValid;
+    }
+
+    public boolean hasSeed() {
+        return seedLoaded;
+    }
+
+    public boolean hasActions() {
+        return actionsLoaded;
+    }
+
+    public boolean hasPreScripts() {
+        return preScriptsLoaded;
+    }
+
+    public boolean hasPostScripts() {
+        return postScriptsLoaded;
+    }
+
+    public boolean hasRules() {
+        return rulesLoaded && rulesConfig.hasAnySection();
     }
 
     public int getFormatVersion() {
@@ -181,67 +270,70 @@ public final class Config {
     }
 
     public void checkScripts(ActionBank actionBank) {
-        ScriptConfig.checkAndWarnDifferences(PRESCRIPTS_KEY, preScriptConfigs,
-                actionBank.getPreScripts(), actionBank);
-        ScriptConfig.checkAndWarnDifferences(POSTSCRIPTS_KEY, postScriptConfigs,
-                actionBank.getPostScripts(), actionBank);
+        if (preScriptsLoaded) {
+            ScriptConfig.checkAndWarnDifferences(PRESCRIPTS_KEY, preScriptConfigs,
+                    actionBank.getPreScripts(), actionBank);
+        }
+        if (postScriptsLoaded) {
+            ScriptConfig.checkAndWarnDifferences(POSTSCRIPTS_KEY, postScriptConfigs,
+                    actionBank.getPostScripts(), actionBank);
+        }
     }
 
-    private static int parseFormatVersion(Object value) {
+    private static int parseFormatVersion(Object value, String sourceLabel) {
         Integer version = ParserHelpers.parseInteger(value);
         if (version == null) {
-            IssueTracker.addWarning(
-                    "Missing or invalid version; assuming version " + CURRENT_FORMAT_VERSION + ".");
+            IssueTracker.addWarning(sourceLabel + ": invalid \"" + FORMAT_VERSION_KEY
+                    + "\"; assuming version " + CURRENT_FORMAT_VERSION + ".");
             return CURRENT_FORMAT_VERSION;
         }
         if (version > CURRENT_FORMAT_VERSION) {
-            IssueTracker.addWarning("Config version " + version + " is newer than supported version "
-                    + CURRENT_FORMAT_VERSION + ".");
+            IssueTracker.addWarning(sourceLabel + ": version " + version
+                    + " is newer than supported version " + CURRENT_FORMAT_VERSION + ".");
         }
         return version;
     }
 
-    private static void checkAndWarnAppVersionMismatch(String savedAppVersion) {
-        if (savedAppVersion == null || savedAppVersion.isBlank()) {
-            IssueTracker.addWarning("Config is missing an appVersion.");
-            return;
-        }
-        if (!savedAppVersion.equals(PtcgRandomizerVersion.VERSION)) {
-            IssueTracker.addWarning("Config was saved with PtcgRandomizer " + savedAppVersion
-                    + "; current version is " + PtcgRandomizerVersion.VERSION + ".");
-        }
-    }
-
-    private static String parseAppVersion(Object value) {
+    private static String parseAppVersion(Object value, String sourceLabel) {
         if (value == null) {
-            IssueTracker.addWarning("Config is missing an appVersion.");
+            IssueTracker.addWarning(
+                    sourceLabel + ": missing required field \"" + APP_VERSION_KEY + "\".");
             return null;
         }
         if (value instanceof String appVersionText) {
             if (appVersionText.isBlank()) {
-                IssueTracker.addWarning("appVersion cannot be blank.");
+                IssueTracker.addWarning(
+                        sourceLabel + ": required field \"" + APP_VERSION_KEY + "\" is empty.");
                 return null;
             }
-            checkAndWarnAppVersionMismatch(appVersionText);
+            checkAndWarnAppVersionMismatch(appVersionText, sourceLabel);
             return appVersionText;
         }
         if (value instanceof Number number) {
-            String appVersion = String.valueOf(number);
-            checkAndWarnAppVersionMismatch(appVersion);
-            return appVersion;
+            String parsed = String.valueOf(number);
+            checkAndWarnAppVersionMismatch(parsed, sourceLabel);
+            return parsed;
         }
-        IssueTracker.addWarning("appVersion must be a string or number.");
+        IssueTracker.addWarning(
+                sourceLabel + ": \"" + APP_VERSION_KEY + "\" must be a string or number.");
         return null;
     }
 
-    private static String parseSeed(Object value) {
+    private static void checkAndWarnAppVersionMismatch(String savedAppVersion, String sourceLabel) {
+        if (!savedAppVersion.equals(PtcgRandomizerVersion.VERSION)) {
+            IssueTracker.addWarning(sourceLabel + ": saved with PtcgRandomizer " + savedAppVersion
+                    + "; current version is " + PtcgRandomizerVersion.VERSION + ".");
+        }
+    }
+
+    private static String parseSeedValue(Object value, String sourceLabel) {
         if (value == null) {
-            IssueTracker.addWarning("Config is missing seed; \"Random\" will be used.");
             return "Random";
         }
         if (value instanceof String seedText) {
             if (seedText.isBlank()) {
-                IssueTracker.addWarning("Config seed cannot be blank; \"Random\" will be used.");
+                IssueTracker.addWarning(
+                        sourceLabel + ": seed cannot be blank; \"Random\" will be used.");
                 return "Random";
             }
             return seedText;
@@ -249,17 +341,17 @@ public final class Config {
         if (value instanceof Number number) {
             return String.valueOf(number.longValue());
         }
-        IssueTracker.addWarning("Config seed must be a string or number; \"Random\" will be used.");
+        IssueTracker.addWarning(
+                sourceLabel + ": seed must be a string or number; \"Random\" will be used.");
         return "Random";
     }
 
-    private static List<ActionConfig> parseActions(Object value) {
+    private static List<ActionConfig> parseActions(Object value, String sourceLabel) {
         if (value == null) {
-            IssueTracker.addWarning("Config is missing actions; ignoring actions.");
             return List.of();
         }
         if (!(value instanceof List<?> actionNodes)) {
-            IssueTracker.addWarning("Actions must be a list; ignoring actions.");
+            IssueTracker.addWarning(sourceLabel + ": \"" + ACTIONS_KEY + "\" must be a list.");
             return List.of();
         }
 
@@ -281,14 +373,13 @@ public final class Config {
         return actions;
     }
 
-    private static List<ScriptConfig> parseScripts(Object value, String sectionKey) {
+    private static List<ScriptConfig> parseScripts(Object value, String sectionKey,
+            String sourceLabel) {
         if (value == null) {
-            IssueTracker.addWarning(
-                    "Config is missing " + sectionKey + "; ignoring " + sectionKey + ".");
             return List.of();
         }
         if (!(value instanceof List<?> scriptNodes)) {
-            IssueTracker.addWarning(sectionKey + " must be a list; ignoring " + sectionKey + ".");
+            IssueTracker.addWarning(sourceLabel + ": \"" + sectionKey + "\" must be a list.");
             return List.of();
         }
 
@@ -315,7 +406,7 @@ public final class Config {
             return RulesConfig.empty();
         }
         if (!(value instanceof Map<?, ?> rulesMap)) {
-            IssueTracker.addWarning("Rules must be a mapping; using empty rules.");
+            IssueTracker.addWarning(sourceLabel + ": \"" + RULES_KEY + "\" must be a mapping.");
             return RulesConfig.empty();
         }
 

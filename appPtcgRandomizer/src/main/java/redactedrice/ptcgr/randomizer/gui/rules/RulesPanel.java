@@ -28,6 +28,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import redactedrice.ptcgr.configs.AppPreferences;
+import redactedrice.ptcgr.configs.Config;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.MoveAssignmentConfig;
 import redactedrice.ptcgr.configs.rules.MoveExclusionConfig;
@@ -153,7 +154,7 @@ public class RulesPanel extends JPanel {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         JButton exportButton = new JButton("Export Added Rules");
         exportButton.setToolTipText(
-                "Save user added exclusions and assignments to a YAML file for later import.");
+                "Save user added exclusions and assignments to a YAML file.");
         exportButton.addActionListener(event -> exportUserAddedRules());
         footer.add(exportButton);
         add(footer, BorderLayout.SOUTH);
@@ -173,13 +174,13 @@ public class RulesPanel extends JPanel {
             return;
         }
 
-        File exportFile = FileExtensionUtils.ensureExtension(
+        File exportPath = FileExtensionUtils.ensureExtension(
                 exportUserRulesChooser.getSelectedFile(), YamlIO.FILE_EXTENSION);
         try {
-            YamlIO.save(exportFile, exportConfig.convertToYamlMap());
+            YamlIO.save(exportPath, Config.convertRulesOnlyToYamlMap(exportConfig));
             appPreferences.setExportUserRulesDirectory(
                     exportUserRulesChooser.getCurrentDirectory().getAbsolutePath());
-            appPreferences.setExportUserRulesFileName(exportFile.getName());
+            appPreferences.setExportUserRulesFileName(exportPath.getName());
             app.saveAppPreferencesQuietly();
         } catch (IOException error) {
             error.printStackTrace();

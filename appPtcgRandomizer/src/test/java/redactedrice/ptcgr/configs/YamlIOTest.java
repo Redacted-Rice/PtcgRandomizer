@@ -52,12 +52,12 @@ class YamlIOTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = Config.readFromLoadedYamlMap(
+        Config loaded = Config.readFromLoadedYamlMap(
                 YamlIO.load(tempDir.resolve("ptcgr_randomize").toFile()),
                 tempDir.resolve("ptcgr_randomize.yaml").getFileName().toString());
 
         assertTrue(!IssueTracker.hasWarnings());
-        assertEquals("7", config.getSeed());
+        assertEquals("7", loaded.getSeed());
     }
 
     @Test
