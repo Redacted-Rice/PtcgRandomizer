@@ -19,6 +19,7 @@ import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 import redactedrice.ptcgr.data.Card;
+import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.DataManager;
@@ -26,10 +27,10 @@ import redactedrice.rompacker.DataManager;
 public class RomIO {
     private RomIO() {}
 
-    public static RomData readFromFile(File romFile) throws IOException {
+    public static RomData readFromFile(File romFile, Rules rules) throws IOException {
         byte[] rawBytes = Files.readAllBytes(romFile.toPath());
         RomIO.verifyRom(rawBytes);
-        return new RomData(rawBytes, readFromBytes(rawBytes));
+        return new RomData(rawBytes, readFromBytes(rawBytes), rules);
     }
 
     private static void verifyRom(byte[] rawBytes) {

@@ -5,51 +5,43 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.Rules;
 
 public class RomData {
-    // Kept in memory so original can be rebuilt without reopening the file
     public final byte[] rawBytes;
+    /**
+     * Parsed ROM card/text data and never modified by rules. Used for validation
+     * and as a copy source.
+     */
+    public final RandomizationData fromRom;
     public final Rules rules;
-    // Ruled baseline for Lua "original"; rebuilt from rawBytes on ROM load, rules change, and
-    // each randomization pass (after early load validates that rules apply cleanly)
+    /** Ruled baseline for Lua. Created only during a randomization pass. */
     public RandomizationData original;
-    // Deep copy of the freshly ruled original for each randomization pass
+    /** Working copy for Lua. Created only during a randomization pass. */
     public RandomizationData modified;
 
-    public RomData(byte[] rawBytes, RandomizationData original) {
+    public RomData(byte[] rawBytes, RandomizationData fromRom, Rules rules) {
         this.rawBytes = rawBytes;
-        this.original = original;
-        this.rules = new Rules();
-        this.original.bindRules(this.rules);
+        this.fromRom = fromRom;
+        this.rules = rules;
+        this.fromRom.bindRules(this.rules);
     }
 
-    public CardGroup<MonsterCard> getOriginalMonsterCards() {
-        return original.allCards.cards().monsterCards();
-    }
-
-    /**
-     * Re parses card/text data from rawBytes into original with no rules applied yet. Call before
-     * recreating the rules config so assignments resolve against ROM card data.
-     */
-    public void reloadOriginalFromRom() {
-        original = RomIO.readFromBytes(rawBytes);
-        original.bindRules(rules);
+    public CardGroup<MonsterCard> getReferenceMonsterCards() {
+        return fromRom.allCards.cards().monsterCards();
     }
 
     /**
-     * Applies current rules (assignments/locks) to original. Call after the rules config has been
-     * loaded into rules, on ROM open, rules change, or each randomization pass.
-     */
-    public void applyRulesToOriginal() {
-        rules.applyTo(original.allCards.cards().monsterCards());
-    }
-
-    /**
-     * Rebuilds original from ROM bytes, reapplies the current rules, then regenerates modified as
-     * a deep copy. Isolates each randomization from prior Lua mutations of original/modified.
+     * Builds ruled original and modified from fromRom
+     * for one randomization pass.
      */
     public void prepareForModification() {
-        reloadOriginalFromRom();
-        applyRulesToOriginal();
+        original = fromRom.copy();
+        original.bindRules(rules);
+        rules.applyTo(original.allCards.cards().monsterCards());
         modified = original.copy();
         modified.bindRules(rules);
+    }
+
+    public void discardModificationWorkspace() {
+        original = null;
+        modified = null;
     }
 }

@@ -8,6 +8,9 @@ import java.util.Objects;
 import redactedrice.ptcgr.configs.modules.ActionConfig;
 import redactedrice.ptcgr.configs.modules.ScriptConfig;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
+import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
@@ -81,7 +84,8 @@ public final class Config {
     }
 
     public static Config fromAppState(String seed, List<Action> actions, ActionBank actionBank,
-            RulesConfig rulesConfig) {
+            Rules rules, CardGroup<MonsterCard> cards) {
+        RulesConfig rulesConfig = RulesConfig.fromRules(rules, cards);
         return new Config(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed,
                 convertActions(actions), convertScripts(actionBank.getPreScripts()),
                 convertScripts(actionBank.getPostScripts()), rulesConfig);

@@ -24,11 +24,6 @@ public final class MoveExclusionConfig {
 
     private final String sourceLabel;
 
-    public MoveExclusionConfig(boolean removeFromPool, boolean excludeFromRandomization,
-            String move, String card) {
-        this("", removeFromPool, excludeFromRandomization, move, card);
-    }
-
     public MoveExclusionConfig(String sourceLabel, boolean removeFromPool,
             boolean excludeFromRandomization, String move, String card) {
         this.sourceLabel = sourceLabel != null ? sourceLabel : "";
@@ -36,19 +31,6 @@ public final class MoveExclusionConfig {
         this.excludeFromRandomization = excludeFromRandomization;
         this.move = move;
         this.card = card != null ? card : "";
-    }
-
-    public static MoveExclusionConfig fromMoveExclusion(MoveExclusion exclusion,
-            CardGroup<MonsterCard> cards) {
-        String cardSpecifier = "";
-        if (exclusion.isCardIdSet()) {
-            MonsterCard monster = cards.withId(exclusion.getCardId());
-            if (monster != null) {
-                cardSpecifier = monster.toNameWithLevelSpecifier();
-            }
-        }
-        return new MoveExclusionConfig(exclusion.getSourceFileName(), exclusion.isRemoveFromPool(),
-                exclusion.isExcludeFromRandomization(), exclusion.getMoveName(), cardSpecifier);
     }
 
     public static MoveExclusionConfig readFromLoadedYamlMap(Map<String, Object> node,
@@ -88,13 +70,18 @@ public final class MoveExclusionConfig {
             String entryContext) {
         String effectiveSource = this.sourceLabel.isEmpty() ? sourceLabel : this.sourceLabel;
         if (card.isEmpty()) {
-            if (!cards.isKnownMoveName(move)) {
+            if (cards != null && !cards.isKnownMoveName(move)) {
                 IssueTracker.addWarning(entryContext + ": failed to find any card with move \"" + move
                         + "\"; entry skipped.");
                 return null;
             }
             return new MoveExclusion(CardId.NO_CARD, move, removeFromPool, excludeFromRandomization,
                     effectiveSource);
+        }
+
+        if (cards == null) {
+            return new MoveExclusion(CardId.NO_CARD, move, removeFromPool, excludeFromRandomization,
+                    effectiveSource, card);
         }
 
         MonsterCard monsterCard = cards.resolveCard(card, entryContext);
@@ -109,7 +96,22 @@ public final class MoveExclusionConfig {
         }
 
         return new MoveExclusion(monsterCard.id, move, removeFromPool, excludeFromRandomization,
-                effectiveSource);
+                effectiveSource, card);
+    }
+
+    public static MoveExclusionConfig fromMoveExclusion(MoveExclusion exclusion,
+            CardGroup<MonsterCard> cards) {
+        String cardName = "";
+        if (exclusion.hasCardSpecifier()) {
+            cardName = exclusion.getCardSpecifier();
+        } else if (exclusion.isCardIdSet() && cards != null) {
+            MonsterCard card = cards.withId(exclusion.getCardId());
+            if (card != null) {
+                cardName = card.toNameWithLevelSpecifier();
+            }
+        }
+        return new MoveExclusionConfig(exclusion.getSourceFileName(), exclusion.isRemoveFromPool(),
+                exclusion.isExcludeFromRandomization(), exclusion.getMoveName(), cardName);
     }
 
     public boolean isRemoveFromPool() {
@@ -126,9 +128,5 @@ public final class MoveExclusionConfig {
 
     public String getCard() {
         return card;
-    }
-
-    public String getSourceLabel() {
-        return sourceLabel;
     }
 }

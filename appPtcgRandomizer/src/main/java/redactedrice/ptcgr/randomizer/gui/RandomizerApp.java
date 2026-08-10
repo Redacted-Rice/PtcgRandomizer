@@ -198,7 +198,7 @@ public class RandomizerApp {
                     try {
                         Config config = Config.fromAppState(settings.getSeedString(),
                                 dualPanel.getSelectedActions(), randomizer.getActionBank(),
-                                randomizer.getPendingRules());
+                                randomizer.getRules(), randomizer.getReferenceMonsterCards());
                         YamlIO.save(configFile, config.convertToYamlMap());
                     } catch (IOException configError) {
                         configError.printStackTrace();
@@ -396,7 +396,7 @@ public class RandomizerApp {
             config.checkScripts(randomizer.getActionBank());
             List<Action> actions = config.getActions(randomizer.getActionBank());
             dualPanel.setSelectedActions(actions);
-            randomizer.replacePendingRules(config.getRulesConfig());
+            randomizer.loadRulesFromConfig(config.getRulesConfig());
             rulesPanel.refresh();
             IssuePresenter.finishPhase(frmTradingCard, "config load");
             saveAppPreferencesQuietly();

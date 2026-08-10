@@ -35,10 +35,7 @@ public class MoveAssignments {
         for (MonsterCard card : foundCards.iterable()) {
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
-                // Cards are freshly parsed (or copied from a freshly ruled original). forceOverride
-                // is only defensive if something left locks on the card instance.
-                card.setMove(assign.getMove(), assign.getMoveSlot(), true);
-                card.setMoveLockedViaAssignment(assign.getMoveSlot(), true);
+                applyAssignmentToCard(assign, card);
             }
         }
     }
@@ -56,14 +53,11 @@ public class MoveAssignments {
         return false;
     }
 
-    public static String exclusionSourceForAssignment(MoveAssignment assign) {
-        return exclusionSourceLabel(assign.getSourceFileName());
-    }
-
-    public static String exclusionSourceLabel(String sourceFileName) {
+    public static String assignmentSourceDisplayLabel(String sourceFileName) {
         if (isAssignmentDerivedExclusionSource(sourceFileName)) {
-            return sourceFileName.substring(0,
+            String exclusionSource = sourceFileName.substring(0,
                     sourceFileName.length() - ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX.length());
+            return exclusionSource + " - exclusion";
         }
         return sourceFileName;
     }
@@ -103,6 +97,48 @@ public class MoveAssignments {
         MoveAssignment assign =
                 new MoveAssignment(targetCard.id, moveSlot0Based, move, sourceFileName);
         add(assign, targetCard.name.toString());
+    }
+
+    public boolean removeMatching(MoveAssignment target) {
+        List<MoveAssignment> cardAssignments = assignmentsByCardId.get(target.getCardId());
+        if (cardAssignments == null) {
+            return false;
+        }
+        boolean removed = cardAssignments
+                .removeIf(existing -> existing.hasSameTarget(target) && existing.hasSameSettings(target));
+        if (cardAssignments.isEmpty()) {
+            assignmentsByCardId.remove(target.getCardId());
+        }
+        return removed;
+    }
+
+    public void clearDerivedAssignments() {
+        assignmentsByCardId.entrySet().removeIf(entry -> {
+            entry.getValue().removeIf(
+                    assignment -> isAssignmentDerivedExclusionSource(assignment.getSourceFileName()));
+            return entry.getValue().isEmpty();
+        });
+    }
+
+    public void removeDerivedFromExclusion(MoveExclusion exclusion) {
+        String assignmentSource =
+                exclusionSourceForAssignment(exclusion.getSourceFileName());
+        assignmentsByCardId.entrySet().removeIf(entry -> {
+            entry.getValue().removeIf(assignment -> assignmentSource
+                    .equals(assignment.getSourceFileName())
+                    && exclusion.matchesMove(assignment.getCardId(), assignment.getMove()));
+            return entry.getValue().isEmpty();
+        });
+    }
+
+    public void applyAssignmentToCard(MoveAssignment assignment, MonsterCard card) {
+        int moveSlot = assignment.getMoveSlot();
+        if (isAssignmentDerivedExclusionSource(assignment.getSourceFileName())) {
+            card.setMoveLockedViaAssignment(moveSlot, true);
+        } else {
+            card.setMove(assignment.getMove(), moveSlot, true);
+            card.setMoveLockedViaAssignment(moveSlot, true);
+        }
     }
 
     private static void warnConflictingAssignment(MoveAssignment assignment, String cardLabel) {

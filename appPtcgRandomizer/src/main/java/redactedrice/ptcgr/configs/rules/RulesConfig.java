@@ -8,6 +8,7 @@ import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveAssignment;
+import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.randomizer.utils.IssueTracker;
@@ -50,9 +51,12 @@ public final class RulesConfig {
         return node;
     }
 
+    /**
+     * Populates runtime rules from config. Validates exclusions and assignments
+     * against the reference card pool when available. Does not modify card data.
+     */
     public void applyTo(Rules rules, CardGroup<MonsterCard> cards) {
         if (rules == null) {
-            IssueTracker.addWarning("Cannot apply rules because no ROM is loaded.");
             return;
         }
 
@@ -74,26 +78,23 @@ public final class RulesConfig {
         }
     }
 
-    public void recreateRules(Rules rules, CardGroup<MonsterCard> cards) {
+    public static RulesConfig fromRules(Rules rules, CardGroup<MonsterCard> cards) {
         if (rules == null) {
-            IssueTracker.addWarning("Cannot apply rules because no ROM is loaded.");
-            return;
+            return empty();
         }
-        rules.clear();
-        applyTo(rules, cards);
-    }
 
-    public RulesConfig mergedWith(RulesConfig other) {
-        String mergedSource = sourceLabel.isEmpty() ? other.sourceLabel : sourceLabel;
-        List<MoveExclusionConfig> exclusions = new ArrayList<>(moveExclusionConfigs);
-        exclusions.addAll(other.moveExclusionConfigs);
-        List<MoveAssignmentConfig> assignments = new ArrayList<>(moveAssignmentConfigs);
-        assignments.addAll(other.moveAssignmentConfigs);
-        return new RulesConfig(mergedSource, exclusions, assignments);
-    }
+        List<MoveExclusionConfig> exclusions = new ArrayList<>();
+        for (MoveExclusion exclusion : rules.getMoveExclusions().getAllExclusions()) {
+            exclusions.add(MoveExclusionConfig.fromMoveExclusion(exclusion, cards));
+        }
 
-    public String getSourceLabel() {
-        return sourceLabel;
+        List<MoveAssignmentConfig> assignments = new ArrayList<>();
+        for (MoveAssignment assignment : rules.getMoveAssignments().getAllAssignments()) {
+            if (!MoveAssignments.isAssignmentDerivedExclusionSource(assignment.getSourceFileName())) {
+                assignments.add(MoveAssignmentConfig.fromMoveAssignment(assignment, cards));
+            }
+        }
+        return new RulesConfig("", exclusions, assignments);
     }
 
     public List<MoveExclusionConfig> getMoveExclusionConfigs() {
@@ -108,9 +109,8 @@ public final class RulesConfig {
         List<MoveExclusionConfig> exclusions = new ArrayList<>();
         ParserHelpers.forEachEntryInList(value, MOVE_EXCLUSIONS_KEY, sourceLabel,
                 (fields, entryContext) -> {
-                    MoveExclusionConfig parsed =
-                            MoveExclusionConfig.readFromLoadedYamlMap(fields, entryContext,
-                                    sourceLabel);
+                    MoveExclusionConfig parsed = MoveExclusionConfig.readFromLoadedYamlMap(fields, entryContext,
+                            sourceLabel);
                     if (parsed != null) {
                         exclusions.add(parsed);
                     }
