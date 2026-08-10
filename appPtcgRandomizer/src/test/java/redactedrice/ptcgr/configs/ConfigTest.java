@@ -21,6 +21,7 @@ import org.yaml.snakeyaml.Yaml;
 import redactedrice.ptcgr.configs.modules.ActionArgumentsConfig;
 import redactedrice.ptcgr.configs.modules.ActionConfig;
 import redactedrice.ptcgr.configs.modules.ScriptConfig;
+import redactedrice.ptcgr.configs.rules.MoveExclusionConfig;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
@@ -106,14 +107,14 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         assertTrue(!IssueTracker.hasWarnings());
-        assertEquals("987654321", config.getSeed());
-        assertEquals(PtcgRandomizerVersion.VERSION, config.getAppVersion());
-        assertEquals(1, config.getActionConfigs().size());
-        assertEquals("shuffle_hp", config.getActionConfigs().get(0).getModule());
-        assertEquals("0.1", config.getActionConfigs().get(0).getVersion());
-        assertEquals(12, config.getActionConfigs().get(0).getConfig().getSeedOffset());
+        assertEquals("987654321", loaded.getSeed());
+        assertEquals(PtcgRandomizerVersion.VERSION, loaded.getAppVersion());
+        assertEquals(1, loaded.getActionConfigs().size());
+        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+        assertEquals("0.1", loaded.getActionConfigs().get(0).getVersion());
+        assertEquals(12, loaded.getActionConfigs().get(0).getConfig().getSeedOffset());
     }
 
     @Test
@@ -133,14 +134,14 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
-        assertEquals(1, config.getActionConfigs().size());
-        assertEquals(1, config.getActionConfigs().get(0).getConfig().getArguments().get("numMoves"));
+        Config loaded = readYaml(configFile.toFile());
+        assertEquals(1, loaded.getActionConfigs().size());
+        assertEquals(1, loaded.getActionConfigs().get(0).getConfig().getArguments().get("numMoves"));
 
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
     }
@@ -162,12 +163,12 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
@@ -190,12 +191,12 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
@@ -221,12 +222,12 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("tag_module", "0.9",
                 List.of(new ArgumentDefinition("tags",
                         TypeDefinition.listOf(TypeDefinition.string()), null)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
@@ -251,12 +252,12 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("tag_module", "0.9",
                 List.of(new ArgumentDefinition("tags",
                         TypeDefinition.listOf(TypeDefinition.string()), null)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertTrue(((List<?>) actions.get(0).getArgument("tags")).isEmpty());
@@ -283,11 +284,11 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(1, actions.get(0).getArgument("numMoves"));
@@ -311,11 +312,11 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         ActionBank actionBank = testActionBank("set_num_moves", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
-        var actions = config.getActions(actionBank);
+        var actions = loaded.getActions(actionBank);
 
         assertEquals(1, actions.size());
         assertEquals(2, actions.get(0).getArgument("numMoves"));
@@ -342,12 +343,12 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         assertTrue(!IssueTracker.hasWarnings());
-        assertEquals(1, config.getPreScriptConfigs().size());
-        assertEquals("changedetector_setup", config.getPreScriptConfigs().get(0).getModule());
-        assertEquals(1, config.getPostScriptConfigs().size());
-        assertEquals("changedetector_detect", config.getPostScriptConfigs().get(0).getModule());
+        assertEquals(1, loaded.getPreScriptConfigs().size());
+        assertEquals("changedetector_setup", loaded.getPreScriptConfigs().get(0).getModule());
+        assertEquals(1, loaded.getPostScriptConfigs().size());
+        assertEquals("changedetector_detect", loaded.getPostScriptConfigs().get(0).getModule());
     }
 
     @Test
@@ -366,13 +367,13 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         assertTrue(!IssueTracker.hasWarnings());
-        assertEquals("987654321", config.getSeed());
-        assertEquals(1, config.getActionConfigs().size());
-        assertEquals("shuffle_hp", config.getActionConfigs().get(0).getModule());
-        assertEquals(null, config.getActionConfigs().get(0).getVersion());
-        assertEquals(12, config.getActionConfigs().get(0).getConfig().getSeedOffset());
+        assertEquals("987654321", loaded.getSeed());
+        assertEquals(1, loaded.getActionConfigs().size());
+        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+        assertEquals(null, loaded.getActionConfigs().get(0).getVersion());
+        assertEquals(12, loaded.getActionConfigs().get(0).getConfig().getSeedOffset());
     }
 
     @Test
@@ -456,11 +457,11 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
 
         assertTrue(!IssueTracker.hasWarnings());
-        assertTrue(config.getPreScriptConfigs().isEmpty());
-        assertTrue(config.getPostScriptConfigs().isEmpty());
+        assertTrue(loaded.getPreScriptConfigs().isEmpty());
+        assertTrue(loaded.getPostScriptConfigs().isEmpty());
     }
 
     @Test
@@ -477,7 +478,7 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        loadConfig(configFile.toFile());
+        readYaml(configFile.toFile());
 
         assertTrue(
                 IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("PtcgRandomizer 0.1.0")));
@@ -498,11 +499,124 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        loadConfig(configFile.toFile());
+        readYaml(configFile.toFile());
 
         assertTrue(IssueTracker.getWarnings().stream()
-                .anyMatch(w -> w.contains("Config is missing an appVersion")));
+                .anyMatch(w -> w.contains("missing required field \"appVersion\"")));
     }
+
+    @Test
+    void loadSkipsMissingSectionsWithoutWarnings() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                seed: 42
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("partial_seed.yaml");
+        Files.writeString(configFile, yaml);
+
+        IssueTracker.clear();
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(configFile.toFile()),
+                configFile.getFileName().toString());
+
+        assertTrue(!IssueTracker.hasWarnings());
+        assertTrue(loaded.isValid());
+        assertTrue(loaded.hasSeed());
+        assertEquals("42", loaded.getSeed());
+        assertTrue(!loaded.hasActions());
+        assertTrue(!loaded.hasRules());
+    }
+
+    @Test
+    void loadMergesOnlyPresentRulesSections() throws Exception {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(testMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
+        String yaml = """
+                version: 1
+                appVersion: %s
+                rules:
+                  moveExclusions:
+                    - remove_from_pool: true
+                      exclude_from_randomization: true
+                      card: SomeMonster lvl35
+                      move: TestMove
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("partial_rules.yaml");
+        Files.writeString(configFile, yaml);
+
+        IssueTracker.clear();
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(configFile.toFile()),
+                configFile.getFileName().toString());
+        assertTrue(!IssueTracker.hasWarnings());
+        assertTrue(loaded.hasRules());
+        assertTrue(!loaded.getRulesConfig().hasMoveAssignments());
+
+        Rules rules = new Rules();
+        rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
+                "unsupported_moves.yaml", cards, rules.getMoveAssignments());
+        loaded.getRulesConfig().applyTo(rules, cards);
+
+        assertEquals(2, rules.getMoveExclusions().getAllExclusions().size());
+    }
+
+    @Test
+    void missingVersionRejectsLoad() throws Exception {
+        String yaml = """
+                appVersion: %s
+                seed: 42
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("config.yaml");
+        Files.writeString(configFile, yaml);
+
+        IssueTracker.clear();
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(configFile.toFile()),
+                configFile.getFileName().toString());
+
+        assertTrue(!loaded.isValid());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("missing required field \"version\"")));
+    }
+
+    @Test
+    void convertRulesOnlyToYamlMapUsesConfigStructure() {
+        RulesConfig rules = new RulesConfig("user added",
+                List.of(new MoveExclusionConfig("user added", true, true, "Sharp Sickle",
+                        "Kabutops lvl30")),
+                List.of());
+
+        Map<String, Object> document = Config.convertRulesOnlyToYamlMap(rules);
+
+        assertEquals(Config.CURRENT_FORMAT_VERSION, document.get("version"));
+        assertEquals(PtcgRandomizerVersion.VERSION, document.get("appVersion"));
+        assertFalse(document.containsKey("seed"));
+        assertFalse(document.containsKey("actions"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rulesNode = (Map<String, Object>) document.get("rules");
+        assertTrue(rulesNode.containsKey("moveExclusions"));
+        assertTrue(rulesNode.containsKey("moveAssignments"));
+    }
+
+    @Test
+    void rulesOnlyExportRoundTripsThroughPartialImport() throws Exception {
+        RulesConfig rules = new RulesConfig("user added",
+                List.of(new MoveExclusionConfig("user added", true, true, "TestMove",
+                        "SomeMonster lvl35")),
+                List.of());
+        Path rulesFile = tempDir.resolve("user_config.yaml");
+        YamlIO.save(rulesFile.toFile(), Config.convertRulesOnlyToYamlMap(rules));
+
+        IssueTracker.clear();
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(rulesFile.toFile()),
+                rulesFile.getFileName().toString());
+
+        assertTrue(!IssueTracker.hasWarnings());
+        assertTrue(loaded.hasRules());
+        assertEquals("TestMove",
+                loaded.getRulesConfig().getMoveExclusionConfigs().get(0)
+                        .convertToYamlMap().get("move"));
+    }
+
 
     @Test
     void loadAcceptsNumericSeed() throws Exception {
@@ -518,9 +632,9 @@ class ConfigTest {
         Files.writeString(configFile, yaml);
 
         IssueTracker.clear();
-        Config config = loadConfig(configFile.toFile());
+        Config loaded = readYaml(configFile.toFile());
         assertTrue(!IssueTracker.hasWarnings());
-        assertEquals("42", config.getSeed());
+        assertEquals("42", loaded.getSeed());
     }
 
     @Test
@@ -577,7 +691,7 @@ class ConfigTest {
 
         RulesConfig rulesPreset = RulesConfig.readFromLoadedYamlMap(
                 Map.of("moveExclusions",
-                        List.of(Map.of("remove_from_pool", true, "exclude_from_randomization", true,
+                        List.of(Map.of("remove_from_pool", true, "exclude_from_randomization", false,
                                 "card", "SomeMonster lvl35", "move", "TestMove")),
                         "moveAssignments", List.of(Map.of("to_card", "SomeMonster lvl35",
                                 "to_move_slot", 1, "move", "TestMove"))),
@@ -588,7 +702,7 @@ class ConfigTest {
         YamlIO.save(output.toFile(), config.convertToYamlMap());
 
         IssueTracker.clear();
-        Config loaded = loadConfig(output.toFile());
+        Config loaded = readYaml(output.toFile());
         assertTrue(!IssueTracker.hasWarnings());
         assertEquals("TestMove",
                 loaded.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
@@ -732,7 +846,7 @@ class ConfigTest {
         return card;
     }
 
-    private static Config loadConfig(File file) throws Exception {
+    private static Config readYaml(File file) throws Exception {
         return Config.readFromLoadedYamlMap(YamlIO.load(file), file.getName());
     }
 

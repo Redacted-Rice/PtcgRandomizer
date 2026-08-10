@@ -79,16 +79,9 @@ public class MoveExclusions {
                 if (!existing.hasSameTarget(exclusion)) {
                     continue;
                 }
-                if (existing.getSourceFileName().equals(exclusion.getSourceFileName())) {
-                    if (existing.hasSameSettings(exclusion)) {
-                        warnDuplicateExclusion(exclusion, cards);
-                        return false;
-                    }
-                    warnConflictingExclusion(exclusion, cards);
-                    return false;
-                }
                 if (existing.hasSameSettings(exclusion)) {
-                    continue;
+                    warnDuplicateExclusion(exclusion, cards);
+                    return false;
                 }
                 warnConflictingExclusion(exclusion, cards);
                 return false;

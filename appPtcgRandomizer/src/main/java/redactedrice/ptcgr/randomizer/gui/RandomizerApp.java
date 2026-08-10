@@ -254,9 +254,9 @@ public class RandomizerApp {
         });
         openRomPanel.add(openRomButton);
 
-        JButton loadConfigsButton = new JButton("Load Configs");
-        loadConfigsButton.addActionListener(event -> loadConfigsFromFile());
-        openRomPanel.add(loadConfigsButton);
+        JButton importConfigsButton = new JButton("Import Configs");
+        importConfigsButton.addActionListener(event -> importConfigsFromFile());
+        openRomPanel.add(importConfigsButton);
 
         JTabbedPane actionsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(actionsTab, BorderLayout.CENTER);
@@ -375,7 +375,7 @@ public class RandomizerApp {
         Logger.setMinLogLevel(getSelectedLogLevel());
     }
 
-    private void loadConfigsFromFile() {
+    private void importConfigsFromFile() {
         int returnVal = loadConfigChooser.showOpenDialog(frmTradingCard);
         if (returnVal != JFileChooser.APPROVE_OPTION) {
             return;
@@ -386,19 +386,29 @@ public class RandomizerApp {
         try {
             IssueTracker.clear();
             Map<String, Object> yaml = YamlIO.load(configFile);
-            Config config = Config.readFromLoadedYamlMap(yaml, configFile.getName());
-            saveSetSeedVal.setText(config.getSeed());
-            config.checkScripts(randomizer.getActionBank());
-            List<Action> actions = config.getActions(randomizer.getActionBank());
-            dualPanel.setSelectedActions(actions);
-            randomizer.loadRulesFromConfig(config.getRulesConfig());
+            String sourceLabel = configFile.getName();
+            Config loaded = Config.readFromLoadedYamlMap(yaml, sourceLabel);
+            if (!loaded.isValid()) {
+                IssuePresenter.finishPhase(frmTradingCard, "config import");
+                return;
+            }
+            if (loaded.hasSeed()) {
+                saveSetSeedVal.setText(loaded.getSeed());
+            }
+            loaded.checkScripts(randomizer.getActionBank());
+            if (loaded.hasActions()) {
+                dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
+            }
+            if (loaded.hasRules()) {
+                randomizer.mergeRulesFromConfig(loaded.getRulesConfig());
+            }
             rulesPanel.refresh();
-            IssuePresenter.finishPhase(frmTradingCard, "config load");
+            IssuePresenter.finishPhase(frmTradingCard, "config import");
             saveAppPreferencesQuietly();
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
-                    "Config Load Failed", JOptionPane.ERROR_MESSAGE);
+                    "Config Import Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 

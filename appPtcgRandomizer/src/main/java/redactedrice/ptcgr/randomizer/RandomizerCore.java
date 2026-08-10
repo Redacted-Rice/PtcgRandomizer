@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import redactedrice.ptcgr.configs.Config;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
@@ -63,9 +64,12 @@ public class RandomizerCore {
         IssueTracker.clear();
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
-            RulesConfig bundled = RulesConfig.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
+            Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(rulesFile),
+                    "Unsupported moves");
             rules.clear();
-            bundled.applyTo(rules, null);
+            if (loaded.isValid() && loaded.hasRules()) {
+                loaded.getRulesConfig().applyTo(rules, null);
+            }
             IssuePresenter.displayWarnings(popupParent, "default rules");
         } catch (IOException e) {
             IssueTracker.addWarning("Failed to load bundled default rules: " + e.getMessage());
@@ -158,9 +162,13 @@ public class RandomizerCore {
         }
     }
 
-    /** Replaces session rules from a loaded config file. */
-    public void loadRulesFromConfig(RulesConfig rulesConfig) {
-        rules.replaceFrom(rulesConfig, getReferenceMonsterCards());
+    /** Merges rules from a loaded config file into the current session. */
+    public void mergeRulesFromConfig(RulesConfig rulesConfig) {
+        if (rulesConfig == null || !rulesConfig.hasAnySection()) {
+            return;
+        }
+        rulesConfig.applyTo(rules, getReferenceMonsterCards());
+        rules.syncWithCards(getReferenceMonsterCards());
     }
 
     public CardGroup<MonsterCard> getReferenceMonsterCards() {

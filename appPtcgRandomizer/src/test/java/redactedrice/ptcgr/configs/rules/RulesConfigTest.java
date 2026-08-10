@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import redactedrice.ptcgr.configs.Config;
 import redactedrice.ptcgr.configs.ParserHelpers;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.constants.romenums.CardId;
@@ -112,12 +113,13 @@ class RulesConfigTest {
         }
 
         IssueTracker.clear();
-        RulesConfig config = RulesConfig.readFromLoadedYamlMap(
-                YamlIO.load(defaultFile.toFile()), defaultFile.getFileName().toString());
+        Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(defaultFile.toFile()),
+                defaultFile.getFileName().toString());
         Rules rules = new Rules();
-        config.applyTo(rules, new CardGroup<>());
+        loaded.getRulesConfig().applyTo(rules, null);
 
-        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> !w.isBlank()));
+        assertTrue(loaded.hasRules());
+        assertEquals(26, rules.getMoveExclusions().getAllExclusions().size());
     }
 
     @Test
@@ -501,10 +503,11 @@ class RulesConfigTest {
     }
 
     @Test
-    void tryAddAllowsSameMoveFromDifferentSource() {
+    void tryAddRejectsSameTargetFromDifferentSource() {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
+        IssueTracker.clear();
         MoveExclusions exclusions = new MoveExclusions();
         MoveAssignments assignments = new MoveAssignments();
         exclusions.addMoveExclusion(CardId.NO_CARD, "TestMove", true, true, "bundled.yaml", cards,
@@ -513,8 +516,9 @@ class RulesConfigTest {
 
         MoveExclusion userAdded = new MoveExclusion(CardId.NO_CARD, "TestMove", true, true,
                 "user added");
-        assertTrue(exclusions.tryAdd(userAdded, cards, assignments));
-        assertEquals(2, exclusions.getAllExclusions().size());
+        assertFalse(exclusions.tryAdd(userAdded, cards, assignments));
+        assertEquals(1, exclusions.getAllExclusions().size());
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate exclusion")));
     }
 
     @Test
@@ -532,6 +536,22 @@ class RulesConfigTest {
 
         assertEquals(1, exclusions.getAllExclusions().size());
         assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate exclusion")));
+    }
+
+    @Test
+    void duplicateAssignmentWarnsAndRejectsAcrossSources() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        MonsterCard card = cards.withId(CardId.MONSTER_146_1);
+
+        IssueTracker.clear();
+        MoveAssignments assignments = new MoveAssignments();
+        Move move = card.getMoveWithName("TestMove");
+        assertTrue(assignments.add(new MoveAssignment(card.id, 0, move, "bundled.yaml"), cards));
+        assertFalse(assignments.add(new MoveAssignment(card.id, 0, move, "user added"), cards));
+
+        assertEquals(1, assignments.getAllAssignments().size());
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("Duplicate assignment")));
     }
 
     @Test
