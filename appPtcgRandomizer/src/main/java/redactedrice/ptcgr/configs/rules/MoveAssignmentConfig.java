@@ -33,7 +33,9 @@ public final class MoveAssignmentConfig {
             CardGroup<MonsterCard> cards) {
         MonsterCard targetCard = cards.withId(assignment.getCardId());
         String toCardSpecifier = targetCard != null ? targetCard.toNameWithLevelSpecifier() : "";
-        String fromCardSpecifier = "";
+        MonsterCard sourceCard = assignment.getMove().getSourceCard();
+        String fromCardSpecifier =
+                sourceCard != null ? sourceCard.toNameWithLevelSpecifier() : "";
         return new MoveAssignmentConfig(toCardSpecifier,
                 String.valueOf(assignment.getMoveSlot() + 1), assignment.getMove().name.toString(),
                 fromCardSpecifier);

@@ -71,8 +71,16 @@ public class MoveAssignments {
                 && sourceFileName.endsWith(ASSIGNMENT_EXCLUSION_SOURCE_SUFFIX);
     }
 
+    public boolean add(MoveAssignment assignment, CardGroup<MonsterCard> cards) {
+        return add(assignment, describeCard(assignment.getCardId(), cards));
+    }
+
+    public boolean add(MoveAssignment assignment) {
+        return add(assignment, (CardGroup<MonsterCard>) null);
+    }
+
     // Internal function behind all the adding fns
-    private void add(MoveAssignment assignment, String cardLabel) {
+    private boolean add(MoveAssignment assignment, String cardLabel) {
         List<MoveAssignment> cardAssignments = assignmentsByCardId
                 .computeIfAbsent(assignment.getCardId(), ll -> new LinkedList<>());
         for (MoveAssignment existing : cardAssignments) {
@@ -80,23 +88,31 @@ public class MoveAssignments {
                 continue;
             }
             if (existing.hasSameSettings(assignment)) {
-                return;
+                warnDuplicateAssignment(assignment, cardLabel);
+                return false;
             }
             warnConflictingAssignment(assignment, cardLabel);
-            return;
+            return false;
         }
         cardAssignments.add(assignment);
-    }
-
-    public void add(MoveAssignment assignment) {
-        add(assignment, assignment.getCardId().toString());
+        return true;
     }
 
     public void addMoveAssignment(MonsterCard targetCard, int moveSlot0Based, Move move,
             String sourceFileName) {
         MoveAssignment assign =
                 new MoveAssignment(targetCard.id, moveSlot0Based, move, sourceFileName);
-        add(assign, targetCard.name.toString());
+        add(assign, targetCard.toNameWithLevelSpecifier());
+    }
+
+    private static String describeCard(CardId cardId, CardGroup<MonsterCard> cards) {
+        if (cards != null) {
+            MonsterCard card = cards.withId(cardId);
+            if (card != null) {
+                return card.toNameWithLevelSpecifier();
+            }
+        }
+        return cardId.toString();
     }
 
     public boolean removeMatching(MoveAssignment target) {
@@ -145,5 +161,11 @@ public class MoveAssignments {
         IssueTracker.addWarning("Conflicting assignment for card \"" + cardLabel + "\" at slot "
                 + (assignment.getMoveSlot() + 1) + " in " + assignment.getSourceFileName()
                 + "; keeping the first entry and ignoring the duplicate.");
+    }
+
+    private static void warnDuplicateAssignment(MoveAssignment assignment, String cardLabel) {
+        IssueTracker.addWarning("Duplicate assignment for card \"" + cardLabel + "\" at slot "
+                + (assignment.getMoveSlot() + 1) + " in " + assignment.getSourceFileName()
+                + "; entry already exists.");
     }
 }

@@ -261,7 +261,7 @@ public class RandomizerApp {
         JTabbedPane actionsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(actionsTab, BorderLayout.CENTER);
 
-        rulesPanel = new RulesPanel(randomizer);
+        rulesPanel = new RulesPanel(randomizer, appPreferences, this);
         actionsTab.addTab("Rules", null, rulesPanel,
                 "Move exclusions and assignments applied during randomization");
 
@@ -313,14 +313,7 @@ public class RandomizerApp {
     }
 
     private void applyChooserDirectory(JFileChooser chooser, String directoryPath) {
-        if (directoryPath != null) {
-            File dir = new File(directoryPath);
-            if (dir.isDirectory()) {
-                chooser.setCurrentDirectory(dir);
-                return;
-            }
-        }
-        chooser.setCurrentDirectory(AppPreferences.defaultFile().getParentFile());
+        AppPreferences.applyChooserDirectory(chooser, directoryPath);
     }
 
     private void applyWindowPreferences() {
@@ -343,7 +336,7 @@ public class RandomizerApp {
         return new Rectangle(x, y, width, height);
     }
 
-    private void saveAppPreferencesQuietly() {
+    public void saveAppPreferencesQuietly() {
         try {
             captureAppPreferencesFromUi().save();
         } catch (IOException e) {
@@ -359,7 +352,9 @@ public class RandomizerApp {
                 openRomChooser.getSelectedFile(), saveRomChooser.getCurrentDirectory(),
                 saveRomChooser.getSelectedFile(), saveConfigChooser.getCurrentDirectory(),
                 saveConfigChooser.getSelectedFile(), loadConfigChooser.getCurrentDirectory(),
-                loadConfigChooser.getSelectedFile());
+                loadConfigChooser.getSelectedFile(),
+                rulesPanel.getExportUserRulesDirectory(),
+                rulesPanel.getExportUserRulesSelectedFile());
     }
 
     private Settings createSettingsFromState() {

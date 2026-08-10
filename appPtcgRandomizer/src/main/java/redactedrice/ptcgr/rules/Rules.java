@@ -33,12 +33,16 @@ public class Rules {
         return moveAssignments;
     }
 
-    public void addMoveExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
-        moveExclusions.add(exclusion, cards, moveAssignments);
+    public boolean addMoveExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {
+        return moveExclusions.tryAdd(exclusion, cards, moveAssignments);
     }
 
-    public void addMoveAssignment(MoveAssignment assignment) {
-        moveAssignments.add(assignment);
+    public boolean addMoveAssignment(MoveAssignment assignment, CardGroup<MonsterCard> cards) {
+        return moveAssignments.add(assignment, cards);
+    }
+
+    public boolean addMoveAssignment(MoveAssignment assignment) {
+        return moveAssignments.add(assignment);
     }
 
     public void removeMoveExclusion(MoveExclusion exclusion) {
