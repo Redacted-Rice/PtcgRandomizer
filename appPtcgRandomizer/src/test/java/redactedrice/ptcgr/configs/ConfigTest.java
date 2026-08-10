@@ -27,6 +27,7 @@ import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
+import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
@@ -66,7 +67,7 @@ class ConfigTest {
         var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
         Config config = Config.fromAppState(settings.getSeedString(), List.of(),
                 testActionBank(null, null, List.of(), List.of(setupScript), List.of(detectScript)),
-                RulesConfig.empty());
+                new Rules(), null);
         Path output = tempDir.resolve("config.yaml");
         YamlIO.save(output.toFile(), config.convertToYamlMap());
 
@@ -594,7 +595,8 @@ class ConfigTest {
                         .get("move"));
 
         Rules rules = new Rules();
-        loaded.getRulesConfig().recreateRules(rules, cards);
+        rules.clear();
+        loaded.getRulesConfig().applyTo(rules, cards);
 
         assertTrue(!IssueTracker.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
@@ -603,20 +605,25 @@ class ConfigTest {
 
     @Test
     void fromAppStateSavesLoadedRules() {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(testMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
         RulesConfig rulesPreset =
                 RulesConfig.readFromLoadedYamlMap(
                         Map.of("moveExclusions",
                                 List.of(Map.of("remove_from_pool", true,
-                                        "exclude_from_randomization", true, "move", "UserMove")),
+                                        "exclude_from_randomization", false, "move", "TestMove")),
                                 "moveAssignments",
                                 List.of(Map.of("to_card", "SomeMonster lvl35", "to_move_slot", 1,
                                         "move", "TestMove"))),
                         "config.yaml");
+        Rules rules = new Rules();
+        rulesPreset.applyTo(rules, cards);
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rules, cards);
 
-        assertEquals("UserMove",
+        assertEquals("TestMove",
                 config.getRulesConfig().getMoveExclusionConfigs().get(0).convertToYamlMap()
                         .get("move"));
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
@@ -631,9 +638,12 @@ class ConfigTest {
                                 "move", "UserMove")),
                         "moveAssignments", List.of()),
                 "config.yaml");
+        Rules rules = new Rules();
+        rulesPreset.applyTo(rules, new CardGroup<>());
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rules,
+                new CardGroup<>());
 
         assertTrue(config.getRulesConfig().getMoveAssignmentConfigs().isEmpty());
     }
@@ -654,7 +664,8 @@ class ConfigTest {
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
                 "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, cards);
+        rules.clear();
+        config.getRulesConfig().applyTo(rules, cards);
 
         assertTrue(!IssueTracker.hasWarnings());
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
@@ -672,7 +683,8 @@ class ConfigTest {
         rules.getMoveExclusions().addMoveExclusion(CardId.NO_CARD, "OldMove", true, true,
                 "unsupported_moves.yaml", cards, rules.getMoveAssignments());
 
-        config.getRulesConfig().recreateRules(rules, cards);
+        rules.clear();
+        config.getRulesConfig().applyTo(rules, cards);
 
         assertTrue(!IssueTracker.hasWarnings());
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
@@ -690,12 +702,17 @@ class ConfigTest {
                     move: TestMove
                 """);
 
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(testMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
         IssueTracker.clear();
         RulesConfig rulesPreset = RulesConfig.readFromLoadedYamlMap(
                 YamlIO.load(rulesFile.toFile()), rulesFile.getFileName().toString());
+        Rules rules = new Rules();
+        rulesPreset.applyTo(rules, cards);
 
         Config config = Config.fromAppState("42", List.of(),
-                testActionBank(null, null, List.of(), List.of(), List.of()), rulesPreset);
+                testActionBank(null, null, List.of(), List.of(), List.of()), rules, cards);
 
         assertEquals(1, config.getRulesConfig().getMoveExclusionConfigs().size());
         assertEquals("TestMove",

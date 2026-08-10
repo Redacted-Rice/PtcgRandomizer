@@ -61,6 +61,13 @@ public class MoveExclusions {
 
     public void add(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
             MoveAssignments assignments) {
+        addExclusionOnly(exclusion);
+        if (cards != null) {
+            addAssignmentsForExclusion(exclusion, cards, assignments);
+        }
+    }
+
+    public void addExclusionOnly(MoveExclusion exclusion) {
         List<MoveExclusion> bucket;
         if (exclusion.isCardIdSet()) {
             bucket = exclByCardId.computeIfAbsent(exclusion.getCardId(), ll -> new LinkedList<>());
@@ -71,9 +78,36 @@ public class MoveExclusions {
             return;
         }
         bucket.add(exclusion);
-        if (cards != null) {
-            addAssignmentsForExclusion(exclusion, cards, assignments);
+    }
+
+    public boolean remove(MoveExclusion exclusion) {
+        if (exclusion.isCardIdSet()) {
+            List<MoveExclusion> bucket = exclByCardId.get(exclusion.getCardId());
+            if (removeFromBucket(bucket, exclusion)) {
+                if (bucket.isEmpty()) {
+                    exclByCardId.remove(exclusion.getCardId());
+                }
+                return true;
+            }
+        } else if (exclusion.isMoveNameSet()) {
+            List<MoveExclusion> bucket = exclByMoveName.get(exclusion.getMoveName());
+            if (removeFromBucket(bucket, exclusion)) {
+                if (bucket.isEmpty()) {
+                    exclByMoveName.remove(exclusion.getMoveName());
+                }
+                return true;
+            }
         }
+        return false;
+    }
+
+    private static boolean removeFromBucket(List<MoveExclusion> bucket, MoveExclusion exclusion) {
+        if (bucket == null) {
+            return false;
+        }
+        return bucket.removeIf(existing -> existing.hasSameTarget(exclusion)
+                && existing.hasSameSettings(exclusion)
+                && existing.getSourceFileName().equals(exclusion.getSourceFileName()));
     }
 
     private void addAssignmentsForExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
@@ -91,6 +125,11 @@ public class MoveExclusions {
                 }
             }
         }
+    }
+
+    public void generateAssignmentsFor(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
+            MoveAssignments assignments) {
+        addAssignmentsForExclusion(exclusion, cards, assignments);
     }
 
     public void addMoveExclusion(CardId cardId, String moveName, boolean removeFromPool,

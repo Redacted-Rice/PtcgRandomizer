@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.configs.rules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -19,6 +20,8 @@ import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
+import redactedrice.ptcgr.rules.MoveAssignment;
+import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.randomizer.utils.IssueTracker;
 
@@ -116,14 +119,175 @@ class RulesConfigTest {
     }
 
     @Test
-    void mergedConfigsCombineRuleFiles() throws IOException {
-        IssueTracker.clear();
-        RulesConfig first = readYaml("moveExclusions: []\n", "base_rules.yaml");
-        RulesConfig second = readYaml("moveAssignments: []\n", "extra_rules.yaml");
-        RulesConfig combined = first.mergedWith(second);
+    void removingExclusionRemovesDerivedAssignments() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
 
-        assertTrue(combined.getMoveExclusionConfigs().isEmpty());
-        assertTrue(combined.getMoveAssignmentConfigs().isEmpty());
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+
+        rules.removeMoveExclusion(rules.getMoveExclusions().getAllExclusions().get(0));
+        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+    }
+
+    @Test
+    void removingOneExclusionKeepsAssignmentsFromOtherExclusionsInSameFile() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
+
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: OtherMove
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+        assertEquals(2, rules.getMoveAssignments().getAllAssignments().size());
+
+        MoveExclusion emberExclusion = rules.getMoveExclusions().getAllExclusions().stream()
+                .filter(exclusion -> "Ember".equals(exclusion.getMoveName()))
+                .findFirst()
+                .orElseThrow();
+        rules.removeMoveExclusion(emberExclusion);
+
+        assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertEquals("OtherMove",
+                rules.getMoveAssignments().getAllAssignments().get(0).getMove().name.toString());
+    }
+
+    @Test
+    void togglingGenerateAssignmentsUpdatesDerivedAssignments() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "Ember"));
+
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+        assertEquals(2, rules.getMoveAssignments().getAllAssignments().size());
+
+        MoveExclusion runtime = rules.getMoveExclusions().getAllExclusions().get(0);
+        MoveExclusion withoutAssignments = new MoveExclusion(runtime.getCardId(),
+                runtime.getMoveName(), runtime.isRemoveFromPool(), false,
+                runtime.getSourceFileName());
+        rules.updateMoveExclusion(runtime, withoutAssignments, cards);
+        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+
+        rules.updateMoveExclusion(withoutAssignments, runtime, cards);
+        assertEquals(2, rules.getMoveAssignments().getAllAssignments().size());
+    }
+
+    @Test
+    void disablingGenerateAssignmentsRemovesDerivedAssignments() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+        MoveExclusion runtime = rules.getMoveExclusions().getAllExclusions().get(0);
+        MoveExclusion withoutAssignments = new MoveExclusion(runtime.getCardId(),
+                runtime.getMoveName(), runtime.isRemoveFromPool(), false,
+                runtime.getSourceFileName());
+
+        rules.updateMoveExclusion(runtime, withoutAssignments, cards);
+
+        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+        assertTrue(rules.getMoveExclusions().getAllExclusions().get(0).isRemoveFromPool());
+    }
+
+    @Test
+    void removingOneExclusionKeepsDerivedAssignmentsFromOtherExclusionsInSameFile() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
+
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: OtherMove
+                """, "shared.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+        assertEquals(2, rules.getMoveAssignments().getAllAssignments().size());
+
+        MoveExclusion emberExclusion = rules.getMoveExclusions().getAllExclusions().stream()
+                .filter(exclusion -> "Ember".equals(exclusion.getMoveName()))
+                .findFirst()
+                .orElseThrow();
+        rules.removeMoveExclusion(emberExclusion);
+
+        assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertEquals("OtherMove",
+                rules.getMoveAssignments().getAllAssignments().get(0).getMove().name.toString());
+    }
+
+    @Test
+    void togglingGenerateAssignmentsOnOneExclusionKeepsOthersInSameFile() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "Ember"));
+        cards.add(someMonster(37, CardId.MONSTER_146_2, "OtherMove"));
+
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: Ember
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    move: OtherMove
+                """, "shared.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, cards);
+
+        MoveExclusion emberExclusion = rules.getMoveExclusions().getAllExclusions().stream()
+                .filter(exclusion -> "Ember".equals(exclusion.getMoveName()))
+                .findFirst()
+                .orElseThrow();
+        MoveExclusion emberWithoutAssignments = new MoveExclusion(emberExclusion.getCardId(),
+                emberExclusion.getMoveName(), emberExclusion.isRemoveFromPool(), false,
+                emberExclusion.getSourceFileName());
+        rules.updateMoveExclusion(emberExclusion, emberWithoutAssignments, cards);
+
+        assertEquals(2, rules.getMoveExclusions().getAllExclusions().size());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertEquals("OtherMove",
+                rules.getMoveAssignments().getAllAssignments().get(0).getMove().name.toString());
     }
 
     @Test
@@ -298,7 +462,7 @@ class RulesConfigTest {
     }
 
     @Test
-    void recreateRulesClearsExistingRules() throws IOException {
+    void applyToReplacesExistingRulesWhenCalledOnClearedRules() throws IOException {
         CardGroup<MonsterCard> cards = new CardGroup<>();
         cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
 
@@ -309,8 +473,7 @@ class RulesConfigTest {
         rules.getMoveAssignments().addMoveAssignment(cards.withId(CardId.MONSTER_146_1), 0,
                 cards.withId(CardId.MONSTER_146_1).getMoveWithName("TestMove"), "old.yaml");
 
-        RulesConfig replacement = RulesConfig.empty();
-        replacement.recreateRules(rules, cards);
+        rules.replaceFrom(RulesConfig.empty(), cards);
 
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
         assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());

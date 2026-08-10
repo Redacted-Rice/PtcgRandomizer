@@ -5,6 +5,7 @@ import redactedrice.ptcgr.data.Move;
 
 public class MoveExclusion {
     private final CardId cardId;
+    private final String cardSpecifier;
     private final String moveName;
     private final boolean removeFromPool;
     private final boolean excludeFromRandomization;
@@ -12,7 +13,13 @@ public class MoveExclusion {
 
     public MoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
             boolean excludeFromRandomization, String sourceFileName) {
+        this(cardId, moveName, removeFromPool, excludeFromRandomization, sourceFileName, "");
+    }
+
+    public MoveExclusion(CardId cardId, String moveName, boolean removeFromPool,
+            boolean excludeFromRandomization, String sourceFileName, String cardSpecifier) {
         this.cardId = cardId;
+        this.cardSpecifier = cardSpecifier != null ? cardSpecifier : "";
         this.moveName = moveName;
         this.removeFromPool = removeFromPool;
         this.excludeFromRandomization = excludeFromRandomization;
@@ -28,8 +35,16 @@ public class MoveExclusion {
         return cardId != CardId.NO_CARD;
     }
 
+    public boolean hasCardSpecifier() {
+        return !cardSpecifier.isEmpty();
+    }
+
     public CardId getCardId() {
         return cardId;
+    }
+
+    public String getCardSpecifier() {
+        return cardSpecifier;
     }
 
     public boolean isMoveNameSet() {
@@ -52,8 +67,19 @@ public class MoveExclusion {
         return sourceFileName;
     }
 
+    public MoveExclusion withRemoveFromPool(boolean removeFromPool) {
+        return new MoveExclusion(cardId, moveName, removeFromPool, excludeFromRandomization,
+                sourceFileName, cardSpecifier);
+    }
+
+    public MoveExclusion withExcludeFromRandomization(boolean excludeFromRandomization) {
+        return new MoveExclusion(cardId, moveName, removeFromPool, excludeFromRandomization,
+                sourceFileName, cardSpecifier);
+    }
+
     public boolean hasSameTarget(MoveExclusion other) {
-        return cardId == other.cardId && moveName.equals(other.moveName);
+        return cardId == other.cardId && moveName.equals(other.moveName)
+                && cardSpecifier.equals(other.cardSpecifier);
     }
 
     public boolean hasSameSettings(MoveExclusion other) {

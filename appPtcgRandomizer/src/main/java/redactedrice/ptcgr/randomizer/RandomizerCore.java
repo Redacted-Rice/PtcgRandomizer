@@ -16,11 +16,11 @@ import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.constants.romenums.CardType;
-import redactedrice.ptcgr.data.CardGroup;
-import redactedrice.ptcgr.data.MonsterCard;
-import redactedrice.ptcgr.rules.MoveAssignment;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
+import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
@@ -43,7 +43,7 @@ public class RandomizerCore {
     public static final String DEFAULT_PATCH_BASE_NAME = "ptcg_randomized";
 
     private RomData romData;
-    private RulesConfig pendingRules;
+    private final Rules rules = new Rules();
     private ActionBank actionBank;
     private LuaRandomizerWrapper luaRandomizer;
     private final PtcgBundledResources bundledResources;
@@ -56,21 +56,20 @@ public class RandomizerCore {
         setupLuaRandomizer();
         actionBank = new ActionBank(luaRandomizer);
         checkLoadedModuleArgumentConstraints(actionBank);
-        pendingRules = loadBundledDefaultRules();
+        loadBundledDefaultRules();
     }
 
-    private RulesConfig loadBundledDefaultRules() {
+    private void loadBundledDefaultRules() {
         IssueTracker.clear();
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
-            RulesConfig bundled =
-                    RulesConfig.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
+            RulesConfig bundled = RulesConfig.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
+            rules.clear();
+            bundled.applyTo(rules, null);
             IssuePresenter.displayWarnings(popupParent, "default rules");
-            return bundled;
         } catch (IOException e) {
             IssueTracker.addWarning("Failed to load bundled default rules: " + e.getMessage());
             IssuePresenter.displayWarnings(popupParent, "default rules");
-            return RulesConfig.empty();
         }
     }
 
@@ -95,18 +94,22 @@ public class RandomizerCore {
         }
 
         CoreRequirements requirements = new CoreRequirements();
-        // We just use the PTCGR version instead of all 3 (PTCGR, URJ and URC) for simplicity and
+        // We just use the PTCGR version instead of all 3 (PTCGR, URJ and URC) for
+        // simplicity and
         // since they are bundled together
         requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
                 PtcgRandomizerVersion.VERSION, true);
-        luaRandomizer =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
+        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
 
-        // Register built in PTCGR enums in the shared enum context instead of in the runtime
-        // context so they're merged into every execution context the same way module registered
-        // (onLoad) enums are, and so they're resolvable by name for the config UI's ENUM argument
+        // Register built in PTCGR enums in the shared enum context instead of in the
+        // runtime
+        // context so they're merged into every execution context the same way module
+        // registered
+        // (onLoad) enums are, and so they're resolvable by name for the config UI's
+        // ENUM argument
         // dropdowns even before a randomization has run.
-        // TODO later: Add others. Could I do this dynamically or just specify all of them?
+        // TODO later: Add others. Could I do this dynamically or just specify all of
+        // them?
         luaRandomizer.getSharedContext().registerEnum(CardType.class);
         luaRandomizer.getSharedContext().registerEnum(EnergyType.class);
         luaRandomizer.getSharedContext().registerEnum(EvolutionStage.class);
@@ -137,12 +140,15 @@ public class RandomizerCore {
         return romData != null;
     }
 
+    public Rules getRules() {
+        return rules;
+    }
+
     public boolean openRom(File romFile, Component toCenterPopupsOn) {
         try {
-            romData = RomIO.readFromFile(romFile);
+            romData = RomIO.readFromFile(romFile, rules);
             IssueTracker.clear();
-            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
-            romData.applyRulesToOriginal();
+            rules.syncWithCards(getReferenceMonsterCards());
             IssuePresenter.displayWarnings(toCenterPopupsOn, "loaded rules");
             return true;
         } catch (IOException e) {
@@ -152,32 +158,13 @@ public class RandomizerCore {
         }
     }
 
-    /**
-     * Replaces session rules from a config (or other source). If a ROM is already loaded, original
-     * is rebuilt from the stored ROM bytes and the new rules are applied.
-     */
-    public void replacePendingRules(RulesConfig rulesConfig) {
-        pendingRules = rulesConfig;
-        if (romData != null) {
-            romData.reloadOriginalFromRom();
-            pendingRules.recreateRules(romData.rules, romData.getOriginalMonsterCards());
-            romData.applyRulesToOriginal();
-        }
+    /** Replaces session rules from a loaded config file. */
+    public void loadRulesFromConfig(RulesConfig rulesConfig) {
+        rules.replaceFrom(rulesConfig, getReferenceMonsterCards());
     }
 
-    public RulesConfig getPendingRules() {
-        return pendingRules;
-    }
-
-    public List<MoveAssignment> getMoveAssignments() {
-        if (romData == null) {
-            return List.of();
-        }
-        return romData.rules.getMoveAssignments().getAllAssignments();
-    }
-
-    public CardGroup<MonsterCard> getOriginalMonsterCards() {
-        return romData != null ? romData.getOriginalMonsterCards() : null;
+    public CardGroup<MonsterCard> getReferenceMonsterCards() {
+        return romData != null ? romData.getReferenceMonsterCards() : null;
     }
 
     public boolean randomizeAndSaveRom(File romFile, Settings settings, List<Action> actions)
@@ -208,29 +195,29 @@ public class RandomizerCore {
                 Logger.addStreamForAllLevels(detailLogStream);
             }
 
-            if (!randomize(settings, actions)) {
+            if (!runRandomization(settings, actions)) {
                 return false;
             }
+            RomIO.writePatch(romData, romFile);
+            return true;
         } finally {
             if (detailLogStream != null) {
                 detailLogStream.close();
                 Logger.clearAllStreams();
             }
+            if (romData != null) {
+                romData.discardModificationWorkspace();
+            }
         }
-        RomIO.writePatch(romData, romFile);
-        return true;
     }
 
-    public boolean randomize(Settings settings, List<Action> actions) {
-        if (!isRomLoaded() || !hasSelectedActions(actions)) {
-            return false;
-        }
-
+    private boolean runRandomization(Settings settings, List<Action> actions) {
         // get and store the base seed
         int seed = settings.getSeedValue();
 
-        // Rebuild original from ROM bytes, reapply rules, then copy into modified so each
-        // randomization is isolated from prior runs (and from any Lua writes to original)
+        // Rebuild original from ROM bytes, reapply rules, then copy into modified so
+        // each randomization is isolated from prior runs (and from any Lua writes to
+        // original).
         IssueTracker.clear();
         romData.prepareForModification();
 
@@ -262,8 +249,7 @@ public class RandomizerCore {
         }
 
         // Execute modules — failures are logged immediately via IssueTracker.addError
-        List<ExecutionResult> results =
-                luaRandomizer.executeModules(executionRequests, context, seed);
+        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context, seed);
 
         for (ExecutionResult result : results) {
             if (result.isSuccess()) {
@@ -275,7 +261,8 @@ public class RandomizerCore {
                     Logger.info("Module " + result.getModuleId() + " executed");
                 }
             }
-            // Failures already logged/collected when ModuleExecutor called IssueTracker.addError
+            // Failures already logged/collected when ModuleExecutor called
+            // IssueTracker.addError
         }
 
         boolean success = !IssueTracker.hasErrors();
