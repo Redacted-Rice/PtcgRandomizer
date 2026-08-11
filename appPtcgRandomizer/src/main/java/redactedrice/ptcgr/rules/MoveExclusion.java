@@ -27,12 +27,21 @@ public class MoveExclusion {
     }
 
     public boolean matchesMove(CardId id, Move move) {
+        // pending card scoped entries are not resolved yet so they must not match any card
+        if (isPending()) {
+            return false;
+        }
         return (!isCardIdSet() || cardId == id)
                 && (moveName.isEmpty() || moveName.equals(move.name.toString()));
     }
 
     public boolean isCardIdSet() {
         return cardId != CardId.NO_CARD;
+    }
+
+    /** Card named in yaml/ui but not resolved to a CardId yet (no ROM). */
+    public boolean isPending() {
+        return !isCardIdSet() && hasCardSpecifier();
     }
 
     public boolean hasCardSpecifier() {

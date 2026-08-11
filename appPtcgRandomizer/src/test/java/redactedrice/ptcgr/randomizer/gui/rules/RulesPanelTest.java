@@ -12,31 +12,29 @@ import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import redactedrice.ptcgr.configs.AppPreferences;
 import redactedrice.ptcgr.constants.romenums.CardId;
+import redactedrice.ptcgr.data.CardGroup;
+import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.MoveExclusion;
-import redactedrice.ptcgr.randomizer.RandomizerCore;
+import redactedrice.ptcgr.rules.Rules;
 
 class RulesPanelTest {
-    private static RandomizerCore randomizerCore;
-
-    @BeforeAll
-    static void loadRandomizerCore() {
-        randomizerCore = new RandomizerCore(new JPanel());
-    }
+    private StubSession session;
 
     @BeforeEach
-    void resetRules() {
-        randomizerCore.resetRulesToBundledDefaults(null);
+    void resetSession() {
+        session = new StubSession();
+        session.rules.addMoveExclusion(
+                new MoveExclusion(CardId.NO_CARD, "BundledMove", true, true, "bundled.yaml"),
+                null);
     }
 
     @Test
@@ -60,9 +58,9 @@ class RulesPanelTest {
     @Test
     void refreshReflectsUserAddedExclusion() {
         RulesPanel panel = newPanel();
-        int before = randomizerCore.getRules().getMoveExclusions().getAllExclusions().size();
+        int before = session.rules.getMoveExclusions().getAllExclusions().size();
 
-        randomizerCore.getRules().addMoveExclusion(
+        session.rules.addMoveExclusion(
                 new MoveExclusion(CardId.NO_CARD, "UserOnlyMove", true, false,
                         RulesPanel.USER_ADDED_SOURCE),
                 null);
@@ -75,7 +73,7 @@ class RulesPanelTest {
     void exportChooserPreferencesUseAppPreferences() throws Exception {
         AppPreferences prefs = AppPreferences.loadDefaults();
         RulesPanel[] holder = new RulesPanel[1];
-        SwingUtilities.invokeAndWait(() -> holder[0] = new RulesPanel(randomizerCore, prefs, null));
+        SwingUtilities.invokeAndWait(() -> holder[0] = new RulesPanel(session, prefs, null));
         RulesPanel panel = holder[0];
         panel.applyExportChooserPreferences();
 
@@ -84,11 +82,12 @@ class RulesPanelTest {
                 panel.getExportUserRulesSelectedFile().getName());
     }
 
-    private static RulesPanel newPanel() {
+    private RulesPanel newPanel() {
         try {
             RulesPanel[] holder = new RulesPanel[1];
+            StubSession panelSession = session;
             SwingUtilities.invokeAndWait(() -> holder[0] =
-                    new RulesPanel(randomizerCore, AppPreferences.loadDefaults(), null));
+                    new RulesPanel(panelSession, AppPreferences.loadDefaults(), null));
             return holder[0];
         } catch (Exception error) {
             throw new AssertionError(error);
@@ -147,6 +146,25 @@ class RulesPanelTest {
             if (child instanceof Container) {
                 collectComponents((Container) child, type, matches);
             }
+        }
+    }
+
+    private static final class StubSession implements RulesPanel.Session {
+        private final Rules rules = new Rules();
+
+        @Override
+        public Rules getRules() {
+            return rules;
+        }
+
+        @Override
+        public boolean isRomLoaded() {
+            return false;
+        }
+
+        @Override
+        public CardGroup<MonsterCard> getReferenceMonsterCards() {
+            return null;
         }
     }
 }

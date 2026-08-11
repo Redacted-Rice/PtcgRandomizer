@@ -63,6 +63,15 @@ public class DualTableSelector extends JPanel {
         selectedModel.setRows(actions);
     }
 
+    public void mergeSelectedActions(List<Action> importedActions) {
+        if (importedActions == null || importedActions.isEmpty()) {
+            return;
+        }
+        for (Action action : importedActions) {
+            selectedModel.appendRow(action);
+        }
+    }
+
     void applyExportChooserPreferences() {
         AppPreferences.applyChooserDirectory(exportActionsChooser,
                 appPreferences.getExportActionsDirectory());

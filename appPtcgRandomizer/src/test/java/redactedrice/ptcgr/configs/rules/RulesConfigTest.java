@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JPanel;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import redactedrice.ptcgr.configs.Config;
@@ -26,6 +28,7 @@ import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.MoveExclusions;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.randomizer.utils.IssueTracker;
 
 class RulesConfigTest {
@@ -102,6 +105,116 @@ class RulesConfigTest {
         assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("failed to find any card")));
         assertTrue(rules.getMoveExclusions().getAllExclusions().isEmpty());
+    }
+
+    @Test
+    void loadsPendingMoveAssignmentsOnRandomizerCoreRules() {
+        RandomizerCore core = new RandomizerCore(new JPanel());
+        core.getRules().clear();
+        RulesConfig config = new RulesConfig("pending.yaml", List.of(),
+                List.of(new MoveAssignmentConfig("SomeMonster lvl35", "1", "TestMove", "")));
+        config.applyTo(core.getRules(), null);
+
+        assertEquals(1, core.getRules().getMoveAssignments().getAllAssignments().size());
+        assertTrue(core.getRules().getMoveAssignments().getAllAssignments().get(0).isPending());
+    }
+
+    @Test
+    void loadsPendingMoveAssignmentsFromConstructedConfig() {
+        RulesConfig config = new RulesConfig("pending.yaml", List.of(),
+                List.of(new MoveAssignmentConfig("SomeMonster lvl35", "1", "TestMove", "")));
+        Rules rules = new Rules();
+        config.applyTo(rules, null);
+
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertTrue(rules.getMoveAssignments().getAllAssignments().get(0).isPending());
+    }
+
+    @Test
+    void loadsPendingMoveAssignmentsBeforeRomIsOpen() throws IOException {
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveAssignments:
+                  - to_card: SomeMonster lvl35
+                    to_move_slot: 1
+                    move: TestMove
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, null);
+
+        assertTrue(!IssueTracker.hasWarnings());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertTrue(rules.getMoveAssignments().getAllAssignments().get(0).isPending());
+
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        rules.syncWithCards(cards);
+
+        assertTrue(!IssueTracker.hasWarnings());
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+        assertTrue(!rules.getMoveAssignments().getAllAssignments().get(0).isPending());
+    }
+
+    @Test
+    void pendingMoveAssignmentWarnsAndDropsOnFailedRomResolve() throws IOException {
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveAssignments:
+                  - to_card: MissingMonster lvl99
+                    to_move_slot: 1
+                    move: TestMove
+                """, "test.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, null);
+        assertEquals(1, rules.getMoveAssignments().getAllAssignments().size());
+
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+        IssueTracker.clear();
+        rules.syncWithCards(cards);
+
+        assertTrue(rules.getMoveAssignments().getAllAssignments().isEmpty());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("failed to resolve card")));
+    }
+
+    @Test
+    void pendingCardScopedExclusionDoesNotMatchAsGlobal() throws IOException {
+        IssueTracker.clear();
+        RulesConfig config = readYaml("""
+                moveExclusions:
+                  - remove_from_pool: true
+                    exclude_from_randomization: true
+                    card: SomeMonster lvl35
+                    move: TestMove
+                """, "pending.yaml");
+        Rules rules = new Rules();
+        config.applyTo(rules, null);
+
+        MoveExclusion pending = rules.getMoveExclusions().getAllExclusions().get(0);
+        assertTrue(pending.isPending());
+
+        MonsterCard otherCard = someMonster(10, CardId.MONSTER_146_2, "TestMove");
+        assertFalse(rules.getMoveExclusions().isMoveRemovedFromPool(otherCard.id,
+                otherCard.getMove(0)));
+        assertFalse(rules.getMoveExclusions().isMoveExcludedFromRandomization(otherCard.id,
+                otherCard.getMove(0)));
+    }
+
+    @Test
+    void pendingCardScopedExclusionDoesNotBlockLaterGlobalMatchInSameBucket() throws IOException {
+        IssueTracker.clear();
+        Rules rules = new Rules();
+        // pending card scoped entry shares the move-name bucket with a later global one
+        rules.addMoveExclusion(new MoveExclusion(CardId.NO_CARD, "TestMove", true, true,
+                "pending.yaml", "SomeMonster lvl35"), null);
+        rules.addMoveExclusion(new MoveExclusion(CardId.NO_CARD, "TestMove", true, true,
+                "global.yaml"), null);
+
+        MonsterCard card = someMonster(10, CardId.MONSTER_146_2, "TestMove");
+        assertTrue(rules.getMoveExclusions().isMoveRemovedFromPool(card.id, card.getMove(0)));
+        assertTrue(rules.getMoveExclusions().isMoveExcludedFromRandomization(card.id,
+                card.getMove(0)));
     }
 
     @Test
