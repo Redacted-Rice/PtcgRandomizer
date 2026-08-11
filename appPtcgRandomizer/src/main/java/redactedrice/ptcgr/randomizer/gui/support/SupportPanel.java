@@ -86,6 +86,7 @@ public class SupportPanel extends JPanel {
                     nullToEmpty(script.getId()),
                     nullToEmpty(script.getVersion()),
                     type,
+                    nullToEmpty(script.getWhen()),
                     nullToEmpty(script.getDescription())));
         }
     }
@@ -149,13 +150,13 @@ public class SupportPanel extends JPanel {
         return section;
     }
 
-    private record ScriptRow(String name, String id, String version, String type,
+    private record ScriptRow(String name, String id, String version, String type, String when,
             String description) {
     }
 
     private static final class ScriptsTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
-        private static final String[] COLUMN_HEADERS = { "Name", "Id", "Version", "Type" };
+        private static final String[] COLUMN_HEADERS = { "Name", "Id", "Version", "Type", "When" };
 
         private List<ScriptRow> rows = List.of();
 
@@ -194,6 +195,7 @@ public class SupportPanel extends JPanel {
             case 1 -> row.id();
             case 2 -> row.version();
             case 3 -> row.type();
+            case 4 -> row.when();
             default -> "";
             };
         }

@@ -26,35 +26,47 @@ class SupportPanelTest {
     @Test
     void refreshListsPreAndPostScriptsWithColumns() {
         StubSession session = new StubSession();
-        session.preScripts.add(script("setup", "Setup Script", "1.0", "Runs before randomization"));
-        session.postScripts.add(script("detect", "Detect Script", "2.1", "Runs after modules"));
+        session.preScripts.add(
+                script("setup", "Setup Script", "1.0", "randomize", "Runs before randomization"));
+        session.preScripts
+                .add(script("snapshot", "Snapshot Script", "1.1", "module", "Per module snapshot"));
+        session.postScripts
+                .add(script("detect", "Detect Script", "2.1", "module", "Runs after modules"));
 
         SupportPanel panel = newPanel(session);
         panel.refresh();
 
         JTable table = scriptsTable(panel);
-        assertEquals(2, table.getRowCount());
-        assertEquals(4, table.getColumnCount());
+        assertEquals(3, table.getRowCount());
+        assertEquals(5, table.getColumnCount());
         assertEquals("Name", table.getColumnName(0));
         assertEquals("Id", table.getColumnName(1));
         assertEquals("Version", table.getColumnName(2));
         assertEquals("Type", table.getColumnName(3));
+        assertEquals("When", table.getColumnName(4));
 
         assertEquals("Setup Script", valueAt(table, "setup", 0));
         assertEquals("setup", valueAt(table, "setup", 1));
         assertEquals("1.0", valueAt(table, "setup", 2));
         assertEquals("Pre", valueAt(table, "setup", 3));
+        assertEquals("randomize", valueAt(table, "setup", 4));
+
+        assertEquals("Snapshot Script", valueAt(table, "snapshot", 0));
+        assertEquals("Pre", valueAt(table, "snapshot", 3));
+        assertEquals("module", valueAt(table, "snapshot", 4));
 
         assertEquals("Detect Script", valueAt(table, "detect", 0));
         assertEquals("detect", valueAt(table, "detect", 1));
         assertEquals("2.1", valueAt(table, "detect", 2));
         assertEquals("Post", valueAt(table, "detect", 3));
+        assertEquals("module", valueAt(table, "detect", 4));
     }
 
     @Test
     void hoverShowsDescriptionTooltip() {
         StubSession session = new StubSession();
-        session.preScripts.add(script("setup", "Setup Script", "1.0", "Runs before randomization"));
+        session.preScripts.add(
+                script("setup", "Setup Script", "1.0", "randomize", "Runs before randomization"));
 
         SupportPanel panel = newPanel(session);
         JTable table = scriptsTable(panel);
@@ -68,8 +80,8 @@ class SupportPanelTest {
     @Test
     void tableIsReadOnlyAndSortable() {
         StubSession session = new StubSession();
-        session.preScripts.add(script("b_script", "B", "1.0", ""));
-        session.preScripts.add(script("a_script", "A", "1.0", ""));
+        session.preScripts.add(script("b_script", "B", "1.0", "randomize", ""));
+        session.preScripts.add(script("a_script", "A", "1.0", "module", ""));
 
         SupportPanel panel = newPanel(session);
         JTable table = scriptsTable(panel);
@@ -121,15 +133,16 @@ class SupportPanelTest {
         }
     }
 
-    private static Module script(String id, String name, String version, String description) {
+    private static Module script(String id, String name, String version, String when,
+            String description) {
         return new Module(id, name, description, Set.of(), Set.of(), List.of(),
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {
                         return LuaValue.NIL;
                     }
-                }, null, "test.lua", 0, false, false, "randomize", "author", version, Map.of(), null,
-                null, null, null, null);
+                }, null, "test.lua", 0, false, false, when, "author", version, Map.of(), null, null,
+                null, null, null);
     }
 
     private static final class StubSession implements SupportPanel.Session {
