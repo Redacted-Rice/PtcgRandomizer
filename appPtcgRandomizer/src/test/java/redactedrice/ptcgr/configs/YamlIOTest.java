@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.configs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -75,7 +76,7 @@ class YamlIOTest {
                 new Yaml().load(yamlText.substring(yamlText.indexOf('\n') + 1));
         assertEquals("42", loaded.get("seed"));
         assertEquals(Collections.emptyList(), loaded.get("actions"));
-        assertEquals(Collections.emptyList(), loaded.get("prescripts"));
+        assertFalse(loaded.containsKey("prescripts"));
     }
 
     @Test

@@ -32,7 +32,6 @@ import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
-import redactedrice.ptcgr.rules.Rules;
 import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
@@ -53,8 +52,8 @@ class ConfigTest {
         assertEquals(PtcgRandomizerVersion.VERSION, document.get("appVersion"));
         assertEquals("123456789", document.get("seed"));
         assertEquals(Collections.emptyList(), document.get("actions"));
-        assertEquals(Collections.emptyList(), document.get("prescripts"));
-        assertEquals(Collections.emptyList(), document.get("postscripts"));
+        assertFalse(document.containsKey("prescripts"));
+        assertFalse(document.containsKey("postscripts"));
         assertEquals(RulesConfig.empty().convertToYamlMap(), document.get("rules"));
         assertFalse(document.containsKey("randomizationSettings"));
     }
@@ -66,8 +65,13 @@ class ConfigTest {
 
         var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
         var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
-        Config config = Config.fromAppState(settings.getSeedString(), List.of(),
-                testActionBank(null, null, List.of(), List.of(setupScript), List.of(detectScript)),
+        ActionBank actionBank =
+                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+        Action action = actionBank.getModule("shuffle_hp") != null
+                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
+                : null;
+        assertTrue(action != null);
+        Config config = Config.fromAppState(settings.getSeedString(), List.of(action), actionBank,
                 new Rules(), null);
         Path output = tempDir.resolve("config.yaml");
         YamlIO.save(output.toFile(), config.convertToYamlMap());
@@ -326,7 +330,7 @@ class ConfigTest {
     }
 
     @Test
-    void loadRestoresScriptsWithoutLoadingThem() throws Exception {
+    void loadIgnoresScriptsWhenActionsListIsEmpty() throws Exception {
         String yaml = """
                 version: 1
                 appVersion: %s
@@ -344,11 +348,12 @@ class ConfigTest {
 
         IssueTracker.clear();
         Config loaded = readYaml(configFile.toFile());
-        assertTrue(!IssueTracker.hasWarnings());
-        assertEquals(1, loaded.getPreScriptConfigs().size());
-        assertEquals("changedetector_setup", loaded.getPreScriptConfigs().get(0).getModule());
-        assertEquals(1, loaded.getPostScriptConfigs().size());
-        assertEquals("changedetector_detect", loaded.getPostScriptConfigs().get(0).getModule());
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("prescripts and postscripts were ignored")));
+        assertTrue(loaded.getPreScriptConfigs().isEmpty());
+        assertTrue(loaded.getPostScriptConfigs().isEmpty());
+        assertFalse(loaded.hasPreScripts());
+        assertFalse(loaded.hasPostScripts());
     }
 
     @Test
@@ -377,6 +382,92 @@ class ConfigTest {
     }
 
     @Test
+    void fromAppStateOmitsScriptSectionsWhenNoActions() {
+        var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
+        ActionBank actionBank =
+                testActionBank(null, null, List.of(), List.of(setupScript), List.of());
+
+        Config config = Config.fromAppState("42", List.of(), actionBank, new Rules(), null);
+        Map<String, Object> document = config.convertToYamlMap();
+
+        assertTrue(config.getPreScriptConfigs().isEmpty());
+        assertTrue(config.getPostScriptConfigs().isEmpty());
+        assertFalse(document.containsKey("prescripts"));
+        assertFalse(document.containsKey("postscripts"));
+    }
+
+    @Test
+    void scriptsOnlyYamlWithoutActionsIsNotAddable() throws Exception {
+        String yaml = """
+                version: 1
+                appVersion: %s
+                prescripts:
+                  - module: changedetector_setup
+                    version: 0.1
+                """.formatted(PtcgRandomizerVersion.VERSION);
+        Path configFile = tempDir.resolve("scripts_only.yaml");
+        Files.writeString(configFile, yaml);
+
+        IssueTracker.clear();
+        Config loaded = readYaml(configFile.toFile());
+
+        assertFalse(loaded.hasAddableActions());
+        assertTrue(loaded.getPreScriptConfigs().isEmpty());
+    }
+
+    @Test
+    void scriptFingerprintsPassWhenPreAndPostScriptsMatch() {
+        var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
+        var detectScript = scriptWithVersion("changedetector_detect", "0.2", "module");
+        ActionBank actionBank =
+                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+        Config config = new Config("1",
+                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ScriptConfig("changedetector_setup", "0.1")),
+                List.of(new ScriptConfig("changedetector_detect", "0.2")), RulesConfig.empty());
+
+        IssueTracker.clear();
+        config.checkRequiredScriptFingerprints(actionBank);
+
+        assertFalse(IssueTracker.hasWarnings());
+    }
+
+    @Test
+    void scriptFingerprintsWarnWhenRequiredScriptMissingFromApp() {
+        Config config = new Config("1",
+                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ScriptConfig("changedetector_setup", "0.1")),
+                List.of(new ScriptConfig("missing_postscript", "0.1")), RulesConfig.empty());
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(),
+                List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")), List.of());
+
+        IssueTracker.clear();
+        config.checkRequiredScriptFingerprints(actionBank);
+
+        assertTrue(IssueTracker.getWarnings().stream()
+                .anyMatch(w -> w.contains("missing_postscript") && w.contains("not loaded")));
+    }
+
+    @Test
+    void scriptFingerprintsWarnOnVersionMismatch() {
+        Config config = new Config("1",
+                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ScriptConfig("changedetector_setup", "0.0")),
+                List.of(new ScriptConfig("changedetector_detect", "0.0")), RulesConfig.empty());
+        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(),
+                List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")),
+                List.of(scriptWithVersion("changedetector_detect", "0.2", "module")));
+
+        IssueTracker.clear();
+        config.checkRequiredScriptFingerprints(actionBank);
+
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("prescripts")
+                && w.contains("changedetector_setup") && w.contains("0.0")));
+        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("postscripts")
+                && w.contains("changedetector_detect") && w.contains("0.2")));
+    }
+
+    @Test
     void versionMismatchWarnsButStillLoadsAction() {
         Config config = new Config("1",
                 List.of(new ActionConfig("shuffle_hp", "0.1", ActionArgumentsConfig.empty())),
@@ -393,40 +484,6 @@ class ConfigTest {
         assertTrue(IssueTracker.getWarnings().stream()
                 .anyMatch(w -> w.contains("current version is 0.9")));
         assertFalse(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("appVersion")));
-    }
-
-    @Test
-    void scriptVersionMismatchWarnsWithoutLoadingScripts() {
-        Config config = new Config("1", List.of(),
-                List.of(new ScriptConfig("changedetector_setup", "0.0")),
-                List.of(new ScriptConfig("changedetector_detect", "0.0")), RulesConfig.empty());
-
-        ActionBank actionBank = testActionBank(null, null, List.of(),
-                List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")),
-                List.of(scriptWithVersion("changedetector_detect", "0.2", "module")));
-
-        IssueTracker.clear();
-        config.checkScripts(actionBank);
-
-        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("prescripts")
-                && w.contains("changedetector_setup") && w.contains("0.0")));
-        assertTrue(IssueTracker.getWarnings().stream().anyMatch(w -> w.contains("postscripts")
-                && w.contains("changedetector_detect") && w.contains("0.2")));
-    }
-
-    @Test
-    void missingScriptInAppWarns() {
-        Config config =
-                new Config("1", List.of(), List.of(new ScriptConfig("missing_prescript", "0.1")),
-                        List.of(), RulesConfig.empty());
-
-        ActionBank actionBank = testActionBank(null, null, List.of(), List.of(), List.of());
-
-        IssueTracker.clear();
-        config.checkScripts(actionBank);
-
-        assertTrue(IssueTracker.getWarnings().stream()
-                .anyMatch(w -> w.contains("missing_prescript") && w.contains("not loaded")));
     }
 
     @Test
@@ -605,7 +662,7 @@ class ConfigTest {
                 : null;
         assertTrue(action != null);
 
-        Map<String, Object> document = Config.convertActionsOnlyToYamlMap(List.of(action));
+        Map<String, Object> document = Config.convertActionsOnlyToYamlMap(List.of(action), actionBank);
 
         assertEquals(Config.CURRENT_FORMAT_VERSION, document.get("version"));
         assertEquals(PtcgRandomizerVersion.VERSION, document.get("appVersion"));
@@ -615,26 +672,29 @@ class ConfigTest {
         List<Map<String, Object>> actions = (List<Map<String, Object>>) document.get("actions");
         assertEquals(1, actions.size());
         assertEquals("shuffle_hp", actions.get(0).get("module"));
+        assertFalse(document.containsKey("prescripts"));
+        assertFalse(document.containsKey("postscripts"));
     }
 
     @Test
-    void actionsOnlyExportRoundTripsThroughPartialImport() throws Exception {
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
-        Action action = actionBank.getModule("shuffle_hp") != null
-                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
-                : null;
-        assertTrue(action != null);
+    void actionsOnlyExportRoundTripsWithScriptFingerprints() throws Exception {
+        var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
+        var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
+        ActionBank actionBank =
+                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+        Action action = new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry());
 
-        Path actionsFile = tempDir.resolve("actions_config.yaml");
-        YamlIO.save(actionsFile.toFile(), Config.convertActionsOnlyToYamlMap(List.of(action)));
+        Path actionsFile = tempDir.resolve("user_actions.yaml");
+        YamlIO.save(actionsFile.toFile(), Config.convertActionsOnlyToYamlMap(List.of(action), actionBank));
 
         IssueTracker.clear();
         Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(actionsFile.toFile()),
                 actionsFile.getFileName().toString());
-
-        assertTrue(!IssueTracker.hasWarnings());
-        assertTrue(loaded.hasActions());
-        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+        assertTrue(loaded.hasPreScripts());
+        assertTrue(loaded.hasPostScripts());
+        loaded.checkRequiredScriptFingerprints(actionBank);
+        assertFalse(IssueTracker.hasWarnings());
+        assertEquals("shuffle_hp", loaded.getActions(actionBank).get(0).getModule().getId());
     }
 
     @Test

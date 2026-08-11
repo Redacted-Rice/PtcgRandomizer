@@ -255,9 +255,12 @@ public class RandomizerApp {
         });
         openRomPanel.add(openRomButton);
 
-        JButton importConfigsButton = new JButton("Import Configs");
-        importConfigsButton.addActionListener(event -> importConfigsFromFile());
-        openRomPanel.add(importConfigsButton);
+        JButton addConfigButton = new JButton("Add Config");
+        addConfigButton.setToolTipText(
+                "Adds rules and actions from the file. They are not replaced. "
+                        + "Single-value settings like seed are replaced.");
+        addConfigButton.addActionListener(event -> addConfigFromFile());
+        openRomPanel.add(addConfigButton);
 
         JButton resetConfigsButton = new JButton("Reset Configs");
         resetConfigsButton.setToolTipText(
@@ -384,7 +387,7 @@ public class RandomizerApp {
         Logger.setMinLogLevel(getSelectedLogLevel());
     }
 
-    private void importConfigsFromFile() {
+    private void addConfigFromFile() {
         int returnVal = loadConfigChooser.showOpenDialog(frmTradingCard);
         if (returnVal != JFileChooser.APPROVE_OPTION) {
             return;
@@ -398,13 +401,13 @@ public class RandomizerApp {
             String sourceLabel = configFile.getName();
             Config loaded = Config.readFromLoadedYamlMap(yaml, sourceLabel);
             if (!loaded.isValid()) {
-                IssuePresenter.finishPhase(frmTradingCard, "config import");
+                IssuePresenter.finishPhase(frmTradingCard, "config add");
                 return;
             }
             if (!loaded.hasRules() && !loaded.hasActionsSection() && !loaded.hasSeed()) {
                 JOptionPane.showMessageDialog(frmTradingCard,
-                        "The selected file does not contain any importable config sections.",
-                        "Nothing to Import", JOptionPane.INFORMATION_MESSAGE);
+                        "The selected file does not contain any addable config sections.",
+                        "Nothing to Add", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -414,12 +417,12 @@ public class RandomizerApp {
                 return;
             }
             applyImportedConfig(loaded, selection.get());
-            IssuePresenter.finishPhase(frmTradingCard, "config import");
+            IssuePresenter.finishPhase(frmTradingCard, "config add");
             saveAppPreferencesQuietly();
         } catch (IOException ioError) {
             ioError.printStackTrace();
             JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
-                    "Config Import Failed", JOptionPane.ERROR_MESSAGE);
+                    "Add Config Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -427,13 +430,9 @@ public class RandomizerApp {
         if (selection.generalSettings() && loaded.hasSeed()) {
             saveSetSeedVal.setText(loaded.getSeed());
         }
-        if (selection.actions()) {
-            if (loaded.hasActions() || loaded.hasPreScripts() || loaded.hasPostScripts()) {
-                loaded.checkScripts(randomizer.getActionBank());
-            }
-            if (loaded.hasActions()) {
-                dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
-            }
+        if (selection.actions() && loaded.hasAddableActions()) {
+            loaded.checkRequiredScriptFingerprints(randomizer.getActionBank());
+            dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
         }
         if (selection.rules() && loaded.hasRules()) {
             randomizer.mergeRulesFromConfig(loaded.getRulesConfig());
