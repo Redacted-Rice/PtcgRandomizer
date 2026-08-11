@@ -20,10 +20,15 @@ public abstract class ActionsHoverToolTipTable extends JTable {
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        int row = rowAtPoint(event.getPoint());
-        if (row >= 0) {
-            return "Details: " + model.getRowDescription(row);
+        int viewRow = rowAtPoint(event.getPoint());
+        if (viewRow < 0) {
+            return null;
         }
-        return null;
+        int modelRow = convertRowIndexToModel(viewRow);
+        String description = model.getRowDescription(modelRow);
+        if (description == null || description.isBlank()) {
+            return null;
+        }
+        return description;
     }
 }
