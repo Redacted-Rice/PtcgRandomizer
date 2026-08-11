@@ -33,8 +33,14 @@ public class MoveAssignments {
     public void assignSpecifiedMoves(CardGroup<MonsterCard> cards) {
         CardGroup<MonsterCard> foundCards = cards.withIds(assignmentsByCardId.keySet());
         for (MonsterCard card : foundCards.iterable()) {
+            if (card == null) {
+                continue;
+            }
             List<MoveAssignment> assigns = assignmentsByCardId.get(card.id);
             for (MoveAssignment assign : assigns) {
+                if (!assign.isCardIdSet()) {
+                    continue;
+                }
                 applyAssignmentToCard(assign, card);
             }
         }
@@ -77,8 +83,7 @@ public class MoveAssignments {
 
     public boolean add(MoveAssignment assignment, CardGroup<MonsterCard> cards,
             boolean warnOnEquivalentDuplicate) {
-        return add(assignment, describeCard(assignment.getCardId(), cards),
-                warnOnEquivalentDuplicate);
+        return add(assignment, describeAssignment(assignment, cards), warnOnEquivalentDuplicate);
     }
 
     public boolean add(MoveAssignment assignment) {
@@ -127,6 +132,14 @@ public class MoveAssignments {
             }
         }
         return cardId.toString();
+    }
+
+    private static String describeAssignment(MoveAssignment assignment,
+            CardGroup<MonsterCard> cards) {
+        if (assignment.isPending()) {
+            return assignment.getToCardSpecifier();
+        }
+        return describeCard(assignment.getCardId(), cards);
     }
 
     public boolean removeMatching(MoveAssignment target) {

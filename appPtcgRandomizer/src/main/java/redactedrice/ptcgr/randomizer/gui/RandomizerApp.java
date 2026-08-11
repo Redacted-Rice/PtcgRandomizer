@@ -432,7 +432,7 @@ public class RandomizerApp {
         }
         if (selection.actions() && loaded.hasAddableActions()) {
             loaded.checkRequiredScriptFingerprints(randomizer.getActionBank());
-            dualPanel.setSelectedActions(loaded.getActions(randomizer.getActionBank()));
+            dualPanel.mergeSelectedActions(loaded.getActions(randomizer.getActionBank()));
         }
         if (selection.rules() && loaded.hasRules()) {
             randomizer.mergeRulesFromConfig(loaded.getRulesConfig());

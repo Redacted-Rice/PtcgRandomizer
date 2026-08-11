@@ -2,6 +2,7 @@ package redactedrice.ptcgr.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import redactedrice.ptcgr.configs.rules.MoveAssignmentConfig;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
@@ -93,7 +94,7 @@ public class Rules {
 
         List<MoveExclusion> pending = new ArrayList<>();
         for (MoveExclusion exclusion : moveExclusions.getAllExclusions()) {
-            if (!exclusion.isCardIdSet() && exclusion.hasCardSpecifier()) {
+            if (exclusion.isPending()) {
                 pending.add(exclusion);
             }
         }
@@ -117,6 +118,31 @@ public class Rules {
                     exclusion.isRemoveFromPool(), exclusion.isExcludeFromRandomization(),
                     exclusion.getSourceFileName(), exclusion.getCardSpecifier());
             updateMoveExclusion(exclusion, resolved, cards);
+        }
+    }
+
+    /** Resolves assignments loaded before a ROM was available. */
+    public void resolvePendingAssignments(CardGroup<MonsterCard> cards) {
+        if (cards == null) {
+            return;
+        }
+
+        List<MoveAssignment> pending = new ArrayList<>();
+        for (MoveAssignment assignment : moveAssignments.getAllAssignments()) {
+            if (assignment.isPending()) {
+                pending.add(assignment);
+            }
+        }
+
+        for (MoveAssignment assignment : pending) {
+            String entryContext = assignment.getSourceFileName() + ": pending assignment";
+            MoveAssignmentConfig config = MoveAssignmentConfig.fromMoveAssignment(assignment, null);
+            MoveAssignment resolved = config.toMoveAssignment(cards,
+                    assignment.getSourceFileName(), entryContext);
+            moveAssignments.removeMatching(assignment);
+            if (resolved != null) {
+                moveAssignments.add(resolved, cards, false);
+            }
         }
     }
 
@@ -154,6 +180,7 @@ public class Rules {
             return;
         }
         resolvePendingExclusions(cards);
+        resolvePendingAssignments(cards);
         refreshDerivedAssignments(cards);
     }
 }

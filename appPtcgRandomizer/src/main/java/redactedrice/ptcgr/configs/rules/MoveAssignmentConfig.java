@@ -31,6 +31,12 @@ public final class MoveAssignmentConfig {
 
     public static MoveAssignmentConfig fromMoveAssignment(MoveAssignment assignment,
             CardGroup<MonsterCard> cards) {
+        if (assignment.isPending()) {
+            return new MoveAssignmentConfig(assignment.getToCardSpecifier(),
+                    String.valueOf(assignment.getMoveSlot() + 1), assignment.getMoveName(),
+                    assignment.getFromCardSpecifier());
+        }
+
         String toCardSpecifier = "";
         if (cards != null) {
             MonsterCard targetCard = cards.withId(assignment.getCardId());
@@ -75,6 +81,14 @@ public final class MoveAssignmentConfig {
 
     public MoveAssignment toMoveAssignment(CardGroup<MonsterCard> cards, String sourceLabel,
             String entryContext) {
+        if (cards == null) {
+            int moveSlot = parseMoveSlot0Based(toMoveSlot, entryContext);
+            if (moveSlot < 0) {
+                return null;
+            }
+            return MoveAssignment.pending(toCard, moveSlot, move, fromCard, sourceLabel);
+        }
+
         MonsterCard targetCard = cards.resolveCard(toCard, entryContext);
         if (targetCard == null) {
             return null;
@@ -114,6 +128,15 @@ public final class MoveAssignmentConfig {
             return null;
         }
         return trimmed;
+    }
+
+    private static int parseMoveSlot0Based(String toMoveSlot, String entryContext) {
+        Integer slot = ParserHelpers.parseInteger(toMoveSlot);
+        if (slot == null || slot < 1) {
+            IssueTracker.addWarning(entryContext + ": invalid move slot \"" + toMoveSlot + "\".");
+            return -1;
+        }
+        return slot - 1;
     }
 
     public String getToCard() {

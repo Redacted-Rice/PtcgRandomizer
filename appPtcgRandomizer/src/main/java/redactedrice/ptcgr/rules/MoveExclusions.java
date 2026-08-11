@@ -46,16 +46,21 @@ public class MoveExclusions {
     private boolean anyExclusionMatches(CardId id, Move move,
             boolean checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList,
             List<MoveExclusion> foundExcl) {
-        if (foundExcl != null) {
-            for (MoveExclusion excl : foundExcl) {
-                if (checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList) {
-                    return excl.isRemoveFromPool() && excl.matchesMove(id, move);
-                } else {
-                    return excl.isExcludeFromRandomization() && excl.matchesMove(id, move);
+        if (foundExcl == null) {
+            return false;
+        }
+        for (MoveExclusion excl : foundExcl) {
+            if (!excl.matchesMove(id, move)) {
+                continue;
+            }
+            if (checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList) {
+                if (excl.isRemoveFromPool()) {
+                    return true;
                 }
+            } else if (excl.isExcludeFromRandomization()) {
+                return true;
             }
         }
-
         return false;
     }
 
@@ -145,7 +150,8 @@ public class MoveExclusions {
 
     private void addAssignmentsForExclusion(MoveExclusion exclusion, CardGroup<MonsterCard> cards,
             MoveAssignments assignments) {
-        if (!exclusion.isExcludeFromRandomization()) {
+        // pending card scoped exclusions cannot match cards until synced
+        if (!exclusion.isExcludeFromRandomization() || exclusion.isPending()) {
             return;
         }
 

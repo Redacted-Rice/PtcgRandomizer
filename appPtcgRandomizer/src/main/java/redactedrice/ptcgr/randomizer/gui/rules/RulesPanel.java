@@ -46,6 +46,8 @@ import redactedrice.ptcgr.rules.MoveAssignments;
 import redactedrice.ptcgr.rules.MoveExclusion;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
+import redactedrice.ptcgr.utils.IssuePresenter;
+import redactedrice.randomizer.utils.IssueTracker;
 
 /** The active move exclusion and assignment rules. */
 public class RulesPanel extends JPanel {
@@ -68,9 +70,18 @@ public class RulesPanel extends JPanel {
 
     private static final String DEFAULT_EXPORT_ALL_RULES_FILE_NAME = "all_rules.yaml";
 
+    /** What the rules tab reads from the running app. */
+    interface Session {
+        Rules getRules();
+
+        boolean isRomLoaded();
+
+        CardGroup<MonsterCard> getReferenceMonsterCards();
+    }
+
     private final JFileChooser exportUserRulesChooser = new JFileChooser();
     private final JFileChooser exportAllRulesChooser = new JFileChooser();
-    private final RandomizerCore randomizerCore;
+    private final Session session;
     private final AppPreferences appPreferences;
     private final RandomizerApp app;
     private final MoveExclusionsTableModel exclusionsModel;
@@ -81,7 +92,12 @@ public class RulesPanel extends JPanel {
 
     public RulesPanel(RandomizerCore randomizerCore, AppPreferences appPreferences,
             RandomizerApp app) {
-        this.randomizerCore = randomizerCore;
+        this(sessionFrom(randomizerCore), appPreferences, app);
+    }
+
+    // package private so tests can skip spinning up RandomizerCore
+    RulesPanel(Session session, AppPreferences appPreferences, RandomizerApp app) {
+        this.session = session;
         this.appPreferences = appPreferences;
         this.app = app;
         exportUserRulesChooser.setFileFilter(
@@ -93,6 +109,25 @@ public class RulesPanel extends JPanel {
         assignmentsModel = new MoveAssignmentsTableModel();
         createUi();
         refresh();
+    }
+
+    private static Session sessionFrom(RandomizerCore randomizerCore) {
+        return new Session() {
+            @Override
+            public Rules getRules() {
+                return randomizerCore.getRules();
+            }
+
+            @Override
+            public boolean isRomLoaded() {
+                return randomizerCore.isRomLoaded();
+            }
+
+            @Override
+            public CardGroup<MonsterCard> getReferenceMonsterCards() {
+                return randomizerCore.getReferenceMonsterCards();
+            }
+        };
     }
 
     void applyExportChooserPreferences() {
@@ -122,15 +157,10 @@ public class RulesPanel extends JPanel {
     }
 
     public void refresh() {
-        exclusionsModel.setRows(randomizerCore.getRules().getMoveExclusions().getAllExclusions());
-
-        if (randomizerCore.isRomLoaded()) {
-            assignmentsModel.setRows(buildAssignmentRows());
-        } else {
-            assignmentsModel.setRows(List.of());
-        }
+        exclusionsModel.setRows(session.getRules().getMoveExclusions().getAllExclusions());
+        assignmentsModel.setRows(buildAssignmentRows());
         if (addAssignmentButton != null) {
-            addAssignmentButton.setEnabled(randomizerCore.isRomLoaded());
+            addAssignmentButton.setEnabled(session.isRomLoaded());
         }
         updateAssignmentsContentVisibility();
     }
@@ -139,30 +169,42 @@ public class RulesPanel extends JPanel {
         if (assignmentsContentLayout == null) {
             return;
         }
-        String card = randomizerCore.isRomLoaded() ? "table" : "placeholder";
+        boolean showTable = session.isRomLoaded() || hasAssignmentsToShow();
+        String card = showTable ? "table" : "placeholder";
         assignmentsContentLayout.show(assignmentsContentPanel, card);
     }
 
+    private boolean hasAssignmentsToShow() {
+        return !session.getRules().getMoveAssignments().getAllAssignments().isEmpty();
+    }
+
     private List<AssignmentRow> buildAssignmentRows() {
-        CardGroup<MonsterCard> cards = randomizerCore.getReferenceMonsterCards();
-        if (cards == null) {
-            return List.of();
-        }
+        CardGroup<MonsterCard> cards = session.getReferenceMonsterCards();
 
         List<AssignmentRow> rows = new ArrayList<>();
-        for (MoveAssignment assignment : randomizerCore.getRules().getMoveAssignments()
+        for (MoveAssignment assignment : session.getRules().getMoveAssignments()
                 .getAllAssignments()) {
-            MonsterCard card = cards.withId(assignment.getCardId());
-            String toCard = card != null ? card.toNameWithLevelSpecifier()
-                    : assignment.getCardId().toString();
-            MonsterCard fromCard = assignment.getMove().getSourceCard();
-            String fromCardLabel = fromCard != null ? fromCard.toNameWithLevelSpecifier() : "";
+            String toCard;
+            String fromCardLabel;
+            String moveName;
+            if (assignment.isPending()) {
+                toCard = assignment.getToCardSpecifier();
+                fromCardLabel = assignment.getFromCardSpecifier();
+                moveName = assignment.getMoveName();
+            } else {
+                MonsterCard card = cards != null ? cards.withId(assignment.getCardId()) : null;
+                toCard = card != null ? card.toNameWithLevelSpecifier()
+                        : assignment.getCardId().toString();
+                MonsterCard fromCard = assignment.getMove().getSourceCard();
+                fromCardLabel = fromCard != null ? fromCard.toNameWithLevelSpecifier() : "";
+                moveName = assignment.getMoveName();
+            }
             rows.add(new AssignmentRow(assignment,
                     MoveAssignments.assignmentSourceDisplayLabel(assignment.getSourceFileName()),
                     fromCardLabel,
                     toCard,
                     String.valueOf(assignment.getMoveSlot() + 1),
-                    assignment.getMove().name.toString()));
+                    moveName));
         }
         return rows;
     }
@@ -199,8 +241,8 @@ public class RulesPanel extends JPanel {
     }
 
     private void exportAllRules() {
-        RulesConfig exportConfig = RulesConfig.fromRules(randomizerCore.getRules(),
-                randomizerCore.getReferenceMonsterCards());
+        RulesConfig exportConfig = RulesConfig.fromRules(session.getRules(),
+                session.getReferenceMonsterCards());
         if (exportConfig.getMoveExclusionConfigs().isEmpty()
                 && exportConfig.getMoveAssignmentConfigs().isEmpty()) {
             JOptionPane.showMessageDialog(this, "There are no rules to export.",
@@ -257,8 +299,8 @@ public class RulesPanel extends JPanel {
     }
 
     private RulesConfig buildUserAddedExportConfig() {
-        Rules rules = randomizerCore.getRules();
-        CardGroup<MonsterCard> cards = randomizerCore.getReferenceMonsterCards();
+        Rules rules = session.getRules();
+        CardGroup<MonsterCard> cards = session.getReferenceMonsterCards();
 
         List<MoveExclusionConfig> exclusions = new ArrayList<>();
         for (MoveExclusion exclusion : rules.getMoveExclusions().getAllExclusions()) {
@@ -284,7 +326,7 @@ public class RulesPanel extends JPanel {
                 modelRow -> exclusionsModel.getRow(modelRow) != null, modelRow -> {
             MoveExclusion exclusion = exclusionsModel.getRow(modelRow);
             if (exclusion != null) {
-                randomizerCore.getRules().removeMoveExclusion(exclusion);
+                session.getRules().removeMoveExclusion(exclusion);
                 exclusionsModel.removeRow(modelRow);
                 assignmentsModel.setRows(buildAssignmentRows());
             }
@@ -304,7 +346,7 @@ public class RulesPanel extends JPanel {
             AssignmentRow row = assignmentsModel.getRow(modelRow);
             if (row != null && !MoveAssignments.isAssignmentDerivedExclusionSource(
                     row.assignment().getSourceFileName())) {
-                randomizerCore.getRules().getMoveAssignments().removeMatching(row.assignment());
+                session.getRules().getMoveAssignments().removeMatching(row.assignment());
                 assignmentsModel.removeRow(modelRow);
             }
         });
@@ -313,18 +355,18 @@ public class RulesPanel extends JPanel {
     }
 
     private void addExclusion() {
-        if (AddMoveExclusionDialog.showDialog(this, randomizerCore.getRules(),
-                randomizerCore.getReferenceMonsterCards())) {
+        if (AddMoveExclusionDialog.showDialog(this, session.getRules(),
+                session.getReferenceMonsterCards())) {
             refresh();
         }
     }
 
     private void addAssignment() {
-        if (!randomizerCore.isRomLoaded()) {
+        if (!session.isRomLoaded()) {
             return;
         }
-        if (AddMoveAssignmentDialog.showDialog(this, randomizerCore.getRules(),
-                randomizerCore.getReferenceMonsterCards())) {
+        if (AddMoveAssignmentDialog.showDialog(this, session.getRules(),
+                session.getReferenceMonsterCards())) {
             refresh();
         }
     }
@@ -360,7 +402,7 @@ public class RulesPanel extends JPanel {
 
         addAssignmentButton = StructuredGridHelpers.createAddButton(true);
         addAssignmentButton.addActionListener(event -> addAssignment());
-        addAssignmentButton.setEnabled(randomizerCore.isRomLoaded());
+        addAssignmentButton.setEnabled(session.isRomLoaded());
         section.add(addAssignmentButton, addConstraints);
         updateAssignmentsContentVisibility();
         return section;
@@ -503,7 +545,7 @@ public class RulesPanel extends JPanel {
             MoveExclusion row = rows.get(rowIndex);
             return switch (columnIndex) {
             case 0 -> row.getMoveName();
-            case 1 -> formatCard(row, randomizerCore.getReferenceMonsterCards());
+            case 1 -> formatCard(row, session.getReferenceMonsterCards());
             case 2 -> row.isRemoveFromPool();
             case 3 -> row.isExcludeFromRandomization();
             case 4 -> formatSource(row.getSourceFileName());
@@ -551,12 +593,14 @@ public class RulesPanel extends JPanel {
             }
             }
             if (updated != exclusion) {
-                randomizerCore.getRules().updateMoveExclusion(exclusion, updated,
-                        randomizerCore.getReferenceMonsterCards());
+                IssueTracker.clearWarnings();
+                session.getRules().updateMoveExclusion(exclusion, updated,
+                        session.getReferenceMonsterCards());
                 updateRow(rowIndex, updated);
                 if (columnIndex == EXCLUSION_GENERATE_ASSIGNMENTS_COLUMN) {
                     assignmentsModel.setRows(buildAssignmentRows());
                 }
+                IssuePresenter.displayWarnings(RulesPanel.this, "updating exclusion");
             }
         }
     }
