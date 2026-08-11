@@ -162,8 +162,8 @@ class AppPreferencesTest {
                 prefs.resolvePatchFile().getName());
         assertEquals(YamlIO.DEFAULT_FILE_NAME, prefs.resolveSaveConfigFile().getName());
         assertEquals(YamlIO.DEFAULT_FILE_NAME, prefs.resolveLoadConfigFile().getName());
-        assertEquals("user_config.yaml", prefs.resolveExportUserRulesFile().getName());
-        assertEquals("actions_config.yaml", prefs.resolveExportActionsFile().getName());
+        assertEquals("user_rules.yaml", prefs.resolveExportUserRulesFile().getName());
+        assertEquals("user_actions.yaml", prefs.resolveExportActionsFile().getName());
         assertEquals("ptcg.gbc", prefs.resolveOpenRomFile("ptcg.gbc").getName());
     }
 

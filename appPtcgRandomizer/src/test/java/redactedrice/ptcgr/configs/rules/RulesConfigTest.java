@@ -586,4 +586,27 @@ class RulesConfigTest {
 
         assertEquals(1, rules.getMoveExclusions().getAllExclusions().size());
     }
+
+    @Test
+    void fromRulesWithNullCardsExportsAssignmentsWithoutThrowing() throws IOException {
+        CardGroup<MonsterCard> cards = new CardGroup<>();
+        cards.add(someMonster(35, CardId.MONSTER_146_1, "TestMove"));
+
+        IssueTracker.clear();
+        RulesConfig loaded = readYaml("""
+                moveAssignments:
+                  - to_card: SomeMonster lvl35
+                    to_move_slot: 1
+                    move: TestMove
+                """, "test.yaml");
+        Rules rules = new Rules();
+        loaded.applyTo(rules, cards);
+
+        RulesConfig exportConfig = RulesConfig.fromRules(rules, null);
+
+        assertEquals(1, exportConfig.getMoveAssignmentConfigs().size());
+        assertEquals("TestMove", exportConfig.getMoveAssignmentConfigs().get(0).getMove());
+        assertEquals(CardId.MONSTER_146_1.toString(),
+                exportConfig.getMoveAssignmentConfigs().get(0).getToCard());
+    }
 }

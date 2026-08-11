@@ -39,11 +39,13 @@ import redactedrice.ptcgr.utils.FileExtensionUtils;
 public class DualTableSelector extends JPanel {
     private static final long serialVersionUID = 1L;
     private final ActionsSelectedTableModel selectedModel;
+    private final ActionBank actionBank;
     private final AppPreferences appPreferences;
     private final RandomizerApp app;
     private final JFileChooser exportActionsChooser = new JFileChooser();
 
     public DualTableSelector(ActionBank actions, AppPreferences appPreferences, RandomizerApp app) {
+        this.actionBank = actions;
         this.appPreferences = appPreferences;
         this.app = app;
         selectedModel = new ActionsSelectedTableModel();
@@ -91,7 +93,8 @@ public class DualTableSelector extends JPanel {
         File exportPath = FileExtensionUtils.ensureExtension(
                 exportActionsChooser.getSelectedFile(), YamlIO.FILE_EXTENSION);
         try {
-            YamlIO.save(exportPath, Config.convertActionsOnlyToYamlMap(actions));
+            YamlIO.save(exportPath,
+                    Config.convertActionsOnlyToYamlMap(actions, actionBank));
             appPreferences.setExportActionsDirectory(
                     exportActionsChooser.getCurrentDirectory().getAbsolutePath());
             appPreferences.setExportActionsFileName(exportPath.getName());

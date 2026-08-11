@@ -24,7 +24,7 @@ final class ConfigSectionsDialog {
     }
 
     static Optional<Selection> showImport(Component parent, Config loaded) {
-        return show(parent, "Import Config", "Choose which sections to import from the file:",
+        return show(parent, "Add Config", "Choose which sections to add from the file:",
                 loaded.hasRules(), loaded.hasActionsSection(), loaded.hasSeed());
     }
 

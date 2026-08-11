@@ -27,11 +27,9 @@ public final class ScriptConfig extends ModuleConfig {
         return new ScriptConfig(module, version);
     }
 
-    public static void checkAndWarnDifferences(String sectionLabel, List<ScriptConfig> saved,
-            List<Module> currentModules, ActionBank actionBank) {
-        Set<String> savedNames = new HashSet<>();
+    public static void checkRequired(String sectionLabel, List<ScriptConfig> saved,
+            ActionBank actionBank) {
         for (ScriptConfig config : saved) {
-            savedNames.add(config.getModule());
             String entryLabel = sectionLabel + " \"" + config.getModule() + "\"";
             Module module = actionBank.getScript(config.getModule());
             if (module == null) {
@@ -40,6 +38,15 @@ public final class ScriptConfig extends ModuleConfig {
             }
             config.checkAndWarnModuleVersion(entryLabel, module);
         }
+    }
+
+    public static void checkAndWarnDifferences(String sectionLabel, List<ScriptConfig> saved,
+            List<Module> currentModules, ActionBank actionBank) {
+        Set<String> savedNames = new HashSet<>();
+        for (ScriptConfig config : saved) {
+            savedNames.add(config.getModule());
+        }
+        checkRequired(sectionLabel, saved, actionBank);
 
         for (Module module : currentModules) {
             if (!savedNames.contains(module.getId())) {

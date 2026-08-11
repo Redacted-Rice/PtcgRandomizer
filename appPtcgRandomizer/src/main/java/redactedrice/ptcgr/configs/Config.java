@@ -109,8 +109,6 @@ public final class Config {
 
         boolean seedLoaded = root.containsKey(SEED_KEY);
         boolean actionsLoaded = root.containsKey(ACTIONS_KEY);
-        boolean preScriptsLoaded = root.containsKey(PRESCRIPTS_KEY);
-        boolean postScriptsLoaded = root.containsKey(POSTSCRIPTS_KEY);
         boolean rulesLoaded = root.containsKey(RULES_KEY);
 
         String seed = seedLoaded
@@ -119,6 +117,17 @@ public final class Config {
         List<ActionConfig> actions = actionsLoaded
                 ? parseActions(root.get(ACTIONS_KEY), sourceLabel)
                 : List.of();
+        boolean scriptsAllowed = actionsLoaded && !actions.isEmpty();
+        if (!scriptsAllowed) {
+            boolean hasScriptEntries = hasNonEmptyScriptList(root.get(PRESCRIPTS_KEY))
+                    || hasNonEmptyScriptList(root.get(POSTSCRIPTS_KEY));
+            if (hasScriptEntries) {
+                IssueTracker.addWarning(sourceLabel + ": prescripts and postscripts were ignored "
+                        + "because the file has no actions to load.");
+            }
+        }
+        boolean preScriptsLoaded = scriptsAllowed && root.containsKey(PRESCRIPTS_KEY);
+        boolean postScriptsLoaded = scriptsAllowed && root.containsKey(POSTSCRIPTS_KEY);
         List<ScriptConfig> preScripts = preScriptsLoaded
                 ? parseScripts(root.get(PRESCRIPTS_KEY), PRESCRIPTS_KEY, sourceLabel)
                 : List.of();
@@ -161,9 +170,13 @@ public final class Config {
     public static Config fromAppState(String seed, List<Action> actions, ActionBank actionBank,
             Rules rules, CardGroup<MonsterCard> cards) {
         RulesConfig rulesConfig = RulesConfig.fromRules(rules, cards);
+        List<ActionConfig> actionConfigs = convertActions(actions);
+        List<ScriptConfig> preScripts = actionConfigs.isEmpty() ? List.of()
+                : convertScripts(actionBank.getPreScripts());
+        List<ScriptConfig> postScripts = actionConfigs.isEmpty() ? List.of()
+                : convertScripts(actionBank.getPostScripts());
         return new Config(CURRENT_FORMAT_VERSION, PtcgRandomizerVersion.VERSION, seed,
-                convertActions(actions), convertScripts(actionBank.getPreScripts()),
-                convertScripts(actionBank.getPostScripts()), rulesConfig);
+                actionConfigs, preScripts, postScripts, rulesConfig);
     }
 
     private static List<Map<String, Object>> convertToYamlMapActions(
@@ -192,8 +205,14 @@ public final class Config {
         }
         root.put(SEED_KEY, seed);
         root.put(ACTIONS_KEY, convertToYamlMapActions(actionConfigs));
-        root.put(PRESCRIPTS_KEY, convertToYamlMapScripts(preScriptConfigs));
-        root.put(POSTSCRIPTS_KEY, convertToYamlMapScripts(postScriptConfigs));
+        if (!actionConfigs.isEmpty()) {
+            if (!preScriptConfigs.isEmpty()) {
+                root.put(PRESCRIPTS_KEY, convertToYamlMapScripts(preScriptConfigs));
+            }
+            if (!postScriptConfigs.isEmpty()) {
+                root.put(POSTSCRIPTS_KEY, convertToYamlMapScripts(postScriptConfigs));
+            }
+        }
         root.put(RULES_KEY, rulesConfig.convertToYamlMap());
         return root;
     }
@@ -206,11 +225,22 @@ public final class Config {
         return root;
     }
 
-    public static Map<String, Object> convertActionsOnlyToYamlMap(List<Action> actions) {
+    public static Map<String, Object> convertActionsOnlyToYamlMap(List<Action> actions,
+            ActionBank actionBank) {
         Map<String, Object> root = new LinkedHashMap<>();
         root.put(FORMAT_VERSION_KEY, CURRENT_FORMAT_VERSION);
         root.put(APP_VERSION_KEY, PtcgRandomizerVersion.VERSION);
         root.put(ACTIONS_KEY, convertToYamlMapActions(convertActions(actions)));
+        if (!actions.isEmpty()) {
+            List<ScriptConfig> preScripts = convertScripts(actionBank.getPreScripts());
+            List<ScriptConfig> postScripts = convertScripts(actionBank.getPostScripts());
+            if (!preScripts.isEmpty()) {
+                root.put(PRESCRIPTS_KEY, convertToYamlMapScripts(preScripts));
+            }
+            if (!postScripts.isEmpty()) {
+                root.put(POSTSCRIPTS_KEY, convertToYamlMapScripts(postScripts));
+            }
+        }
         return root;
     }
 
@@ -226,8 +256,12 @@ public final class Config {
         return actionsLoaded;
     }
 
+    public boolean hasAddableActions() {
+        return actionsLoaded && !actionConfigs.isEmpty();
+    }
+
     public boolean hasActionsSection() {
-        return actionsLoaded || preScriptsLoaded || postScriptsLoaded;
+        return hasAddableActions();
     }
 
     public boolean hasPreScripts() {
@@ -281,6 +315,23 @@ public final class Config {
         return actions;
     }
 
+    public void checkRequiredPreScripts(ActionBank actionBank) {
+        if (preScriptsLoaded) {
+            ScriptConfig.checkRequired(PRESCRIPTS_KEY, preScriptConfigs, actionBank);
+        }
+    }
+
+    public void checkRequiredPostScripts(ActionBank actionBank) {
+        if (postScriptsLoaded) {
+            ScriptConfig.checkRequired(POSTSCRIPTS_KEY, postScriptConfigs, actionBank);
+        }
+    }
+
+    public void checkRequiredScriptFingerprints(ActionBank actionBank) {
+        checkRequiredPreScripts(actionBank);
+        checkRequiredPostScripts(actionBank);
+    }
+
     public void checkScripts(ActionBank actionBank) {
         if (preScriptsLoaded) {
             ScriptConfig.checkAndWarnDifferences(PRESCRIPTS_KEY, preScriptConfigs,
@@ -290,6 +341,10 @@ public final class Config {
             ScriptConfig.checkAndWarnDifferences(POSTSCRIPTS_KEY, postScriptConfigs,
                     actionBank.getPostScripts(), actionBank);
         }
+    }
+
+    private static boolean hasNonEmptyScriptList(Object value) {
+        return value instanceof List<?> list && !list.isEmpty();
     }
 
     private static int parseFormatVersion(Object value, String sourceLabel) {
