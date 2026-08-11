@@ -10,7 +10,6 @@ import java.awt.Insets;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -22,13 +21,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableRowSorter;
 
 import redactedrice.ptcgr.configs.AppPreferences;
 import redactedrice.ptcgr.configs.Config;
@@ -40,6 +35,7 @@ import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.gui.RandomizerApp;
+import redactedrice.ptcgr.randomizer.gui.SortableTableHelpers;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridHelpers;
 import redactedrice.ptcgr.rules.MoveAssignment;
 import redactedrice.ptcgr.rules.MoveAssignments;
@@ -64,9 +60,6 @@ public class RulesPanel extends JPanel {
     private static final int EXCLUSION_REMOVE_FROM_POOL_COLUMN = 2;
     private static final int EXCLUSION_GENERATE_ASSIGNMENTS_COLUMN = 3;
     private static final int EXCLUSION_REMOVE_COLUMN = 5;
-
-    private static final Comparator<String> MOVE_NAME_ORDER =
-            String.CASE_INSENSITIVE_ORDER;
 
     private static final String DEFAULT_EXPORT_ALL_RULES_FILE_NAME = "all_rules.yaml";
 
@@ -331,7 +324,7 @@ public class RulesPanel extends JPanel {
                 assignmentsModel.setRows(buildAssignmentRows());
             }
         });
-        configureRowSorter(table, EXCLUSION_REMOVE_COLUMN);
+        SortableTableHelpers.configureRowSorter(table, 0, EXCLUSION_REMOVE_COLUMN);
         return table;
     }
 
@@ -350,7 +343,7 @@ public class RulesPanel extends JPanel {
                 assignmentsModel.removeRow(modelRow);
             }
         });
-        configureRowSorter(table, removeColumnIndex);
+        SortableTableHelpers.configureRowSorter(table, 0, removeColumnIndex);
         return table;
     }
 
@@ -437,30 +430,10 @@ public class RulesPanel extends JPanel {
     }
 
     private static JTable createTable(AbstractTableModel model) {
-        JTable table = new JTable(model);
-        table.setFillsViewportHeight(true);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        table.setRowHeight(24);
-        resizeColumns(table);
+        JTable table = SortableTableHelpers.createTable(model);
+        // skip the trailing remove column so it stays compact
+        SortableTableHelpers.resizeColumnsFromHeaders(table, true);
         return table;
-    }
-
-    private static void resizeColumns(JTable table) {
-        TableColumnModel columns = table.getColumnModel();
-        for (int i = 0; i < columns.getColumnCount() - 1; i++) {
-            int width = table.getTableHeader().getFontMetrics(table.getTableHeader().getFont())
-                    .stringWidth(table.getColumnName(i)) + 24;
-            columns.getColumn(i).setPreferredWidth(width);
-        }
-    }
-
-    private static void configureRowSorter(JTable table, int removeColumnIndex) {
-        TableRowSorter<? extends javax.swing.table.TableModel> sorter =
-                new TableRowSorter<>(table.getModel());
-        sorter.setSortable(removeColumnIndex, false);
-        sorter.setComparator(0, MOVE_NAME_ORDER);
-        sorter.setSortKeys(List.of(new RowSorter.SortKey(0, SortOrder.ASCENDING)));
-        table.setRowSorter(sorter);
     }
 
     private static String formatCard(MoveExclusion exclusion, CardGroup<MonsterCard> cards) {

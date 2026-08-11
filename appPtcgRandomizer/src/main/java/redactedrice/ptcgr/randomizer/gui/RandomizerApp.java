@@ -32,6 +32,7 @@ import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.randomizer.gui.rules.RulesPanel;
+import redactedrice.ptcgr.randomizer.gui.support.SupportPanel;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
@@ -68,6 +69,7 @@ public class RandomizerApp {
     private JTextField saveSetSeedVal;
     private DualTableSelector dualPanel;
     private RulesPanel rulesPanel;
+    private SupportPanel supportPanel;
 
     /**
      * Launch the application.
@@ -277,11 +279,17 @@ public class RandomizerApp {
 
         dualPanel = new DualTableSelector(randomizer.getActionBank(), appPreferences, this);
         actionsTab.addTab("Actions", null, dualPanel, null);
+
+        supportPanel = new SupportPanel(randomizer.getActionBank());
+        actionsTab.addTab("Support", null, supportPanel,
+                "Prescripts and postscripts loaded with the randomizer");
         actionsTab.setSelectedComponent(dualPanel);
 
         actionsTab.addChangeListener(e -> {
             if (actionsTab.getSelectedComponent() == rulesPanel) {
                 rulesPanel.refresh();
+            } else if (actionsTab.getSelectedComponent() == supportPanel) {
+                supportPanel.refresh();
             }
         });
 
