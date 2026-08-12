@@ -11,7 +11,6 @@ module = {
 	description = "Exercises the enum base type, with values pulled from a registered enum",
 	seeded = true,
 	groups = { "dev" },
-	modifies = {},
 	author = "PTCGR Dev Tools",
 	version = "0.1",
 	requires = {

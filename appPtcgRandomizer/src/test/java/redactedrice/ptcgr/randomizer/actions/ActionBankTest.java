@@ -98,31 +98,46 @@ class ActionBankTest {
     }
 
     @Test
-    void getFiltersByGroupAndModifiedFieldFromBundledModules() {
+    void getFiltersByGroupFromBundledModules() {
         ActionBank actionBank = bundledActionBank(workDir);
 
-        List<String> hpModules =
-                actionBank.get("All", "hp").stream().map(Action::getModuleId).toList();
+        List<String> hpModules = actionBank.get("HP").stream().map(Action::getModuleId).toList();
         assertTrue(hpModules.contains("shuffle_hp"));
         assertTrue(hpModules.contains("hp_by_stage_from_rom"));
         assertFalse(hpModules.contains("randomize_moves"));
 
-        List<String> moveModules =
-                actionBank.get("moves", "moves").stream().map(Action::getModuleId).toList();
-        assertTrue(moveModules.contains("randomize_moves"));
-        assertFalse(moveModules.contains("shuffle_hp"));
+        List<String> attackModules =
+                actionBank.get("Attacks").stream().map(Action::getModuleId).toList();
+        assertTrue(attackModules.contains("randomize_moves"));
+        assertFalse(attackModules.contains("shuffle_hp"));
+
+        List<String> supportModules =
+                actionBank.get("Support").stream().map(Action::getModuleId).toList();
+        assertTrue(supportModules.contains("set_num_moves"));
     }
 
     @Test
-    void getModifiesWithAllIncludesSortedFieldsFromBundledModules() {
+    void getMatchesGroupsCaseInsensitively() {
         ActionBank actionBank = bundledActionBank(workDir);
 
-        List<String> modifies = actionBank.getModifiesWithAll();
-        assertEquals("All", modifies.get(0));
-        assertTrue(modifies.contains("hp"));
-        assertTrue(modifies.contains("moves"));
-        assertEquals(modifies.subList(1, modifies.size()),
-                modifies.subList(1, modifies.size()).stream().sorted().toList());
+        List<String> lowerGroup =
+                actionBank.get("monsters").stream().map(Action::getModuleId).toList();
+        List<String> upperGroup = actionBank.get("HP").stream().map(Action::getModuleId).toList();
+        assertTrue(lowerGroup.contains("shuffle_hp"));
+        assertTrue(upperGroup.contains("shuffle_hp"));
+    }
+
+    @Test
+    void getCategoriesWithAllIncludesSortedGroupsFromBundledModules() {
+        ActionBank actionBank = bundledActionBank(workDir);
+
+        List<String> groups = actionBank.getCategoriesWithAll();
+        assertEquals("All", groups.get(0));
+        assertTrue(groups.contains("HP"));
+        assertTrue(groups.contains("Attacks"));
+        assertEquals(groups.subList(1, groups.size()),
+                groups.subList(1, groups.size()).stream().sorted(String.CASE_INSENSITIVE_ORDER)
+                        .toList());
     }
 
     private static ActionBank bundledActionBank(File workDir) {

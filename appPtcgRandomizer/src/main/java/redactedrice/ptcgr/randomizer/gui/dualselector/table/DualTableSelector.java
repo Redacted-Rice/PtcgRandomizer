@@ -147,23 +147,14 @@ public class DualTableSelector extends JPanel {
         }
         groupFilterComboBox.setSelectedIndex(0);
 
-        JComboBox<String> fieldFilterComboBox = new JComboBox<>();
-        for (String field : actions.getModifiesWithAll()) {
-            fieldFilterComboBox.addItem(field);
-        }
-        fieldFilterComboBox.setSelectedIndex(0);
-
         ActionsFilterChangedListener filterListener =
-                new ActionsFilterChangedListener(listModel, groupFilterComboBox, fieldFilterComboBox);
+                new ActionsFilterChangedListener(listModel, groupFilterComboBox);
         groupFilterComboBox.addActionListener(filterListener);
-        fieldFilterComboBox.addActionListener(filterListener);
         filterListener.actionPerformed(null);
 
         JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topLeftPanel.add(new JLabel("Action group filter:"));
         topLeftPanel.add(groupFilterComboBox);
-        topLeftPanel.add(new JLabel("Field effected filter:"));
-        topLeftPanel.add(fieldFilterComboBox);
         // Create a top panel and add the combo to its WEST so it aligns with the left table column
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(topLeftPanel, BorderLayout.WEST);

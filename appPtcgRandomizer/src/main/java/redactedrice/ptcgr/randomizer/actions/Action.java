@@ -41,12 +41,15 @@ public class Action {
     }
 
     public String getCategory() {
-        // TODO: Refactor to support multiple groups. For now just take the first
+        return getGroups().iterator().next();
+    }
+
+    public Set<String> getGroups() {
         if (module.getGroups() != null && !module.getGroups().isEmpty()) {
-            return module.getGroups().iterator().next();
+            return module.getGroups();
         }
         // Shouldn't be empty but just in case
-        return "utility";
+        return Set.of("utility");
     }
 
     public String getName() {
@@ -63,10 +66,6 @@ public class Action {
 
     public String getVersion() {
         return module.getVersion();
-    }
-
-    public Set<String> getModifies() {
-        return module.getModifies();
     }
 
     public Module getModule() {
