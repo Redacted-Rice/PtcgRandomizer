@@ -52,7 +52,7 @@ public final class ArgumentEditorFactory {
 
             @Override
             public ArgumentValueEditor visitEnum(TypeDefinition type) {
-                return createForEnumType(type.getEnumName(), enumValuesProvider);
+                return createForEnumType(type, enumValuesProvider);
             }
 
             @Override
@@ -90,9 +90,7 @@ public final class ArgumentEditorFactory {
 
             @Override
             public Object visitEnum(TypeDefinition type) {
-                List<String> values = enumValuesProvider != null
-                        ? enumValuesProvider.getEnumValues(type.getEnumName())
-                        : null;
+                List<String> values = resolveEnumChoices(type, enumValuesProvider);
                 return values != null && !values.isEmpty() ? values.get(0) : "";
             }
 
@@ -176,15 +174,31 @@ public final class ArgumentEditorFactory {
 
     // ENUM type values come from an enum registered elsewhere (e.g. via context.registerEnum
     // in a module's onLoad) rather than from the argument's own definition, so they have to be
-    // resolved through the provider instead of the constraint.
-    private static ArgumentValueEditor createForEnumType(String enumName,
+    // resolved through the provider instead of the constraint. Optional allow/exclude lists on
+    // the type definition then filter that registered set.
+    private static ArgumentValueEditor createForEnumType(TypeDefinition type,
             EnumValuesProvider enumValuesProvider) {
-        List<String> values =
-                enumValuesProvider != null ? enumValuesProvider.getEnumValues(enumName) : null;
+        List<String> values = resolveEnumChoices(type, enumValuesProvider);
         if (values == null || values.isEmpty()) {
             // Defensive fallback for an unregistered/misspelled enum name
             return new UnsupportedValueEditor();
         }
         return new EnumEditor(values);
+    }
+
+    private static List<String> resolveEnumChoices(TypeDefinition type,
+            EnumValuesProvider enumValuesProvider) {
+        if (type == null || enumValuesProvider == null) {
+            return null;
+        }
+        List<String> values = enumValuesProvider.getEnumValues(type.getEnumName());
+        if (values == null || values.isEmpty()) {
+            return values;
+        }
+        ArgumentConstraint constraint = type.getEnforcedConstraint();
+        if (constraint == null || constraint.getType() == ConstraintType.ANY) {
+            return values;
+        }
+        return constraint.filterEnumValues(values);
     }
 }

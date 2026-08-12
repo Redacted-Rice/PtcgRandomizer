@@ -6,7 +6,7 @@ local module
 module = {
 	id = "fix_evo_line_hp",
 	name = "Make Evo Line HP Consistent",
-	description = "For each evolution line, ensures each stage has at least as much HP as the previous stage by increasing higher stage HPs to at least the highest value of the previous stage",
+	description = "For each evolution line, ensures HP is non-decreasing by stage. RAISE_MINIMUMS bumps later stages up. REDISTRIBUTE swaps inverted values between stages so existing HPs are kept when possible",
 	groups = { "Monsters", "HP", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -17,30 +17,95 @@ module = {
 		{ name = "evoLineId", type = "integer" },
 	},
 	seeded = false,
+	arguments = {
+		{
+			name = "mode",
+			definition = {
+				type = "string",
+				constraint = {
+					type = "enum",
+					values = { "RAISE_MINIMUMS", "REDISTRIBUTE" },
+				},
+			},
+			default = "RAISE_MINIMUMS",
+		},
+	},
 	execute = function(context, args)
 		return module.fixEvoLineHp(context, args)
 	end,
 }
 
--- TODO later: Add an option to shuffle around HPs instead of just increasing?
-function module.fixEvoLineHp(context)
+function module.raiseMinimums(line)
+	local byStage = randomizer.groupBy(line, function(mc)
+		return mc.stage:getValue()
+	end)
+	local prevStageMaxHp = 0
+
+	byStage:sort():each(function(_, cardsAtStage)
+		cardsAtStage:each(function(mc)
+			if mc:getHp() < prevStageMaxHp then
+				mc:setHp(prevStageMaxHp)
+			end
+		end)
+		prevStageMaxHp = cardsAtStage:max("getHp")
+	end)
+end
+
+function module.swapHp(a, b)
+	local tmp = a:getHp()
+	a:setHp(b:getHp())
+	b:setHp(tmp)
+end
+
+function module.cardWithExtremeHp(cards, wantMax)
+	local best = nil
+	cards:each(function(mc)
+		if best == nil then
+			best = mc
+		elseif wantMax and mc:getHp() > best:getHp() then
+			best = mc
+		elseif not wantMax and mc:getHp() < best:getHp() then
+			best = mc
+		end
+	end)
+	return best
+end
+
+-- Bubble-style swaps: when a later stage dips below an earlier one, swap that later
+-- stage's lowest HP with the earlier stage's highest. Keeps already ordered values put
+function module.redistribute(line)
+	local stages = {}
+	local byStage = randomizer.groupBy(line, function(mc)
+		return mc.stage:getValue()
+	end)
+	byStage:sort():each(function(_, cardsAtStage)
+		table.insert(stages, cardsAtStage)
+	end)
+
+	local swapped = true
+	while swapped do
+		swapped = false
+		for i = 1, #stages - 1 do
+			local prev = stages[i]
+			local nextStage = stages[i + 1]
+			while prev:max("getHp") > nextStage:min("getHp") do
+				local high = module.cardWithExtremeHp(prev, true)
+				local low = module.cardWithExtremeHp(nextStage, false)
+				module.swapHp(high, low)
+				swapped = true
+			end
+		end
+	end
+end
+
+function module.fixEvoLineHp(context, args)
 	local byEvoLine = randomizer.groupBy(context.modified:getRandomizableMonsterCards(), "evoLineId")
 	byEvoLine:each(function(_, line)
-		-- Group by EvolutionStage's underlying value so sort is numeric
-		local byStage = randomizer.groupBy(line, function(mc)
-			return mc.stage:getValue()
-		end)
-		local prevStageMaxHp = 0
-
-		-- Sort by stage so we go through in the right order and continue until its all reached
-		byStage:sort():each(function(_, cardsAtStage)
-			cardsAtStage:each(function(mc)
-				if mc:getHp() < prevStageMaxHp then
-					mc:setHp(prevStageMaxHp)
-				end
-			end)
-			prevStageMaxHp = cardsAtStage:max("getHp")
-		end)
+		if args.mode == "REDISTRIBUTE" then
+			module.redistribute(line)
+		else
+			module.raiseMinimums(line)
+		end
 	end)
 end
 
