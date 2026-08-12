@@ -14,13 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
-import redactedrice.ptcgr.constants.CardDataSource;
-import redactedrice.ptcgr.constants.DuplicateHandling;
-import redactedrice.ptcgr.constants.StageGrouping;
-import redactedrice.ptcgr.constants.RandomizationApproach;
-import redactedrice.ptcgr.constants.romenums.CardType;
-import redactedrice.ptcgr.constants.romenums.EnergyType;
-import redactedrice.ptcgr.constants.romenums.EvolutionStage;
+import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
@@ -172,12 +166,6 @@ class ActionBankTest {
     }
 
     private static void registerPtcgEnums(LuaRandomizerWrapper wrapper) {
-        wrapper.getSharedContext().registerEnum(CardType.class);
-        wrapper.getSharedContext().registerEnum(EnergyType.class);
-        wrapper.getSharedContext().registerEnum(EvolutionStage.class);
-        wrapper.getSharedContext().registerEnum(RandomizationApproach.class);
-        wrapper.getSharedContext().registerEnum(CardDataSource.class);
-        wrapper.getSharedContext().registerEnum(DuplicateHandling.class);
-        wrapper.getSharedContext().registerEnum(StageGrouping.class);
+        RandomizerCore.registerSharedEnums(wrapper.getSharedContext());
     }
 }

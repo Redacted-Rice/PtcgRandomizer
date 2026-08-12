@@ -17,8 +17,8 @@ module = {
 			name = "energyType",
 			definition = {
 				type = "enum",
-                -- TODO later: Remove colorless an unused type from options for this arg. If it makes sense have an exclude or we can just enumerate the allowed values
 				constraint = "EnergyType",
+				exclude = { "COLORLESS", "UNUSED_TYPE" },
 			},
 			default = "FIRE",
 		},
@@ -37,13 +37,8 @@ function module.setNonColorlessToType(context, args)
 			local colorlessCost = move:getCost(EnergyType.COLORLESS)
 			local nonColorlessCost = move:getNonColorlessEnergyCosts()
 			move:clearCosts()
-
-			if targetType == EnergyType.COLORLESS then
-				move:setCost(EnergyType.COLORLESS, colorlessCost + nonColorlessCost)
-			else
-				move:setCost(EnergyType.COLORLESS, colorlessCost)
-				move:setCost(targetType, nonColorlessCost)
-			end
+			move:setCost(EnergyType.COLORLESS, colorlessCost)
+			move:setCost(targetType, nonColorlessCost)
 			-- True = force set even for assignments
 			mon:setMove(move, moveSlot, true)
 		end

@@ -117,20 +117,11 @@ public class RandomizerCore {
         luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
 
         // Register built in PTCGR enums in the shared enum context instead of in the
-        // runtime
-        // context so they're merged into every execution context the same way module
-        // registered
-        // (onLoad) enums are, and so they're resolvable by name for the config UI's
-        // ENUM argument
-        // dropdowns even before a randomization has run.
-        // TODO later: Could I do this dynamically or just specify all of them?
-        luaRandomizer.getSharedContext().registerEnum(CardType.class);
-        luaRandomizer.getSharedContext().registerEnum(EnergyType.class);
-        luaRandomizer.getSharedContext().registerEnum(EvolutionStage.class);
-        luaRandomizer.getSharedContext().registerEnum(RandomizationApproach.class);
-        luaRandomizer.getSharedContext().registerEnum(CardDataSource.class);
-        luaRandomizer.getSharedContext().registerEnum(DuplicateHandling.class);
-        luaRandomizer.getSharedContext().registerEnum(StageGrouping.class);
+        // runtime context so they're merged into every execution context the same way
+        // module registered (onLoad) enums are, and so they're resolvable by name for
+        // the config UI's ENUM argument dropdowns even before a randomization has run.
+        // Keep this list curated. Do not scan packages or rom-internal enums show up as args.
+        registerSharedEnums(luaRandomizer.getSharedContext());
 
         Logger.setEnabled(true);
 
@@ -243,8 +234,7 @@ public class RandomizerCore {
         IssueTracker.clear();
         romData.prepareForModification();
 
-        // Expose objects to be modified
-        // TODO later: Add original vs modified and add more
+        // Expose ROM workspaces and rules to Lua modules
         JavaContext context = new JavaContext();
         context.register("original", romData.original);
         context.register("modified", romData.modified);
@@ -294,5 +284,16 @@ public class RandomizerCore {
 
     private static boolean hasSelectedActions(List<Action> actions) {
         return actions != null && !actions.isEmpty();
+    }
+
+    // Shared by setup and tests so the curated register list lives in one place
+    public static void registerSharedEnums(JavaContext context) {
+        context.registerEnum(CardType.class);
+        context.registerEnum(EnergyType.class);
+        context.registerEnum(EvolutionStage.class);
+        context.registerEnum(RandomizationApproach.class);
+        context.registerEnum(CardDataSource.class);
+        context.registerEnum(DuplicateHandling.class);
+        context.registerEnum(StageGrouping.class);
     }
 }
