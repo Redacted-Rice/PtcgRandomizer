@@ -7,7 +7,6 @@ module = {
 	description = "Exercises list argument types in the config UI",
 	seeded = true,
 	groups = { "dev" },
-	modifies = {},
 	author = "PTCGR Dev Tools",
 	version = "0.1",
 	requires = {

@@ -7,7 +7,6 @@ module = {
 	seeded = true,
 	defaultSeedOffset = 42,
 	groups = { "dev" },
-	modifies = {},
 	author = "PTCGR Dev Tools",
 	version = "0.1",
 	requires = {

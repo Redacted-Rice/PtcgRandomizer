@@ -11,18 +11,15 @@ import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsListTableMode
 public class ActionsFilterChangedListener implements ActionListener {
     private final ActionsListTableModel toUpdate;
     private final JComboBox<String> groupFilter;
-    private final JComboBox<String> fieldFilter;
 
     public ActionsFilterChangedListener(ActionsListTableModel toUpdate,
-            JComboBox<String> groupFilter, JComboBox<String> fieldFilter) {
+            JComboBox<String> groupFilter) {
         this.toUpdate = toUpdate;
         this.groupFilter = groupFilter;
-        this.fieldFilter = fieldFilter;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        toUpdate.setRowsByFilters((String) groupFilter.getSelectedItem(),
-                (String) fieldFilter.getSelectedItem());
+        toUpdate.setRowsByGroup((String) groupFilter.getSelectedItem());
     }
 }

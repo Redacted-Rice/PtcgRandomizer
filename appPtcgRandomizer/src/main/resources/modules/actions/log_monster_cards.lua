@@ -7,7 +7,6 @@ module = {
 	description = "Log monster card data as an ASCII table",
 	seeded = false,
 	groups = { "Logging" },
-	modifies = {},
 	author = "Redacted Rice",
 	version = "0.7",
 	requires = {
