@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
+import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
@@ -129,6 +130,22 @@ class ActionTest {
         List<String> duplicateTags = (List<String>) duplicate.getArgument("tags");
         duplicateTags.add("d");
         assertEquals(List.of("a", "b", "c"), first.getArgument("tags"));
+    }
+
+    @Test
+    void rowToolTipTextIncludesVersionAndDescription() {
+        Module module = new Module("test_module", "Test Module", "Does a thing", Set.of("dev"),
+                Set.of(), List.of(), new ZeroArgFunction() {
+                    @Override
+                    public LuaValue call() {
+                        return LuaValue.NIL;
+                    }
+                }, null, "test.lua", 0, false, false, null, "author", "0.9", Map.of(), null,
+                null, null, null, null);
+        ActionsTableModel model = new ActionsTableModel();
+        model.appendRow(new Action(module));
+
+        assertEquals("v0.9 - Does a thing", model.getRowToolTipText(0));
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {

@@ -17,6 +17,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -29,7 +30,7 @@ import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.RandomizerApp;
-import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CategoryChangedListener;
+import redactedrice.ptcgr.randomizer.gui.dualselector.listener.ActionsFilterChangedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.listener.CopySelectedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.listener.RemoveSelectedListener;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsListTableModel;
@@ -139,17 +140,30 @@ public class DualTableSelector extends JPanel {
         moveDownButton.addActionListener(e -> selectedTable.moveSelectedRow(1));
 
         // Layout
-        // Create a combo box (drop-down) as before…
-        JComboBox<String> categoryComboBox = new JComboBox<>();
+        // Filter combos for the available actions list
+        JComboBox<String> groupFilterComboBox = new JComboBox<>();
         for (String category : actions.getCategoriesWithAll()) {
-            categoryComboBox.addItem(category);
+            groupFilterComboBox.addItem(category);
         }
-        categoryComboBox.addActionListener(new CategoryChangedListener(listModel));
-        categoryComboBox.setSelectedIndex(0);
+        groupFilterComboBox.setSelectedIndex(0);
 
-        // Wrap it in a panel that centers it (using FlowLayout with CENTER)
-        JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        topLeftPanel.add(categoryComboBox);
+        JComboBox<String> fieldFilterComboBox = new JComboBox<>();
+        for (String field : actions.getModifiesWithAll()) {
+            fieldFilterComboBox.addItem(field);
+        }
+        fieldFilterComboBox.setSelectedIndex(0);
+
+        ActionsFilterChangedListener filterListener =
+                new ActionsFilterChangedListener(listModel, groupFilterComboBox, fieldFilterComboBox);
+        groupFilterComboBox.addActionListener(filterListener);
+        fieldFilterComboBox.addActionListener(filterListener);
+        filterListener.actionPerformed(null);
+
+        JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        topLeftPanel.add(new JLabel("Action group filter:"));
+        topLeftPanel.add(groupFilterComboBox);
+        topLeftPanel.add(new JLabel("Field effected filter:"));
+        topLeftPanel.add(fieldFilterComboBox);
         // Create a top panel and add the combo to its WEST so it aligns with the left table column
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(topLeftPanel, BorderLayout.WEST);
