@@ -40,10 +40,6 @@ public class Action {
         return id;
     }
 
-    public String getCategory() {
-        return getGroups().iterator().next();
-    }
-
     public Set<String> getGroups() {
         if (module.getGroups() != null && !module.getGroups().isEmpty()) {
             return module.getGroups();
