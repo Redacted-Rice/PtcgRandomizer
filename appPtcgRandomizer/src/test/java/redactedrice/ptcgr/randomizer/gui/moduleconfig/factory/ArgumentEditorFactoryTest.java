@@ -410,7 +410,7 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {
-        return new Module("test_module", "Test Module", "", Set.of("dev"), Set.of(), arguments,
+        return new Module("test_module", "Test Module", "", Set.of("dev"), arguments,
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {

@@ -135,7 +135,7 @@ class SupportPanelTest {
 
     private static Module script(String id, String name, String version, String when,
             String description) {
-        return new Module(id, name, description, Set.of(), Set.of(), List.of(),
+        return new Module(id, name, description, Set.of(), List.of(),
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {

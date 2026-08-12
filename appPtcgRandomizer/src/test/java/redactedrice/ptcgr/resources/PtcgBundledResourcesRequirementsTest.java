@@ -100,7 +100,7 @@ class PtcgBundledResourcesRequirementsTest {
                     PtcgRandomizerVersion.VERSION, true);
 
             LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
-                    null, null, requirements);
+                    null, requirements);
 
             IssueTracker.clear();
             int loaded = wrapper.loadModules();
@@ -138,7 +138,7 @@ class PtcgBundledResourcesRequirementsTest {
                 PtcgRandomizerVersion.VERSION, true);
 
         LuaRandomizerWrapper wrapper =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
+                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
 
         IssueTracker.clear();
         int loaded = wrapper.loadModules();

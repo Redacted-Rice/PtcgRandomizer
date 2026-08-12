@@ -135,7 +135,7 @@ class ActionTest {
     @Test
     void rowToolTipTextIncludesVersionAndDescription() {
         Module module = new Module("test_module", "Test Module", "Does a thing", Set.of("dev"),
-                Set.of(), List.of(), new ZeroArgFunction() {
+                List.of(), new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {
                         return LuaValue.NIL;
@@ -149,7 +149,7 @@ class ActionTest {
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {
-        return new Module("test_module", "Test Module", "", Set.of("dev"), Set.of(), arguments,
+        return new Module("test_module", "Test Module", "", Set.of("dev"), arguments,
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {

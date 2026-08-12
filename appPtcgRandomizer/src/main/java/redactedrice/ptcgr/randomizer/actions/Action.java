@@ -49,7 +49,7 @@ public class Action {
             return module.getGroups();
         }
         // Shouldn't be empty but just in case
-        return Set.of("utility");
+        return Set.of("Support");
     }
 
     public String getName() {
@@ -109,8 +109,7 @@ public class Action {
         if (normalized == null) {
             stored = emptyValueForType(argDef.getTypeDefinition());
         } else {
-            stored = copyArgumentValue(
-                    argDef.convertAndValidate(normalized, enumRegistry),
+            stored = copyArgumentValue(argDef.convertAndValidate(normalized, enumRegistry),
                     argDef.getTypeDefinition());
         }
         arguments.put(name, stored);
@@ -161,8 +160,7 @@ public class Action {
         if (defaultValue == null) {
             return emptyValueForType(argDef.getTypeDefinition());
         }
-        return copyArgumentValue(
-                argDef.convertAndValidate(defaultValue, enumRegistry),
+        return copyArgumentValue(argDef.convertAndValidate(defaultValue, enumRegistry),
                 argDef.getTypeDefinition());
     }
 

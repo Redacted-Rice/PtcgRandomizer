@@ -110,7 +110,7 @@ public class RandomizerCore {
         // since they are bundled together
         requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
                 PtcgRandomizerVersion.VERSION, true);
-        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
+        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
 
         // Register built in PTCGR enums in the shared enum context instead of in the
         // runtime

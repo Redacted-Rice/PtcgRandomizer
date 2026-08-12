@@ -51,7 +51,7 @@ class ActionBankTest {
                     PtcgRandomizerVersion.VERSION, true);
 
             LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
-                    null, null, requirements);
+                    null, requirements);
 
             // Mirrors RandomizerCore.setupLuaRandomizer(): built-in Java enums are registered on
             // the shared context before modules are loaded, the same way RandomizerCore does it,
@@ -156,7 +156,7 @@ class ActionBankTest {
                 PtcgRandomizerVersion.VERSION, true);
 
         LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
-                null, null, requirements);
+                null, requirements);
         IssueTracker.clear();
         wrapper.loadModules();
         assertFalse(IssueTracker.hasErrors(),
