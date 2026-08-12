@@ -1,4 +1,5 @@
 local randomizer = require("randomizer")
+local pool = require("modules.util.pool")
 
 local module
 module = {
@@ -11,31 +12,7 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
-	arguments = {
-		{
-			name = "source",
-			definition = {
-				type = "enum",
-				constraint = "CardDataSource",
-			},
-			default = "ORIGINAL",
-		},
-		{
-			name = "duplicates",
-			definition = {
-				type = "enum",
-				constraint = "DuplicateHandling",
-			},
-			default = "KEEP_DUPLICATES",
-		},
-		{
-			name = "approach",
-			definition = {
-				type = "enum",
-				constraint = "RandomizationApproach",
-			},
-			default = "MINIMIZE_REPEATS",
-		},
+	arguments = pool.standardArgs({
 		{
 			name = "withinType",
 			definition = {
@@ -43,25 +20,11 @@ module = {
 			},
 			default = false,
 		},
-	},
+	}),
 	execute = function(context, args)
 		return module.randomizeMoves(context, args)
 	end,
 }
-
-function module.poolOptions(approach)
-	if approach == "MINIMIZE_REPEATS" then
-		return { consumable = true, regenerate = true }
-	end
-	return { consumable = false }
-end
-
-function module.sourceData(context, source)
-	if source == "MODIFIED" then
-		return context.modified
-	end
-	return context.original
-end
 
 -- One move per name so the pool is not weighted by how often a move appears
 function module.uniqueMoves(moveList)
@@ -72,16 +35,13 @@ function module.uniqueMoves(moveList)
 	end)
 end
 
-function module.buildMovePool(context, args, filterFn)
-	local pool = randomizer.list(module.sourceData(context, args.source):getRandomizableMoves(true,
-		false))
-	if filterFn then
-		pool = pool:filter(filterFn)
-	end
+function module.buildMovePool(context, args)
+	local movePool = randomizer.list(pool.sourceData(context, args.source):getRandomizableMoves(
+		true, false))
 	if args.duplicates == "REMOVE_DUPLICATES" then
-		return module.uniqueMoves(pool)
+		return module.uniqueMoves(movePool)
 	end
-	return pool
+	return movePool
 end
 
 function module.randomizeMoves(context, args)
@@ -90,7 +50,7 @@ function module.randomizeMoves(context, args)
 	-- Targets always come from modified. Pool uses the chosen source set
 	local moveTargets = randomizer.list(context.modified:getRandomizableMoves(false, false))
 	local movePool = module.buildMovePool(context, args)
-	local options = module.poolOptions(args.approach)
+	local options = pool.poolOptions(args.approach)
 
 	local setter = function(target, move)
 		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
