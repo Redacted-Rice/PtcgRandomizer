@@ -4,7 +4,7 @@
 # rules.moveExclusions: remove moves from the pool and/or keep them fixed on card(s)
 
 version: 1
-appVersion: 0.2.0
+appVersion: 0.9.0
 rules:
   moveExclusions:
     - remove_from_pool: true

@@ -5,7 +5,7 @@ plugins {
 import org.gradle.jvm.tasks.Jar
 
 group = "redactedrice"
-version = "0.2.0"
+version = "0.9.0"
 
 repositories {
     mavenCentral()

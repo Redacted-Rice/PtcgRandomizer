@@ -10,7 +10,7 @@ module = {
 	author = "PTCGR Dev Tools",
 	version = "0.1",
 	requires = {
-		PtcgRandomizer = "0.2.0",
+		PtcgRandomizer = "0.9.0",
 	},
 	arguments = {
 		{

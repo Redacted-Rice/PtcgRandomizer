@@ -2,10 +2,10 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "randomize_moves",
-	name = "Randomize Existing Moves",
-	description = "Randomizes all moves (attacks and powers). Keeps the same number of moves per card but number of attacks and powers may change.",
-	groups = { "Monsters", "Moves", "Attacks", "Powers" },
+	id = "randomize_powers",
+	name = "Randomize Existing Powers",
+	description = "Randomizes powers only (not attacks). Keeps the same number of powers per card.",
+	groups = { "Monsters", "Moves", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
@@ -45,7 +45,7 @@ module = {
 		},
 	},
 	execute = function(context, args)
-		return module.randomizeMoves(context, args)
+		return module.randomizePokePowers(context, args)
 	end,
 }
 
@@ -63,7 +63,6 @@ function module.sourceData(context, source)
 	return context.original
 end
 
--- One move per name so the pool is not weighted by how often a move appears
 function module.uniqueMoves(moveList)
 	return randomizer.groupBy(moveList, function(move)
 		return move.name:toString()
@@ -72,24 +71,21 @@ function module.uniqueMoves(moveList)
 	end)
 end
 
-function module.buildMovePool(context, args, filterFn)
+function module.buildPowerPool(context, args)
 	local pool = randomizer.list(module.sourceData(context, args.source):getRandomizableMoves(true,
-		false))
-	if filterFn then
-		pool = pool:filter(filterFn)
-	end
+		false)):filter("isPokePower")
 	if args.duplicates == "REMOVE_DUPLICATES" then
 		return module.uniqueMoves(pool)
 	end
 	return pool
 end
 
-function module.randomizeMoves(context, args)
-	randomizer.changedetector.pushMoveChangeDisplay({ "name", "energyCost", "damage" })
+function module.randomizePokePowers(context, args)
+	randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 
-	-- Targets always come from modified. Pool uses the chosen source set
-	local moveTargets = randomizer.list(context.modified:getRandomizableMoves(false, false))
-	local movePool = module.buildMovePool(context, args)
+	local powerTargets = randomizer.list(context.modified:getRandomizableMoves(false, false)):
+		filter("isPokePower")
+	local powerPool = module.buildPowerPool(context, args)
 	local options = module.poolOptions(args.approach)
 
 	local setter = function(target, move)
@@ -97,10 +93,10 @@ function module.randomizeMoves(context, args)
 	end
 
 	if args.withinType then
-		movePool:groupBy("getSourceCard:type"):useToRandomize(moveTargets, "getSourceCard:type",
+		powerPool:groupBy("getSourceCard:type"):useToRandomize(powerTargets, "getSourceCard:type",
 			setter, options)
 	else
-		movePool:useToRandomize(moveTargets, setter, options)
+		powerPool:useToRandomize(powerTargets, setter, options)
 	end
 end
 
