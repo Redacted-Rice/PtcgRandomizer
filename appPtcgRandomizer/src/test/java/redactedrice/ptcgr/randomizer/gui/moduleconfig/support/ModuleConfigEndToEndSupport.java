@@ -36,7 +36,7 @@ public final class ModuleConfigEndToEndSupport {
                 PtcgRandomizerVersion.VERSION, true);
 
         LuaRandomizerWrapper wrapper =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, null, requirements);
+                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
         wrapper.getSharedContext().registerEnum(CardType.class);
 
         IssueTracker.clear();

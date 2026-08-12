@@ -95,7 +95,7 @@ class ScriptConfigTest {
     }
 
     private static Module scriptWithVersion(String id, String version, String when) {
-        return new Module(id, id, "", Set.of(), Set.of(), List.of(), new ZeroArgFunction() {
+        return new Module(id, id, "", Set.of(), List.of(), new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.NIL;

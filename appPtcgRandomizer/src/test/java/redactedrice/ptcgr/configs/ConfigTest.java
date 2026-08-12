@@ -1000,7 +1000,7 @@ class ConfigTest {
 
     private static Module moduleWithVersion(String id, String version,
             List<ArgumentDefinition> arguments) {
-        return new Module(id, id, "", Set.of("pokemon cards"), Set.of(), arguments,
+        return new Module(id, id, "", Set.of("pokemon cards"), arguments,
                 new ZeroArgFunction() {
                     @Override
                     public LuaValue call() {
@@ -1011,7 +1011,7 @@ class ConfigTest {
     }
 
     private static Module scriptWithVersion(String id, String version, String when) {
-        return new Module(id, id, "", Set.of(), Set.of(), List.of(), new ZeroArgFunction() {
+        return new Module(id, id, "", Set.of(), List.of(), new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.NIL;

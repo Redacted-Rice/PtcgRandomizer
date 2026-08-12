@@ -140,7 +140,7 @@ public class DualTableSelector extends JPanel {
         moveDownButton.addActionListener(e -> selectedTable.moveSelectedRow(1));
 
         // Layout
-        // Filter combos for the available actions list
+        // Create a combo box (drop-down) as before…
         JComboBox<String> groupFilterComboBox = new JComboBox<>();
         for (String category : actions.getCategoriesWithAll()) {
             groupFilterComboBox.addItem(category);
@@ -152,8 +152,9 @@ public class DualTableSelector extends JPanel {
         groupFilterComboBox.addActionListener(filterListener);
         filterListener.actionPerformed(null);
 
+        // Wrap it in a panel that centers it (using FlowLayout with CENTER)
         JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        topLeftPanel.add(new JLabel("Action group filter:"));
+        topLeftPanel.add(new JLabel("Actions Filter:"));
         topLeftPanel.add(groupFilterComboBox);
         // Create a top panel and add the combo to its WEST so it aligns with the left table column
         JPanel topPanel = new JPanel(new BorderLayout());

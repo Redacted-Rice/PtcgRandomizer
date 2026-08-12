@@ -18,7 +18,7 @@ class ActionArgumentsConfigTest {
     @Test
     void fromActionSavesStoredModuleArguments() {
         Module module = new Module("set_num_moves", "set_num_moves", "", java.util.Set.of("dev"),
-                java.util.Set.of(), List.of(new ArgumentDefinition("numMoves",
+                List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(), 2)),
                 new ZeroArgFunction() {
                     @Override
