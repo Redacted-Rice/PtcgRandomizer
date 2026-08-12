@@ -25,10 +25,6 @@ public abstract class ActionsHoverToolTipTable extends JTable {
             return null;
         }
         int modelRow = convertRowIndexToModel(viewRow);
-        String description = model.getRowDescription(modelRow);
-        if (description == null || description.isBlank()) {
-            return null;
-        }
-        return description;
+        return model.getRowToolTipText(modelRow);
     }
 }

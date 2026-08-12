@@ -97,6 +97,23 @@ public class ActionsTableModel extends AbstractTableModel {
         return "";
     }
 
+    public String getRowToolTipText(int row) {
+        if (row >= getDataRowCount()) {
+            return null;
+        }
+        Action action = getRow(row);
+        String description = action.getDescription();
+        if (description == null || description.isBlank()) {
+            return null;
+        }
+        String version = action.getVersion();
+        if (version == null || version.isBlank()) {
+            return description;
+        }
+        String versionLabel = version.startsWith("v") ? version : "v" + version;
+        return versionLabel + " - " + description;
+    }
+
     public Action removeRow(int index) {
         // Guard removing the last empty row
         if (index < getDataRowCount()) {

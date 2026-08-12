@@ -1,9 +1,12 @@
 package redactedrice.ptcgr.randomizer.actions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import redactedrice.randomizer.LuaRandomizerWrapper;
@@ -13,7 +16,7 @@ import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.ModuleRegistry;
 
 public class ActionBank {
-    private static final String CATEGORY_ALL = "All";
+    private static final String FILTER_ALL = "All";
 
     private HashMap<Integer, Action> allActions;
     private HashMap<String, HashMap<Integer, Action>> actionsByCategory;
@@ -100,17 +103,45 @@ public class ActionBank {
     }
 
     public Collection<Action> get(String category) {
-        if (category == null || CATEGORY_ALL.equals(category)) {
-            return allActions.values();
+        return get(category, null);
+    }
+
+    public Collection<Action> get(String category, String modifiesField) {
+        Collection<Action> actions;
+        if (category == null || FILTER_ALL.equals(category)) {
+            actions = allActions.values();
+        } else {
+            HashMap<Integer, Action> found = actionsByCategory.get(category);
+            actions = found != null ? found.values() : Collections.emptyList();
         }
-        HashMap<Integer, Action> found = actionsByCategory.get(category);
-        return found != null ? found.values() : Collections.emptyList();
+
+        if (modifiesField != null && !FILTER_ALL.equals(modifiesField)) {
+            actions = actions.stream().filter(action -> action.getModifies().contains(modifiesField))
+                    .collect(Collectors.toList());
+        }
+        return sortByName(actions);
     }
 
     public List<String> getCategoriesWithAll() {
         List<String> categories =
                 actionsByCategory.keySet().stream().sorted().collect(Collectors.toList());
-        categories.add(0, CATEGORY_ALL);
+        categories.add(0, FILTER_ALL);
         return categories;
+    }
+
+    public List<String> getModifiesWithAll() {
+        TreeSet<String> fields = new TreeSet<>();
+        for (Action action : allActions.values()) {
+            fields.addAll(action.getModifies());
+        }
+        List<String> modifies = new ArrayList<>(fields);
+        modifies.add(0, FILTER_ALL);
+        return modifies;
+    }
+
+    private static List<Action> sortByName(Collection<Action> actions) {
+        return actions.stream()
+                .sorted(Comparator.comparing(Action::getName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
     }
 }

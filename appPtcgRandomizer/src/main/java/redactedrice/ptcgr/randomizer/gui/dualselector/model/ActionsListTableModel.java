@@ -29,7 +29,7 @@ public class ActionsListTableModel extends ActionsTableModel {
         fireTableDataChanged();
     }
 
-    public void setRowsByCategory(String category) {
-        setRows(actionBank.get(category));
+    public void setRowsByFilters(String category, String modifiesField) {
+        setRows(actionBank.get(category, modifiesField));
     }
 }

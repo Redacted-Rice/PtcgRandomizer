@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import redactedrice.randomizer.context.EnumRegistry;
 import redactedrice.randomizer.lua.ExecutionRequest;
@@ -58,6 +59,14 @@ public class Action {
 
     public String getDescription() {
         return module.getDescription();
+    }
+
+    public String getVersion() {
+        return module.getVersion();
+    }
+
+    public Set<String> getModifies() {
+        return module.getModifies();
     }
 
     public Module getModule() {
