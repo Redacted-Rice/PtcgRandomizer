@@ -10,7 +10,7 @@ script = {
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
-		PtcgRandomizer = "0.2.0",
+		PtcgRandomizer = "0.9.0",
 	},
 
 	monsterCardsEntry = "Monster Cards",

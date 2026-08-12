@@ -4,13 +4,13 @@ local module
 module = {
 	id = "all_moves_colorless",
 	name = "All Moves Colorless",
-	description = "Sets all move energy costs to colorless",
+	description = "Changes all moves to only use colorless energies instead of specific types",
 	seeded = false,
 	groups = { "Monsters", "Moves", "Attacks", "Energy Type" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
-		PtcgRandomizer = "0.2.0",
+		PtcgRandomizer = "0.9.0",
 	},
 	execute = function(context, args)
 		return module.setAllMovesColorless(context, args)

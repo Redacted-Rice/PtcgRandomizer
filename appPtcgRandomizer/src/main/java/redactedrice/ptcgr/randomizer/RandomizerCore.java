@@ -16,6 +16,10 @@ import redactedrice.ptcgr.configs.Config;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.constants.CardDataSource;
+import redactedrice.ptcgr.constants.DuplicateHandling;
+import redactedrice.ptcgr.constants.StageGrouping;
+import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
@@ -119,11 +123,14 @@ public class RandomizerCore {
         // (onLoad) enums are, and so they're resolvable by name for the config UI's
         // ENUM argument
         // dropdowns even before a randomization has run.
-        // TODO later: Add others. Could I do this dynamically or just specify all of
-        // them?
+        // TODO later: Could I do this dynamically or just specify all of them?
         luaRandomizer.getSharedContext().registerEnum(CardType.class);
         luaRandomizer.getSharedContext().registerEnum(EnergyType.class);
         luaRandomizer.getSharedContext().registerEnum(EvolutionStage.class);
+        luaRandomizer.getSharedContext().registerEnum(RandomizationApproach.class);
+        luaRandomizer.getSharedContext().registerEnum(CardDataSource.class);
+        luaRandomizer.getSharedContext().registerEnum(DuplicateHandling.class);
+        luaRandomizer.getSharedContext().registerEnum(StageGrouping.class);
 
         Logger.setEnabled(true);
 

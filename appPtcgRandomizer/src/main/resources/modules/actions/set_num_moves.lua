@@ -4,13 +4,16 @@ local module
 module = {
 	id = "set_num_moves",
 	name = "Set X Moves Per Card",
-	description = "Sets the number of active moves per card",
+	description = "Sets the number of moves (attacks or powers) per card",
 	seeded = false,
 	groups = { "Monsters", "Support", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
-		PtcgRandomizer = "0.2.0",
+		PtcgRandomizer = "0.9.0",
+	},
+	provides = {
+		{ name = "numMoves", type = "integer" },
 	},
 	arguments = {
 		{
@@ -27,15 +30,13 @@ module = {
 	end,
 }
 
--- TODO later: None the other modules actually use this ATM. Consider how to handle this
--- for those or to make separate ones that do use this
 function module.setNumMoves(context, args)
 	randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 
 	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
-        -- Set the num moves not overridding assignments. This intentially does not check
-        -- locked slots first so it will be apparant in the logs if a card is skipped due
-        -- to a locked slot
+		-- Set the num moves not overridding assignments. This intentially does not check
+		-- locked slots first so it will be apparant in the logs if a card is skipped due
+		-- to a locked slot
 		card:setNumMoves(args.numMoves)
 	end)
 end

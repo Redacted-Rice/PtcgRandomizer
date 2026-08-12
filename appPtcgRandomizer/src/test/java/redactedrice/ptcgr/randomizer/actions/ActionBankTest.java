@@ -14,7 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.constants.CardDataSource;
+import redactedrice.ptcgr.constants.DuplicateHandling;
+import redactedrice.ptcgr.constants.StageGrouping;
+import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardType;
+import redactedrice.ptcgr.constants.romenums.EnergyType;
+import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
@@ -56,7 +62,7 @@ class ActionBankTest {
             // Mirrors RandomizerCore.setupLuaRandomizer(): built-in Java enums are registered on
             // the shared context before modules are loaded, the same way RandomizerCore does it,
             // so they're resolvable by name for the config UI's ENUM argument dropdowns.
-            wrapper.getSharedContext().registerEnum(CardType.class);
+            registerPtcgEnums(wrapper);
 
             IssueTracker.clear();
             wrapper.loadModules();
@@ -103,7 +109,7 @@ class ActionBankTest {
 
         List<String> hpModules = actionBank.get("HP").stream().map(Action::getModuleId).toList();
         assertTrue(hpModules.contains("shuffle_hp"));
-        assertTrue(hpModules.contains("hp_by_stage_from_rom"));
+        assertFalse(hpModules.contains("hp_by_stage_from_rom"));
         assertFalse(hpModules.contains("randomize_moves"));
 
         List<String> attackModules =
@@ -157,10 +163,21 @@ class ActionBankTest {
 
         LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
                 null, requirements);
+        registerPtcgEnums(wrapper);
         IssueTracker.clear();
         wrapper.loadModules();
         assertFalse(IssueTracker.hasErrors(),
                 () -> "Module requirement validation failed: " + IssueTracker.getErrors());
         return new ActionBank(wrapper);
+    }
+
+    private static void registerPtcgEnums(LuaRandomizerWrapper wrapper) {
+        wrapper.getSharedContext().registerEnum(CardType.class);
+        wrapper.getSharedContext().registerEnum(EnergyType.class);
+        wrapper.getSharedContext().registerEnum(EvolutionStage.class);
+        wrapper.getSharedContext().registerEnum(RandomizationApproach.class);
+        wrapper.getSharedContext().registerEnum(CardDataSource.class);
+        wrapper.getSharedContext().registerEnum(DuplicateHandling.class);
+        wrapper.getSharedContext().registerEnum(StageGrouping.class);
     }
 }

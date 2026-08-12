@@ -5,13 +5,13 @@ local randomizer = require("randomizer")
 local module
 module = {
 	id = "fix_evo_line_hp",
-	name = "Fix Evo Line HP",
-	description = "Raises HP within each evolution line so it is non decreasing by stage",
+	name = "Make Evo Line HP Consistent",
+	description = "For each evolution line, ensures each stage has at least as much HP as the previous stage by increasing higher stage HPs to at least the highest value of the previous stage",
 	groups = { "Monsters", "HP", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
-	version = "0.5",
+	version = "0.9",
 	requires = {
-		PtcgRandomizer = "0.2.0",
+		PtcgRandomizer = "0.9.0",
 	},
 	needs = {
 		{ name = "evoLineId", type = "integer" },
@@ -22,6 +22,7 @@ module = {
 	end,
 }
 
+-- TODO later: Add an option to shuffle around HPs instead of just increasing?
 function module.fixEvoLineHp(context)
 	local byEvoLine = randomizer.groupBy(context.modified:getRandomizableMonsterCards(), "evoLineId")
 	byEvoLine:each(function(_, line)

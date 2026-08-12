@@ -2,14 +2,17 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "shuffle_hp",
-	name = "Randomize HP",
-	description = "Randomizes HP values of all Monster cards.",
-	groups = { "Monsters", "HP" },
+	id = "randomize_num_moves",
+	name = "Randomize Num Moves",
+	description = "Randomizes the number of moves (attacks or powers) per card",
+	groups = { "Monsters", "Support", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.9.0",
+	},
+	provides = {
+		{ name = "numMoves", type = "integer" },
 	},
 	needs = {
 		{ name = "evoLineMaxStage", type = "EvolutionStage" },
@@ -37,7 +40,7 @@ module = {
 				type = "enum",
 				constraint = "StageGrouping",
 			},
-			default = "BY_STAGE",
+			default = "ALL_TOGETHER",
 		},
 		{
 			name = "approach",
@@ -49,7 +52,7 @@ module = {
 		},
 	},
 	execute = function(context, args)
-		return module.randomizeHp(context, args)
+		return module.randomizeNumMoves(context, args)
 	end,
 }
 
@@ -102,20 +105,23 @@ function module.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	return randomizer.group(selected, keyOrder)
 end
 
-function module.randomizeHp(context, args)
+function module.randomizeNumMoves(context, args)
+	randomizer.changedetector.pushMoveChangeDisplay({ "name" })
+
 	local sourceCards = module.sourceCards(context, args.source)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = module.poolOptions(args.approach)
 
 	if args.grouping == "ALL_TOGETHER" then
-		module.buildValuePool(sourceCards, "getHp", args.duplicates):useToRandomize(targets, "setHp",
-			options)
+		module.buildValuePool(sourceCards, "getNumMoves", args.duplicates):useToRandomize(targets,
+			"setNumMoves", options)
 	elseif args.grouping == "BY_STAGE" then
-		module.buildGroupedPool(sourceCards, "stage", "getHp", args.duplicates):useToRandomize(
-			targets, "stage", "setHp", options)
+		module.buildGroupedPool(sourceCards, "stage", "getNumMoves", args.duplicates):
+			useToRandomize(targets, "stage", "setNumMoves", options)
 	else
-		module.buildGroupedPool(sourceCards, module.stageAndMaxStageKey, "getHp", args.duplicates):
-			useToRandomize(targets, module.stageAndMaxStageKey, "setHp", options)
+		module.buildGroupedPool(sourceCards, module.stageAndMaxStageKey, "getNumMoves",
+			args.duplicates):useToRandomize(targets, module.stageAndMaxStageKey, "setNumMoves",
+			options)
 	end
 end
 

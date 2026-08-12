@@ -4,7 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+import redactedrice.ptcgr.constants.CardDataSource;
+import redactedrice.ptcgr.constants.DuplicateHandling;
+import redactedrice.ptcgr.constants.StageGrouping;
+import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardType;
+import redactedrice.ptcgr.constants.romenums.EnergyType;
+import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
@@ -37,7 +43,14 @@ public final class ModuleConfigEndToEndSupport {
 
         LuaRandomizerWrapper wrapper =
                 new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
+        // Mirrors RandomizerCore.setupLuaRandomizer()
         wrapper.getSharedContext().registerEnum(CardType.class);
+        wrapper.getSharedContext().registerEnum(EnergyType.class);
+        wrapper.getSharedContext().registerEnum(EvolutionStage.class);
+        wrapper.getSharedContext().registerEnum(RandomizationApproach.class);
+        wrapper.getSharedContext().registerEnum(CardDataSource.class);
+        wrapper.getSharedContext().registerEnum(DuplicateHandling.class);
+        wrapper.getSharedContext().registerEnum(StageGrouping.class);
 
         IssueTracker.clear();
         wrapper.loadModules();
