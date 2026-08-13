@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.JViewport;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.gui.ToolTips;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
@@ -44,7 +45,8 @@ import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Shows the seed offset (for seeded modules) and every module argument as an aligned list of
-// rows. All rows share a single GridBagLayout so ActionsTableColumn stay lined up regardless of how many
+// rows. All rows share a single GridBagLayout so ActionsTableColumn stay lined up regardless of how
+// many
 // rows there are. Opens with a fixed max size and scrolls if there are more rows than fit.
 public class ModuleConfigDialog extends JDialog {
     private static final long serialVersionUID = 1L;
@@ -171,7 +173,8 @@ public class ModuleConfigDialog extends JDialog {
                 valueComponent = readOnlyValueLabel(action.getSeedOffset());
             }
             row = addRow(grid, gbc, row, "Seed Offset", "int", "", valueComponent,
-                    TypeDefinition.integer());
+                    TypeDefinition.integer(),
+                    "Offset added to the run seed for this action to have variance between actions");
             hasDataRow = true;
         }
 
@@ -196,8 +199,7 @@ public class ModuleConfigDialog extends JDialog {
             row = addRow(grid, gbc, row, label,
                     StructuredText.describeStructuredShape(argDef.getTypeDefinition()),
                     ArgumentConstraintDescription.describe(argDef.getTypeDefinition()),
-                    valueComponent,
-                    argDef.getTypeDefinition());
+                    valueComponent, argDef.getTypeDefinition(), argDef.getDescription());
             hasDataRow = true;
         }
 
@@ -237,12 +239,18 @@ public class ModuleConfigDialog extends JDialog {
 
     private void addCell(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, int column,
             JComponent content, int anchor, boolean fillHorizontal) {
-        addCell(grid, gbc, row, column, content, anchor, fillHorizontal, null);
+        addCell(grid, gbc, row, column, content, anchor, fillHorizontal, null, null);
     }
 
     private void addCell(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, int column,
             JComponent content, int anchor, boolean fillHorizontal, TypeDefinition valueType) {
-        JComponent cell = wrapForColumn(grid, column, content, valueType);
+        addCell(grid, gbc, row, column, content, anchor, fillHorizontal, valueType, null);
+    }
+
+    private void addCell(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, int column,
+            JComponent content, int anchor, boolean fillHorizontal, TypeDefinition valueType,
+            String rowDescription) {
+        JComponent cell = wrapForColumn(grid, column, content, valueType, rowDescription);
         gbc.gridx = column;
         gbc.gridy = row;
         gbc.gridwidth = 1;
@@ -261,7 +269,7 @@ public class ModuleConfigDialog extends JDialog {
     }
 
     private JComponent wrapForColumn(ModuleConfigGridPanel grid, int column, JComponent content,
-            TypeDefinition valueType) {
+            TypeDefinition valueType, String rowDescription) {
         if (!isDataColumn(column)) {
             return content;
         }
@@ -276,24 +284,49 @@ public class ModuleConfigDialog extends JDialog {
                     ColumnSizing.minimumValueWidth(valueType, editable), Integer.MAX_VALUE, true);
             default -> throw new IllegalArgumentException("Not a data column: " + column);
         };
+        // Row description covers name/type/constraint cells, not the value editor
+        if (column != VALUE_COLUMN) {
+            applyRowDescriptionTooltip(panel, rowDescription);
+        }
         grid.registerColumnPanel(column, panel);
         return panel;
     }
 
     private int addRow(ModuleConfigGridPanel grid, GridBagConstraints gbc, int row, String name,
             String typeDescription, String constraintDescription, JComponent valueComponent,
-            TypeDefinition valueType) {
-        addCell(grid, gbc, row, ARGUMENT_COLUMN, new WrappingLabel(name), GridBagConstraints.WEST,
-                true);
-        addCell(grid, gbc, row, TYPE_COLUMN, new WrappingLabel(typeDescription),
-                GridBagConstraints.WEST, true);
+            TypeDefinition valueType, String description) {
+        addCell(grid, gbc, row, ARGUMENT_COLUMN, labeledCell(name, description),
+                GridBagConstraints.WEST, true, null, description);
+        addCell(grid, gbc, row, TYPE_COLUMN, labeledCell(typeDescription, description),
+                GridBagConstraints.WEST, true, null, description);
         addCell(grid, gbc, row, CONSTRAINTS_COLUMN,
-                WrappingLabel.constraints(constraintDescription), GridBagConstraints.WEST, true);
+                labeledConstraintsCell(constraintDescription, description), GridBagConstraints.WEST,
+                true, null, description);
 
+        // Value editors keep their own tooltips (validation, unsupported, etc.)
         addCell(grid, gbc, row, VALUE_COLUMN, valueComponent, GridBagConstraints.WEST, true,
                 valueType);
 
         return row + 1;
+    }
+
+    private static WrappingLabel labeledCell(String text, String description) {
+        WrappingLabel label = new WrappingLabel(text);
+        applyRowDescriptionTooltip(label, description);
+        return label;
+    }
+
+    private static WrappingLabel labeledConstraintsCell(String text, String description) {
+        WrappingLabel label = WrappingLabel.constraints(text);
+        applyRowDescriptionTooltip(label, description);
+        return label;
+    }
+
+    private static void applyRowDescriptionTooltip(JComponent component, String description) {
+        String tip = ToolTips.wrapping(description);
+        if (tip != null) {
+            component.setToolTipText(tip);
+        }
     }
 
     // Solid vertical rules spanning the header and data rows between the top and bottom horizontal
@@ -341,8 +374,7 @@ public class ModuleConfigDialog extends JDialog {
             return new WrappingLabel(
                     StructuredText.formatValue(typeDef, value, enumValuesProvider));
         }
-        return new WrappingLabel(
-                StructuredText.formatValue(typeDef, value, enumValuesProvider));
+        return new WrappingLabel(StructuredText.formatValue(typeDef, value, enumValuesProvider));
     }
 
     private JPanel buildButtonPanel() {
@@ -451,9 +483,8 @@ public class ModuleConfigDialog extends JDialog {
     ArgumentValueEditor argumentEditor(String name) {
         ArgumentValueEditor editor = argumentEditors.get(name);
         if (editor == null) {
-            throw new IllegalArgumentException(
-                    "No editor for argument \"" + name + "\" on module \""
-                            + action.getModuleId() + "\"");
+            throw new IllegalArgumentException("No editor for argument \"" + name
+                    + "\" on module \"" + action.getModuleId() + "\"");
         }
         return editor;
     }

@@ -4,7 +4,7 @@ local module
 module = {
 	id = "all_moves_match_type",
 	name = "All Moves Match Type",
-	description = "Changes all moves non-colorless energy types to match their card type",
+	description = "Changes all moves non-colorless energy types to match their card Energy Type",
 	seeded = false,
 	groups = { "Monsters", "Moves", "Attacks", "Energy Type" },
 	author = "Redacted Rice",

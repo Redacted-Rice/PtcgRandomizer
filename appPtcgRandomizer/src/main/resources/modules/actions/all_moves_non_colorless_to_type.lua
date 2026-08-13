@@ -4,7 +4,7 @@ local module
 module = {
 	id = "all_moves_non_colorless_to_type",
 	name = "All Non-Colorless To Type",
-	description = "Changes all moves non-colorless energy types to the specified type",
+	description = "Changes all moves non-colorless energy types to the specified Energy Type",
 	seeded = false,
 	groups = { "Monsters", "Moves", "Attacks", "Energy Type" },
 	author = "Redacted Rice",
@@ -16,6 +16,7 @@ module = {
 		{
 			name = "energyType",
 			displayName = "Energy Type",
+			description = "Energy Type to change all non-colorless energy costs to be",
 			definition = {
 				type = "enum",
 				constraint = "EnergyType",

@@ -17,6 +17,7 @@ function pool.standardArgs(extraArgs, overrides)
 		{
 			name = "source",
 			displayName = "Pool Source",
+			description = "Which card set supplies values for the randomization pool",
 			definition = {
 				type = "enum",
 				constraint = "DataSource",
@@ -26,6 +27,7 @@ function pool.standardArgs(extraArgs, overrides)
 		{
 			name = "duplicates",
 			displayName = "Duplicate Handling",
+			description = "Whether duplicate pool values are kept (weighted by frequency) or reduced to one of each",
 			definition = {
 				type = "enum",
 				constraint = "DuplicateHandling",
@@ -35,6 +37,7 @@ function pool.standardArgs(extraArgs, overrides)
 		{
 			name = "approach",
 			displayName = "Randomization Approach",
+			description = "How values are drawn from the pool. Minimize Repeats consumes values and refills when empty",
 			definition = {
 				type = "enum",
 				constraint = "RandomizationApproach",

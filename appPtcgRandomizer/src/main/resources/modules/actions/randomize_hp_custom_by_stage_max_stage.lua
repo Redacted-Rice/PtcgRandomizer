@@ -5,7 +5,7 @@ local module
 module = {
 	id = "randomize_hp_custom_by_stage_max_stage",
 	name = "Randomize HP with Custom Values (By Stage and Max Stage)",
-	description = "Randomizes HP using custom pools keyed by evo-line max stage then card stage. Repeat values in a list to weight them",
+	description = "Randomizes HP using custom pools keyed by evo-line max stage then card stage",
 	groups = { "Monsters", "HP" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -20,7 +20,8 @@ module = {
 		{
 			-- Outer key = evo line max stage, inner key = card stage, value = weighted HP list
 			name = "hpPools",
-			displayName = "HP Pools by Evo Line's Max Stage and Card's Evo Stage",
+			displayName = "HP Pools by Max Stage then Stage",
+			description = "Weighted HP values keyed by the evolution line's max stage then card's evolution stage. When randomizing it will pick the pool that matches the current cards max stage and stage to pull a value from.",
 			definition = {
 				type = "table",
 				keyDefinition = hp_custom.evoLineStagesKeyDef(),

@@ -4,7 +4,7 @@ local module
 module = {
 	id = "randomize_hp_custom_by_stage",
 	name = "Randomize HP with Custom Values (By Stage)",
-	description = "Randomizes HP using custom pools keyed by card stage. Repeat values in a list to weight them",
+	description = "Randomizes HP using custom pools keyed by card stage",
 	groups = { "Monsters", "HP" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -15,7 +15,8 @@ module = {
 		hp_custom.approachArg(),
 		{
 			name = "hpPools",
-			displayName = "HP Pools by Card's Evo Stage",
+			displayName = "HP Pools by Stage",
+			description = "Weighted HP values for each card's evolution stage. When randomizing it will take a value from the pool that matches the current card's evolution stage",
 			definition = {
 				type = "table",
 				keyDefinition = hp_custom.evoStageKeyDef(),

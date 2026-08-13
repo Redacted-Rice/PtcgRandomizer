@@ -6,7 +6,7 @@ local module
 module = {
 	id = "fix_evo_line_hp",
 	name = "Make Evo Line HP Consistent",
-	description = "For each evolution line, ensures HP is non-decreasing by stage. Raise Minimums bumps later stages up. Redistribute swaps inverted values between stages so existing HPs are kept when possible",
+	description = "For each evolution line, ensures HP is non-decreasing by stage",
 	groups = { "Monsters", "HP", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -21,6 +21,7 @@ module = {
 		{
 			name = "mode",
 			displayName = "Mode",
+			description = "'Raise Minimums' will increase any later stage cards HP to the highest HP of the previous stage. 'Redistribute' swaps around existing HP values so existing HPs are kept when possible",
 			definition = {
                 type = "string",
                 constraint = {

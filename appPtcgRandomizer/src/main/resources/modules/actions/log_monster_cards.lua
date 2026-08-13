@@ -16,6 +16,7 @@ module = {
 		{
 			name = "fields",
 			displayName = "Fields",
+			description = "Which monster card columns and in what order to include them in the ASCII table log",
 			definition = {
 				type = "list",
 				elementDefinition = {

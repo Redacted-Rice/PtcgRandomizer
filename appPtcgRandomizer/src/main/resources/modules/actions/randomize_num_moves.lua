@@ -22,6 +22,7 @@ module = {
 		{
 			name = "grouping",
 			displayName = "Evo Stage Grouping",
+			description = "How source number of moves (attacks or powers) values are grouped into pools for randomizing. 'All Together' will use a single pool for all cards. 'By Stage' will group by card's evolution stage only. 'By Stage and Max Stage' will group by evolution line's max stage and card's stage.",
 			definition = {
 				type = "enum",
 				constraint = "StageGrouping",
