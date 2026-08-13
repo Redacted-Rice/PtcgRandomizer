@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
+import redactedrice.ptcgr.randomizer.gui.ToolTips;
 import redactedrice.ptcgr.randomizer.gui.dualselector.model.ActionsTableModel;
 import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.Module;
@@ -145,7 +146,7 @@ class ActionTest {
         ActionsTableModel model = new ActionsTableModel();
         model.appendRow(new Action(module));
 
-        assertEquals("v0.9 - Does a thing", model.getRowToolTipText(0));
+        assertEquals(ToolTips.wrapping("v0.9 - Does a thing"), model.getRowToolTipText(0));
     }
 
     private static Module testModule(List<ArgumentDefinition> arguments) {

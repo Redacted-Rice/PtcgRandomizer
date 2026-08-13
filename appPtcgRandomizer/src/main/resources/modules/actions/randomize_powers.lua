@@ -15,7 +15,8 @@ module = {
 	arguments = pool.standardArgs({
 		{
 			name = "withinType",
-			displayName = "Within Type",
+			displayName = "Within Energy Type",
+			description = "When enabled the powers are pooled and randomized by Energy type so, for example, a fire type card will only get powers from Fire type cards ",
 			definition = {
 				type = "boolean",
 			},

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
+import redactedrice.ptcgr.randomizer.gui.ToolTips;
 import redactedrice.randomizer.lua.Module;
 
 class SupportPanelTest {
@@ -74,7 +75,7 @@ class SupportPanelTest {
         java.awt.Rectangle cell = table.getCellRect(0, 0, false);
         String tip = table.getToolTipText(
                 new java.awt.event.MouseEvent(table, 0, 0, 0, cell.x + 1, cell.y + 1, 0, false));
-        assertEquals("Runs before randomization", tip);
+        assertEquals(ToolTips.wrapping("Runs before randomization"), tip);
     }
 
     @Test

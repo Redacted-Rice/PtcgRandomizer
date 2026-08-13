@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import redactedrice.ptcgr.randomizer.actions.Action;
+import redactedrice.ptcgr.randomizer.gui.ToolTips;
 
 // TODO: Split between tables?
 public class ActionsTableModel extends AbstractTableModel {
@@ -108,10 +109,10 @@ public class ActionsTableModel extends AbstractTableModel {
         }
         String version = action.getVersion();
         if (version == null || version.isBlank()) {
-            return description;
+            return ToolTips.wrapping(description);
         }
         String versionLabel = version.startsWith("v") ? version : "v" + version;
-        return versionLabel + " - " + description;
+        return ToolTips.wrapping(versionLabel + " - " + description);
     }
 
     public Action removeRow(int index) {

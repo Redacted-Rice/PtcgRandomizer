@@ -19,6 +19,7 @@ module = {
 		{
 			name = "numMoves",
 			displayName = "Number of Moves",
+			description = "Sets how many moves (attacks or powers) each card should have",
 			definition = {
 				type = "integer",
 				constraint = { type = "range", min = 0, max = 2, },

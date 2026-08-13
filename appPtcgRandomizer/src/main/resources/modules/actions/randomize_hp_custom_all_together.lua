@@ -4,7 +4,7 @@ local module
 module = {
 	id = "randomize_hp_custom_all_together",
 	name = "Randomize HP with Custom Values (All Together)",
-	description = "Randomizes HP from one shared custom pool for every card. Repeat values in the list to weight them",
+	description = "Randomizes HP from one shared custom pool for every card",
 	groups = { "Monsters", "HP" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -16,6 +16,7 @@ module = {
 		{
 			name = "hpPool",
 			displayName = "HP Pool",
+			description = "Shared weighted HP values used for every card. Repeat a value in the list to make it more likely",
 			definition = {
 				type = "list",
 				elementDefinition = hp_custom.HP_LIST_ELEMENT,

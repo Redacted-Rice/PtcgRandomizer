@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
 
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.SortableTableHelpers;
+import redactedrice.ptcgr.randomizer.gui.ToolTips;
 import redactedrice.randomizer.lua.Module;
 
 /** Read only list of loaded pre/post scripts. */
@@ -117,10 +118,7 @@ public class SupportPanel extends JPanel {
                 }
                 int modelRow = convertRowIndexToModel(viewRow);
                 String description = scriptsModel.getRowDescription(modelRow);
-                if (description == null || description.isBlank()) {
-                    return null;
-                }
-                return description;
+                return ToolTips.wrapping(description);
             }
         };
         // match Actions tables: dont fill empty viewport space or tip timing feels slower

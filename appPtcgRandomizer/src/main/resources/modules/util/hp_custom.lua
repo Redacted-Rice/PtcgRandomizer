@@ -14,6 +14,7 @@ function hp_custom.approachArg()
 	return {
 		name = "approach",
 		displayName = "Randomization Approach",
+		description = "How values are drawn from the pool. Minimize Repeats consumes values and refills when empty",
 		definition = {
 			type = "enum",
 			constraint = "RandomizationApproach",
