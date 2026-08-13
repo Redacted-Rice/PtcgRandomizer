@@ -3,8 +3,8 @@ local pool = require("modules.util.pool")
 local module
 module = {
 	id = "shuffle_hp",
-	name = "Randomize HP",
-	description = "Randomizes HP values of all Monster cards.",
+	name = "Randomize HP using Existing Values",
+	description = "Randomizes HP values of all Monster cards using existing values from the cards.",
 	groups = { "Monsters", "HP" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -21,7 +21,7 @@ module = {
 				type = "enum",
 				constraint = "StageGrouping",
 			},
-			default = "BY_STAGE",
+			default = "BY_STAGE_AND_MAX_STAGE",
 		},
 	}),
 	execute = function(context, args)
