@@ -15,12 +15,10 @@ module = {
 		hp_custom.approachArg(),
 		{
 			name = "hpPools",
+			displayName = "HP Pools by Card's Evo Stage",
 			definition = {
 				type = "table",
-				keyDefinition = {
-					type = "enum",
-					constraint = "EvolutionStage",
-				},
+				keyDefinition = hp_custom.evoStageKeyDef(),
 				valueDefinition = {
 					type = "list",
 					elementDefinition = hp_custom.HP_LIST_ELEMENT,

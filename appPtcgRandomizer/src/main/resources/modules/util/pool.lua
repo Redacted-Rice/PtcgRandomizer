@@ -5,7 +5,7 @@ local randomizer = require("randomizer")
 local pool = {}
 
 local DEFAULTS = {
-	source = "ORIGINAL",
+	source = "ROM",
 	duplicates = "KEEP_DUPLICATES",
 	approach = "MINIMIZE_REPEATS",
 }
@@ -16,14 +16,16 @@ function pool.standardArgs(extraArgs, overrides)
 	local args = {
 		{
 			name = "source",
+			displayName = "Pool Source",
 			definition = {
 				type = "enum",
-				constraint = "CardDataSource",
+				constraint = "DataSource",
 			},
 			default = overrides.source or DEFAULTS.source,
 		},
 		{
 			name = "duplicates",
+			displayName = "Duplicate Handling",
 			definition = {
 				type = "enum",
 				constraint = "DuplicateHandling",
@@ -32,6 +34,7 @@ function pool.standardArgs(extraArgs, overrides)
 		},
 		{
 			name = "approach",
+			displayName = "Randomization Approach",
 			definition = {
 				type = "enum",
 				constraint = "RandomizationApproach",
@@ -55,7 +58,7 @@ function pool.poolOptions(approach)
 end
 
 function pool.sourceData(context, source)
-	if source == "MODIFIED" then
+	if source == "CURRENT" then
 		return context.modified
 	end
 	return context.original

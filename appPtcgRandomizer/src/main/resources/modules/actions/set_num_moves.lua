@@ -18,6 +18,7 @@ module = {
 	arguments = {
 		{
 			name = "numMoves",
+			displayName = "Number of Moves",
 			definition = {
 				type = "integer",
 				constraint = { type = "range", min = 0, max = 2, },

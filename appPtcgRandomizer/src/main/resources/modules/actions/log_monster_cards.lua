@@ -15,6 +15,7 @@ module = {
 	arguments = {
 		{
 			name = "fields",
+			displayName = "Fields",
 			definition = {
 				type = "list",
 				elementDefinition = {

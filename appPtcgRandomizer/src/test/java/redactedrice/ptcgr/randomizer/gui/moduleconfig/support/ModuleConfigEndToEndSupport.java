@@ -63,6 +63,6 @@ public final class ModuleConfigEndToEndSupport {
     }
 
     public static ModuleConfigDialog openEditableDialog(ActionBank actionBank, Action action) {
-        return new ModuleConfigDialog(null, action, true, actionBank::getEnumValues);
+        return new ModuleConfigDialog(null, action, true, actionBank);
     }
 }

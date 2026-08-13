@@ -181,6 +181,7 @@ public class ModuleConfigDialog extends JDialog {
                 row++;
             }
             String name = argDef.getName();
+            String label = argDef.getDisplayName();
             JComponent valueComponent;
             if (editable) {
                 ArgumentValueEditor editor =
@@ -189,10 +190,10 @@ public class ModuleConfigDialog extends JDialog {
                 argumentEditors.put(name, editor);
                 valueComponent = editor.getComponent();
             } else {
-                valueComponent =
-                        readOnlyValueLabel(argDef.getTypeDefinition(), action.getArgument(name));
+                valueComponent = readOnlyValueLabel(argDef.getTypeDefinition(),
+                        action.getArgument(name), enumValuesProvider);
             }
-            row = addRow(grid, gbc, row, name,
+            row = addRow(grid, gbc, row, label,
                     StructuredText.describeStructuredShape(argDef.getTypeDefinition()),
                     ArgumentConstraintDescription.describe(argDef.getTypeDefinition()),
                     valueComponent,
@@ -334,11 +335,14 @@ public class ModuleConfigDialog extends JDialog {
 
     // LIST/TABLE values get compact preview text, e.g. "common, uncommon" or
     // "fire → 10, water → (1, 2, 3)" for nested complex values.
-    private static WrappingLabel readOnlyValueLabel(TypeDefinition typeDef, Object value) {
+    private WrappingLabel readOnlyValueLabel(TypeDefinition typeDef, Object value,
+            EnumValuesProvider enumValuesProvider) {
         if (typeDef.isList() || typeDef.isTable()) {
-            return new WrappingLabel(StructuredText.formatValue(typeDef, value));
+            return new WrappingLabel(
+                    StructuredText.formatValue(typeDef, value, enumValuesProvider));
         }
-        return readOnlyValueLabel(value);
+        return new WrappingLabel(
+                StructuredText.formatValue(typeDef, value, enumValuesProvider));
     }
 
     private JPanel buildButtonPanel() {

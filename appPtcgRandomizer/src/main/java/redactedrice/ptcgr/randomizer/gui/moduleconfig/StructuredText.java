@@ -26,52 +26,63 @@ public final class StructuredText {
     }
 
     public static String formatValue(TypeDefinition typeDefinition, Object value) {
+        return formatValue(typeDefinition, value, null);
+    }
+
+    public static String formatValue(TypeDefinition typeDefinition, Object value,
+            EnumValuesProvider enumValuesProvider) {
         if (typeDefinition.isList()) {
-            return formatList(typeDefinition, value);
+            return formatList(typeDefinition, value, enumValuesProvider);
         }
         if (typeDefinition.isTable()) {
-            return formatTable(typeDefinition, value);
+            return formatTable(typeDefinition, value, enumValuesProvider);
+        }
+        if (typeDefinition.isEnum() && enumValuesProvider != null && value != null) {
+            return enumValuesProvider.getEnumValueDisplayName(typeDefinition.getEnumName(),
+                    String.valueOf(value));
         }
         return String.valueOf(value);
     }
 
-    private static String formatList(TypeDefinition typeDefinition, Object value) {
+    private static String formatList(TypeDefinition typeDefinition, Object value,
+            EnumValuesProvider enumValuesProvider) {
         if (!(value instanceof List<?> list) || list.isEmpty()) {
             return EMPTY_VALUE;
         }
         TypeDefinition elementType = typeDefinition.getElementType();
-        return list.stream().map(element -> formatNested(elementType, element))
+        return list.stream().map(element -> formatNested(elementType, element, enumValuesProvider))
                 .collect(Collectors.joining(", "));
     }
 
-    private static String formatTable(TypeDefinition typeDefinition, Object value) {
+    private static String formatTable(TypeDefinition typeDefinition, Object value,
+            EnumValuesProvider enumValuesProvider) {
         if (!(value instanceof Map<?, ?> map) || map.isEmpty()) {
             return EMPTY_VALUE;
         }
+        TypeDefinition keyType = typeDefinition.getKeyType();
         TypeDefinition valueType = typeDefinition.getValueType();
         return map.entrySet().stream()
-                .map(entry -> String.valueOf(entry.getKey()) + ARROW_SEPARATOR
-                        + formatNested(valueType, entry.getValue()))
+                .map(entry -> formatValue(keyType, entry.getKey(), enumValuesProvider)
+                        + ARROW_SEPARATOR
+                        + formatNested(valueType, entry.getValue(), enumValuesProvider))
                 .collect(Collectors.joining(", "));
     }
 
-    private static String formatNested(TypeDefinition typeDefinition, Object value) {
+    private static String formatNested(TypeDefinition typeDefinition, Object value,
+            EnumValuesProvider enumValuesProvider) {
         if (typeDefinition.isList() || typeDefinition.isTable()) {
-            return "(" + formatValue(typeDefinition, value) + ")";
+            return "(" + formatValue(typeDefinition, value, enumValuesProvider) + ")";
         }
-        return String.valueOf(value);
-    }
-
-    private static String describeEnumType(String enumName) {
-        if (enumName != null && !enumName.isBlank()) {
-            return enumName;
-        }
-        return "Custom enum";
+        return formatValue(typeDefinition, value, enumValuesProvider);
     }
 
     private static String describeScalarShape(TypeDefinition typeDef) {
         if (typeDef.isEnum()) {
-            return describeEnumType(typeDef.getEnumName());
+            String enumName = typeDef.getEnumName();
+            if (enumName != null && !enumName.isBlank()) {
+                return enumName;
+            }
+            return "Custom enum";
         }
         switch (typeDef.getBaseType()) {
             case STRING:

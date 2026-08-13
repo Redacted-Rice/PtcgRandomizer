@@ -15,6 +15,7 @@ module = {
 		hp_custom.approachArg(),
 		{
 			name = "hpPool",
+			displayName = "HP Pool",
 			definition = {
 				type = "list",
 				elementDefinition = hp_custom.HP_LIST_ELEMENT,

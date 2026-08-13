@@ -15,6 +15,7 @@ module = {
 	arguments = pool.standardArgs({
 		{
 			name = "withinType",
+			displayName = "Within Type",
 			definition = {
 				type = "boolean",
 			},

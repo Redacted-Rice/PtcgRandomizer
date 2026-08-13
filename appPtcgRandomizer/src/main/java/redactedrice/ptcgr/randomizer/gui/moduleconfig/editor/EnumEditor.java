@@ -22,8 +22,22 @@ public class EnumEditor implements ArgumentValueEditor {
     }
 
     private static String widestChoice(List<?> choices) {
-        return choices.stream().map(String::valueOf).max(Comparator.comparingInt(String::length))
-                .orElse("");
+        return choices.stream().map(EnumEditor::choiceLabel)
+                .max(Comparator.comparingInt(String::length)).orElse("");
+    }
+
+    private static String choiceLabel(Object choice) {
+        if (choice instanceof DisplayChoice displayChoice) {
+            return displayChoice.getLabel();
+        }
+        return String.valueOf(choice);
+    }
+
+    private static Object choiceValue(Object choice) {
+        if (choice instanceof DisplayChoice displayChoice) {
+            return displayChoice.getValue();
+        }
+        return choice;
     }
 
     @Override
@@ -36,11 +50,15 @@ public class EnumEditor implements ArgumentValueEditor {
         if (value == null) {
             return;
         }
-        comboBox.setSelectedItem(value);
-        if (!Objects.equals(value, comboBox.getSelectedItem())) {
-            comboBox.insertItemAt(value, 0);
-            comboBox.setSelectedItem(value);
+        for (int i = 0; i < comboBox.getItemCount(); i++) {
+            Object item = comboBox.getItemAt(i);
+            if (Objects.equals(value, choiceValue(item))) {
+                comboBox.setSelectedIndex(i);
+                return;
+            }
         }
+        comboBox.insertItemAt(value, 0);
+        comboBox.setSelectedItem(value);
     }
 
     @Override
@@ -49,7 +67,7 @@ public class EnumEditor implements ArgumentValueEditor {
         if (selected == null) {
             throw new IllegalArgumentException("A value must be selected.");
         }
-        return selected;
+        return choiceValue(selected);
     }
 
     @Override
