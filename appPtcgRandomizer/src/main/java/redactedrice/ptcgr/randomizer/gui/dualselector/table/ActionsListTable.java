@@ -30,6 +30,6 @@ public class ActionsListTable extends ActionsHoverToolTipTable {
         ButtonCellRenderer renderer = new ButtonCellRenderer("View", false);
         getColumnModel().getColumn(ActionsTableColumn.CONFIG.getValue()).setCellRenderer(renderer);
         getColumnModel().getColumn(ActionsTableColumn.CONFIG.getValue())
-                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank::getEnumValues));
+                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank));
     }
 }

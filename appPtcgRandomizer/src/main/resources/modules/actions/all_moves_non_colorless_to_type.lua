@@ -15,6 +15,7 @@ module = {
 	arguments = {
 		{
 			name = "energyType",
+			displayName = "Energy Type",
 			definition = {
 				type = "enum",
 				constraint = "EnergyType",

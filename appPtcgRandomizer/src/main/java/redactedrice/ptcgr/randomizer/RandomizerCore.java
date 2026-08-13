@@ -11,12 +11,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import redactedrice.ptcgr.configs.Config;
 import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
-import redactedrice.ptcgr.constants.CardDataSource;
+import redactedrice.ptcgr.constants.DataSource;
 import redactedrice.ptcgr.constants.DuplicateHandling;
 import redactedrice.ptcgr.constants.StageGrouping;
 import redactedrice.ptcgr.constants.RandomizationApproach;
@@ -74,8 +75,8 @@ public class RandomizerCore {
         Component parent = warningParent != null ? warningParent : popupParent;
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
-            Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(rulesFile),
-                    "Unsupported moves");
+            Config loaded =
+                    Config.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
             rules.clear();
             if (loaded.isValid() && loaded.hasRules()) {
                 loaded.getRulesConfig().applyTo(rules, null);
@@ -114,7 +115,8 @@ public class RandomizerCore {
         // since they are bundled together
         requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
                 PtcgRandomizerVersion.VERSION, true);
-        luaRandomizer = new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
+        luaRandomizer =
+                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
 
         // Register built in PTCGR enums in the shared enum context instead of in the
         // runtime context so they're merged into every execution context the same way
@@ -261,7 +263,8 @@ public class RandomizerCore {
         }
 
         // Execute modules — failures are logged immediately via IssueTracker.addError
-        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context, seed);
+        List<ExecutionResult> results =
+                luaRandomizer.executeModules(executionRequests, context, seed);
 
         for (ExecutionResult result : results) {
             if (result.isSuccess()) {
@@ -289,11 +292,28 @@ public class RandomizerCore {
     // Shared by setup and tests so the curated register list lives in one place
     public static void registerSharedEnums(JavaContext context) {
         context.registerEnum(CardType.class);
-        context.registerEnum(EnergyType.class);
+        context.registerEnum(EnergyType.class, Map.of(
+                "FIRE", "Fire",
+                "GRASS", "Grass",
+                "LIGHTNING", "Lightning",
+                "WATER", "Water",
+                "FIGHTING", "Fighting",
+                "PSYCHIC", "Psychic",
+                "COLORLESS", "Colorless",
+                "UNUSED_TYPE", "Unused Type"));
+        // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)
         context.registerEnum(EvolutionStage.class);
-        context.registerEnum(RandomizationApproach.class);
-        context.registerEnum(CardDataSource.class);
-        context.registerEnum(DuplicateHandling.class);
-        context.registerEnum(StageGrouping.class);
+        // User friendly aliases for HP pool table keys. Same canonical values under the hood
+        context.registerEnum("EvoStage", EvolutionStage.class,
+                Map.of("BASIC", "Basic", "STAGE_1", "Second stage", "STAGE_2", "Third stage"));
+        context.registerEnum("EvoLineStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
+                "STAGE_1", "Two-stage evo", "STAGE_2", "Three-stage evo"));
+        context.registerEnum(RandomizationApproach.class,
+                Map.of("FULLY_RANDOM", "Fully Random", "MINIMIZE_REPEATS", "Minimize Repeats"));
+        context.registerEnum(DataSource.class, Map.of("CURRENT", "Current"));
+        context.registerEnum(DuplicateHandling.class, Map.of("REMOVE_DUPLICATES",
+                "Remove Duplicates", "KEEP_DUPLICATES", "Keep Duplicates"));
+        context.registerEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
+                "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
     }
 }

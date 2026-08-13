@@ -20,18 +20,13 @@ module = {
 		{
 			-- Outer key = evo line max stage, inner key = card stage, value = weighted HP list
 			name = "hpPools",
+			displayName = "HP Pools by Evo Line's Max Stage and Card's Evo Stage",
 			definition = {
 				type = "table",
-				keyDefinition = {
-					type = "enum",
-					constraint = "EvolutionStage",
-				},
+				keyDefinition = hp_custom.evoLineStagesKeyDef(),
 				valueDefinition = {
 					type = "table",
-					keyDefinition = {
-						type = "enum",
-						constraint = "EvolutionStage",
-					},
+					keyDefinition = hp_custom.evoStageKeyDef(),
 					valueDefinition = {
 						type = "list",
 						elementDefinition = hp_custom.HP_LIST_ELEMENT,

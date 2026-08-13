@@ -13,11 +13,28 @@ hp_custom.HP_LIST_ELEMENT = {
 function hp_custom.approachArg()
 	return {
 		name = "approach",
+		displayName = "Randomization Approach",
 		definition = {
 			type = "enum",
 			constraint = "RandomizationApproach",
 		},
 		default = "MINIMIZE_REPEATS",
+	}
+end
+
+-- Evo stage keys (BASIC / STAGE_1 / STAGE_2) with friendly UI labels
+function hp_custom.evoStageKeyDef()
+	return {
+		type = "enum",
+		constraint = "EvoStage",
+	}
+end
+
+-- Evo-line max stage keys with friendly UI labels
+function hp_custom.evoLineStagesKeyDef()
+	return {
+		type = "enum",
+		constraint = "EvoLineStages",
 	}
 end
 

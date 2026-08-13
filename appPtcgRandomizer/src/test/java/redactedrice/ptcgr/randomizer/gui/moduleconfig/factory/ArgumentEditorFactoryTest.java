@@ -21,6 +21,7 @@ import org.luaj.vm2.lib.ZeroArgFunction;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.StructuredText;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
@@ -334,8 +335,8 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
         assertEquals("EntityType",
                 StructuredText.describeStructuredShape(argDef.getTypeDefinition()));
 
-        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef,
-                name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null);
+        ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef, enumProvider(
+                name -> "EntityType".equals(name) ? List.of("WARRIOR", "MAGE", "ROGUE") : null));
 
         assertTrue(editor instanceof EnumEditor);
 
@@ -417,6 +418,21 @@ public class ArgumentEditorFactoryTest extends ModuleConfigGuiTestSupport {
                         return LuaValue.NIL;
                     }
                 }, null, "test.lua", 0, false, false, null, "author", "1.0", Map.of(), null, null, null, null, null);
+    }
+
+    private static EnumValuesProvider enumProvider(
+            java.util.function.Function<String, List<String>> valuesByName) {
+        return new EnumValuesProvider() {
+            @Override
+            public List<String> getEnumValues(String enumName) {
+                return valuesByName.apply(enumName);
+            }
+
+            @Override
+            public String getEnumValueDisplayName(String enumName, String canonicalValue) {
+                return canonicalValue;
+            }
+        };
     }
 
     private static void simulateFocusLost(JTextField field) {

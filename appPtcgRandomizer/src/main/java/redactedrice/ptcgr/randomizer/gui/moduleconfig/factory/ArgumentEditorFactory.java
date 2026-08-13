@@ -6,6 +6,7 @@ import java.util.List;
 
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DisplayChoice;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
@@ -178,12 +179,25 @@ public final class ArgumentEditorFactory {
     // the type definition then filter that registered set.
     private static ArgumentValueEditor createForEnumType(TypeDefinition type,
             EnumValuesProvider enumValuesProvider) {
-        List<String> values = resolveEnumChoices(type, enumValuesProvider);
-        if (values == null || values.isEmpty()) {
+        List<DisplayChoice> choices = resolveEnumDisplayChoices(type, enumValuesProvider);
+        if (choices == null || choices.isEmpty()) {
             // Defensive fallback for an unregistered/misspelled enum name
             return new UnsupportedValueEditor();
         }
-        return new EnumEditor(values);
+        return new EnumEditor(choices);
+    }
+
+    private static List<DisplayChoice> resolveEnumDisplayChoices(TypeDefinition type,
+            EnumValuesProvider enumValuesProvider) {
+        List<String> values = resolveEnumChoices(type, enumValuesProvider);
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+        String enumName = type.getEnumName();
+        return values.stream()
+                .map(value -> new DisplayChoice(value,
+                        enumValuesProvider.getEnumValueDisplayName(enumName, value)))
+                .toList();
     }
 
     private static List<String> resolveEnumChoices(TypeDefinition type,

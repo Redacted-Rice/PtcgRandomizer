@@ -31,7 +31,7 @@ public class ActionsSelectedTable extends ActionsHoverToolTipTable {
         ButtonCellRenderer renderer = new ButtonCellRenderer("Edit", true);
         getColumnModel().getColumn(ActionsTableColumn.CONFIG.getValue()).setCellRenderer(renderer);
         getColumnModel().getColumn(ActionsTableColumn.CONFIG.getValue())
-                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank::getEnumValues));
+                .setCellEditor(new ButtonCellClickedEditor(renderer, actionBank));
     }
 
     public void moveSelectedRow(int direction) {

@@ -17,6 +17,7 @@ module = {
 	arguments = pool.standardArgs({
 		{
 			name = "grouping",
+			displayName = "Evo Stage Grouping",
 			definition = {
 				type = "enum",
 				constraint = "StageGrouping",

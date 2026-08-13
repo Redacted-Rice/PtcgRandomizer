@@ -11,13 +11,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
 import redactedrice.randomizer.context.EnumRegistry;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.ModuleRegistry;
 
-public class ActionBank {
+public class ActionBank implements EnumValuesProvider {
     private static final String FILTER_ALL = "All";
 
     private HashMap<Integer, Action> allActions;
@@ -64,12 +65,24 @@ public class ActionBank {
 
     // Resolves the values for an enum registered by a module's onLoad (e.g. via
     // context.registerEnum). Used to populate ENUM base type argument dropdowns in the config UI.
+    @Override
     public List<String> getEnumValues(String enumName) {
         if (luaRandomizer == null || enumName == null || enumName.isBlank()) {
             return null;
         }
         EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
         return enumDefinition != null ? enumDefinition.getValues() : null;
+    }
+
+    @Override
+    public String getEnumValueDisplayName(String enumName, String canonicalValue) {
+        if (luaRandomizer == null || enumName == null || enumName.isBlank()
+                || canonicalValue == null) {
+            return canonicalValue;
+        }
+        EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
+        return enumDefinition != null ? enumDefinition.getValueDisplayName(canonicalValue)
+                : canonicalValue;
     }
 
     public EnumRegistry getEnumRegistry() {

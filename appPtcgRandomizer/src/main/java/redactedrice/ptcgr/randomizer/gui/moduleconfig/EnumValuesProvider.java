@@ -2,12 +2,12 @@ package redactedrice.ptcgr.randomizer.gui.moduleconfig;
 
 import java.util.List;
 
-// Resolves the display values for an enum referenced by name (the ENUM base type, e.g.
-// definition = { type = "enum", constraint = "SomeEnum" }, registered via context.registerEnum
-// in a module's onLoad). Kept as a narrow interface instead of exposing the whole
-// LuaRandomizerWrapper/EnumRegistry so this package doesn't need to depend on Lua execution
-// internals - callers can just supply a method reference like actionBank::getEnumValues.
+// Resolves enum values and value display labels for the ENUM base type. Prefer passing ActionBank
+// itself so value display name lookups use the real implementations.
 public interface EnumValuesProvider {
     // Returns the registered values for the named enum, or null/empty if it isn't registered.
     List<String> getEnumValues(String enumName);
+
+    // Returns the registered label for one enum value, or the canonical value if none was registered.
+    String getEnumValueDisplayName(String enumName, String canonicalValue);
 }

@@ -6,7 +6,7 @@ local module
 module = {
 	id = "fix_evo_line_hp",
 	name = "Make Evo Line HP Consistent",
-	description = "For each evolution line, ensures HP is non-decreasing by stage. RAISE_MINIMUMS bumps later stages up. REDISTRIBUTE swaps inverted values between stages so existing HPs are kept when possible",
+	description = "For each evolution line, ensures HP is non-decreasing by stage. Raise Minimums bumps later stages up. Redistribute swaps inverted values between stages so existing HPs are kept when possible",
 	groups = { "Monsters", "HP", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
 	version = "0.9",
@@ -20,14 +20,15 @@ module = {
 	arguments = {
 		{
 			name = "mode",
+			displayName = "Mode",
 			definition = {
-				type = "string",
-				constraint = {
-					type = "enum",
-					values = { "RAISE_MINIMUMS", "REDISTRIBUTE" },
-				},
+                type = "string",
+                constraint = {
+                    type = "enum",
+                    values = { "Raise Minimums", "Redistribute" },
+                },
 			},
-			default = "RAISE_MINIMUMS",
+			default = "Redistribute",
 		},
 	},
 	execute = function(context, args)
@@ -101,7 +102,7 @@ end
 function module.fixEvoLineHp(context, args)
 	local byEvoLine = randomizer.groupBy(context.modified:getRandomizableMonsterCards(), "evoLineId")
 	byEvoLine:each(function(_, line)
-		if args.mode == "REDISTRIBUTE" then
+		if args.mode == "Redistribute" then
 			module.redistribute(line)
 		else
 			module.raiseMinimums(line)
