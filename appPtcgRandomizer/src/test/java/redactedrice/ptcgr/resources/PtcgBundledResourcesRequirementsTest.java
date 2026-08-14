@@ -88,7 +88,7 @@ class PtcgBundledResourcesRequirementsTest {
             assertTrue(new File(modulesDir, "actions/dev_test_list_args.lua").isFile());
             assertTrue(new File(modulesDir, "actions/dev_test_table_args.lua").isFile());
             // Regular modules should still be there too, unaffected by the dev merge
-            assertTrue(new File(modulesDir, "actions/randomize_hp.lua").isFile());
+            assertTrue(new File(modulesDir, "actions/shuffle_hp.lua").isFile());
 
             List<String> allowedDirectories = new ArrayList<>();
             allowedDirectories.add(resources.getRandomizerDir().getAbsolutePath());

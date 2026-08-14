@@ -107,7 +107,7 @@ public final class PtcgBundledResources {
     static void verifyInstalled(File dir) {
         requireFile(RandomizerBundledResources.getInstalledDir(dir).toPath().resolve("init.lua")
                 .toFile());
-        requireFile(new File(dir, "modules/actions/randomize_hp.lua"));
+        requireFile(new File(dir, "modules/actions/shuffle_hp.lua"));
         requireFile(new File(dir, "rules/unsupported_moves.yaml"));
     }
 

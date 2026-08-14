@@ -43,15 +43,15 @@ module = {
 	end,
 }
 
-local function moveName(card, slot)
+function module.moveName(card, slot)
 	return card:getMove(slot).name:toString()
 end
 
-local function moveCost(card, slot)
+function module.moveCost(card, slot)
 	return card:getMove(slot):getEnergyCostString(true, "/")
 end
 
-local function moveDamage(card, slot)
+function module.moveDamage(card, slot)
 	return card:getMove(slot):getDamageString()
 end
 
@@ -118,29 +118,29 @@ local FIELD_SPECS = {
 	},
 	["Move 1"] = {
 		header = "Move 1",
-		getter = function(card) return moveName(card, 0) end,
+		getter = function(card) return module.moveName(card, 0) end,
 	},
 	["Move 1 Cost"] = {
 		header = "M1 Cost",
-		getter = function(card) return moveCost(card, 0) end,
+		getter = function(card) return module.moveCost(card, 0) end,
 	},
 	["Move 1 Dmg"] = {
 		header = "M1 Dmg",
 		align = "right",
-		getter = function(card) return moveDamage(card, 0) end,
+		getter = function(card) return module.moveDamage(card, 0) end,
 	},
 	["Move 2"] = {
 		header = "Move 2",
-		getter = function(card) return moveName(card, 1) end,
+		getter = function(card) return module.moveName(card, 1) end,
 	},
 	["Move 2 Cost"] = {
 		header = "M2 Cost",
-		getter = function(card) return moveCost(card, 1) end,
+		getter = function(card) return module.moveCost(card, 1) end,
 	},
 	["Move 2 Dmg"] = {
 		header = "M2 Dmg",
 		align = "right",
-		getter = function(card) return moveDamage(card, 1) end,
+		getter = function(card) return module.moveDamage(card, 1) end,
 	},
 }
 

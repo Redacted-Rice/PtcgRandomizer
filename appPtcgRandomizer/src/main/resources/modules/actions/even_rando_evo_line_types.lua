@@ -1,5 +1,5 @@
 local randomizer = require("randomizer")
-local pool = require("modules.util.pool")
+local pool_utils = require("modules.util.pool_utils")
 
 local module
 module = {
@@ -15,14 +15,14 @@ module = {
 	needs = {
 		{ name = "evoLineId", type = "integer" },
 	},
-	arguments = pool.standardArgs(),
+	arguments = pool_utils.standardArgs(),
 	execute = function(context, args)
 		return module.randomizeEvoLineTypes(context, args)
 	end,
 }
 
 function module.buildTypePool(context, args)
-	local sourceCards = pool.sourceCards(context, args.source)
+	local sourceCards = pool_utils.sourceCards(context, args.source)
 	local types = randomizer.list(sourceCards):select("type")
 
 	if args.duplicates == "KEEP_DUPLICATES" then
@@ -44,7 +44,7 @@ function module.randomizeEvoLineTypes(context, args)
 		return line:get(1)
 	end)
 
-	typePool:useToRandomize(representatives, "type", pool.poolOptions(args.approach))
+	typePool:useToRandomize(representatives, "type", pool_utils.poolOptions(args.approach))
 
 	-- Copy each line's type from its first card. Since byEvoLine is unchanged, and
 	-- representatives were those same first-card objects we can safely use the first

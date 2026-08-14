@@ -11,6 +11,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
+
 class PtcgBundledResourcesFatJarTest {
 
     @Test
@@ -30,10 +32,15 @@ class PtcgBundledResourcesFatJarTest {
 
     private static Path findFatJar() throws Exception {
         Path appDir = Path.of("app");
+        String expectedName = "PtcgRandomizer-" + PtcgRandomizerVersion.VERSION + ".jar";
+        Path versionedJar = appDir.resolve(expectedName);
+        if (Files.isRegularFile(versionedJar)) {
+            return versionedJar;
+        }
         try (Stream<Path> jars = Files.list(appDir)) {
             return jars.filter(path -> path.getFileName().toString().startsWith("PtcgRandomizer-")
                     && path.getFileName().toString().endsWith(".jar"))
-                    .findFirst()
+                    .max(java.util.Comparator.comparing(path -> path.getFileName().toString()))
                     .orElseThrow(() -> new IllegalStateException(
                             "No runnable JAR found in " + appDir.toAbsolutePath()));
         }

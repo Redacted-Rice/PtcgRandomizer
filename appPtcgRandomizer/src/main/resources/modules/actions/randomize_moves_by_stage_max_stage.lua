@@ -4,19 +4,21 @@ local move_utils = require("modules.util.move_utils")
 
 local module
 module = {
-	id = "randomize_moves",
-	name = "Randomize Existing Moves",
-	description = "Randomizes existing attacks and/or powers, either from one shared pool or grouped by evolution stage. Keeps the same number of moves per card",
+	id = "randomize_moves_by_stage_max_stage",
+	name = "Randomize Existing Moves (By Stage and Max Stage)",
+	description = "Randomizes existing attacks and/or powers using pools grouped by evolution line max stage and card stage. Keeps the same number of moves per card.",
 	groups = { "Monsters", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
+	needs = {
+		{ name = "evoLineMaxStage", type = "EvolutionStage" },
+	},
 	arguments = pool_utils.standardArgs({
 		move_utils.moveKindArg(),
 		move_utils.withinTypeArg(),
-		pool_utils.groupingArg("ALL_TOGETHER"),
 	}),
 	execute = function(context, args)
 		return module.randomizeMoves(context, args)
@@ -33,17 +35,13 @@ function module.randomizeMoves(context, args)
 	local moveTargets = move_utils.targets(context, args)
 	local movePool = move_utils.buildPool(context, args)
 	local options = pool_utils.poolOptions(args.approach)
+	local key = move_utils.stageAndMaxStageGroupKey(args)
 
 	local setter = function(target, move)
 		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end
 
-	if args.grouping == "BY_STAGE" or args.withinType then
-		local key = move_utils.groupKey(args)
-		movePool:groupBy(key):useToRandomize(moveTargets, key, setter, options)
-	else
-		movePool:useToRandomize(moveTargets, setter, options)
-	end
+	movePool:groupBy(key):useToRandomize(moveTargets, key, setter, options)
 end
 
 return module

@@ -1,8 +1,8 @@
 -- Shared pieces for the common pool args: source, duplicates, approach.
--- Require as modules.util.pool (package path is the parent of the modules dir).
+-- Require as modules.util.pool_utils (package path is the parent of the modules dir).
 local randomizer = require("randomizer")
 
-local pool = {}
+local pool_utils = {}
 
 local DEFAULTS = {
 	source = "ROM",
@@ -11,7 +11,7 @@ local DEFAULTS = {
 }
 
 -- Returns the standard source/duplicates/approach arg defs, then any extraArgs
-function pool.standardArgs(extraArgs, overrides)
+function pool_utils.standardArgs(extraArgs, overrides)
 	overrides = overrides or {}
 	local args = {
 		{
@@ -52,30 +52,45 @@ function pool.standardArgs(extraArgs, overrides)
 	return args
 end
 
+-- Grouping for scripts that do not need evoLineMaxStage. Max-stage is a separate script.
+function pool_utils.groupingArg(default)
+	return {
+		name = "grouping",
+		displayName = "Evo Stage Grouping",
+		description = "How source values are grouped into pools. 'All Together' uses a single pool. 'By Stage' groups by the card's evolution stage.",
+		definition = {
+			type = "enum",
+			constraint = "StageGrouping",
+			exclude = { "BY_STAGE_AND_MAX_STAGE" },
+		},
+		default = default or "ALL_TOGETHER",
+	}
+end
+
 -- Maps approach to URC useToRandomize pool options. Minimize repeats always regenerates
-function pool.poolOptions(approach)
+function pool_utils.poolOptions(approach)
 	if approach == "MINIMIZE_REPEATS" then
 		return { consumable = true, regenerate = true }
 	end
 	return { consumable = false }
 end
 
-function pool.sourceData(context, source)
+function pool_utils.sourceData(context, source)
 	if source == "CURRENT" then
 		return context.modified
 	end
 	return context.original
 end
 
-function pool.sourceCards(context, source)
-	return pool.sourceData(context, source):getRandomizableMonsterCards()
+function pool_utils.sourceCards(context, source)
+	return pool_utils.sourceData(context, source):getRandomizableMonsterCards()
 end
 
-function pool.stageAndMaxStageKey(mc)
+function pool_utils.stageAndMaxStageKey(mc)
 	return mc.evoLineMaxStage:getValue() * 10 + mc.stage:getValue()
 end
 
-function pool.buildValuePool(sourceCards, valueGetter, duplicates)
+function pool_utils.buildValuePool(sourceCards, valueGetter, duplicates)
 	local values = randomizer.list(sourceCards):select(valueGetter)
 	if duplicates == "REMOVE_DUPLICATES" then
 		return values:removeDuplicates()
@@ -83,7 +98,7 @@ function pool.buildValuePool(sourceCards, valueGetter, duplicates)
 	return values
 end
 
-function pool.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
+function pool_utils.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	local grouped = randomizer.groupFromField(sourceCards, groupKey, valueGetter)
 	if duplicates == "KEEP_DUPLICATES" then
 		return grouped
@@ -98,4 +113,4 @@ function pool.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	return randomizer.group(selected, keyOrder)
 end
 
-return pool
+return pool_utils
