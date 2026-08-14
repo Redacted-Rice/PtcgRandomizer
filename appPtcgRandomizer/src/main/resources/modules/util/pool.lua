@@ -75,18 +75,10 @@ function pool.stageAndMaxStageKey(mc)
 	return mc.evoLineMaxStage:getValue() * 10 + mc.stage:getValue()
 end
 
-function pool.uniqueValues(list)
-	return randomizer.groupBy(list, function(value)
-		return value
-	end):map(function(value, _)
-		return value
-	end)
-end
-
 function pool.buildValuePool(sourceCards, valueGetter, duplicates)
 	local values = randomizer.list(sourceCards):select(valueGetter)
 	if duplicates == "REMOVE_DUPLICATES" then
-		return pool.uniqueValues(values)
+		return values:removeDuplicates()
 	end
 	return values
 end
@@ -100,7 +92,7 @@ function pool.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	local selected = {}
 	local keyOrder = {}
 	grouped:each(function(key, list)
-		selected[key] = pool.uniqueValues(list)
+		selected[key] = list:removeDuplicates()
 		table.insert(keyOrder, key)
 	end)
 	return randomizer.group(selected, keyOrder)
