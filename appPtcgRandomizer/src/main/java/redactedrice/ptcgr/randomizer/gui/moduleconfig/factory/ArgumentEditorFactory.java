@@ -213,6 +213,7 @@ public final class ArgumentEditorFactory {
         if (constraint == null || constraint.getType() == ConstraintType.ANY) {
             return values;
         }
-        return constraint.filterEnumValues(values);
+        return constraint.filterEnumValues(values,
+                enumValuesProvider.getEnumDefinition(type.getEnumName()));
     }
 }

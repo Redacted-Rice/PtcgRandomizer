@@ -67,22 +67,26 @@ public class ActionBank implements EnumValuesProvider {
     // context.registerEnum). Used to populate ENUM base type argument dropdowns in the config UI.
     @Override
     public List<String> getEnumValues(String enumName) {
-        if (luaRandomizer == null || enumName == null || enumName.isBlank()) {
-            return null;
-        }
-        EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
+        EnumDefinition enumDefinition = getEnumDefinition(enumName);
         return enumDefinition != null ? enumDefinition.getValues() : null;
     }
 
     @Override
     public String getEnumValueDisplayName(String enumName, String canonicalValue) {
-        if (luaRandomizer == null || enumName == null || enumName.isBlank()
-                || canonicalValue == null) {
-            return canonicalValue;
+        if (canonicalValue == null) {
+            return null;
         }
-        EnumDefinition enumDefinition = luaRandomizer.getEnumDefinition(enumName);
+        EnumDefinition enumDefinition = getEnumDefinition(enumName);
         return enumDefinition != null ? enumDefinition.getValueDisplayName(canonicalValue)
                 : canonicalValue;
+    }
+
+    @Override
+    public EnumDefinition getEnumDefinition(String enumName) {
+        if (luaRandomizer == null || enumName == null || enumName.isBlank()) {
+            return null;
+        }
+        return luaRandomizer.getEnumDefinition(enumName);
     }
 
     public EnumRegistry getEnumRegistry() {

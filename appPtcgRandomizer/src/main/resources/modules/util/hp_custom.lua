@@ -64,9 +64,13 @@ function hp_custom.buildStagePoolGroup(context, hpPools)
 
 	for stageName, values in pairs(hpPools or {}) do
 		hp_custom.requireNonEmptyList(values, string.format("hpPools[%s]", tostring(stageName)))
-		local key = hp_custom.stageValue(context, stageName)
-		selected[key] = randomizer.list(values)
-		table.insert(keyOrder, key)
+		-- Canonical stage name strings (BASIC / STAGE_1 / STAGE_2). Matches
+		-- groupBy / useToRandomize keys after asTableKey stringifies card.stage
+		if context.EvolutionStage[stageName] == nil then
+			error("Unknown EvolutionStage in hpPools: " .. tostring(stageName))
+		end
+		selected[stageName] = randomizer.list(values)
+		table.insert(keyOrder, stageName)
 	end
 
 	return randomizer.group(selected, keyOrder)

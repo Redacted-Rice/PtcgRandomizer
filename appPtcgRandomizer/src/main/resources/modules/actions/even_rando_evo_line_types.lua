@@ -23,16 +23,15 @@ module = {
 
 function module.buildTypePool(context, args)
 	local sourceCards = pool.sourceCards(context, args.source)
+	local types = randomizer.list(sourceCards):select("type")
 
 	if args.duplicates == "KEEP_DUPLICATES" then
 		-- Keep source multiplicity so common types stay more common
-		return randomizer.list(sourceCards):select("type")
+		return types
 	end
 
 	-- One of each type so every type has equal weight in the pool
-	return randomizer.groupBy(sourceCards, "type"):map(function(type, _)
-		return type
-	end)
+	return types:removeDuplicates()
 end
 
 function module.randomizeEvoLineTypes(context, args)
