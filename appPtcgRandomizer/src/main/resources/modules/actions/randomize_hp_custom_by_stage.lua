@@ -1,4 +1,5 @@
-local hp_custom = require("modules.util.hp_custom")
+local hp_custom_utils = require("modules.util.hp_custom_utils")
+local pool_utils = require("modules.util.pool_utils")
 
 local module
 module = {
@@ -12,17 +13,17 @@ module = {
 		PtcgRandomizer = "0.9.0",
 	},
 	arguments = {
-		hp_custom.approachArg(),
+		hp_custom_utils.approachArg(),
 		{
 			name = "hpPools",
 			displayName = "HP Pools by Stage",
 			description = "Weighted HP values for each card's evolution stage. When randomizing it will take a value from the pool that matches the current card's evolution stage",
 			definition = {
 				type = "table",
-				keyDefinition = hp_custom.evoStageKeyDef(),
+				keyDefinition = hp_custom_utils.evoStageKeyDef(),
 				valueDefinition = {
 					type = "list",
-					elementDefinition = hp_custom.HP_LIST_ELEMENT,
+					elementDefinition = hp_custom_utils.HP_LIST_ELEMENT,
 				},
 			},
 			default = {
@@ -38,8 +39,10 @@ module = {
 }
 
 function module.randomizeHp(context, args)
-	hp_custom.randomize(context, args,
-		hp_custom.buildStagePoolGroup(context, args.hpPools), "stage")
+	local targets = context.modified:getRandomizableMonsterCards()
+	local options = pool_utils.poolOptions(args.approach)
+	hp_custom_utils.buildStagePoolGroup(context, args.hpPools):useToRandomize(targets, "stage",
+		"setHp", options)
 end
 
 return module

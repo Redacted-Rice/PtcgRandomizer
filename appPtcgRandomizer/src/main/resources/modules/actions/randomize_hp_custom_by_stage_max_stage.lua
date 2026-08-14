@@ -1,5 +1,5 @@
-local hp_custom = require("modules.util.hp_custom")
-local pool = require("modules.util.pool")
+local hp_custom_utils = require("modules.util.hp_custom_utils")
+local pool_utils = require("modules.util.pool_utils")
 
 local module
 module = {
@@ -16,7 +16,7 @@ module = {
 		{ name = "evoLineMaxStage", type = "EvolutionStage" },
 	},
 	arguments = {
-		hp_custom.approachArg(),
+		hp_custom_utils.approachArg(),
 		{
 			-- Outer key = evo line max stage, inner key = card stage, value = weighted HP list
 			name = "hpPools",
@@ -24,13 +24,13 @@ module = {
 			description = "Weighted HP values keyed by the evolution line's max stage then card's evolution stage. When randomizing it will pick the pool that matches the current cards max stage and stage to pull a value from.",
 			definition = {
 				type = "table",
-				keyDefinition = hp_custom.evoLineStagesKeyDef(),
+				keyDefinition = hp_custom_utils.evoLineStagesKeyDef(),
 				valueDefinition = {
 					type = "table",
-					keyDefinition = hp_custom.evoStageKeyDef(),
+					keyDefinition = hp_custom_utils.evoStageKeyDef(),
 					valueDefinition = {
 						type = "list",
-						elementDefinition = hp_custom.HP_LIST_ELEMENT,
+						elementDefinition = hp_custom_utils.HP_LIST_ELEMENT,
 					},
 				},
 			},
@@ -56,9 +56,10 @@ module = {
 }
 
 function module.randomizeHp(context, args)
-	hp_custom.randomize(context, args,
-		hp_custom.buildStageMaxStagePoolGroup(context, args.hpPools),
-		pool.stageAndMaxStageKey)
+	local targets = context.modified:getRandomizableMonsterCards()
+	local options = pool_utils.poolOptions(args.approach)
+	hp_custom_utils.buildStageMaxStagePoolGroup(context, args.hpPools):useToRandomize(targets,
+		pool_utils.stageAndMaxStageKey, "setHp", options)
 end
 
 return module

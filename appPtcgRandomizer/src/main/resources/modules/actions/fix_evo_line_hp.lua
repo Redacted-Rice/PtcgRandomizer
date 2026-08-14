@@ -73,8 +73,8 @@ function module.cardWithExtremeHp(cards, wantMax)
 	return best
 end
 
--- Bubble-style swaps: when a later stage dips below an earlier one, swap that later
--- stage's lowest HP with the earlier stage's highest. Keeps already ordered values put
+-- When a later stage HP is below an earlier one, swap that later stage's lowest
+-- HP with the earlier stage's highest. Keeps already ordered values put
 function module.redistribute(line)
 	local stages = {}
 	local byStage = randomizer.groupBy(line, function(mc)

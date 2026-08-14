@@ -19,6 +19,7 @@ import redactedrice.ptcgr.configs.rules.RulesConfig;
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.constants.DataSource;
 import redactedrice.ptcgr.constants.DuplicateHandling;
+import redactedrice.ptcgr.constants.MoveKind;
 import redactedrice.ptcgr.constants.StageGrouping;
 import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardType;
@@ -315,5 +316,7 @@ public class RandomizerCore {
                 "Remove Duplicates", "KEEP_DUPLICATES", "Keep Duplicates"));
         context.registerEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
                 "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
+        context.registerEnum(MoveKind.class, Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks",
+                "POWERS", "Powers"));
     }
 }
