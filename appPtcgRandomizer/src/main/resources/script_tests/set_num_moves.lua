@@ -1,5 +1,6 @@
 -- cards is the input deck. expect is matched by name after the module runs.
 return {
+	name = "set_to_two",
 	module = "set_num_moves",
 	args = {
 		numMoves = 2,
