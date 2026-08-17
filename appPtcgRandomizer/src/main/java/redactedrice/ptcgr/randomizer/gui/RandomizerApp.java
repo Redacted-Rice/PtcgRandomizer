@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import java.awt.FlowLayout;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
+import redactedrice.ptcgr.randomizer.scripttests.ScriptTestRunner;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
@@ -75,6 +76,10 @@ public class RandomizerApp {
      * Launch the application.
      */
     public static void main(String[] args) {
+        if (ScriptTestRunner.handles(args)) {
+            System.exit(ScriptTestRunner.run(args));
+        }
+
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {

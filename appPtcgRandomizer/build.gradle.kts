@@ -121,6 +121,36 @@ tasks.register("generateDevModulesManifest") {
     }
 }
 
+tasks.register("generateScriptTestsManifest") {
+    group = "build"
+    description = "Generates manifest file for the script_tests resource folder"
+
+    val manifestFile = layout.projectDirectory.file("src/main/resources/script_tests/.manifest")
+    val scriptTestsDir = layout.projectDirectory.dir("src/main/resources/script_tests")
+
+    doLast {
+        val scriptTestsDirFile = scriptTestsDir.asFile
+        val files = mutableListOf<String>()
+
+        fun collectLuaFiles(dir: java.io.File, basePath: java.nio.file.Path) {
+            dir.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    collectLuaFiles(file, basePath)
+                } else if (file.isFile && file.name.endsWith(".lua") && file.name != ".manifest") {
+                    val relativePath = basePath.relativize(file.toPath()).toString().replace('\\', '/')
+                    files.add(relativePath)
+                }
+            }
+        }
+
+        if (scriptTestsDirFile.exists() && scriptTestsDirFile.isDirectory) {
+            collectLuaFiles(scriptTestsDirFile, scriptTestsDirFile.toPath())
+        }
+
+        manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
+    }
+}
+
 tasks.register("generateRulesManifest") {
     group = "build"
     description = "Generates manifest file for rules resource folder"
@@ -146,7 +176,7 @@ tasks.register("generateRulesManifest") {
 
 tasks.named<ProcessResources>("processResources") {
     dependsOn("generateAppVersion", "generateModulesManifest", "generateDevModulesManifest",
-        "generateRulesManifest")
+        "generateRulesManifest", "generateScriptTestsManifest")
 }
 
 tasks.register<Jar>("fatJar") {
@@ -179,6 +209,13 @@ tasks.register<Jar>("fatJar") {
             "META-INF/*.DSA",
             "META-INF/*.RSA",
         )
+    }
+
+    doLast {
+        copy {
+            from(layout.projectDirectory.file("run-script-tests.bat"))
+            into(layout.projectDirectory.dir("app"))
+        }
     }
 }
 

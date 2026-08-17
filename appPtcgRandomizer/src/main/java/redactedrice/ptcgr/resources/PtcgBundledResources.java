@@ -24,6 +24,8 @@ public final class PtcgBundledResources {
     // These live in a separate resource root so they can be excluded from release packages
     // (see appPtcgRandomizer's fatJar task) while still being installed for dev builds/runs.
     public static final String DEV_MODULES_RESOURCE = "devmodules";
+    public static final String SCRIPT_TESTS_RESOURCE = "script_tests";
+    public static final String SCRIPT_TESTS_DIR_NAME = "script_tests";
     private static final String DEV_MODULES_SYSTEM_PROPERTY = "ptcgr.devModules";
 
     private final File workingDir;
@@ -32,7 +34,7 @@ public final class PtcgBundledResources {
         this(new File(System.getProperty("user.dir")));
     }
 
-    PtcgBundledResources(File workingDir) {
+    public PtcgBundledResources(File workingDir) {
         this.workingDir = workingDir;
     }
 
@@ -91,6 +93,20 @@ public final class PtcgBundledResources {
 
     public File getUnsupportedMovesFile() {
         return new File(new File(workingDir, RULES_DIR_NAME), UNSUPPORTED_MOVES_FILE_NAME);
+    }
+
+    public File getScriptTestsDir() {
+        return new File(workingDir, SCRIPT_TESTS_DIR_NAME);
+    }
+
+    // Merge shipped cases into script_tests. Does not wipe files you added or edited.
+    public void installScriptTests() {
+        try {
+            ManifestResourceExtractor.extract(SCRIPT_TESTS_RESOURCE,
+                    getScriptTestsDir().getAbsolutePath(), false);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to install script tests", e);
+        }
     }
 
     /**

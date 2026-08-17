@@ -27,6 +27,7 @@ appPtcgRandomizer/app/
 appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
+appPtcgRandomizer/script_tests/
 
 # YAML outside bundled src/main/resources
 **/*.yaml
