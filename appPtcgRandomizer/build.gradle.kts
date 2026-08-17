@@ -179,11 +179,17 @@ tasks.named<ProcessResources>("processResources") {
         "generateRulesManifest", "generateScriptTestsManifest")
 }
 
+val copyRunScriptTestsBat = tasks.register<Copy>("copyRunScriptTestsBat") {
+    from(layout.projectDirectory.file("run-script-tests.bat"))
+    into(layout.projectDirectory.dir("app"))
+}
+
 tasks.register<Jar>("fatJar") {
     group = "application"
     description = "Builds the runnable application JAR with all dependencies and bundled resources"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn("classes", "processResources")
+    finalizedBy(copyRunScriptTestsBat)
 
     archiveFileName.set(runnableJarName)
     destinationDirectory.set(layout.projectDirectory.dir("app"))
@@ -195,27 +201,17 @@ tasks.register<Jar>("fatJar") {
     // Dev only test modules are never bundled into release packages. See the run task
     // and PtcgBundledResources.installDevAppResources() for how they're installed
     // for dev builds
-    from(sourceSets.main.get().output) {
+    from(sourceSets.main.map { it.output }) {
         exclude("devmodules/**")
     }
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.get()
-            .filter { it.name.endsWith(".jar") }
-            .map { zipTree(it) }
+    from(configurations.runtimeClasspath.map { classpath ->
+        classpath.filter { it.name.endsWith(".jar") }.map { zipTree(it) }
     }) {
         exclude(
             "META-INF/*.SF",
             "META-INF/*.DSA",
             "META-INF/*.RSA",
         )
-    }
-
-    doLast {
-        copy {
-            from(layout.projectDirectory.file("run-script-tests.bat"))
-            into(layout.projectDirectory.dir("app"))
-        }
     }
 }
 
