@@ -72,14 +72,35 @@ function move_utils.stageAndMaxStageGroupKey(args)
 	end
 end
 
-function move_utils.buildPool(context, args)
-	local movePool = move_utils.filterByKind(randomizer.list(
+function move_utils.filteredMoves(context, args)
+	return move_utils.filterByKind(randomizer.list(
 		pool_utils.sourceData(context, args.source):getRandomizableMoves(true, false)),
 		args.moveKind)
+end
+
+function move_utils.buildPool(context, args)
+	local movePool = move_utils.filteredMoves(context, args)
 	if args.duplicates == "REMOVE_DUPLICATES" then
 		return move_utils.uniqueMoves(movePool)
 	end
 	return movePool
+end
+
+-- Group first, then uniquify inside each bucket. Doing unique-by-name on the
+-- whole list first can empty a type or stage pool when names are shared.
+function move_utils.buildGroupedPool(context, args, groupKey)
+	local grouped = move_utils.filteredMoves(context, args):groupBy(groupKey)
+	if args.duplicates == "KEEP_DUPLICATES" then
+		return grouped
+	end
+
+	local selected = {}
+	local keyOrder = {}
+	grouped:each(function(key, list)
+		selected[key] = move_utils.uniqueMoves(list)
+		table.insert(keyOrder, key)
+	end)
+	return randomizer.group(selected, keyOrder)
 end
 
 function move_utils.targets(context, args)

@@ -31,7 +31,6 @@ function module.randomizeMoves(context, args)
 	end
 
 	local moveTargets = move_utils.targets(context, args)
-	local movePool = move_utils.buildPool(context, args)
 	local options = pool_utils.poolOptions(args.approach)
 
 	local setter = function(target, move)
@@ -40,9 +39,10 @@ function module.randomizeMoves(context, args)
 
 	if args.grouping == "BY_STAGE" or args.withinType then
 		local key = move_utils.groupKey(args)
-		movePool:groupBy(key):useToRandomize(moveTargets, key, setter, options)
+		move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key, setter,
+			options)
 	else
-		movePool:useToRandomize(moveTargets, setter, options)
+		move_utils.buildPool(context, args):useToRandomize(moveTargets, setter, options)
 	end
 end
 

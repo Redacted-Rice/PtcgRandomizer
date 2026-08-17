@@ -33,7 +33,6 @@ function module.randomizeMoves(context, args)
 	end
 
 	local moveTargets = move_utils.targets(context, args)
-	local movePool = move_utils.buildPool(context, args)
 	local options = pool_utils.poolOptions(args.approach)
 	local key = move_utils.stageAndMaxStageGroupKey(args)
 
@@ -41,7 +40,7 @@ function module.randomizeMoves(context, args)
 		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end
 
-	movePool:groupBy(key):useToRandomize(moveTargets, key, setter, options)
+	move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key, setter, options)
 end
 
 return module
