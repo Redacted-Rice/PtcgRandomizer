@@ -22,7 +22,13 @@ public final class ScriptTestRunner {
     }
 
     public static int run(String[] args) {
-        File appDir = AppPreferences.resolveAppDirectory();
+        return run(args, AppPreferences.resolveAppDirectory());
+    }
+
+    public static int run(String[] args, File appDir) {
+        if (appDir == null) {
+            throw new IllegalArgumentException("App dir cannot be null");
+        }
         PtcgBundledResources resources = new PtcgBundledResources(appDir);
         resources.installAll();
         resources.installScriptTests();
