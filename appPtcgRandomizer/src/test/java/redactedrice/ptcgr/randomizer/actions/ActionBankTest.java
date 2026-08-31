@@ -6,23 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.context.EnumDefinition;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
-import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.IssueTracker;
-import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 class ActionBankTest {
     private File workDir;
@@ -39,30 +35,8 @@ class ActionBankTest {
         try {
             PtcgBundledResources.main(new String[] {workDir.getAbsolutePath()});
 
-            File modulesDir = new File(workDir, PtcgBundledResources.MODULES_DIR_NAME);
-            File randomizerDir = RandomizerBundledResources.getInstalledDir(workDir);
-            List<String> allowedDirectories = new ArrayList<>();
-            allowedDirectories.add(randomizerDir.getAbsolutePath());
-            allowedDirectories.add(modulesDir.getAbsolutePath());
-            List<String> searchPaths = List.of(modulesDir.getAbsolutePath());
-
-            CoreRequirements requirements = new CoreRequirements();
-            requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
-                    PtcgRandomizerVersion.VERSION, true);
-
-            LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
-                    null, requirements);
-
-            // Mirrors RandomizerCore.setupLuaRandomizer(): built-in Java enums are registered on
-            // the shared context before modules are loaded, the same way RandomizerCore does it,
-            // so they're resolvable by name for the config UI's ENUM argument dropdowns.
-            registerPtcgEnums(wrapper);
-
-            IssueTracker.clear();
-            wrapper.loadModules();
-            assertFalse(IssueTracker.hasErrors(),
-                    () -> "Module requirement validation failed: " + IssueTracker.getErrors());
-
+            LuaRandomizerWrapper wrapper =
+                    RandomizerCore.createLuaRandomizer(new PtcgBundledResources(workDir));
             ActionBank actionBank = new ActionBank(wrapper);
 
             Module module = wrapper.getModule("dev_test_enum_args");
@@ -143,29 +117,10 @@ class ActionBankTest {
     private static ActionBank bundledActionBank(File workDir) {
         workDir.mkdirs();
         PtcgBundledResources.main(new String[] {workDir.getAbsolutePath()});
-
-        File modulesDir = new File(workDir, PtcgBundledResources.MODULES_DIR_NAME);
-        File randomizerDir = RandomizerBundledResources.getInstalledDir(workDir);
-        List<String> allowedDirectories = new ArrayList<>();
-        allowedDirectories.add(randomizerDir.getAbsolutePath());
-        allowedDirectories.add(modulesDir.getAbsolutePath());
-        List<String> searchPaths = List.of(modulesDir.getAbsolutePath());
-
-        CoreRequirements requirements = new CoreRequirements();
-        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
-                PtcgRandomizerVersion.VERSION, true);
-
-        LuaRandomizerWrapper wrapper = new LuaRandomizerWrapper(allowedDirectories, searchPaths,
-                null, requirements);
-        registerPtcgEnums(wrapper);
-        IssueTracker.clear();
-        wrapper.loadModules();
+        LuaRandomizerWrapper wrapper =
+                RandomizerCore.createLuaRandomizer(new PtcgBundledResources(workDir));
         assertFalse(IssueTracker.hasErrors(),
                 () -> "Module requirement validation failed: " + IssueTracker.getErrors());
         return new ActionBank(wrapper);
-    }
-
-    private static void registerPtcgEnums(LuaRandomizerWrapper wrapper) {
-        RandomizerCore.registerSharedEnums(wrapper.getSharedContext());
     }
 }
