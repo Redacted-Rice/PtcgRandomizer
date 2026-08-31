@@ -1,25 +1,6 @@
 -- Use the same seed on every case
 local seed = 42
-
--- Mixed stages, and 40 shows up twice so KEEP vs REMOVE is visible.
-local mixedOriginal = {
-	{ name = "BasicA", hp = 40, stage = "BASIC" },
-	{ name = "BasicB", hp = 90, stage = "BASIC" },
-	{ name = "Stage1A", hp = 40, stage = "STAGE_1" },
-	{ name = "Stage1B", hp = 120, stage = "STAGE_1" },
-	{ name = "Stage2A", hp = 50, stage = "STAGE_2" },
-	{ name = "Stage2B", hp = 100, stage = "STAGE_2" },
-}
-
--- Same cards but different values so we can tell ROM from CURRENT.
-local mixedModified = {
-	{ name = "BasicA", hp = 10, stage = "BASIC" },
-	{ name = "BasicB", hp = 20, stage = "BASIC" },
-	{ name = "Stage1A", hp = 30, stage = "STAGE_1" },
-	{ name = "Stage1B", hp = 60, stage = "STAGE_1" },
-	{ name = "Stage2A", hp = 70, stage = "STAGE_2" },
-	{ name = "Stage2B", hp = 80, stage = "STAGE_2" },
-}
+local card_sets = require("support.card_sets")
 
 return {
 	{
@@ -32,16 +13,26 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = mixedOriginal,
-		modified = mixedModified,
-		-- Two 40s kept. Stage1A got a stage 2 HP, Stage2B a basic with the choosen seed
+		original = card_sets.STD_TEST_CARDS_ROM,
+		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		-- Exactly match the usage in ROM
 		expect = {
-			{ name = "BasicA", hp = 40 },
-			{ name = "BasicB", hp = 40 },
-			{ name = "Stage1A", hp = 100 },
-			{ name = "Stage1B", hp = 120 },
-			{ name = "Stage2A", hp = 50 },
-			{ name = "Stage2B", hp = 90 },
+			{ id = "MONSTER_001", hp = 80 },
+			{ id = "MONSTER_002", hp = 40 },
+			{ id = "MONSTER_003_1", hp = 60 },
+			{ id = "MONSTER_004", hp = 50 },
+			{ id = "MONSTER_005", hp = 110 },
+			{ id = "MONSTER_006", hp = 70 },
+			{ id = "MONSTER_010", hp = 40 },
+			{ id = "MONSTER_011", hp = 30 },
+			{ id = "MONSTER_012", hp = 40 },
+			{ id = "MONSTER_013", hp = 40 },
+			{ id = "MONSTER_014", hp = 60 },
+			{ id = "MONSTER_015", hp = 80 },
+			{ id = "MONSTER_016", hp = 50 },
+			{ id = "MONSTER_017", hp = 50 },
+			{ id = "MONSTER_018_1", hp = 30 },
+			{ id = "MONSTER_019", hp = 90 },
 		},
 	},
 	{
@@ -54,16 +45,28 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "BY_STAGE",
 		},
-		original = mixedOriginal,
-		modified = mixedModified,
-		-- Each card stayed in its own stage's HP pool.
+		original = card_sets.STD_TEST_CARDS_ROM,
+		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		-- Exactly match the usage in ROM by stage
 		expect = {
-			{ name = "BasicA", hp = 40 },
-			{ name = "BasicB", hp = 90 },
-			{ name = "Stage1A", hp = 120 },
-			{ name = "Stage1B", hp = 40 },
-			{ name = "Stage2A", hp = 100 },
-			{ name = "Stage2B", hp = 50 },
+			{ id = "MONSTER_001", hp = 40 }, -- BASIC
+			{ id = "MONSTER_002", hp = 30 }, -- BASIC
+			{ id = "MONSTER_003_1", hp = 70 }, -- BASIC
+			{ id = "MONSTER_004", hp = 50 }, -- BASIC
+			{ id = "MONSTER_005", hp = 80 }, -- BASIC
+			{ id = "MONSTER_006", hp = 40 }, -- BASIC
+			{ id = "MONSTER_010", hp = 90 }, -- BASIC
+			{ id = "MONSTER_012", hp = 60 }, -- BASIC
+			{ id = "MONSTER_014", hp = 40 }, -- BASIC
+			{ id = "MONSTER_015", hp = 40 }, -- BASIC
+
+			{ id = "MONSTER_011", hp = 50 }, -- STAGE_1
+			{ id = "MONSTER_013", hp = 80 }, -- STAGE_1
+			{ id = "MONSTER_016", hp = 50 }, -- STAGE_1
+			{ id = "MONSTER_017", hp = 30 }, -- STAGE_1
+
+			{ id = "MONSTER_018_1", hp = 110 }, -- STAGE_2
+			{ id = "MONSTER_019", hp = 60 }, -- STAGE_2
 		},
 	},
 	{
@@ -76,16 +79,26 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = mixedOriginal,
-		modified = mixedModified,
-		-- Values from modified not original
+		original = card_sets.STD_TEST_CARDS_ROM,
+		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		-- Exactly match the usage in CURRENT by stage
 		expect = {
-			{ name = "BasicA", hp = 30 },
-			{ name = "BasicB", hp = 10 },
-			{ name = "Stage1A", hp = 80 },
-			{ name = "Stage1B", hp = 60 },
-			{ name = "Stage2A", hp = 70 },
-			{ name = "Stage2B", hp = 20 },
+			{ id = "MONSTER_001", hp = 40 },
+			{ id = "MONSTER_002", hp = 10 },
+			{ id = "MONSTER_003_1", hp = 10 },
+			{ id = "MONSTER_004", hp = 40 },
+			{ id = "MONSTER_005", hp = 30 },
+			{ id = "MONSTER_006", hp = 110 },
+			{ id = "MONSTER_010", hp = 20 },
+			{ id = "MONSTER_011", hp = 50 },
+			{ id = "MONSTER_012", hp = 80 },
+			{ id = "MONSTER_013", hp = 80 },
+			{ id = "MONSTER_014", hp = 100 },
+			{ id = "MONSTER_015", hp = 120 },
+			{ id = "MONSTER_016", hp = 60 },
+			{ id = "MONSTER_017", hp = 30 },
+			{ id = "MONSTER_018_1", hp = 100 },
+			{ id = "MONSTER_019", hp = 20 },
 		},
 	},
 	{
@@ -98,16 +111,26 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = mixedOriginal,
-		modified = mixedModified,
-		-- Only one 40. The extra slot refilled with 50 with this seed
+		original = card_sets.STD_TEST_CARDS_ROM,
+		modified = card_sets.STD_TEST_CARDS_CURRENT,
+        -- Each value used twice instead of the same as source
 		expect = {
-			{ name = "BasicA", hp = 40 },
-			{ name = "BasicB", hp = 50 },
-			{ name = "Stage1A", hp = 90 },
-			{ name = "Stage1B", hp = 100 },
-			{ name = "Stage2A", hp = 120 },
-			{ name = "Stage2B", hp = 50 },
+			{ id = "MONSTER_001", hp = 80 },
+			{ id = "MONSTER_002", hp = 110 },
+			{ id = "MONSTER_003_1", hp = 40 },
+			{ id = "MONSTER_004", hp = 60 },
+			{ id = "MONSTER_005", hp = 110 },
+			{ id = "MONSTER_006", hp = 30 },
+			{ id = "MONSTER_010", hp = 70 },
+			{ id = "MONSTER_011", hp = 90 },
+			{ id = "MONSTER_012", hp = 30 },
+			{ id = "MONSTER_013", hp = 60 },
+			{ id = "MONSTER_014", hp = 50 },
+			{ id = "MONSTER_015", hp = 90 },
+			{ id = "MONSTER_016", hp = 50 },
+			{ id = "MONSTER_017", hp = 40 },
+			{ id = "MONSTER_018_1", hp = 70 },
+			{ id = "MONSTER_019", hp = 80 },
 		},
 	},
 	{
@@ -120,17 +143,26 @@ return {
 			approach = "FULLY_RANDOM",
 			grouping = "ALL_TOGETHER",
 		},
-		original = mixedOriginal,
-		modified = mixedModified,
-		-- 40 landed three times and 100 was unused showing its truly random and
-		-- and not pulling all values first
+		original = card_sets.STD_TEST_CARDS_ROM,
+		modified = card_sets.STD_TEST_CARDS_CURRENT,
+        -- See some missing and some over used as expected for FULL RANDOM
 		expect = {
-			{ name = "BasicA", hp = 40 },
-			{ name = "BasicB", hp = 120 },
-			{ name = "Stage1A", hp = 40 },
-			{ name = "Stage1B", hp = 90 },
-			{ name = "Stage2A", hp = 40 },
-			{ name = "Stage2B", hp = 50 },
+			{ id = "MONSTER_001", hp = 80 },
+			{ id = "MONSTER_002", hp = 70 },
+			{ id = "MONSTER_003_1", hp = 50 },
+			{ id = "MONSTER_004", hp = 30 },
+			{ id = "MONSTER_005", hp = 60 },
+			{ id = "MONSTER_006", hp = 80 },
+			{ id = "MONSTER_010", hp = 80 },
+			{ id = "MONSTER_011", hp = 40 },
+			{ id = "MONSTER_012", hp = 40 },
+			{ id = "MONSTER_013", hp = 40 },
+			{ id = "MONSTER_014", hp = 50 },
+			{ id = "MONSTER_015", hp = 60 },
+			{ id = "MONSTER_016", hp = 30 },
+			{ id = "MONSTER_017", hp = 50 },
+			{ id = "MONSTER_018_1", hp = 40 },
+			{ id = "MONSTER_019", hp = 50 },
 		},
 	},
 }

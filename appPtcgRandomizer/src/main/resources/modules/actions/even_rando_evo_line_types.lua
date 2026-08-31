@@ -1,10 +1,11 @@
 local randomizer = require("randomizer")
 local pool_utils = require("modules.util.pool_utils")
 
+-- Keeps each evo line on the same type drawn from ROM or CURRENT. Only even when REMOVE_DUPLICATES.
 local module
 module = {
 	id = "even_rando_evo_line_types",
-	name = "Randomize Evo Line Types",
+	name = "Randomize Evo Line Types (Keep Line Types From Source)",
 	description = "Randomizes the energy type for each card in each evolution line to the same type",
 	groups = { "Monsters", "Energy Type", "Evolutions" },
 	author = "Redacted Rice",
@@ -23,7 +24,11 @@ module = {
 
 function module.buildTypePool(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
-	local types = randomizer.list(sourceCards):select("type")
+	-- One type per evo line to keep the evo line numbers the same for each type
+	local byEvoLine = randomizer.groupBy(sourceCards, "evoLineId")
+	local types = byEvoLine:map(function(_, line)
+		return line:get(1).type
+	end)
 
 	if args.duplicates == "KEEP_DUPLICATES" then
 		-- Keep source multiplicity so common types stay more common

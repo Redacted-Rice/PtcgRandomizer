@@ -1,9 +1,6 @@
 package redactedrice.ptcgr.randomizer.gui.moduleconfig.support;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
@@ -11,9 +8,7 @@ import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.ModuleConfigDialog;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.lua.Module;
-import redactedrice.randomizer.lua.requirements.CoreRequirements;
 import redactedrice.randomizer.utils.IssueTracker;
-import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 public final class ModuleConfigEndToEndSupport {
     private ModuleConfigEndToEndSupport() {}
@@ -24,24 +19,8 @@ public final class ModuleConfigEndToEndSupport {
         workDir.mkdirs();
         PtcgBundledResources.main(new String[] {workDir.getAbsolutePath()});
 
-        File modulesDir = new File(workDir, PtcgBundledResources.MODULES_DIR_NAME);
-        File randomizerDir = RandomizerBundledResources.getInstalledDir(workDir);
-        List<String> allowedDirectories = new ArrayList<>();
-        allowedDirectories.add(randomizerDir.getAbsolutePath());
-        allowedDirectories.add(modulesDir.getAbsolutePath());
-        List<String> searchPaths = List.of(modulesDir.getAbsolutePath());
-
-        CoreRequirements requirements = new CoreRequirements();
-        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
-                PtcgRandomizerVersion.VERSION, true);
-
         LuaRandomizerWrapper wrapper =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
-        // Mirrors RandomizerCore.setupLuaRandomizer()
-        RandomizerCore.registerSharedEnums(wrapper.getSharedContext());
-
-        IssueTracker.clear();
-        wrapper.loadModules();
+                RandomizerCore.createLuaRandomizer(new PtcgBundledResources(workDir));
         if (IssueTracker.hasErrors()) {
             throw new IllegalStateException(
                     "Module requirement validation failed: " + IssueTracker.getErrors());

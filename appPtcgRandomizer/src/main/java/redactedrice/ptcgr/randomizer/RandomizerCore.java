@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +24,7 @@ import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
+import redactedrice.ptcgr.constants.romenums.MoveCategory;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.Rules;
@@ -95,45 +95,16 @@ public class RandomizerCore {
     }
 
     private void setupLuaRandomizer() {
-        File randomizerDir = bundledResources.getRandomizerDir();
-        File modulesDir = bundledResources.getModulesDir();
-        String randomizerPath = randomizerDir.getAbsolutePath();
-        String modulesPath = modulesDir.getAbsolutePath();
-
-        // Prepare allowed directories and search paths
-        List<String> allowedDirectories = new ArrayList<>();
-        allowedDirectories.add(randomizerPath);
-        allowedDirectories.add(modulesPath);
-
-        List<String> searchPaths = new ArrayList<>();
-        if (modulesDir.exists() && modulesDir.isDirectory()) {
-            searchPaths.add(modulesDir.getAbsolutePath());
-        }
-
-        CoreRequirements requirements = new CoreRequirements();
-        // We just use the PTCGR version instead of all 3 (PTCGR, URJ and URC) for
-        // simplicity and
-        // since they are bundled together
-        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
-                PtcgRandomizerVersion.VERSION, true);
-        luaRandomizer =
-                new LuaRandomizerWrapper(allowedDirectories, searchPaths, null, requirements);
-
-        // Register built in PTCGR enums in the shared enum context instead of in the
-        // runtime context so they're merged into every execution context the same way
-        // module registered (onLoad) enums are, and so they're resolvable by name for
-        // the config UI's ENUM argument dropdowns even before a randomization has run.
-        // Keep this list curated. Do not scan packages or rom-internal enums show up as args.
-        registerSharedEnums(luaRandomizer.getSharedContext());
+        luaRandomizer = createLuaRandomizer(bundledResources);
 
         Logger.setEnabled(true);
 
-        IssueTracker.clear();
-        int loadedCount = luaRandomizer.loadModules();
+        int loadedCount = luaRandomizer.getAvailableModules().size();
         if (loadedCount > 0) {
             System.out.println("Loaded " + loadedCount + " Lua modules");
         } else {
-            System.out.println("No Lua modules found in " + modulesDir.getAbsolutePath());
+            System.out.println("No Lua modules found in "
+                    + bundledResources.getModulesDir().getAbsolutePath());
         }
 
         // Already logged on add. Popup summarizes then clears the phase store
@@ -237,15 +208,8 @@ public class RandomizerCore {
         IssueTracker.clear();
         romData.prepareForModification();
 
-        // Expose ROM workspaces and rules to Lua modules
         JavaContext context = new JavaContext();
-        context.register("original", romData.original);
-        context.register("modified", romData.modified);
-        context.register("rules", romData.rules);
-
-        // Enable lua based change detection. Setup of what is monitored is done in the
-        // setup script
-        context.setConfig("changeDetectionActive", true);
+        bindRandomizeContext(context, romData.original, romData.modified, romData.rules);
 
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
@@ -290,18 +254,47 @@ public class RandomizerCore {
         return actions != null && !actions.isEmpty();
     }
 
+    // Same wrapper live setup and tests use. Registers PTCG enums then loads modules.
+    public static LuaRandomizerWrapper createLuaRandomizer(PtcgBundledResources resources) {
+        if (resources == null) {
+            throw new IllegalArgumentException("Resources cannot be null");
+        }
+        CoreRequirements requirements = new CoreRequirements();
+        // We just use the PTCGR version instead of all 3 (PTCGR, URJ and URC) for
+        // simplicity and since they are bundled together
+        requirements.addCoreRequirement(PtcgRandomizerVersion.PLATFORM_KEY,
+                PtcgRandomizerVersion.VERSION, true);
+        LuaRandomizerWrapper wrapper = LuaRandomizerWrapper.forApp(resources.getRandomizerDir(),
+                resources.getModulesDir(), requirements);
+        // Register built in PTCGR enums in the shared enum context instead of in the
+        // runtime context so they're merged into every execution context the same way
+        // module registered (onLoad) enums are, and so they're resolvable by name for
+        // the config UI's ENUM argument dropdowns even before a randomization has run.
+        registerSharedEnums(wrapper.getSharedContext());
+        IssueTracker.clear();
+        wrapper.loadModules();
+        return wrapper;
+    }
+
+    // original/modified/rules plus change detection. Same keys live Lua modules read.
+    public static void bindRandomizeContext(JavaContext context, Object original, Object modified,
+            Rules rules) {
+        if (context == null) {
+            throw new IllegalArgumentException("Context cannot be null");
+        }
+        context.register("original", original);
+        context.register("modified", modified);
+        context.register("rules", rules);
+        context.setConfig(JavaContext.CHANGE_DETECTION_ACTIVE, true);
+    }
+
     // Shared by setup and tests so the curated register list lives in one place
     public static void registerSharedEnums(JavaContext context) {
         context.registerEnum(CardType.class);
-        context.registerEnum(EnergyType.class, Map.of(
-                "FIRE", "Fire",
-                "GRASS", "Grass",
-                "LIGHTNING", "Lightning",
-                "WATER", "Water",
-                "FIGHTING", "Fighting",
-                "PSYCHIC", "Psychic",
-                "COLORLESS", "Colorless",
-                "UNUSED_TYPE", "Unused Type"));
+        context.registerEnum(EnergyType.class,
+                Map.of("FIRE", "Fire", "GRASS", "Grass", "LIGHTNING", "Lightning", "WATER", "Water",
+                        "FIGHTING", "Fighting", "PSYCHIC", "Psychic", "COLORLESS", "Colorless",
+                        "UNUSED_TYPE", "Unused Type"));
         // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)
         context.registerEnum(EvolutionStage.class);
         // User friendly aliases for HP pool table keys. Same canonical values under the hood
@@ -316,7 +309,8 @@ public class RandomizerCore {
                 "Remove Duplicates", "KEEP_DUPLICATES", "Keep Duplicates"));
         context.registerEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
                 "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
-        context.registerEnum(MoveKind.class, Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks",
-                "POWERS", "Powers"));
+        context.registerEnum(MoveKind.class,
+                Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks", "POWERS", "Powers"));
+        context.registerEnum(MoveCategory.class);
     }
 }
