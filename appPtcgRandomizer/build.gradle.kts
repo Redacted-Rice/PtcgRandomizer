@@ -247,6 +247,16 @@ tasks.named<Test>("test") {
     }
 }
 
+tasks.register<JavaExec>("runScriptTests") {
+    group = "verification"
+    description = "Runs bundled Lua script tests"
+    dependsOn("classes", "processResources")
+    mainClass.set(application.mainClass.get())
+    classpath = sourceSets.main.get().runtimeClasspath
+    args = listOf("--script-tests")
+    systemProperty("ptcgr.devModules", "true")
+}
+
 // Smoke test that the release jar can extract modules, rules, and the randomizer lib.
 // script_tests install only when something runs with --script-tests.
 tasks.register<Test>("fatJarTest") {

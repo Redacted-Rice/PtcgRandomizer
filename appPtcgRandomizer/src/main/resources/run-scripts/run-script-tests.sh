@@ -10,7 +10,10 @@ set -euo pipefail
 # Usage:
 #   ./run-script-tests.sh                  run every test_*.lua case
 #   ./run-script-tests.sh test_set_num_moves    run one case file (.lua is optional)
+#   ./run-script-tests.sh --log-level INFO      run all with more logging
+#   ./run-script-tests.sh --log-level DEBUG test_set_num_moves
 #
+# Log level defaults to WARN. Use DEBUG, INFO, WARN, or ERROR.
 # Exit code is 0 when all cases pass, 1 when any fail, 2 for bad args or setup.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
