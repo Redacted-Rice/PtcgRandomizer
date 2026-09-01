@@ -13,7 +13,7 @@ return {
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
 		-- Pool consumed then refilled across the shared set. Values are evenly distributed
-        -- (30 has one extra which is fine)
+		-- (30 has one extra which is fine)
 		expect = {
 			{ id = "MONSTER_001", hp = 20 },
 			{ id = "MONSTER_002", hp = 10 },
@@ -37,7 +37,7 @@ return {
 		name = "fully_random",
 		module = "randomize_hp_custom_all_together",
 		-- seed 42 was nearly even (6/5/5). 41 lands 20 nine times and 30 only once showing
-        -- its random and functioning as expected
+		-- its random and functioning as expected
 		seed = 41,
 		args = {
 			approach = "FULLY_RANDOM",

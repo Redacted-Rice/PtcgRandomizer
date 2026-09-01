@@ -37,6 +37,8 @@ class ActionBankTest {
 
             LuaRandomizerWrapper wrapper =
                     RandomizerCore.createLuaRandomizer(new PtcgBundledResources(workDir));
+            assertFalse(IssueTracker.hasErrors(),
+                    () -> "Module requirement validation failed: " + IssueTracker.getErrors());
             ActionBank actionBank = new ActionBank(wrapper);
 
             Module module = wrapper.getModule("dev_test_enum_args");

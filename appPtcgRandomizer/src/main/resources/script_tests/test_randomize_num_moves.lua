@@ -15,7 +15,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Matches ROM numbers exactly
+		-- Matches ROM numbers exactly
 		expect = {
 			{ id = "MONSTER_001", numMoves = 2 },
 			{ id = "MONSTER_002", numMoves = 1 },
@@ -47,7 +47,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Matches ROM numbers exactly
+		-- Matches ROM numbers exactly
 		expect = {
 			{ id = "MONSTER_001", numMoves = 1 }, -- BASIC
 			{ id = "MONSTER_002", numMoves = 2 }, -- BASIC
@@ -81,7 +81,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Matches CURRENT numbers exactly
+		-- Matches CURRENT numbers exactly
 		expect = {
 			{ id = "MONSTER_001", numMoves = 0 },
 			{ id = "MONSTER_002", numMoves = 2 },
@@ -113,7 +113,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Even split of all 3 values as expected
+		-- Even split of all 3 values as expected
 		expect = {
 			{ id = "MONSTER_001", numMoves = 0 },
 			{ id = "MONSTER_002", numMoves = 2 },
@@ -145,9 +145,9 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Doesn't match but keeps similar disto. Here no 0 is selected and
-        -- 1 happened to be disproportionately selected which is fine for
-        -- fully random
+		-- Doesn't match but keeps similar disto. Here no 0 is selected and
+		-- 1 happened to be disproportionately selected which is fine for
+		-- fully random
 		expect = {
 			{ id = "MONSTER_001", numMoves = 2 },
 			{ id = "MONSTER_002", numMoves = 1 },

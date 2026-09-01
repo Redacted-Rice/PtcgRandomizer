@@ -28,6 +28,8 @@ appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
 appPtcgRandomizer/script_tests/
+appPtcgRandomizer/run-script-tests.bat
+appPtcgRandomizer/run-script-tests.sh
 
 # YAML outside bundled src/main/resources
 **/*.yaml

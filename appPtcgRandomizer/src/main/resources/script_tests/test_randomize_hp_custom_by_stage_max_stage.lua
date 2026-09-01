@@ -28,7 +28,7 @@ return {
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
 		-- Solo basics: pool consumed once then refilled. Other buckets size 2 in a 3-value pool.
-        -- We see each basic/basic twice and do not see any repeates for others as expected
+		-- We see each basic/basic twice and do not see any repeates for others as expected
 		expect = {
 			{ id = "MONSTER_001", hp = 10 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 20 }, -- BASIC/BASIC
@@ -63,7 +63,7 @@ return {
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
 		-- Solo basics: 10 landed four times and 30 didn't at all. We see some
-        -- repeats in others which is expected
+		-- repeats in others which is expected
 		expect = {
 			{ id = "MONSTER_001", hp = 10 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 10 }, -- BASIC/BASIC
