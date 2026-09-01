@@ -9,6 +9,10 @@ REM
 REM Usage:
 REM   run-script-tests.bat                  run every test_*.lua case
 REM   run-script-tests.bat test_set_num_moves    run one case file (.lua is optional)
+REM   run-script-tests.bat --log-level INFO      run all with more logging
+REM   run-script-tests.bat --log-level DEBUG test_set_num_moves
+REM
+REM Log level defaults to WARN. Use DEBUG, INFO, WARN, or ERROR.
 REM
 REM Exit code is 0 when all cases pass, 1 when any fail, 2 for bad args or setup.
 

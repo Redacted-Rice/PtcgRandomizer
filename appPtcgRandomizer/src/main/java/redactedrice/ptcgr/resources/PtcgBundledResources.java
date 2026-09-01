@@ -55,6 +55,8 @@ public final class PtcgBundledResources {
                     new File(workingDir, MODULES_DIR_NAME).getAbsolutePath(), true);
             ManifestResourceExtractor.extract(RULES_RESOURCE,
                     new File(workingDir, RULES_DIR_NAME).getAbsolutePath(), true);
+            // run-scripts extracts into the app root. overwriteExisting=true would wipe the whole
+            // working dir (including randomizer/ and modules/) before copying wrappers.
             ManifestResourceExtractor.extract(RUN_SCRIPTS_RESOURCE, workingDir.getAbsolutePath(),
                     false);
         } catch (IOException e) {
@@ -103,19 +105,14 @@ public final class PtcgBundledResources {
         return new File(workingDir, SCRIPT_TESTS_DIR_NAME);
     }
 
-    // Shipped cases live in the jar. Merged on install so local edits stick around.
-    public void installScriptTests(boolean overwriteExisting) {
+    // Shipped cases live in the jar. Reinstall wipes script_tests so stale files do not linger.
+    public void installScriptTests() {
         try {
             ManifestResourceExtractor.extract(SCRIPT_TESTS_RESOURCE,
-                    getScriptTestsDir().getAbsolutePath(), overwriteExisting);
+                    getScriptTestsDir().getAbsolutePath(), true);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install script tests", e);
         }
-    }
-
-    // Merge shipped cases into script_tests. Does not wipe files you added or edited.
-    public void installScriptTests() {
-        installScriptTests(false);
     }
 
     /**

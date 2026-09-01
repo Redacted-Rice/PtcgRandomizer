@@ -12,7 +12,10 @@ import redactedrice.ptcgr.configs.AppPreferences;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
+import redactedrice.randomizer.scripttests.ScriptTestBatchRunner;
 import redactedrice.randomizer.scripttests.ScriptTestCli;
+import redactedrice.randomizer.scripttests.ScriptTestRunResult;
+import redactedrice.randomizer.scripttests.ScriptTestSession;
 
 // PTCG host for URJ script tests. Installs this app's modules then hands off to ScriptTestCli.
 public final class ScriptTestRunner {
@@ -43,8 +46,9 @@ public final class ScriptTestRunner {
         return loadWrapper(prepare(appDir));
     }
 
-    // Run a single bundled case file against an app dir that prepareForScriptTests already set up.
-    public static int runCase(String caseFileName, File appDir, LuaRandomizerWrapper wrapper) {
+    // Run one bundled case file. Uses the same loop as --script-tests but returns structured results.
+    public static ScriptTestRunResult runCaseFile(String caseFileName, File appDir,
+            LuaRandomizerWrapper wrapper) {
         if (appDir == null) {
             throw new IllegalArgumentException("App dir cannot be null");
         }
@@ -52,8 +56,12 @@ public final class ScriptTestRunner {
             throw new IllegalArgumentException("Wrapper cannot be null");
         }
         Path testsDir = new PtcgBundledResources(appDir).getScriptTestsDir().toPath();
-        return ScriptTestCli.run(new String[] { ScriptTestCli.FLAG, caseFileName }, testsDir, wrapper,
-                new PtcgScriptTestFixtures());
+        ScriptTestSession session = new ScriptTestSession(wrapper, new PtcgScriptTestFixtures());
+        try {
+            return ScriptTestBatchRunner.runRequestedCases(testsDir, caseFileName, session);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to run script tests in " + caseFileName, e);
+        }
     }
 
     public static List<String> bundledCaseFileNames() {
@@ -76,6 +84,7 @@ public final class ScriptTestRunner {
         PtcgBundledResources resources = new PtcgBundledResources(appDir);
         resources.installRandomizerLibrary();
         resources.installAppResources();
+        // After modules/rules/randomizer. Wipes script_tests/ so stale cases do not linger.
         resources.installScriptTests();
         return resources;
     }
