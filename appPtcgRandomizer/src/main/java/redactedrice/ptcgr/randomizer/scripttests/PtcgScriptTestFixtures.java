@@ -68,8 +68,8 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
                 continue;
             }
             claimed.add(card);
-            ScriptTestFields.collectMismatches(context, card, ScriptTestValues.withoutKey(expected, "id"),
-                    mismatches, cardLabel);
+            ScriptTestFields.collectMismatches(context, card,
+                    ScriptTestValues.withoutKey(expected, "id"), mismatches, cardLabel);
         }
 
         ScriptTestFields.failIfMismatches(label, mismatches);

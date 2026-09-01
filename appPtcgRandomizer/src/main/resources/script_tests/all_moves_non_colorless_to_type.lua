@@ -1,5 +1,6 @@
 -- Same mixed costs on every case. Only the target energy type changes.
 local card_sets = require("support.card_sets")
+local fields = require("support.fields")
 
 local function caseFor(energyType)
 	return {
@@ -12,17 +13,17 @@ local function caseFor(energyType)
 		expect = {
 			{
 				id = "MONSTER_001",
-				moves = {
-					{ name = "Burn", costs = { [energyType] = 2, COLORLESS = 1 } },
-					{ name = "Forest Fire", costs = { [energyType] = 2, COLORLESS = 1 } },
-				},
+				moves = fields.moves({
+					{ name = "Burn", costs = fields.costs({ [energyType] = 2, COLORLESS = 1 }) },
+					{ name = "Forest Fire", costs = fields.costs({ [energyType] = 2, COLORLESS = 1 }) },
+				}),
 			},
 			{
 				id = "MONSTER_002",
-				moves = {
-					{ name = "Tackle", costs = { [energyType] = 2, COLORLESS = 1 } },
-					{ name = "Slam", costs = { [energyType] = 2 } },
-				},
+				moves = fields.moves({
+					{ name = "Tackle", costs = fields.costs({ [energyType] = 2, COLORLESS = 1 }) },
+					{ name = "Slam", costs = fields.costs({ [energyType] = 2 }) },
+				}),
 			},
 		},
 	}
