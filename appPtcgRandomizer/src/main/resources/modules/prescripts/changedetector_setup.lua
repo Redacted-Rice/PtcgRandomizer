@@ -276,28 +276,29 @@ function script.setupChangeDetection(context)
 
     -- Just set it up anyways in case later someone wants to enable it for
     -- some things but not others or we want to use it for specific modules for debug
-    local monsterCards = context.modified:getRandomizableMonsterCards()
-
-    changedetector.monitor(script.monsterCardsEntry, monsterCards, {
-        title = "Monster Cards",
-        headerEvery = 30,
-        trailingHeader = true,
-        primaryKey = {
-            header = "ID",
-            align = "right",
-            numeric = true,
-            getter = function(obj)
-                return obj:getIdValue()
-            end,
-        },
-        description = {
-            header = "Name",
-            getter = function(obj)
-                return obj.name:toString()
-            end,
-        },
-        fields = script.buildMonsterCardFields(),
-    })
+    local monsterCards = context.modified and context.modified:getRandomizableMonsterCards()
+    if monsterCards and #monsterCards > 0 then
+        changedetector.monitor(script.monsterCardsEntry, monsterCards, {
+            title = "Monster Cards",
+            headerEvery = 30,
+            trailingHeader = true,
+            primaryKey = {
+                header = "ID",
+                align = "right",
+                numeric = true,
+                getter = function(obj)
+                    return obj:getIdValue()
+                end,
+            },
+            description = {
+                header = "Name",
+                getter = function(obj)
+                    return obj.name:toString()
+                end,
+            },
+            fields = script.buildMonsterCardFields(),
+        })
+    end
 
     local entries = changedetector.getMonitoredEntryNames()
     if #entries > 0 then
