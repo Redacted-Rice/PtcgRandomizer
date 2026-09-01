@@ -14,7 +14,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- These number match the ROM numbers as expected
+		-- These number match the ROM numbers as expected
 		expect = {
 			{ id = "MONSTER_001", hp = 50 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 80 }, -- BASIC/BASIC
@@ -50,7 +50,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- These number match the CURRENT numbers as expected which are already a bit crazy
+		-- These number match the CURRENT numbers as expected which are already a bit crazy
 		expect = {
 			{ id = "MONSTER_001", hp = 30 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 120 }, -- BASIC/BASIC
@@ -87,7 +87,7 @@ return {
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
 		expect = {
-            -- 50 was selected twice instead of 40 when keeping duplicates. Others are unchanged
+			-- 50 was selected twice instead of 40 when keeping duplicates. Others are unchanged
 			{ id = "MONSTER_001", hp = 50 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 70 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", hp = 60 }, -- BASIC/BASIC
@@ -122,7 +122,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Some values are missing and some are repeated as expected for full random
+		-- Some values are missing and some are repeated as expected for full random
 		expect = {
 			{ id = "MONSTER_001", hp = 50 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 50 }, -- BASIC/BASIC

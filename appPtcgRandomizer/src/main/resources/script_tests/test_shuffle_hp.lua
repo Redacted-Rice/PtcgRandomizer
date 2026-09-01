@@ -113,7 +113,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- Each value used twice instead of the same as source
+		-- Each value used twice instead of the same as source
 		expect = {
 			{ id = "MONSTER_001", hp = 80 },
 			{ id = "MONSTER_002", hp = 110 },
@@ -145,7 +145,7 @@ return {
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
-        -- See some missing and some over used as expected for FULL RANDOM
+		-- See some missing and some over used as expected for FULL RANDOM
 		expect = {
 			{ id = "MONSTER_001", hp = 80 },
 			{ id = "MONSTER_002", hp = 70 },

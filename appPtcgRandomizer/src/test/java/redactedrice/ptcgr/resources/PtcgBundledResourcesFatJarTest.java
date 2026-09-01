@@ -8,11 +8,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 
+// Runs in fatJarTest, not the main test task. Needs app/PtcgRandomizer-*.jar built first.
+@Tag("requiresFatJar")
 class PtcgBundledResourcesFatJarTest {
 
     @Test
@@ -28,6 +31,19 @@ class PtcgBundledResourcesFatJarTest {
 
         assertEquals(0, process.waitFor(), "Resource install from runnable JAR failed");
         PtcgBundledResources.verifyInstalled(tempDir.toFile());
+    }
+
+    @Test
+    void fatJarRunsScriptTestsCli() throws Exception {
+        Path jar = findFatJar();
+        assertTrue(Files.isRegularFile(jar), "Runnable JAR missing: " + jar);
+
+        String javaBin = System.getProperty("java.home") + File.separator + "bin"
+                + File.separator + "java";
+        Process process = new ProcessBuilder(javaBin, "-jar", jar.toAbsolutePath().toString(),
+                "--script-tests", "test_set_num_moves").redirectErrorStream(true).start();
+
+        assertEquals(0, process.waitFor(), "Script tests CLI failed on runnable JAR");
     }
 
     private static Path findFatJar() throws Exception {

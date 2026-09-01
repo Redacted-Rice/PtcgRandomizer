@@ -174,14 +174,32 @@ tasks.register("generateRulesManifest") {
     }
 }
 
-tasks.named<ProcessResources>("processResources") {
-    dependsOn("generateAppVersion", "generateModulesManifest", "generateDevModulesManifest",
-        "generateRulesManifest", "generateScriptTestsManifest")
+tasks.register("generateRunScriptsManifest") {
+    group = "build"
+    description = "Generates manifest file for the run-scripts resource folder"
+
+    val manifestFile = layout.projectDirectory.file("src/main/resources/run-scripts/.manifest")
+    val runScriptsDir = layout.projectDirectory.dir("src/main/resources/run-scripts")
+
+    doLast {
+        val runScriptsDirFile = runScriptsDir.asFile
+        val files = mutableListOf<String>()
+
+        if (runScriptsDirFile.exists() && runScriptsDirFile.isDirectory) {
+            runScriptsDirFile.listFiles()?.forEach { file ->
+                if (file.isFile && file.name != ".manifest") {
+                    files.add(file.name)
+                }
+            }
+        }
+
+        manifestFile.asFile.writeText(files.sorted().joinToString("\n"))
+    }
 }
 
-val copyRunScriptTestsBat = tasks.register<Copy>("copyRunScriptTestsBat") {
-    from(layout.projectDirectory.file("run-script-tests.bat"))
-    into(layout.projectDirectory.dir("app"))
+tasks.named<ProcessResources>("processResources") {
+    dependsOn("generateAppVersion", "generateModulesManifest", "generateDevModulesManifest",
+        "generateRulesManifest", "generateScriptTestsManifest", "generateRunScriptsManifest")
 }
 
 tasks.register<Jar>("fatJar") {
@@ -189,7 +207,6 @@ tasks.register<Jar>("fatJar") {
     description = "Builds the runnable application JAR with all dependencies and bundled resources"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn("classes", "processResources")
-    finalizedBy(copyRunScriptTestsBat)
 
     archiveFileName.set(runnableJarName)
     destinationDirectory.set(layout.projectDirectory.dir("app"))
@@ -200,7 +217,8 @@ tasks.register<Jar>("fatJar") {
 
     // Dev only test modules are never bundled into release packages. See the run task
     // and PtcgBundledResources.installDevAppResources() for how they're installed
-    // for dev builds
+    // for dev builds. script_tests extract when something runs with --script-tests.
+    // run-script wrappers extract with modules and rules on first app launch.
     from(sourceSets.main.map { it.output }) {
         exclude("devmodules/**")
     }
@@ -222,9 +240,29 @@ tasks.named<JavaExec>("run") {
     systemProperty("ptcgr.devModules", "true")
 }
 
+// Keep test fast. Anything that needs the packaged jar runs under fatJarTest instead.
 tasks.named<Test>("test") {
-    useJUnitPlatform()
-    dependsOn("fatJar")
+    useJUnitPlatform {
+        excludeTags("requiresFatJar")
+    }
+}
+
+// Smoke test that the release jar can extract modules, rules, and the randomizer lib.
+// script_tests install only when something runs with --script-tests.
+tasks.register<Test>("fatJarTest") {
+    group = "verification"
+    description = "Runs tests that require the packaged application JAR"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeTags("requiresFatJar")
+    }
+    dependsOn("fatJar", "testClasses")
+    shouldRunAfter(tasks.named("test"))
+}
+
+tasks.named("check") {
+    dependsOn("fatJarTest")
 }
 
 tasks.named("assemble") {

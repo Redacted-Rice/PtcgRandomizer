@@ -8,8 +8,9 @@ import redactedrice.randomizer.utils.ManifestResourceExtractor;
 import redactedrice.randomizer.utils.RandomizerBundledResources;
 
 /**
- * Installs PTCG-specific bundled resources ({@code modules/}, {@code rules/}) and the URJ
- * randomizer Lua library (from {@code libUniversalRandomizerJava}) into the app working directory.
+ * Installs PTCG-specific bundled resources ({@code modules/}, {@code rules/},
+ * optional {@code script_tests/}) and the URJ randomizer Lua library (from
+ * {@code libUniversalRandomizerJava}) into the app working directory.
  */
 public final class PtcgBundledResources {
     public static final String MODULES_RESOURCE = "modules";
@@ -26,6 +27,7 @@ public final class PtcgBundledResources {
     public static final String DEV_MODULES_RESOURCE = "devmodules";
     public static final String SCRIPT_TESTS_RESOURCE = "script_tests";
     public static final String SCRIPT_TESTS_DIR_NAME = "script_tests";
+    public static final String RUN_SCRIPTS_RESOURCE = "run-scripts";
     private static final String DEV_MODULES_SYSTEM_PROPERTY = "ptcgr.devModules";
 
     private final File workingDir;
@@ -53,6 +55,8 @@ public final class PtcgBundledResources {
                     new File(workingDir, MODULES_DIR_NAME).getAbsolutePath(), true);
             ManifestResourceExtractor.extract(RULES_RESOURCE,
                     new File(workingDir, RULES_DIR_NAME).getAbsolutePath(), true);
+            ManifestResourceExtractor.extract(RUN_SCRIPTS_RESOURCE, workingDir.getAbsolutePath(),
+                    false);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install PTCG bundled resources", e);
         }
@@ -99,14 +103,19 @@ public final class PtcgBundledResources {
         return new File(workingDir, SCRIPT_TESTS_DIR_NAME);
     }
 
-    // Merge shipped cases into script_tests. Does not wipe files you added or edited.
-    public void installScriptTests() {
+    // Shipped cases live in the jar. Merged on install so local edits stick around.
+    public void installScriptTests(boolean overwriteExisting) {
         try {
             ManifestResourceExtractor.extract(SCRIPT_TESTS_RESOURCE,
-                    getScriptTestsDir().getAbsolutePath(), false);
+                    getScriptTestsDir().getAbsolutePath(), overwriteExisting);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install script tests", e);
         }
+    }
+
+    // Merge shipped cases into script_tests. Does not wipe files you added or edited.
+    public void installScriptTests() {
+        installScriptTests(false);
     }
 
     /**
