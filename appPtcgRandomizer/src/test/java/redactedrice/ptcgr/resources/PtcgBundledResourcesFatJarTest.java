@@ -8,14 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 
-// Runs in fatJarTest, not the main test task. Needs app/PtcgRandomizer-*.jar built first.
-@Tag("requiresFatJar")
+// test depends on fatJar (see build.gradle.kts) so app/PtcgRandomizer-*.jar exists by the time
+// these run.
 class PtcgBundledResourcesFatJarTest {
 
     @Test
