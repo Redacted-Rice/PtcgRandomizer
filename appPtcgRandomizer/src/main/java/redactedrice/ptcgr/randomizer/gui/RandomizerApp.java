@@ -34,6 +34,7 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.randomizer.gui.rules.RulesPanel;
 import redactedrice.ptcgr.randomizer.gui.support.SupportPanel;
+import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
@@ -43,6 +44,7 @@ import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.LogLevel;
 import redactedrice.randomizer.utils.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,10 +74,15 @@ public class RandomizerApp {
     private RulesPanel rulesPanel;
     private SupportPanel supportPanel;
 
+    // Forces PtcgBundledResources to redo the backup and reinstall of resources
+    private static final String REINSTALL_RESOURCES_FLAG = "--reinstall-resources";
+
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
+        args = consumeReinstallResourcesFlag(args);
+
         if (ScriptTestRunner.handles(args)) {
             System.exit(ScriptTestRunner.run(args));
         }
@@ -90,6 +97,22 @@ public class RandomizerApp {
                 }
             }
         });
+    }
+
+    private static String[] consumeReinstallResourcesFlag(String[] args) {
+        List<String> remaining = new ArrayList<>();
+        boolean force = false;
+        for (String arg : args) {
+            if (REINSTALL_RESOURCES_FLAG.equals(arg)) {
+                force = true;
+            } else {
+                remaining.add(arg);
+            }
+        }
+        if (force) {
+            System.setProperty(PtcgBundledResources.FORCE_REINSTALL_SYSTEM_PROPERTY, "true");
+        }
+        return remaining.toArray(new String[0]);
     }
 
     /**
@@ -263,15 +286,15 @@ public class RandomizerApp {
         openRomPanel.add(openRomButton);
 
         JButton addConfigButton = new JButton("Add Config");
-        addConfigButton.setToolTipText(
-                "Adds rules and actions from the file. They are not replaced. "
+        addConfigButton
+                .setToolTipText("Adds rules and actions from the file. They are not replaced. "
                         + "Single-value settings like seed are replaced.");
         addConfigButton.addActionListener(event -> addConfigFromFile());
         openRomPanel.add(addConfigButton);
 
         JButton resetConfigsButton = new JButton("Reset Configs");
-        resetConfigsButton.setToolTipText(
-                "Reset selected config sections back to their default values.");
+        resetConfigsButton
+                .setToolTipText("Reset selected config sections back to their default values.");
         resetConfigsButton.addActionListener(event -> resetConfigsToDefaults());
         openRomPanel.add(resetConfigsButton);
 
@@ -344,14 +367,14 @@ public class RandomizerApp {
         Integer y = appPreferences.getWindowY();
         Integer width = appPreferences.getWindowWidth();
         Integer height = appPreferences.getWindowHeight();
-        if (x != null && y != null && width != null && height != null && width > 0
-                && height > 0) {
+        if (x != null && y != null && width != null && height != null && width > 0 && height > 0) {
             frmTradingCard.setBounds(clampToVisibleScreen(new Rectangle(x, y, width, height)));
         }
     }
 
     private static Rectangle clampToVisibleScreen(Rectangle bounds) {
-        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        Rectangle screen =
+                GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         int width = Math.min(bounds.width, screen.width);
         int height = Math.min(bounds.height, screen.height);
         int x = Math.max(screen.x, Math.min(bounds.x, screen.x + screen.width - width));
@@ -375,10 +398,8 @@ public class RandomizerApp {
                 openRomChooser.getSelectedFile(), saveRomChooser.getCurrentDirectory(),
                 saveRomChooser.getSelectedFile(), saveConfigChooser.getCurrentDirectory(),
                 saveConfigChooser.getSelectedFile(), loadConfigChooser.getCurrentDirectory(),
-                loadConfigChooser.getSelectedFile(),
-                rulesPanel.getExportUserRulesDirectory(),
-                rulesPanel.getExportUserRulesSelectedFile(),
-                dualPanel.getExportActionsDirectory(),
+                loadConfigChooser.getSelectedFile(), rulesPanel.getExportUserRulesDirectory(),
+                rulesPanel.getExportUserRulesSelectedFile(), dualPanel.getExportActionsDirectory(),
                 dualPanel.getExportActionsSelectedFile());
     }
 
@@ -434,8 +455,8 @@ public class RandomizerApp {
             saveAppPreferencesQuietly();
         } catch (IOException ioError) {
             ioError.printStackTrace();
-            JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(),
-                    "Add Config Failed", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(), "Add Config Failed",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

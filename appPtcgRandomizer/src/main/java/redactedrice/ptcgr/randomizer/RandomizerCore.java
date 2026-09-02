@@ -95,9 +95,9 @@ public class RandomizerCore {
     }
 
     private void setupLuaRandomizer() {
-        luaRandomizer = createLuaRandomizer(bundledResources);
-
         Logger.setEnabled(true);
+
+        luaRandomizer = createLuaRandomizer(bundledResources);
 
         int loadedCount = luaRandomizer.getAvailableModules().size();
         if (loadedCount > 0) {
