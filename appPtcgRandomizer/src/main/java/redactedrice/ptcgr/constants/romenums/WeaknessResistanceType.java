@@ -5,7 +5,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 
 public enum WeaknessResistanceType {
     // Note this is a flag. We can we have multiple weaknesses
-    // TODO later: Is there a limit to the max number we can have?
+    // TODO: Is there a limit to the max number we can have?
     // @formatter:off
     FIRE      (0x80),
     GRASS     (0x40),
@@ -13,7 +13,7 @@ public enum WeaknessResistanceType {
     WATER     (0x10),
     FIGHTING  (0x08),
     PSYCHIC   (0x04),
-    // TODO later: Colorless 0x02?
+    // TODO: Colorless 0x02?
     NONE      (0x00);
     // @formatter:on
 

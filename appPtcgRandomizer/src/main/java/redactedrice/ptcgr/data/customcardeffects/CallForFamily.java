@@ -10,14 +10,14 @@ import redactedrice.ptcgr.constants.romenums.EffectFunctionTypes;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.CardGroup;
 
-// TODO later: Handle cards with multiple IDs (e.g. 4 different prints of the same monster)
-// TODO later: Handle multiple cards (e.g. nidoran male or female)
+// TODO: Handle cards with multiple IDs (e.g. 4 different prints of the same monster)
+// TODO: Handle multiple cards/name (e.g. nidoran male or female)
+// TODO: Remove once supported in other ways
 public final class CallForFamily {
     private CallForFamily() {}
 
     static final String EFFECT_NAME = "CallForFamily";
 
-    // TODO later: Read from rom?
     static final int INITIAL_EFFECT_ADDRESS = 0x2cc40; // Bellsprout's but they are all the same
                                                        // even for nidoran
     static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all

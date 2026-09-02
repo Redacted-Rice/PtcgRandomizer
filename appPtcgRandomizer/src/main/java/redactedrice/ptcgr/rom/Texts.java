@@ -16,7 +16,7 @@ import redactedrice.rompacker.HybridBlock;
 import redactedrice.rompacker.MovableBlock;
 
 public class Texts {
-    // TODO later: Add text labels here? Then we can treat everything as blocks?
+    // TODO now: Add text labels here? Then we can treat everything as blocks?
     // Or maybe just assume names and create a special class for/funct for
     // getting the textLabel based on Id?
     private Map<Short, String> textMap;
@@ -43,8 +43,7 @@ public class Texts {
         copy.reverseMap.putAll(reverseMap);
         for (Map.Entry<Short, AddressRange> entry : idToRangeMap.entrySet()) {
             AddressRange range = entry.getValue();
-            copy.idToRangeMap.put(entry.getKey(),
-                    range == null ? null : new AddressRange(range));
+            copy.idToRangeMap.put(entry.getKey(), range == null ? null : new AddressRange(range));
         }
         copy.origPtrsRange = origPtrsRange == null ? null : new AddressRange(origPtrsRange);
         return copy;

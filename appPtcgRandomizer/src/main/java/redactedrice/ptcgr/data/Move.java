@@ -19,7 +19,6 @@ import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.*;
 import redactedrice.ptcgr.data.customcardeffects.CallForFamily;
 import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
-import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.ptcgr.data.romtexts.EffectDescription;
 import redactedrice.ptcgr.data.romtexts.MoveName;
 import redactedrice.ptcgr.data.romtexts.RomText;
@@ -34,7 +33,7 @@ public class Move {
     EnumMap<EnergyType, Byte> energyCost;
     public MoveName name;
     public EffectDescription description;
-    public byte damage; // TODO later: non multiple of 10?
+    public byte damage; // TODO: non multiple of 10?
     public MoveCategory category;
     CardEffect effect;
     Set<MoveEffect1> effect1;
@@ -301,7 +300,7 @@ public class Move {
         return index;
     }
 
-    // TODO later: Clear the call for family logic out
+    // TODO: Clear the call for family logic out once I don't need it for reference anymore
     public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard,
             InstructionParser parser) {
         name.finalizeAndAddTexts(texts);

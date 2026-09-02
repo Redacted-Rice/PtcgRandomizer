@@ -10,7 +10,7 @@ import redactedrice.ptcgr.rules.Rules;
 import redactedrice.rompacker.Blocks;
 
 public class RandomizationData {
-    // TODO later: make these private
+    // TODO Now: consider making these private
     public Cards allCards;
     public Texts idsToText;
     public Blocks blocks;

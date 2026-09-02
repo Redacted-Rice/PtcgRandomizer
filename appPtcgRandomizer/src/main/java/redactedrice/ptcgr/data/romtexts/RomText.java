@@ -351,7 +351,7 @@ public class RomText {
         // that means it displays as two spaces but if its an odd char, it displays as one space. To
         // keep the formatting generic, we add the extra space in for all energies to assume the
         // "worst" case
-        // TODO later: Could probably be slightly smarter about this
+        // TODO Now: Could probably be slightly smarter about this
         for (SpecialSymbol specialSym : SpecialSymbol.values()) {
             // First remove in case this is called more than once or something
             text = text.replaceAll(specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR,

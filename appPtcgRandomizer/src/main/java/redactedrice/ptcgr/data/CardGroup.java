@@ -112,7 +112,7 @@ public class CardGroup<T extends Card> {
         return found;
     }
 
-    // TODO later: Move this and some other more logic specific/search
+    // TODO now: Move this and some other more logic specific/search
     // functions to a separate class?
     public CardGroup<Card> determineBasicEvolutionOfCard(MonsterCard card) {
         CardGroup<Card> basics = new CardGroup<>();
@@ -131,9 +131,8 @@ public class CardGroup<T extends Card> {
                     break;
                 }
 
-                // TODO later: Doesn't work with mysterious fossil - we only check the parent not
-                // the child
-                // is a poke card
+                // TODO now: Doesn't work with mysterious fossil - we only check the parent not
+                // the child is a poke card
                 card = (MonsterCard) basics.listOrderedByCardId().get(0);
             }
         }
@@ -183,7 +182,7 @@ public class CardGroup<T extends Card> {
         return moves;
     }
 
-    // TODO later: encapsulate safer to prevent editing outside class?
+    // TODO now: encapsulate safer to prevent editing outside class?
     public Collection<T> iterable() {
         return cardsById.values();
     }
@@ -250,8 +249,8 @@ public class CardGroup<T extends Card> {
             return moveWithName;
         }
 
-        IssueTracker.addWarning(entryContext + ": failed to find move \"" + moveName + "\" on card \""
-                + hostCard.name + "\".");
+        IssueTracker.addWarning(entryContext + ": failed to find move \"" + moveName
+                + "\" on card \"" + hostCard.name + "\".");
         return null;
     }
 
@@ -269,8 +268,9 @@ public class CardGroup<T extends Card> {
                     + "\" is out of range; use " + 1 + "-" + MonsterCard.MAX_NUM_MOVES + ".");
             return -1;
         } catch (NumberFormatException ignored) {
-            IssueTracker.addWarning(entryContext + ": to_move_slot must be a 1-based slot number (1-"
-                    + MonsterCard.MAX_NUM_MOVES + ").");
+            IssueTracker
+                    .addWarning(entryContext + ": to_move_slot must be a 1-based slot number (1-"
+                            + MonsterCard.MAX_NUM_MOVES + ").");
             return -1;
         }
     }

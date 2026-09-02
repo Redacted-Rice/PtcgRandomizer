@@ -66,7 +66,7 @@ public enum EnergyType {
             case PSYCHIC:
                 return WeaknessResistanceType.PSYCHIC;
             case COLORLESS:
-                // TODO later: May have a valid value?
+                // TODO: May be a valid value?
                 return WeaknessResistanceType.NONE;
             case UNUSED_TYPE:
                 return WeaknessResistanceType.NONE;

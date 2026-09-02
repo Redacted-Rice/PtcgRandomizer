@@ -39,7 +39,7 @@ public class Cards {
         return allCards;
     }
 
-    // TODO later: Maybe move out of here since its a bit awkward here?
+    // TODO now: Maybe move out of here since its a bit awkward here?
     public void finalizeConvertAndAddData(Texts texts, Blocks blocks, InstructionParser parser) {
         // First go through and finalize all the data, adding effect blocks
         // as needed

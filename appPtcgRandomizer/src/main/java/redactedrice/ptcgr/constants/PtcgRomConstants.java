@@ -15,25 +15,26 @@ public final class PtcgRomConstants {
     public static final int TOTAL_NUM_MONSTER_CARDS = 187;
     public static final int TOTAL_NUM_ENERGY_CARDS = 7;
     public static final int TOTAL_NUM_TRAINER_CARDS = 34;
-    public static final int TOTAL_NUM_CARDS = TOTAL_NUM_MONSTER_CARDS + TOTAL_NUM_ENERGY_CARDS
-            + TOTAL_NUM_TRAINER_CARDS;
+    public static final int TOTAL_NUM_CARDS =
+            TOTAL_NUM_MONSTER_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
 
     public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000;
 
     // Text info
-    public static final int MAX_CHARS_MONSTER_NAME = 20; // not including starting char. For reasons
-                                                         // monster names have to be shorter
-    public static final int MAX_CHARS_CARD_NAME = 25; // not including starting char
-    public static final int MAX_CHARS_MONSTER_CATEGORY = 20; // not including starting char // TODO
-                                                             // later: figure out
-    public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO later:
-                                                      // figure out
-    public static final int MAX_CHARS_PER_LINE_CARD = 36; // Not including newline or starting char
-    public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36; // Not including newline or starting
-                                                             // char // TODO later: figure out
-    public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20; // Not including newline or
-                                                                  // starting char // TODO later:
-                                                                  // figure out
+    // not including starting "charset" char. For reasons monster names have to be shorter
+    public static final int MAX_CHARS_MONSTER_NAME = 20;
+    // not including starting "charset" char
+    public static final int MAX_CHARS_CARD_NAME = 25;
+    // not including starting "charset" char
+    public static final int MAX_CHARS_MONSTER_CATEGORY = 20;
+    // not including starting "charset" char
+    public static final int MAX_CHARS_MOVE_NAME = 20;
+    // Not including newline or starting "charset" char
+    public static final int MAX_CHARS_PER_LINE_CARD = 36;
+    // Not including newline or starting "charset" char
+    public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36;
+    // Not including newline or starting "charset" char
+    public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20;
 
     public static final int MAX_LINES_MONSTER_DESC = 4;
     public static final int MAX_LINES_HALF_TEXTBOX = 2;
@@ -47,7 +48,7 @@ public final class PtcgRomConstants {
     public static final int BANK_SIZE = 0x4000;
     public static final byte NUMBER_OF_BANKS = 64;
 
-    // TODO later: It would potentially be more stable to read in from a location in the engine than
+    // TODO: It would potentially be more stable to read in from a location in the engine than
     // hardcoded locations in case we ever want to support adding more cards or hacks that add
     // more cards or shifted data around. Not sure how easy that would be though
 
@@ -81,13 +82,8 @@ public final class PtcgRomConstants {
     public static final int TEXT_POINTERS_LOC = 0x34000; // TextOffsets
     public static final int TEXT_POINTER_OFFSET = 0x34000;
 
-    // There is alot of text that comes before this but for now we just
-    // care about the card texts which are all grouped at the end
-    // TODO later: used?
-    public static final int FIRST_TEXT_BYTE = 0x3630a;
-    public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
-
-    // TODO: Config?
+    // TODO now: Config File instead?
+    // Why did I comment out Ninetales?
     // Misspelled card names
     public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {
@@ -96,7 +92,7 @@ public final class PtcgRomConstants {
         MISSPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
     }
 
-    // TODO: Config?
+    // TODO: Config File instead?
     // "Damaging" attacks that have no damage number associated with them
     public static final Set<String> ZERO_DAMAGE_DAMAGING_MOVES;
     static {
@@ -117,14 +113,13 @@ public final class PtcgRomConstants {
         // Possibilities not added to the list
         // tempSet.put("Supersonic"); // Flip a coin. If heads, the Defending Pok`mon is now
         // Confused.
-        // Mirror Move DAMAGE_NORMAL -* If  was attacked last turn, do the final result of that
-        // attack on  to the Defending Pok`mon.
+        // Mirror Move DAMAGE_NORMAL -* If was attacked last turn, do the final result of that
+        // attack on to the Defending Pok`mon.
         ZERO_DAMAGE_DAMAGING_MOVES = Collections.unmodifiableSet(tempSet);
     }
 
     // Misc
-    public static final byte[] HEADER = { 0x50, 0x4F, 0x4B, 0x45, 0x43, 0x41, 0x52, 0x44, 0x00,
-            0x00, 0x00, 0x41, 0x58, 0x51, 0x45, (byte) 0x80, 0x30, 0x31, 0x03, 0x1B, 0x05, 0x03,
-            0x01, 0x33, 0x00, 0x34, 0x26, (byte) 0xA6
-    };
+    public static final byte[] HEADER = {0x50, 0x4F, 0x4B, 0x45, 0x43, 0x41, 0x52, 0x44, 0x00, 0x00,
+            0x00, 0x41, 0x58, 0x51, 0x45, (byte) 0x80, 0x30, 0x31, 0x03, 0x1B, 0x05, 0x03, 0x01,
+            0x33, 0x00, 0x34, 0x26, (byte) 0xA6};
 }

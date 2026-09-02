@@ -89,7 +89,7 @@ public class CustomCardEffect extends CardEffect {
 
     @Override
     public CardEffect copy() {
-        // TODO later: Try an remove card copying. If not then consider
+        // TODO now: Try an remove card copying. If not then consider
         // making this a deep copy
         CustomCardEffect copy = new CustomCardEffect(id);
         copy.effects = new EnumMap<>(effects);
@@ -138,7 +138,8 @@ public class CustomCardEffect extends CardEffect {
     public List<MovableBlock> convertToBlocks() {
         List<MovableBlock> blocks = new LinkedList<>();
         if (!effects.isEmpty()) {
-            // TODO later: For now they are constrained. Maybe make a tweak to allow more banks
+            // TODO: For now they are constrained. Maybe make a tweak to allow more banks.
+            // Reconsider once I support custom/tweaked moves
             effectCommand = new CodeBlock(id);
             blocks.add(new MovableBlock(effectCommand, effectCommandPref));
             for (Entry<EffectFunctionTypes, EffectFunction> effect : effects.entrySet()) {

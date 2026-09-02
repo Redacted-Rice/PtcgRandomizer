@@ -3,6 +3,7 @@ package redactedrice.ptcgr.data.customcardeffects;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: Remove once supported other ways
 public class HardcodedEffects {
     private static HardcodedEffects singleton = new HardcodedEffects();
 
@@ -38,18 +39,18 @@ public class HardcodedEffects {
 
     public void addCardNameUniqueEffect(String effectName, String cardName,
             CustomCardEffect effect) {
-        Map<String, CustomCardEffect> effectMap = cardNameUniqueEffects.computeIfAbsent(effectName,
-                k -> new HashMap<>());
+        Map<String, CustomCardEffect> effectMap =
+                cardNameUniqueEffects.computeIfAbsent(effectName, k -> new HashMap<>());
         effectMap.put(cardName, effect);
     }
 
-    // TODO later: Make so this can be read in from a file. Have a Constants file for all these
+    // TODO: Make so this can be read in from a file. Have a Constants file for all these
     // static things
     // then have more files that define the datablocks - i.e. their preferences/required locations
     // and
     // the code itself
 
-    // TODO later: Have a move effect class that contains a uniqueness aspect of globally, type,
+    // TODO: Have a move effect class that contains a uniqueness aspect of globally, type,
     // name, etc.
     // In that class have an effect command and effect pointers
     //
