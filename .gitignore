@@ -28,8 +28,9 @@ appPtcgRandomizer/randomizer/
 appPtcgRandomizer/rules/
 appPtcgRandomizer/modules/
 appPtcgRandomizer/script_tests/
-appPtcgRandomizer/run-script-tests.bat
-appPtcgRandomizer/run-script-tests.sh
+appPtcgRandomizer/run-script-tests.*
+appPtcgRandomizer/backups/
+appPtcgRandomizer/ptcgr-res-ver
 
 # YAML outside bundled src/main/resources
 **/*.yaml

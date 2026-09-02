@@ -4,13 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import redactedrice.ptcgr.constants.PtcgRandomizerVersion;
 import redactedrice.randomizer.utils.ManifestResourceExtractor;
 import redactedrice.randomizer.utils.RandomizerBundledResources;
+import redactedrice.randomizer.utils.VersionedResourceInstaller;
 
 /**
- * Installs PTCG-specific bundled resources ({@code modules/}, {@code rules/},
- * optional {@code script_tests/}) and the URJ randomizer Lua library (from
- * {@code libUniversalRandomizerJava}) into the app working directory.
+ * Installs PTCG specific bundled resources and the URJ randomizer Lua library into the app working
+ * directory.
+ *
+ * modules/rules/run-scripts/script_tests are meant to be user editable (custom modules, tweaked
+ * rules, hand edited wrapper scripts, extra test cases) but should still pick up new bundled
+ * content on upgrade (see VersionedResourceInstaller). modules/rules/run-scripts always move
+ * together so they share one marker at the working dir root. script_tests is only installed on
+ * demand, so it gets its own marker instead. When the running app version doesn't match whats
+ * recorded, whatever is currently installed gets moved into backups/ before the new copy is
+ * installed. Nothing is modified until the next version change. See isForceReinstallEnabled() to
+ * force this.
  */
 public final class PtcgBundledResources {
     public static final String MODULES_RESOURCE = "modules";
@@ -28,7 +38,13 @@ public final class PtcgBundledResources {
     public static final String SCRIPT_TESTS_RESOURCE = "script_tests";
     public static final String SCRIPT_TESTS_DIR_NAME = "script_tests";
     public static final String RUN_SCRIPTS_RESOURCE = "run-scripts";
+    public static final String BACKUPS_DIR_NAME = "backups";
     private static final String DEV_MODULES_SYSTEM_PROPERTY = "ptcgr.devModules";
+    // Forces the backup and reinstall below even if the version marker already matches
+    public static final String FORCE_REINSTALL_SYSTEM_PROPERTY = "ptcgr.forceReinstallResources";
+    // Shared by modules/rules/run-scripts since they always move together. Lives at the working
+    // dir root since run-scripts has no dedicated subdir of its own to hold it in.
+    private static final String RESOURCES_VERSION_FILE_NAME = "ptcgr-res-ver";
 
     private final File workingDir;
 
@@ -46,19 +62,30 @@ public final class PtcgBundledResources {
     }
 
     public void installRandomizerLibrary() {
-        RandomizerBundledResources.install(workingDir, true);
+        RandomizerBundledResources.install(workingDir, getBackupsDir(), isForceReinstallEnabled());
     }
 
     public void installAppResources() {
         try {
-            ManifestResourceExtractor.extract(MODULES_RESOURCE,
-                    new File(workingDir, MODULES_DIR_NAME).getAbsolutePath(), true);
-            ManifestResourceExtractor.extract(RULES_RESOURCE,
-                    new File(workingDir, RULES_DIR_NAME).getAbsolutePath(), true);
-            // run-scripts extracts into the app root. overwriteExisting=true would wipe the whole
-            // working dir (including randomizer/ and modules/) before copying wrappers.
-            ManifestResourceExtractor.extract(RUN_SCRIPTS_RESOURCE, workingDir.getAbsolutePath(),
-                    false);
+            File backupsDir = getBackupsDir();
+            String version = PtcgRandomizerVersion.VERSION;
+            File marker = new File(workingDir, RESOURCES_VERSION_FILE_NAME);
+
+            if (VersionedResourceInstaller.needsReinstall(marker, version,
+                    isForceReinstallEnabled())) {
+                VersionedResourceInstaller.backupAndInstall(MODULES_RESOURCE,
+                        new File(workingDir, MODULES_DIR_NAME), backupsDir, MODULES_DIR_NAME);
+                VersionedResourceInstaller.backupAndInstall(RULES_RESOURCE,
+                        new File(workingDir, RULES_DIR_NAME), backupsDir, RULES_DIR_NAME);
+                // No backupSubDir: run-scripts extracts to workingDir's root, so back it up
+                // there too instead of nesting it under a "run-scripts" folder.
+                VersionedResourceInstaller.backupAndInstall(RUN_SCRIPTS_RESOURCE, workingDir,
+                        backupsDir, null);
+                VersionedResourceInstaller.writeVersionMarker(marker, version);
+
+                System.out.println("Updated bundled modules/rules/run-scripts to version " + version
+                        + ". Previous copies (if any) are in " + backupsDir.getAbsolutePath());
+            }
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install PTCG bundled resources", e);
         }
@@ -71,15 +98,13 @@ public final class PtcgBundledResources {
     /**
      * Installs the dev only test modules into the same modules directory as the regular ones (so
      * they show up alongside them in the UI). Only called when dev modules are enabled. These are
-     * never present in a packaged release jar. Must run after installAppResources extracts (and
-     * wipes) the regular modules directory.
+     * never present in a packaged release jar. Must run after installAppResources so the regular
+     * modules are already in place.
      */
     public void installDevAppResources() {
         try {
-            // overwriteExisting=false: merges into the modules dir instead of wiping it, since
-            // installAppResources() already reset it to just the regular bundled modules
             ManifestResourceExtractor.extract(DEV_MODULES_RESOURCE,
-                    getModulesDir().getAbsolutePath(), false);
+                    getModulesDir().getAbsolutePath());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install PTCG dev test modules", e);
         }
@@ -87,6 +112,10 @@ public final class PtcgBundledResources {
 
     public static boolean isDevModulesEnabled() {
         return Boolean.getBoolean(DEV_MODULES_SYSTEM_PROPERTY);
+    }
+
+    public static boolean isForceReinstallEnabled() {
+        return Boolean.getBoolean(FORCE_REINSTALL_SYSTEM_PROPERTY);
     }
 
     public File getRandomizerDir() {
@@ -105,11 +134,19 @@ public final class PtcgBundledResources {
         return new File(workingDir, SCRIPT_TESTS_DIR_NAME);
     }
 
-    // Shipped cases live in the jar. Reinstall wipes script_tests so stale files do not linger.
+    public File getBackupsDir() {
+        return new File(workingDir, BACKUPS_DIR_NAME);
+    }
+
+    // Only installed on demand (running with --script-tests), independently of installAppResources
+    // above so it gets backed up and refreshed on its own first run under a new version
+    // regardless of whether installAppResources() already ran.
     public void installScriptTests() {
         try {
-            ManifestResourceExtractor.extract(SCRIPT_TESTS_RESOURCE,
-                    getScriptTestsDir().getAbsolutePath(), true);
+            File scriptTestsDir = getScriptTestsDir();
+            VersionedResourceInstaller.installIfNeeded(SCRIPT_TESTS_RESOURCE, scriptTestsDir,
+                    new File(scriptTestsDir, RESOURCES_VERSION_FILE_NAME),
+                    PtcgRandomizerVersion.VERSION, getBackupsDir(), isForceReinstallEnabled());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install script tests", e);
         }
