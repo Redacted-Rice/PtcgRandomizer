@@ -50,8 +50,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class RandomizerApp {
-
-    // TODO: Make configurable for functional testing support?
     private static final String DEFAULT_ROM_NAME = "ptcg.gbc";
     private static final String OPEN_ROM_TEXT = "Open ROM";
     private static final String OPEN_NEW_ROM_TEXT = "Open New ROM";
@@ -253,7 +251,6 @@ public class RandomizerApp {
                     }
                 }
             } catch (IOException e1) {
-                // TODO later: Auto-generated catch block
                 e1.printStackTrace();
                 JOptionPane.showMessageDialog(frmTradingCard, e1.getMessage(),
                         "Randomization Failed", JOptionPane.ERROR_MESSAGE);

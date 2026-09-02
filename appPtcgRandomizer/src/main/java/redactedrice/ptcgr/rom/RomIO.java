@@ -20,7 +20,6 @@ import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.rules.Rules;
-import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.DataManager;
 
@@ -34,7 +33,7 @@ public class RomIO {
     }
 
     private static void verifyRom(byte[] rawBytes) {
-        // TODO later: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
+        // TODO now: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
         int index = PtcgRomConstants.HEADER_LOCATION;
         for (byte headerByte : PtcgRomConstants.HEADER) {
             if (headerByte != rawBytes[index++]) {
@@ -51,7 +50,7 @@ public class RomIO {
         return data;
     }
 
-    // TODO: Testing only. Should remove once BPS is good and ready
+    // !!! For BPS Writing Testing only !!!
     static void writeRaw(byte[] rawBytes, File romFile) {
         try (FileOutputStream fos = new FileOutputStream(romFile)) {
             fos.write(rawBytes);
@@ -169,13 +168,6 @@ public class RomIO {
         InstructionParser parser = new InstructionParser(List.of(ptcgParser,
                 new BpsInstructionSetParser(), new GbZ80InstructionSetParser()));
 
-        // TODO later: Need to handle tweak blocks somehow. Should these all be
-        // file defined and selected via a menu? could also include if they default
-        // to on or not. Also for now we can handle these after the other blocks
-        // are generated but we arbitrarily do it before. Is there any reason to
-        // do one or the other?
-        // CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks, parser);
-
         // Finalize all the data to prepare for writing
         finalizeDataAndGenerateBlocks(romData.modified, parser, ptcgParser);
 
@@ -191,9 +183,6 @@ public class RomIO {
 
     private static void finalizeDataAndGenerateBlocks(RandomizationData patchedData,
             InstructionParser parser, PtcgInstructionSetParser ptcgParser) {
-        // Reset the singleton -- TODO later: Needed?
-        HardcodedEffects.reset();
-
         // Finalize the card data, texts and blocks
         patchedData.allCards.finalizeConvertAndAddData(patchedData.idsToText, patchedData.blocks,
                 parser);
@@ -205,8 +194,8 @@ public class RomIO {
         patchedData.idsToText.convertAndAddBlocks(patchedData.blocks);
 
         // Sort them and combine values to make things easier elsewhere in the code
-        // TODO later: if adding custom blanking, we should call this afterwards
-        // TODO: sorted twice?
+        // TODO now: if adding custom blanking, we should call this afterwards
+        // TODO now: sorted twice?
         AddressRange.sortAndCombine(patchedData.blocks.getAllBlankedBlocks());
     }
 
@@ -218,7 +207,7 @@ public class RomIO {
             blocks.writeBlocks(writer, assignedAddresses);
             writer.writeBps(patchFile, blocks.getAllBlankedBlocks());
         } catch (IOException e) {
-            // TODO later: Auto-generated catch block
+            // TODO now: Log?
             e.printStackTrace();
         }
     }

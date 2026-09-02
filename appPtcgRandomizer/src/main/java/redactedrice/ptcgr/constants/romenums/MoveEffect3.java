@@ -6,7 +6,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 
 
 public enum MoveEffect3 {
-    // TODO later: bit 1 covers a wide variety of effects. See if we can figure it out
+    // TODO: bit 1 covers a wide variety of effects. See if we can figure it out
     // bits 2-7 are unused
     // @formatter:off
     BOOST_IF_TAKEN_DAMAGE (1 << 0),

@@ -11,19 +11,18 @@ import redactedrice.compiler.instructions.basic.Rst;
 import redactedrice.gbcframework.QueuedWriter;
 import redactedrice.gbcframework.addressing.BankAddress;
 
+// TODO: Does not support labels as its not really benificial. Labels are more about
+// new blocks not assigning existing code to a label
 public class Bank1Call extends BasicInstruction {
-    // TODO: integrate with call/farcall
-
     public static final int SIZE = 3;
     short value;
 
     public Bank1Call(short bank1Address) {
-        // TODO: Check address
+        // TODO now: Check address
         super(SIZE);
         this.value = bank1Address;
     }
 
-    // TODO: Support labels?
     public static Bank1Call create(String[] args) {
         final String SUPPORT_STRING = "Bank1Call only supports (short): Given ";
         if (args.length != 1) {

@@ -6,7 +6,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 
 
 public enum MoveEffect2 {
-    // TODO later: bits 5, 6 and 7 cover a wide variety of effects. See if we can figure
+    // TODO: bits 5, 6 and 7 cover a wide variety of effects. See if we can figure
     // something out for them
     // @formatter:off
     SWITCH_OPPONENT_MONSTER  (1 << 0),

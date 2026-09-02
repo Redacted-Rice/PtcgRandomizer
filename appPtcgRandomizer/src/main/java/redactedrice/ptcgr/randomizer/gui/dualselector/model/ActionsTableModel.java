@@ -10,13 +10,11 @@ import javax.swing.table.AbstractTableModel;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.ToolTips;
 
-// TODO: Split between tables?
 public class ActionsTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String[] COLUMN_HEADERS = { "Action", "Config"
-    };
+    private static final String[] COLUMN_HEADERS = {"Action", "Config"};
 
     List<Action> data;
 
@@ -43,12 +41,12 @@ public class ActionsTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex < getDataRowCount()) {
             switch (ActionsTableColumn.fromValue(columnIndex)) {
-            case NAME:
-                return data.get(rowIndex).getName();
-            case CONFIG:
-                return data.get(rowIndex).numConfigs();
-            default:
-                return "";
+                case NAME:
+                    return data.get(rowIndex).getName();
+                case CONFIG:
+                    return data.get(rowIndex).numConfigs();
+                default:
+                    return "";
             }
         }
         return "";

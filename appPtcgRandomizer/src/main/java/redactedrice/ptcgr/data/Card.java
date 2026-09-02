@@ -30,7 +30,6 @@ public abstract class Card {
 
     private int readFromAddress;
 
-    // TODO later: encapsulate these or make public?
     public CardType type;
     public CardName name;
     public short gfx; // Card art

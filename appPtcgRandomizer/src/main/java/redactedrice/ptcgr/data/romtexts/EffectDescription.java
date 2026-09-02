@@ -33,7 +33,7 @@ public class EffectDescription extends RomText {
         boolean changedText = false;
         String deformatted = getDeformattedAndMergedText();
 
-        // TODO later: This isn't quite right or sufficient for what is needed
+        // TODO now: This isn't quite right or sufficient for what is needed
         // Replace with a method to read changes from a file?
         if (!isEmpty()) {
             // Some descriptions have misspelled names. Check if this is one and if so, replace it
@@ -49,8 +49,8 @@ public class EffectDescription extends RomText {
 
             // Now check if we need to change other references to the card's name
             if (!sourceCardName.equals(descriptionCardName)) {
-                deformatted = StringUtils.replaceAll(deformatted, sourceCardName,
-                        descriptionCardName);
+                deformatted =
+                        StringUtils.replaceAll(deformatted, sourceCardName, descriptionCardName);
                 changedText = true;
             }
         }

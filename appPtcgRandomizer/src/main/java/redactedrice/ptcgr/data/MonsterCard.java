@@ -28,28 +28,30 @@ public class MonsterCard extends Card {
     private static final Pattern NAME_WITH_LEVEL_PATTERN =
             Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
 
-    // TODO Make some of these private to ensure safe values (e.g. multiple of 10 for hp?)
+    // TODO now: Unencapsulate
     private byte hp;
-    public EvolutionStage stage; // TODO later: Encaspsulate?
-    public CardName prevEvoName; // TODO later: Encaspsulate?
+    public EvolutionStage stage;
+    public CardName prevEvoName;
 
     private Move[] moves;
     // Number of active move slots (0..MAX_NUM_MOVES)
     private int numMoves;
 
-    public byte retreatCost; // TODO later: max allowed?
+    public byte retreatCost; // TODO: What is the max allowed value?
     public WeaknessResistanceType weakness; // Allows multiple
     public WeaknessResistanceType resistance; // Allows multiple
-    public MonsterCategory monsterCategory; // TODO later: Investigate? Any gameplay impact?
+    public MonsterCategory monsterCategory; // TODO: Investigate? Any gameplay impact?
     public byte dexNumber;
-    public byte unknownByte1; // TODO later: Always 0?
-    public byte level; // TODO later: Investigate No gameplay impact?
-    public byte lengthFt; // TODO later: Investigate No gameplay impact?
-    public byte lengthIn; // TODO later: Investigate No gameplay impact?
-    public short weight; // TODO later: Investigate No gameplay impact?
+    public byte unknownByte1; // TODO: Always 0?
+    public byte level; // TODO: Investigate No gameplay impact?
+    public byte lengthFt; // TODO: Investigate No gameplay impact?
+    public byte lengthIn; // TODO: Investigate No gameplay impact?
+    public short weight; // TODO: Investigate No gameplay impact?
     public PokeDescription description;
-    public byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files -
-                              // 19 for first stage, 16 for second stage, 0 for final stage?
+    public byte unknownByte2; // TODO now: At least somewhat tracks with evo stage in asm files
+                              // - 19 for first stage, 16 for second stage, 0 for final stage?
+                              // Investigate and see if we need to change it for evo changes
+                              // to work as expected
 
     public MonsterCard() {
         super();
@@ -495,7 +497,6 @@ public class MonsterCard extends Card {
     }
 
     public boolean setHp(int hp) {
-        // TODO: Enforce multiple of 10 and not too large (<= 120?)
         this.hp = (byte) hp;
         return true;
     }
