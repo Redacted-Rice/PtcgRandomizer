@@ -240,11 +240,10 @@ tasks.named<JavaExec>("run") {
     systemProperty("ptcgr.devModules", "true")
 }
 
-// Keep test fast. Anything that needs the packaged jar runs under fatJarTest instead.
+// test needs the packaged jar too: PtcgBundledResourcesFatJarTest shells out to it directly.
 tasks.named<Test>("test") {
-    useJUnitPlatform {
-        excludeTags("requiresFatJar")
-    }
+    dependsOn("fatJar")
+    useJUnitPlatform()
 }
 
 tasks.register<JavaExec>("runScriptTests") {
@@ -255,24 +254,6 @@ tasks.register<JavaExec>("runScriptTests") {
     classpath = sourceSets.main.get().runtimeClasspath
     args = listOf("--script-tests")
     systemProperty("ptcgr.devModules", "true")
-}
-
-// Smoke test that the release jar can extract modules, rules, and the randomizer lib.
-// script_tests install only when something runs with --script-tests.
-tasks.register<Test>("fatJarTest") {
-    group = "verification"
-    description = "Runs tests that require the packaged application JAR"
-    testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = sourceSets.test.get().runtimeClasspath
-    useJUnitPlatform {
-        includeTags("requiresFatJar")
-    }
-    dependsOn("fatJar", "testClasses")
-    shouldRunAfter(tasks.named("test"))
-}
-
-tasks.named("check") {
-    dependsOn("fatJarTest")
 }
 
 tasks.named("assemble") {
