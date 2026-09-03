@@ -13,7 +13,6 @@ import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.Cards;
-import redactedrice.ptcgr.rom.RandomizationData;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.randomizer.context.JavaContext;
@@ -55,7 +54,7 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
         String label = testCase.displayName();
         List<Map<String, Object>> expect =
                 ScriptTestValues.listOfMaps(testCase.data().get("expect"), "expect");
-        RandomizationData modified = (RandomizationData) context.get("modified");
+        Cards modified = (Cards) context.get("modified");
         List<MonsterCard> cards = modified.getRandomizableMonsterCards();
         List<String> mismatches = new ArrayList<>();
         Set<MonsterCard> claimed = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -75,14 +74,15 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
         ScriptTestFields.failIfMismatches(label, mismatches);
     }
 
-    private static RandomizationData buildData(JavaContext context,
-            List<Map<String, Object>> cardSpecs, Rules rules) {
+    private static Cards buildData(JavaContext context, List<Map<String, Object>> cardSpecs,
+            Rules rules) {
         if (cardSpecs.size() > MONSTER_IDS.size()) {
             throw new IllegalArgumentException(
                     "Too many cards in case. Have " + MONSTER_IDS.size() + " monster ids");
         }
 
         Cards cards = new Cards();
+        cards.bindRules(rules);
         Set<CardId> usedIds = new HashSet<>();
         for (Map<String, Object> spec : cardSpecs) {
             CardId id = requireCardId(spec, usedIds);
@@ -90,10 +90,7 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
             cards.cards().add(buildCard(context, spec, id));
         }
 
-        RandomizationData data = new RandomizationData();
-        data.allCards = cards;
-        data.bindRules(rules);
-        return data;
+        return cards;
     }
 
     private static MonsterCard buildCard(JavaContext context, Map<String, Object> spec, CardId id) {

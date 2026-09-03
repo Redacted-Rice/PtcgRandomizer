@@ -1,10 +1,7 @@
 package redactedrice.ptcgr.data;
 
 
-import redactedrice.rompacker.Blocks;
-import redactedrice.rompacker.HybridBlock;
-import redactedrice.rompacker.MovableBlock;
-import redactedrice.gbcframework.addressing.AddressRange;
+
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.romenums.BoosterPack;
 import redactedrice.ptcgr.constants.romenums.CardId;
@@ -14,21 +11,17 @@ import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.data.romtexts.CardName;
 import redactedrice.ptcgr.data.support.CardIdSorter;
 import redactedrice.ptcgr.data.support.CardRomSorter;
-import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
 import java.security.InvalidParameterException;
 import java.util.Comparator;
 import redactedrice.compiler.CodeBlock;
-import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
 
 public abstract class Card {
     public static final int CARD_COMMON_SIZE = 8;
     public static final Comparator<Card> ID_SORTER = new CardIdSorter();
     public static final Comparator<Card> ROM_SORTER = new CardRomSorter();
-
-    private int readFromAddress;
 
     public CardType type;
     public CardName name;
@@ -43,7 +36,6 @@ public abstract class Card {
 
     public Card() {
         name = createCardName();
-        readFromAddress = -1;
     }
 
     protected abstract CardName createCardName();
@@ -52,7 +44,6 @@ public abstract class Card {
 
     // Common copying used by subclasses
     protected void copyCardFields(Card toCopy) {
-        readFromAddress = toCopy.readFromAddress;
         type = toCopy.type;
         name = new CardName(toCopy.name);
         gfx = toCopy.gfx;
@@ -62,7 +53,7 @@ public abstract class Card {
         id = toCopy.id;
     }
 
-    public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText,
+    public static Card addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText,
             CardGroup<Card> toAddTo) {
         CardType type = CardType.readFromByte(cardBytes[startIndex]);
 
@@ -78,17 +69,16 @@ public abstract class Card {
                     + startIndex + " that is of type " + type);
         }
 
-        startIndex = card.readAndConvertIds(cardBytes, startIndex, idToText);
+        card.readAndConvertIds(cardBytes, startIndex, idToText);
         toAddTo.add(card);
-        return startIndex;
+        return card;
     }
 
     public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
 
-    public abstract void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks,
-            InstructionParser parser);
+    public abstract void finalizeAndAddTexts(Texts texts);
 
-    protected abstract CodeBlock convertToCodeBlock();
+    public abstract CodeBlock convertToCodeBlock();
 
     public abstract int getSize();
 
@@ -103,8 +93,6 @@ public abstract class Card {
     }
 
     protected int commonReadAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText) {
-        readFromAddress = startIndex;
-
         int index = startIndex;
 
         type = CardType.readFromByte(cardBytes[index++]);
@@ -129,13 +117,8 @@ public abstract class Card {
         return index;
     }
 
-    protected void commonFinalizeAndAddData(Texts texts) {
+    protected void commonFinalizeAndAddTexts(Texts texts) {
         name.finalizeAndAddTexts(texts);
-    }
-
-    public HybridBlock convertToHybridBlock() {
-        return new HybridBlock(new MovableBlock(convertToCodeBlock(), 0, (byte) 0xC, (byte) 0xD),
-                readFromAddress);
     }
 
     protected CodeBlock convertCommonDataToCodeBlock() {
@@ -148,7 +131,6 @@ public abstract class Card {
 
         CodeBlock block = new CodeBlock("internal_card_" + name.toString() + "_"
                 + ByteUtils.unsignedByteAsShort(id.getValue()));
-        block.addByteSourceHint(new AddressRange(readFromAddress, readFromAddress + getSize()));
         block.appendInstruction(bytes.createRawByteInsruct());
         return block;
     }

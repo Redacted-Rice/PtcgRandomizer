@@ -9,21 +9,15 @@ import java.util.Objects;
 import java.util.Set;
 
 import redactedrice.compiler.CodeBlock;
-import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
 import redactedrice.compiler.instructions.basic.RawBytes;
-import redactedrice.rompacker.Blocks;
-import redactedrice.rompacker.MovableBlock;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.*;
-import redactedrice.ptcgr.data.customcardeffects.CallForFamily;
-import redactedrice.ptcgr.data.customcardeffects.CustomCardEffect;
 import redactedrice.ptcgr.data.romtexts.EffectDescription;
 import redactedrice.ptcgr.data.romtexts.MoveName;
 import redactedrice.ptcgr.data.romtexts.RomText;
 import redactedrice.ptcgr.data.support.MoveBasicSorter;
-import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
 public class Move {
@@ -301,33 +295,13 @@ public class Move {
         return index;
     }
 
-    // TODO: Clear the call for family logic out once I don't need it for reference anymore
-    public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard,
-            InstructionParser parser) {
+    public void finalizeAndAddTexts(Texts texts, MonsterCard hostCard) {
         name.finalizeAndAddTexts(texts);
+        description.finalizeAndAddTexts(texts, hostCard.name.toString());
+    }
 
-        if (name.toString().compareToIgnoreCase("call for family") == 0 && false) {
-            CardGroup<Card> basics = cards.cards().determineBasicEvolutionOfCard(hostCard);
-            if (basics.count() <= 0) {
-                throw new IllegalArgumentException(
-                        "Failed to find basic card for " + hostCard.name.toString());
-            }
-
-            CustomCardEffect custEffect =
-                    CallForFamily.createMoveEffect(/* cards, */ basics, parser);
-            List<MovableBlock> effectBlocks = custEffect.convertToBlocks();
-            for (MovableBlock block : effectBlocks) {
-                blocks.addMovableBlock(block);
-            }
-
-            effect = custEffect;
-            // The effect description will only talk about the poke to search for so we
-            // replace it with the basic poke's name
-            description.finalizeAndAddTexts(texts,
-                    basics.listOrderedByCardId().get(0).name.toString());
-        } else {
-            description.finalizeAndAddTexts(texts, hostCard.name.toString());
-        }
+    public CardEffect getEffect() {
+        return effect;
     }
 
     public void appendToCodeBlock(CodeBlock block) {

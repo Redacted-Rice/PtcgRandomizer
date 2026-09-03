@@ -135,6 +135,15 @@ public class CustomCardEffect extends CardEffect {
         effects.put(type, new EffectFunction(bankBAddress));
     }
 
+    public boolean hasCompiledFunctions() {
+        for (EffectFunction effectFunction : effects.values()) {
+            if (!effectFunction.isExistingFunction()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<MovableBlock> convertToBlocks() {
         List<MovableBlock> blocks = new LinkedList<>();
         if (!effects.isEmpty()) {
