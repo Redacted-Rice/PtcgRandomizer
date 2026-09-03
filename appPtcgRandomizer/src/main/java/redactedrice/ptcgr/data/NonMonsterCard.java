@@ -2,14 +2,11 @@ package redactedrice.ptcgr.data;
 
 
 import redactedrice.compiler.CodeBlock;
-import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.instructions.basic.RawBytes;
-import redactedrice.rompacker.Blocks;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.data.romtexts.CardName;
 import redactedrice.ptcgr.data.romtexts.EffectDescription;
-import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 
 public class NonMonsterCard extends Card {
@@ -58,15 +55,14 @@ public class NonMonsterCard extends Card {
     }
 
     @Override
-    public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks,
-            InstructionParser unused) {
-        commonFinalizeAndAddData(texts);
+    public void finalizeAndAddTexts(Texts texts) {
+        commonFinalizeAndAddTexts(texts);
 
         description.finalizeAndAddTexts(texts, name.toString());
     }
 
     @Override
-    protected CodeBlock convertToCodeBlock() {
+    public CodeBlock convertToCodeBlock() {
         CodeBlock block = convertCommonDataToCodeBlock();
 
         block.appendInstruction(new RawBytes(ByteUtils.shortToLittleEndianBytes(effectPtr),

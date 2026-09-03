@@ -9,16 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import redactedrice.compiler.CodeBlock;
-import redactedrice.compiler.InstructionParser;
 import redactedrice.compiler.RawBytePacker;
-import redactedrice.rompacker.Blocks;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.romenums.*;
 import redactedrice.ptcgr.data.romtexts.CardName;
 import redactedrice.ptcgr.data.romtexts.MonsterCategory;
 import redactedrice.ptcgr.data.romtexts.PokeDescription;
 import redactedrice.ptcgr.data.support.NameWithLevel;
-import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Texts;
 import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.Logger;
@@ -452,10 +449,13 @@ public class MonsterCard extends Card {
         return TOTAL_SIZE_IN_BYTES;
     }
 
+    public Move moveAt(int moveIndex) {
+        return moves[moveIndex];
+    }
+
     @Override
-    public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks,
-            InstructionParser parser) {
-        commonFinalizeAndAddData(texts);
+    public void finalizeAndAddTexts(Texts texts) {
+        commonFinalizeAndAddTexts(texts);
 
         prevEvoName.finalizeAndAddTexts(texts);
         monsterCategory.finalizeAndAddTexts(texts);
@@ -463,12 +463,12 @@ public class MonsterCard extends Card {
 
         sortMoves();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
-            moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this, parser);
+            moves[moveIndex].finalizeAndAddTexts(texts, this);
         }
     }
 
     @Override
-    protected CodeBlock convertToCodeBlock() {
+    public CodeBlock convertToCodeBlock() {
         CodeBlock block = convertCommonDataToCodeBlock();
 
         RawBytePacker bytes = new RawBytePacker();
