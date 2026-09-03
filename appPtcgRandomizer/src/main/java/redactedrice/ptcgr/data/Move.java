@@ -39,7 +39,7 @@ public class Move {
     Set<MoveEffect1> effect1;
     Set<MoveEffect2> effect2;
     Set<MoveEffect3> effect3;
-    byte unknownByte;
+    Set<MoveEffect4> effect4;
     byte animation;
     private final MonsterCard sourceCard;
     private final int sourceMoveIndex;
@@ -63,6 +63,7 @@ public class Move {
         effect1 = new HashSet<>();
         effect2 = new HashSet<>();
         effect3 = new HashSet<>();
+        effect4 = new HashSet<>();
     }
 
     public void copyNonMetadataFieldsFrom(Move toCopy) {
@@ -75,7 +76,7 @@ public class Move {
         effect1 = new HashSet<>(toCopy.effect1);
         effect2 = new HashSet<>(toCopy.effect2);
         effect3 = new HashSet<>(toCopy.effect3);
-        unknownByte = toCopy.unknownByte;
+        effect4 = new HashSet<>(toCopy.effect4);
         animation = toCopy.animation;
     }
 
@@ -130,8 +131,8 @@ public class Move {
         return MoveEffect3.storeAsByte(effect3);
     }
 
-    public byte getUnknownByte() {
-        return unknownByte;
+    public byte getEffect4Byte() {
+        return MoveEffect4.storeAsByte(effect4);
     }
 
     public byte getAnimation() {
@@ -294,7 +295,7 @@ public class Move {
         effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
         effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
         effect3 = MoveEffect3.readFromByte(moveBytes[index++]);
-        unknownByte = moveBytes[index++];
+        effect4 = new HashSet<>(MoveEffect4.readFromByte(moveBytes[index++], effect2));
         animation = moveBytes[index++];
 
         return index;
@@ -349,6 +350,7 @@ public class Move {
 
         block.appendInstruction(
                 new RawBytes(MoveEffect1.storeAsByte(effect1), MoveEffect2.storeAsByte(effect2),
-                        MoveEffect3.storeAsByte(effect3), unknownByte, animation));
+                        MoveEffect3.storeAsByte(effect3), MoveEffect4.storeAsByte(effect4),
+                        animation));
     }
 }

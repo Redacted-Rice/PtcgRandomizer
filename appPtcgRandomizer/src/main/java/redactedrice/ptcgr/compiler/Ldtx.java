@@ -47,7 +47,7 @@ public class Ldtx extends FixedLengthInstruction {
     }
 
     @Override
-    public boolean containsPlaceholder() {
+    public boolean containsOnlySubsegmentPartOfLabel() {
         return false;
     }
 

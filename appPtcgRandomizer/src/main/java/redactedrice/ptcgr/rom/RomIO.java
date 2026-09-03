@@ -33,13 +33,33 @@ public class RomIO {
     }
 
     private static void verifyRom(byte[] rawBytes) {
-        // TODO now: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
+        int expectedSize = PtcgRomConstants.NUMBER_OF_BANKS * PtcgRomConstants.BANK_SIZE;
+        if (rawBytes.length != expectedSize) {
+            throw new IllegalArgumentException("Failed to verify the rom: Expected size "
+                    + expectedSize + " but found " + rawBytes.length);
+        }
+
         int index = PtcgRomConstants.HEADER_LOCATION;
         for (byte headerByte : PtcgRomConstants.HEADER) {
             if (headerByte != rawBytes[index++]) {
                 throw new IllegalArgumentException(
                         "Failed to verify the rom: Header is incorrect!");
             }
+        }
+
+        verifyGbChecksum(rawBytes);
+    }
+
+    // The standard GB approach for the header checksum. This is not the whole rom but
+    // just the header stuff.
+    private static void verifyGbChecksum(byte[] rawBytes) {
+        int checksum = 0;
+        for (int i = 0; i <= 0x14D; i++) {
+            checksum = (checksum + ByteUtils.unsignedByteAsShort(rawBytes[i])) & 0xFF;
+        }
+        if (checksum != 0) {
+            throw new IllegalArgumentException(
+                    "Failed to verify the rom: GB checksum is incorrect!");
         }
     }
 
@@ -192,11 +212,6 @@ public class RomIO {
 
         // Convert the text to blocks
         patchedData.idsToText.convertAndAddBlocks(patchedData.blocks);
-
-        // Sort them and combine values to make things easier elsewhere in the code
-        // TODO now: if adding custom blanking, we should call this afterwards
-        // TODO now: sorted twice?
-        AddressRange.sortAndCombine(patchedData.blocks.getAllBlankedBlocks());
     }
 
     public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks,
@@ -207,8 +222,8 @@ public class RomIO {
             blocks.writeBlocks(writer, assignedAddresses);
             writer.writeBps(patchFile, blocks.getAllBlankedBlocks());
         } catch (IOException e) {
-            // TODO now: Log?
-            e.printStackTrace();
+            throw new IllegalStateException("Failed to write BPS patch to " + patchFile.getPath(),
+                    e);
         }
     }
 }

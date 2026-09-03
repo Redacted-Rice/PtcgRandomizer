@@ -89,10 +89,10 @@ public class CustomCardEffect extends CardEffect {
 
     @Override
     public CardEffect copy() {
-        // TODO now: Try an remove card copying. If not then consider
-        // making this a deep copy
         CustomCardEffect copy = new CustomCardEffect(id);
-        copy.effects = new EnumMap<>(effects);
+        for (Entry<EffectFunctionTypes, EffectFunction> entry : effects.entrySet()) {
+            copy.effects.put(entry.getKey(), entry.getValue().copy());
+        }
         copy.effectCommand = effectCommand;
         return copy;
     }

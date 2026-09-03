@@ -29,4 +29,11 @@ public class EffectFunction {
     public short getAddress() {
         return address;
     }
+
+    EffectFunction copy() {
+        if (isExistingFunction()) {
+            return new EffectFunction(address);
+        }
+        return new EffectFunction(block);
+    }
 }

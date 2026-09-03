@@ -7,7 +7,10 @@ public enum EvolutionStage {
     // @formatter:off
     BASIC   (0x00, "B"),
     STAGE_1 (0x01, "1"),
-    STAGE_2 (0x02, "2");
+    STAGE_2 (0x02, "2"),
+    // Used dynamically by game when a stage is skipped (e.g breeder trainer card)
+    // Not sure what would happen if you set it in the rom...
+    STAGE_2_WITHOUT_STAGE_1(0x03, "2-");
     // @formatter:on
 
     private byte value;

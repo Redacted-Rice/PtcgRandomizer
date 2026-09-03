@@ -9,6 +9,7 @@ import redactedrice.compiler.instructions.BasicInstruction;
 import redactedrice.compiler.instructions.addressref.BlockBankLoadedAddress;
 import redactedrice.compiler.instructions.basic.Rst;
 import redactedrice.gbcframework.QueuedWriter;
+import redactedrice.gbcframework.RomConstants;
 import redactedrice.gbcframework.addressing.BankAddress;
 
 // TODO: Does not support labels as its not really benificial. Labels are more about
@@ -18,9 +19,21 @@ public class Bank1Call extends BasicInstruction {
     short value;
 
     public Bank1Call(short bank1Address) {
-        // TODO now: Check address
         super(SIZE);
+        validateBank1LoadedAddress(bank1Address);
         this.value = bank1Address;
+    }
+
+    private static void validateBank1LoadedAddress(short bank1Address) {
+        int address = bank1Address & 0xFFFF;
+        int bank1Start = RomConstants.BANK_SIZE;
+        int bank1EndExclusive = RomConstants.BANK_SIZE * 2;
+        if (address < bank1Start || address >= bank1EndExclusive) {
+            throw new IllegalArgumentException("bank1call address must be a bank 1 loaded address "
+                    + "between 0x" + Integer.toHexString(bank1Start) + " and 0x"
+                    + Integer.toHexString(bank1EndExclusive - 1) + " but was 0x"
+                    + Integer.toHexString(address));
+        }
     }
 
     public static Bank1Call create(String[] args) {

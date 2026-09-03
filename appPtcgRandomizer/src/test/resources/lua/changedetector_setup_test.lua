@@ -91,8 +91,8 @@ local function makeMove(fields)
 		getAnimation = function()
 			return fields.animation or 0
 		end,
-		getUnknownByte = function()
-			return fields.unknownByte or 0
+		getEffect4Byte = function()
+			return fields.effect4 or 0
 		end,
 	}
 end
@@ -121,7 +121,7 @@ local card = {
 		return "Seed"
 	end },
 	dexNumber = 1,
-	unknownByte1 = 0,
+	unknownByte = 0,
 	level = 10,
 	lengthFt = 2,
 	lengthIn = 4,
@@ -129,7 +129,7 @@ local card = {
 	description = { toString = function()
 		return "desc"
 	end },
-	unknownByte2 = 0,
+	aiInfo = 0,
 	getHp = function()
 		return 50
 	end,
