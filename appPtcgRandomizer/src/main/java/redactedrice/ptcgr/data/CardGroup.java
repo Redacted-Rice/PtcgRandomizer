@@ -112,8 +112,8 @@ public class CardGroup<T extends Card> {
         return found;
     }
 
-    // TODO now: Move this and some other more logic specific/search
-    // functions to a separate class?
+    // TODO: Remoev this maybe? May not be needed with scripting approach or could be handled
+    // by that (e.g. evo line id stuff)
     public CardGroup<Card> determineBasicEvolutionOfCard(MonsterCard card) {
         CardGroup<Card> basics = new CardGroup<>();
         if (card.stage == EvolutionStage.BASIC) {
@@ -132,7 +132,7 @@ public class CardGroup<T extends Card> {
                 }
 
                 // TODO now: Doesn't work with mysterious fossil - we only check the parent not
-                // the child is a poke card
+                // the child is a poke card. Need to think more on how to handle this case
                 card = (MonsterCard) basics.listOrderedByCardId().get(0);
             }
         }
@@ -182,9 +182,8 @@ public class CardGroup<T extends Card> {
         return moves;
     }
 
-    // TODO now: encapsulate safer to prevent editing outside class?
     public Collection<T> iterable() {
-        return cardsById.values();
+        return Collections.unmodifiableCollection(cardsById.values());
     }
 
     public Stream<T> stream() {

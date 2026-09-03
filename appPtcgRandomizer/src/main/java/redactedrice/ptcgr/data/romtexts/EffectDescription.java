@@ -33,16 +33,12 @@ public class EffectDescription extends RomText {
         boolean changedText = false;
         String deformatted = getDeformattedAndMergedText();
 
-        // TODO now: This isn't quite right or sufficient for what is needed
-        // Replace with a method to read changes from a file?
         if (!isEmpty()) {
             // Some descriptions have misspelled names. Check if this is one and if so, replace it
             if (PtcgRomConstants.MISSPELLED_CARD_NAMES.containsKey(sourceCardName)) {
-                if (deformatted
-                        .contains(PtcgRomConstants.MISSPELLED_CARD_NAMES.get(sourceCardName))) {
-                    StringUtils.replaceAll(deformatted,
-                            PtcgRomConstants.MISSPELLED_CARD_NAMES.get(sourceCardName),
-                            descriptionCardName);
+                String misspelled = PtcgRomConstants.MISSPELLED_CARD_NAMES.get(sourceCardName);
+                if (deformatted.contains(misspelled)) {
+                    deformatted = StringUtils.replaceAll(deformatted, misspelled, descriptionCardName);
                     changedText = true;
                 }
             }

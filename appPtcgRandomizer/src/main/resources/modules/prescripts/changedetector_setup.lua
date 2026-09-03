@@ -27,8 +27,8 @@ script = {
 		"effect1",
 		"effect2",
 		"effect3",
+		"effect4",
 		"animation",
-		"unknownByte",
 	},
 
 	execute = function(context, args)
@@ -122,19 +122,19 @@ function script.buildMoveFields(moveIndex)
 			end),
 		},
 		{
+			field = prefix .. "_effect4",
+			header = "Move " .. moveNumber .. " Effect 4",
+			align = "right",
+			getter = script.moveGetter(moveIndex, function(move)
+				return move:getEffect4Byte()
+			end),
+		},
+		{
 			field = prefix .. "_animation",
 			header = "Move " .. moveNumber .. " Anim",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
 				return move:getAnimation()
-			end),
-		},
-		{
-			field = prefix .. "_unknownByte",
-			header = "Move " .. moveNumber .. " Unknown",
-			align = "right",
-			getter = script.moveGetter(moveIndex, function(move)
-				return move:getUnknownByte()
 			end),
 		},
 	}
@@ -243,13 +243,15 @@ function script.buildMonsterCardFields()
 		{ field = "resistance", header = "Resistance" },
 		{ field = "monsterCategory", header = "Category" },
 		{ field = "dexNumber", header = "Dex #", align = "right" },
-		{ field = "unknownByte1", header = "Unknown 1", align = "right" },
+		{ field = "unknownByte", header = "Unknown Byte", align = "right" },
 		{ field = "level", header = "Level", align = "right" },
 		{ field = "lengthFt", header = "Length Ft", align = "right" },
 		{ field = "lengthIn", header = "Length In", align = "right" },
 		{ field = "weight", header = "Weight", align = "right" },
 		{ field = "description", header = "Description" },
-		{ field = "unknownByte2", header = "Unknown 2", align = "right" },
+		{ field = "aiInfo", header = "AI Info", align = "right", getter = function(obj)
+			return obj:getAiInfoByte()
+		end },
 	}
 
 	for moveIndex = 0, script.maxMoves - 1 do

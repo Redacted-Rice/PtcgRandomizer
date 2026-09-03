@@ -2,7 +2,9 @@ package redactedrice.ptcgr.data;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,30 +30,29 @@ public class MonsterCard extends Card {
     private static final Pattern NAME_WITH_LEVEL_PATTERN =
             Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
 
-    // TODO now: Unencapsulate
-    private byte hp;
+    public byte hp;
     public EvolutionStage stage;
     public CardName prevEvoName;
 
+    // TODO: Consider encapsulating these data classes instead of just having a few random
+    // encapsulated fields
     private Move[] moves;
     // Number of active move slots (0..MAX_NUM_MOVES)
     private int numMoves;
 
-    public byte retreatCost; // TODO: What is the max allowed value?
+    public byte retreatCost; // TODO: Max valid value? 0x64 is unable to retreat during gameplay
     public WeaknessResistanceType weakness; // Allows multiple
     public WeaknessResistanceType resistance; // Allows multiple
     public MonsterCategory monsterCategory; // TODO: Investigate? Any gameplay impact?
     public byte dexNumber;
-    public byte unknownByte1; // TODO: Always 0?
+    // Always 0 in rom data. May have run time significance
+    public byte unknownByte;
     public byte level; // TODO: Investigate No gameplay impact?
     public byte lengthFt; // TODO: Investigate No gameplay impact?
     public byte lengthIn; // TODO: Investigate No gameplay impact?
     public short weight; // TODO: Investigate No gameplay impact?
     public PokeDescription description;
-    public byte unknownByte2; // TODO now: At least somewhat tracks with evo stage in asm files
-                              // - 19 for first stage, 16 for second stage, 0 for final stage?
-                              // Investigate and see if we need to change it for evo changes
-                              // to work as expected
+    public Set<CardAiInfo> aiInfo;
 
     public MonsterCard() {
         super();
@@ -64,6 +65,7 @@ public class MonsterCard extends Card {
         numMoves = 0;
         monsterCategory = new MonsterCategory();
         description = new PokeDescription();
+        aiInfo = new HashSet<>();
     }
 
     @Override
@@ -96,13 +98,17 @@ public class MonsterCard extends Card {
         resistance = toCopy.resistance;
         monsterCategory = new MonsterCategory(toCopy.monsterCategory);
         dexNumber = toCopy.dexNumber;
-        unknownByte1 = toCopy.unknownByte1;
+        unknownByte = toCopy.unknownByte;
         level = toCopy.level;
         lengthFt = toCopy.lengthFt;
         lengthIn = toCopy.lengthIn;
         weight = toCopy.weight;
         description = new PokeDescription(toCopy.description);
-        unknownByte2 = toCopy.unknownByte2;
+        aiInfo = new HashSet<>(toCopy.aiInfo);
+    }
+
+    public byte getAiInfoByte() {
+        return CardAiInfo.storeAsByte(aiInfo);
     }
 
     public int getLevel() {
@@ -432,7 +438,7 @@ public class MonsterCard extends Card {
         index = monsterCategory.readDataAndConvertIds(cardBytes, index, idToText);
 
         dexNumber = cardBytes[index++];
-        unknownByte1 = cardBytes[index++];
+        unknownByte = cardBytes[index++];
         level = cardBytes[index++];
         lengthFt = cardBytes[index++];
         lengthIn = cardBytes[index++];
@@ -441,7 +447,7 @@ public class MonsterCard extends Card {
 
         index = description.readDataAndConvertIds(cardBytes, index, idToText);
 
-        unknownByte2 = cardBytes[index++];
+        aiInfo = new HashSet<>(CardAiInfo.readFromByte(cardBytes[index++]));
 
         return TOTAL_SIZE_IN_BYTES;
     }
@@ -477,11 +483,11 @@ public class MonsterCard extends Card {
         bytes = new RawBytePacker();
         bytes.append(retreatCost, weakness.getValue(), resistance.getValue());
         bytes.append(ByteUtils.shortToLittleEndianBytes(monsterCategory.getTextId()));
-        bytes.append(dexNumber, unknownByte1, level);
+        bytes.append(dexNumber, unknownByte, level);
         bytes.append(lengthFt, lengthIn);
         bytes.append(ByteUtils.shortToLittleEndianBytes(weight));
         bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
-        bytes.append(unknownByte2);
+        bytes.append(CardAiInfo.storeAsByte(aiInfo));
         block.appendInstruction(bytes.createRawByteInsruct());
 
         return block;

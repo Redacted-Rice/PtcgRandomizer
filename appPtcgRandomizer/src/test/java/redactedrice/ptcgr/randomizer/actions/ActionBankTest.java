@@ -57,7 +57,7 @@ class ActionBankTest {
             assertNotNull(enumDefinition, "CardType should be registered on the shared context");
 
             Object converted = cardTypeArg.convertAndValidate("MONSTER_FIRE",
-                    wrapper.getSharedContext().getEnumRegistry());
+                    wrapper.getEnumRegistry());
             assertEquals("MONSTER_FIRE", converted);
         } finally {
             System.clearProperty("ptcgr.devModules");

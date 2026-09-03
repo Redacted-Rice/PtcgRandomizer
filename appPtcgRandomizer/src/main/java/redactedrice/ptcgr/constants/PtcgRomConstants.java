@@ -82,8 +82,8 @@ public final class PtcgRomConstants {
     public static final int TEXT_POINTERS_LOC = 0x34000; // TextOffsets
     public static final int TEXT_POINTER_OFFSET = 0x34000;
 
-    // TODO now: Config File instead?
-    // Why did I comment out Ninetales?
+    // TODO: Config File instead?
+    // TODO now: Why did I comment out Ninetales?
     // Misspelled card names
     public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {

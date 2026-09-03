@@ -93,7 +93,7 @@ public class ActionBank implements EnumValuesProvider {
         if (luaRandomizer == null) {
             return new EnumRegistry();
         }
-        return luaRandomizer.getSharedContext().getEnumRegistry();
+        return luaRandomizer.getEnumRegistry();
     }
 
     public Module getScript(String scriptId) {
@@ -115,7 +115,7 @@ public class ActionBank implements EnumValuesProvider {
         if (luaRandomizer == null) {
             return List.of();
         }
-        return luaRandomizer.getModuleRegistry().getAllScripts(timing);
+        return luaRandomizer.getAllScripts(timing);
     }
 
     public Collection<Action> get() {

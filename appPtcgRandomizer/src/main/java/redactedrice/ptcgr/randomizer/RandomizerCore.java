@@ -270,7 +270,7 @@ public class RandomizerCore {
         // runtime context so they're merged into every execution context the same way
         // module registered (onLoad) enums are, and so they're resolvable by name for
         // the config UI's ENUM argument dropdowns even before a randomization has run.
-        registerSharedEnums(wrapper.getSharedContext());
+        registerSharedEnums(wrapper);
         IssueTracker.clear();
         wrapper.loadModules();
         return wrapper;
@@ -289,28 +289,28 @@ public class RandomizerCore {
     }
 
     // Shared by setup and tests so the curated register list lives in one place
-    public static void registerSharedEnums(JavaContext context) {
-        context.registerEnum(CardType.class);
-        context.registerEnum(EnergyType.class,
+    public static void registerSharedEnums(LuaRandomizerWrapper wrapper) {
+        wrapper.registerSharedEnum(CardType.class);
+        wrapper.registerSharedEnum(EnergyType.class,
                 Map.of("FIRE", "Fire", "GRASS", "Grass", "LIGHTNING", "Lightning", "WATER", "Water",
                         "FIGHTING", "Fighting", "PSYCHIC", "Psychic", "COLORLESS", "Colorless",
                         "UNUSED_TYPE", "Unused Type"));
         // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)
-        context.registerEnum(EvolutionStage.class);
+        wrapper.registerSharedEnum(EvolutionStage.class);
         // User friendly aliases for HP pool table keys. Same canonical values under the hood
-        context.registerEnum("EvoStage", EvolutionStage.class,
+        wrapper.registerSharedEnum("EvoStage", EvolutionStage.class,
                 Map.of("BASIC", "Basic", "STAGE_1", "Second stage", "STAGE_2", "Third stage"));
-        context.registerEnum("EvoLineStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
+        wrapper.registerSharedEnum("EvoLineStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
                 "STAGE_1", "Two-stage evo", "STAGE_2", "Three-stage evo"));
-        context.registerEnum(RandomizationApproach.class,
+        wrapper.registerSharedEnum(RandomizationApproach.class,
                 Map.of("FULLY_RANDOM", "Fully Random", "MINIMIZE_REPEATS", "Minimize Repeats"));
-        context.registerEnum(DataSource.class, Map.of("CURRENT", "Current"));
-        context.registerEnum(DuplicateHandling.class, Map.of("REMOVE_DUPLICATES",
+        wrapper.registerSharedEnum(DataSource.class, Map.of("CURRENT", "Current"));
+        wrapper.registerSharedEnum(DuplicateHandling.class, Map.of("REMOVE_DUPLICATES",
                 "Remove Duplicates", "KEEP_DUPLICATES", "Keep Duplicates"));
-        context.registerEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
+        wrapper.registerSharedEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
                 "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
-        context.registerEnum(MoveKind.class,
+        wrapper.registerSharedEnum(MoveKind.class,
                 Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks", "POWERS", "Powers"));
-        context.registerEnum(MoveCategory.class);
+        wrapper.registerSharedEnum(MoveCategory.class);
     }
 }
