@@ -36,7 +36,7 @@ module = {
 function module.randomizeHp(context, args)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
-	hp_custom_utils.listPool(args.hpPool):useToRandomize(targets, "setHp", options)
+	hp_custom_utils.listPool(args.hpPool):useToRandomize(targets, "hp", options)
 end
 
 return module

@@ -38,25 +38,23 @@ module = {
 }
 
 function module.raiseMinimums(line)
-	local byStage = randomizer.groupBy(line, function(mc)
-		return mc.stage:getValue()
-	end)
+	local byStage = randomizer.groupBy(line, "stage")
 	local prevStageMaxHp = 0
 
 	byStage:sort():each(function(_, cardsAtStage)
 		cardsAtStage:each(function(mc)
-			if mc:getHp() < prevStageMaxHp then
-				mc:setHp(prevStageMaxHp)
+			if mc.hp < prevStageMaxHp then
+				mc.hp = prevStageMaxHp
 			end
 		end)
-		prevStageMaxHp = cardsAtStage:max("getHp")
+		prevStageMaxHp = cardsAtStage:max("hp")
 	end)
 end
 
 function module.swapHp(a, b)
-	local tmp = a:getHp()
-	a:setHp(b:getHp())
-	b:setHp(tmp)
+	local tmp = a.hp
+	a.hp = b.hp
+	b.hp = tmp
 end
 
 function module.cardWithExtremeHp(cards, wantMax)
@@ -64,9 +62,9 @@ function module.cardWithExtremeHp(cards, wantMax)
 	cards:each(function(mc)
 		if best == nil then
 			best = mc
-		elseif wantMax and mc:getHp() > best:getHp() then
+		elseif wantMax and mc.hp > best.hp then
 			best = mc
-		elseif not wantMax and mc:getHp() < best:getHp() then
+		elseif not wantMax and mc.hp < best.hp then
 			best = mc
 		end
 	end)
@@ -77,9 +75,7 @@ end
 -- HP with the earlier stage's highest. Keeps already ordered values put
 function module.redistribute(line)
 	local stages = {}
-	local byStage = randomizer.groupBy(line, function(mc)
-		return mc.stage:getValue()
-	end)
+	local byStage = randomizer.groupBy(line, "stage")
 	byStage:sort():each(function(_, cardsAtStage)
 		table.insert(stages, cardsAtStage)
 	end)
@@ -90,7 +86,7 @@ function module.redistribute(line)
 		for i = 1, #stages - 1 do
 			local prev = stages[i]
 			local nextStage = stages[i + 1]
-			while prev:max("getHp") > nextStage:min("getHp") do
+			while prev:max("hp") > nextStage:min("hp") do
 				local high = module.cardWithExtremeHp(prev, true)
 				local low = module.cardWithExtremeHp(nextStage, false)
 				module.swapHp(high, low)

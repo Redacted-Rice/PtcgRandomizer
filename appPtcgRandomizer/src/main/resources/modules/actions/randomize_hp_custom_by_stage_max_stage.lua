@@ -59,7 +59,7 @@ function module.randomizeHp(context, args)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
 	hp_custom_utils.buildStageMaxStagePoolGroup(context, args.hpPools, targets):useToRandomize(
-		targets, pool_utils.stageAndMaxStageKey, "setHp", options)
+		targets, pool_utils.stageAndMaxStageKey, "hp", options)
 end
 
 return module

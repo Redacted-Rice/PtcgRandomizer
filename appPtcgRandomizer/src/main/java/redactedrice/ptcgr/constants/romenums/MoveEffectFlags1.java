@@ -5,7 +5,7 @@ import java.util.Set;
 import redactedrice.gbcframework.utils.ByteUtils;
 
 
-public enum MoveEffect1 {
+public enum MoveEffectFlags1 {
     // @formatter:off
     POISON                   (1 << 0),
     SLEEP                    (1 << 1),
@@ -19,10 +19,10 @@ public enum MoveEffect1 {
 
     private byte value;
 
-    private MoveEffect1(int inValue) {
+    private MoveEffectFlags1(int inValue) {
         if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE) {
             throw new IllegalArgumentException(
-                    "Invalid constant input for " + "MoveEffect1 enum: " + inValue);
+                    "Invalid constant input for MoveEffectFlags1 enum: " + inValue);
         }
         value = (byte) inValue;
     }
@@ -31,9 +31,9 @@ public enum MoveEffect1 {
         return value;
     }
 
-    public static Set<MoveEffect1> readFromByte(byte b) {
-        EnumSet<MoveEffect1> readInEffects = EnumSet.noneOf(MoveEffect1.class);
-        for (MoveEffect1 num : MoveEffect1.values()) {
+    public static Set<MoveEffectFlags1> readFromByte(byte b) {
+        EnumSet<MoveEffectFlags1> readInEffects = EnumSet.noneOf(MoveEffectFlags1.class);
+        for (MoveEffectFlags1 num : MoveEffectFlags1.values()) {
             if ((num.getValue() & b) != 0) {
                 readInEffects.add(num);
             }
@@ -41,9 +41,9 @@ public enum MoveEffect1 {
         return readInEffects;
     }
 
-    public static byte storeAsByte(Set<MoveEffect1> set) {
+    public static byte storeAsByte(Set<MoveEffectFlags1> set) {
         byte combinedValue = 0;
-        for (MoveEffect1 num : MoveEffect1.values()) {
+        for (MoveEffectFlags1 num : MoveEffectFlags1.values()) {
             if (set.contains(num)) {
                 combinedValue += num.getValue();
             }

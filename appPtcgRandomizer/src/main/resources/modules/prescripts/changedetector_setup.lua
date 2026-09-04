@@ -24,10 +24,10 @@ script = {
 		"category",
 		"description",
 		"effect",
-		"effect1",
-		"effect2",
-		"effect3",
-		"effect4",
+		"effectFlags1",
+		"effectFlags2",
+		"effectFlags3",
+		"effectParam",
 		"animation",
 	},
 
@@ -98,35 +98,35 @@ function script.buildMoveFields(moveIndex)
 			end),
 		},
 		{
-			field = prefix .. "_effect1",
-			header = "Move " .. moveNumber .. " Effect 1",
+			field = prefix .. "_effectFlags1",
+			header = "Move " .. moveNumber .. " Effect Flags 1",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
-				return move:getEffect1Byte()
+				return move.effectFlags1
 			end),
 		},
 		{
-			field = prefix .. "_effect2",
-			header = "Move " .. moveNumber .. " Effect 2",
+			field = prefix .. "_effectFlags2",
+			header = "Move " .. moveNumber .. " Effect Flags 2",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
-				return move:getEffect2Byte()
+				return move.effectFlags2
 			end),
 		},
 		{
-			field = prefix .. "_effect3",
-			header = "Move " .. moveNumber .. " Effect 3",
+			field = prefix .. "_effectFlags3",
+			header = "Move " .. moveNumber .. " Effect Flags 3",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
-				return move:getEffect3Byte()
+				return move.effectFlags3
 			end),
 		},
 		{
-			field = prefix .. "_effect4",
-			header = "Move " .. moveNumber .. " Effect 4",
+			field = prefix .. "_effectParam",
+			header = "Move " .. moveNumber .. " Effect Param",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
-				return move:getEffect4Byte()
+				return move.effectParam
 			end),
 		},
 		{
@@ -134,7 +134,7 @@ function script.buildMoveFields(moveIndex)
 			header = "Move " .. moveNumber .. " Anim",
 			align = "right",
 			getter = script.moveGetter(moveIndex, function(move)
-				return move:getAnimation()
+				return move.animation
 			end),
 		},
 	}
@@ -234,13 +234,13 @@ function script.buildMonsterCardFields()
 		{ field = "set", header = "Set" },
 		{ field = "pack", header = "Pack" },
 		-- MonsterCard fields
-		{ field = "hp", header = "HP", align = "right", getter = function(obj) return obj:getHp() end },
+		{ field = "hp", header = "HP", align = "right" },
 		{ field = "stage", header = "Stage" },
 		{ field = "prevEvoName", header = "Prev Evolution" },
 		{ field = "numMoves", header = "Num Moves", align = "right", getter = function(obj) return obj:getNumMoves() end },
 		{ field = "retreatCost", header = "Retreat Cost", align = "right" },
-		{ field = "weakness", header = "Weakness" },
-		{ field = "resistance", header = "Resistance" },
+		{ field = "weakness", header = "Weakness", align = "right" },
+		{ field = "resistance", header = "Resistance", align = "right" },
 		{ field = "monsterCategory", header = "Category" },
 		{ field = "dexNumber", header = "Dex #", align = "right" },
 		{ field = "unknownByte", header = "Unknown Byte", align = "right" },
@@ -249,9 +249,7 @@ function script.buildMonsterCardFields()
 		{ field = "lengthIn", header = "Length In", align = "right" },
 		{ field = "weight", header = "Weight", align = "right" },
 		{ field = "description", header = "Description" },
-		{ field = "aiInfo", header = "AI Info", align = "right", getter = function(obj)
-			return obj:getAiInfoByte()
-		end },
+		{ field = "aiFlags", header = "AI Flags", align = "right" },
 	}
 
 	for moveIndex = 0, script.maxMoves - 1 do

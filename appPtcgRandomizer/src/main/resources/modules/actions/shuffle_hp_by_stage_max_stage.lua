@@ -24,8 +24,8 @@ function module.randomizeHp(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
-	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey, "getHp",
-		args.duplicates):useToRandomize(targets, pool_utils.stageAndMaxStageKey, "setHp", options)
+	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey, "hp",
+		args.duplicates):useToRandomize(targets, pool_utils.stageAndMaxStageKey, "hp", options)
 end
 
 return module

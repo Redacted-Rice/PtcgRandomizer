@@ -53,25 +53,25 @@ public enum EnergyType {
         return CardType.readFromByte(getValue());
     }
 
-    public WeaknessResistanceType convertToWeaknessResistanceType() {
+    public WeaknessResistanceFlags toWeaknessResistanceFlag() {
         switch (this) {
             case FIRE:
-                return WeaknessResistanceType.FIRE;
+                return WeaknessResistanceFlags.FIRE;
             case GRASS:
-                return WeaknessResistanceType.GRASS;
+                return WeaknessResistanceFlags.GRASS;
             case LIGHTNING:
-                return WeaknessResistanceType.LIGHTNING;
+                return WeaknessResistanceFlags.LIGHTNING;
+            case WATER:
+                return WeaknessResistanceFlags.WATER;
             case FIGHTING:
-                return WeaknessResistanceType.FIGHTING;
+                return WeaknessResistanceFlags.FIGHTING;
             case PSYCHIC:
-                return WeaknessResistanceType.PSYCHIC;
+                return WeaknessResistanceFlags.PSYCHIC;
             case COLORLESS:
-                // TODO: May be a valid value?
-                return WeaknessResistanceType.NONE;
+                // TODO: Colorless maybe has a valid value?
             case UNUSED_TYPE:
-                return WeaknessResistanceType.NONE;
             default:
-                return WeaknessResistanceType.NONE;
+                return null;
         }
     }
 }
