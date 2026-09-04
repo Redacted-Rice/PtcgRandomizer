@@ -73,26 +73,18 @@ local function makeMove(fields)
 		description = { toString = function()
 			return fields.description or ""
 		end },
+		energyCost = fields.energyCost,
+		effect = fields.effect,
+		effectFlags1 = fields.effectFlags1 or 0,
+		effectFlags2 = fields.effectFlags2 or 0,
+		effectFlags3 = fields.effectFlags3 or 0,
+		effectParam = fields.effectParam or 0,
+		animation = fields.animation or 0,
 		getEnergyCostString = function()
 			return fields.energyCost or "None"
 		end,
 		getEffectSortKey = function()
 			return fields.effect or "NONE"
-		end,
-		getEffect1Byte = function()
-			return fields.effect1 or 0
-		end,
-		getEffect2Byte = function()
-			return fields.effect2 or 0
-		end,
-		getEffect3Byte = function()
-			return fields.effect3 or 0
-		end,
-		getAnimation = function()
-			return fields.animation or 0
-		end,
-		getEffect4Byte = function()
-			return fields.effect4 or 0
 		end,
 	}
 end
@@ -115,8 +107,8 @@ local card = {
 		return ""
 	end },
 	retreatCost = 1,
-	weakness = "FIRE",
-	resistance = "NONE",
+	weakness = 0x80,
+	resistance = 0,
 	monsterCategory = { toString = function()
 		return "Seed"
 	end },
@@ -129,10 +121,8 @@ local card = {
 	description = { toString = function()
 		return "desc"
 	end },
-	aiInfo = 0,
-	getHp = function()
-		return 50
-	end,
+	aiFlags = 0,
+	hp = 50,
 	getNumMoves = function()
 		return 1
 	end,

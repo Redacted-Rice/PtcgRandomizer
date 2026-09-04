@@ -38,8 +38,8 @@ public class MonsterCard extends Card {
     private int numMoves;
 
     public byte retreatCost; // TODO: Max valid value? 0x64 is unable to retreat during gameplay
-    public WeaknessResistanceType weakness; // Allows multiple
-    public WeaknessResistanceType resistance; // Allows multiple
+    public Set<WeaknessResistanceFlags> weakness;
+    public Set<WeaknessResistanceFlags> resistance;
     public MonsterCategory monsterCategory; // TODO: Investigate? Any gameplay impact?
     public byte dexNumber;
     // Always 0 in rom data. May have run time significance
@@ -49,7 +49,7 @@ public class MonsterCard extends Card {
     public byte lengthIn; // TODO: Investigate No gameplay impact?
     public short weight; // TODO: Investigate No gameplay impact?
     public PokeDescription description;
-    public Set<CardAiInfo> aiInfo;
+    public Set<CardAiFlags> aiFlags;
 
     public MonsterCard() {
         super();
@@ -62,7 +62,9 @@ public class MonsterCard extends Card {
         numMoves = 0;
         monsterCategory = new MonsterCategory();
         description = new PokeDescription();
-        aiInfo = new HashSet<>();
+        weakness = new HashSet<>();
+        resistance = new HashSet<>();
+        aiFlags = new HashSet<>();
     }
 
     @Override
@@ -80,7 +82,7 @@ public class MonsterCard extends Card {
     protected void copyMonsterCardFields(MonsterCard toCopy) {
         copyCardFields(toCopy);
 
-        setHp(toCopy.getHp());
+        hp = toCopy.hp;
         stage = toCopy.stage;
         prevEvoName = new CardName(toCopy.prevEvoName);
         // Set the moves. This will copy and retarget the moves metadata
@@ -91,8 +93,8 @@ public class MonsterCard extends Card {
             setMoveLockedViaAssignment(moveIndex, toCopy.moves[moveIndex].isLockedViaAssignment());
         }
         retreatCost = toCopy.retreatCost;
-        weakness = toCopy.weakness;
-        resistance = toCopy.resistance;
+        weakness = new HashSet<>(toCopy.weakness);
+        resistance = new HashSet<>(toCopy.resistance);
         monsterCategory = new MonsterCategory(toCopy.monsterCategory);
         dexNumber = toCopy.dexNumber;
         unknownByte = toCopy.unknownByte;
@@ -101,15 +103,7 @@ public class MonsterCard extends Card {
         lengthIn = toCopy.lengthIn;
         weight = toCopy.weight;
         description = new PokeDescription(toCopy.description);
-        aiInfo = new HashSet<>(toCopy.aiInfo);
-    }
-
-    public byte getAiInfoByte() {
-        return CardAiInfo.storeAsByte(aiInfo);
-    }
-
-    public int getLevel() {
-        return level & 0xFF;
+        aiFlags = new HashSet<>(toCopy.aiFlags);
     }
 
     public static boolean isNameWithLevel(String cardSpecifier) {
@@ -131,11 +125,11 @@ public class MonsterCard extends Card {
     }
 
     public boolean matchesNameWithLevel(NameWithLevel ref) {
-        return name.toString().equalsIgnoreCase(ref.name()) && getLevel() == ref.level();
+        return name.toString().equalsIgnoreCase(ref.name()) && level == ref.level();
     }
 
     public String toNameWithLevelSpecifier() {
-        return name.toString() + " lvl" + getLevel();
+        return name.toString() + " lvl" + level;
     }
 
     public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards, NameWithLevel ref) {
@@ -397,7 +391,7 @@ public class MonsterCard extends Card {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(super.toString() + "\nPokedex Number = " + dexNumber + "\nDesciption = "
-                + description.toString() + "\nHP = " + getHp() + "\nStage = " + stage
+                + description.toString() + "\nHP = " + hp + "\nStage = " + stage
                 + "\nPrevEvolution = " + prevEvoName.toString() + "\nRetreatCost = " + retreatCost
                 + "\nWeakness = " + weakness + "\nResistance = " + resistance + "\nMoves");
 
@@ -412,7 +406,7 @@ public class MonsterCard extends Card {
         commonReadAndConvertIds(cardBytes, startIndex, idToText);
 
         int index = startIndex + Card.CARD_COMMON_SIZE;
-        setHp(cardBytes[index++]);
+        hp = cardBytes[index++];
         stage = EvolutionStage.readFromByte(cardBytes[index++]);
 
         // Read the prev evolution
@@ -429,8 +423,8 @@ public class MonsterCard extends Card {
         }
 
         retreatCost = cardBytes[index++];
-        weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
-        resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
+        weakness = new HashSet<>(WeaknessResistanceFlags.readFromByte(cardBytes[index++]));
+        resistance = new HashSet<>(WeaknessResistanceFlags.readFromByte(cardBytes[index++]));
 
         index = monsterCategory.readDataAndConvertIds(cardBytes, index, idToText);
 
@@ -444,7 +438,7 @@ public class MonsterCard extends Card {
 
         index = description.readDataAndConvertIds(cardBytes, index, idToText);
 
-        aiInfo = new HashSet<>(CardAiInfo.readFromByte(cardBytes[index++]));
+        aiFlags = new HashSet<>(CardAiFlags.readFromByte(cardBytes[index++]));
 
         return TOTAL_SIZE_IN_BYTES;
     }
@@ -472,7 +466,7 @@ public class MonsterCard extends Card {
         CodeBlock block = convertCommonDataToCodeBlock();
 
         RawBytePacker bytes = new RawBytePacker();
-        bytes.append(getHp(), stage.getValue());
+        bytes.append(hp, stage.getValue());
         bytes.append(ByteUtils.shortToLittleEndianBytes(prevEvoName.getTextId()));
         block.appendInstruction(bytes.createRawByteInsruct());
 
@@ -481,13 +475,14 @@ public class MonsterCard extends Card {
         }
 
         bytes = new RawBytePacker();
-        bytes.append(retreatCost, weakness.getValue(), resistance.getValue());
+        bytes.append(retreatCost, WeaknessResistanceFlags.storeAsByte(weakness),
+                WeaknessResistanceFlags.storeAsByte(resistance));
         bytes.append(ByteUtils.shortToLittleEndianBytes(monsterCategory.getTextId()));
         bytes.append(dexNumber, unknownByte, level);
         bytes.append(lengthFt, lengthIn);
         bytes.append(ByteUtils.shortToLittleEndianBytes(weight));
         bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
-        bytes.append(CardAiInfo.storeAsByte(aiInfo));
+        bytes.append(CardAiFlags.storeAsByte(aiFlags));
         block.appendInstruction(bytes.createRawByteInsruct());
 
         return block;
@@ -496,14 +491,5 @@ public class MonsterCard extends Card {
     @Override
     public int getSize() {
         return TOTAL_SIZE_IN_BYTES;
-    }
-
-    public byte getHp() {
-        return hp;
-    }
-
-    public boolean setHp(int hp) {
-        this.hp = (byte) hp;
-        return true;
     }
 }

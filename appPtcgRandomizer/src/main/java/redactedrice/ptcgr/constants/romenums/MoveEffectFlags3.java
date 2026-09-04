@@ -5,20 +5,24 @@ import java.util.Set;
 import redactedrice.gbcframework.utils.ByteUtils;
 
 
-public enum MoveEffect3 {
-    // TODO: bit 1 covers a wide variety of effects. See if we can figure it out
-    // bits 2-7 are unused
+public enum MoveEffectFlags3 {
     // @formatter:off
     BOOST_IF_TAKEN_DAMAGE (1 << 0),
-    FLAG_3_BIT_1          (1 << 1);
+    UNKNOWN_BIT_1         (1 << 1),
+    UNKNOWN_BIT_2         (1 << 2),
+    UNKNOWN_BIT_3         (1 << 3),
+    UNKNOWN_BIT_4         (1 << 4),
+    UNKNOWN_BIT_5         (1 << 5),
+    UNKNOWN_BIT_6         (1 << 6),
+    UNKNOWN_BIT_7         (1 << 7);
     // @formatter:on
 
     private byte value;
 
-    private MoveEffect3(int inValue) {
+    private MoveEffectFlags3(int inValue) {
         if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE) {
             throw new IllegalArgumentException(
-                    "Invalid constant input for " + "MoveEffect3 enum: " + inValue);
+                    "Invalid constant input for MoveEffectFlags3 enum: " + inValue);
         }
         value = (byte) inValue;
     }
@@ -27,9 +31,9 @@ public enum MoveEffect3 {
         return value;
     }
 
-    public static Set<MoveEffect3> readFromByte(byte b) {
-        EnumSet<MoveEffect3> readInEffects = EnumSet.noneOf(MoveEffect3.class);
-        for (MoveEffect3 num : MoveEffect3.values()) {
+    public static Set<MoveEffectFlags3> readFromByte(byte b) {
+        EnumSet<MoveEffectFlags3> readInEffects = EnumSet.noneOf(MoveEffectFlags3.class);
+        for (MoveEffectFlags3 num : MoveEffectFlags3.values()) {
             if ((num.getValue() & b) != 0) {
                 readInEffects.add(num);
             }
@@ -37,9 +41,9 @@ public enum MoveEffect3 {
         return readInEffects;
     }
 
-    public static byte storeAsByte(Set<MoveEffect3> set) {
+    public static byte storeAsByte(Set<MoveEffectFlags3> set) {
         byte combinedValue = 0;
-        for (MoveEffect3 num : MoveEffect3.values()) {
+        for (MoveEffectFlags3 num : MoveEffectFlags3.values()) {
             if (set.contains(num)) {
                 combinedValue += num.getValue();
             }

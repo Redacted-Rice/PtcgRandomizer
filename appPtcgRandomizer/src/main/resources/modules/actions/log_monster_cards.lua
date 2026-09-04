@@ -59,7 +59,7 @@ local FIELD_SPECS = {
 	["Lvl"] = {
 		header = "Lvl",
 		align = "right",
-		getter = function(card) return card:getLevel() end,
+		getter = function(card) return card.level end,
 	},
 	["Type"] = {
 		header = "Type",
@@ -68,7 +68,7 @@ local FIELD_SPECS = {
 	["HP"] = {
 		header = "HP",
 		align = "right",
-		getter = function(card) return card:getHp() end,
+		getter = function(card) return card.hp end,
 	},
 	["Stage"] = {
 		header = "Stage",

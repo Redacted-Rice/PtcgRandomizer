@@ -26,11 +26,11 @@ function module.randomizeHp(context, args)
 	local options = pool_utils.poolOptions(args.approach)
 
 	if args.grouping == "BY_STAGE" then
-		pool_utils.buildGroupedPool(sourceCards, "stage", "getHp", args.duplicates):useToRandomize(
-			targets, "stage", "setHp", options)
+		pool_utils.buildGroupedPool(sourceCards, "stage", "hp", args.duplicates):useToRandomize(
+			targets, "stage", "hp", options)
 	else
-		pool_utils.buildValuePool(sourceCards, "getHp", args.duplicates):useToRandomize(targets,
-			"setHp", options)
+		pool_utils.buildValuePool(sourceCards, "hp", args.duplicates):useToRandomize(targets,
+			"hp", options)
 	end
 end
 

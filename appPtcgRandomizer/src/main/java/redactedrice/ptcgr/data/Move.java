@@ -24,17 +24,17 @@ public class Move {
     public static final int TOTAL_SIZE_IN_BYTES = 19;
     public static final Comparator<Move> BASIC_SORTER = new MoveBasicSorter();
 
-    EnumMap<EnergyType, Byte> energyCost;
+    public EnumMap<EnergyType, Byte> energyCost;
     public MoveName name;
     public EffectDescription description;
     public byte damage; // TODO: non multiple of 10?
     public MoveCategory category;
-    CardEffect effect;
-    Set<MoveEffect1> effect1;
-    Set<MoveEffect2> effect2;
-    Set<MoveEffect3> effect3;
-    Set<MoveEffect4> effect4;
-    byte animation;
+    public CardEffect effect;
+    public Set<MoveEffectFlags1> effectFlags1;
+    public Set<MoveEffectFlags2> effectFlags2;
+    public Set<MoveEffectFlags3> effectFlags3;
+    public byte effectParam;
+    public byte animation;
     private final MonsterCard sourceCard;
     private final int sourceMoveIndex;
     private boolean lockedViaAssignment;
@@ -54,10 +54,10 @@ public class Move {
         description = new EffectDescription();
         category = MoveCategory.DAMAGE_NORMAL;
         effect = ExistingCardEffect.NONE;
-        effect1 = new HashSet<>();
-        effect2 = new HashSet<>();
-        effect3 = new HashSet<>();
-        effect4 = new HashSet<>();
+        effectFlags1 = new HashSet<>();
+        effectFlags2 = new HashSet<>();
+        effectFlags3 = new HashSet<>();
+        effectParam = 0;
     }
 
     public void copyNonMetadataFieldsFrom(Move toCopy) {
@@ -67,10 +67,10 @@ public class Move {
         damage = toCopy.damage;
         category = toCopy.category;
         effect = toCopy.effect.copy();
-        effect1 = new HashSet<>(toCopy.effect1);
-        effect2 = new HashSet<>(toCopy.effect2);
-        effect3 = new HashSet<>(toCopy.effect3);
-        effect4 = new HashSet<>(toCopy.effect4);
+        effectFlags1 = new HashSet<>(toCopy.effectFlags1);
+        effectFlags2 = new HashSet<>(toCopy.effectFlags2);
+        effectFlags3 = new HashSet<>(toCopy.effectFlags3);
+        effectParam = toCopy.effectParam;
         animation = toCopy.animation;
     }
 
@@ -111,26 +111,6 @@ public class Move {
 
     public String getEffectSortKey() {
         return effect.toString();
-    }
-
-    public byte getEffect1Byte() {
-        return MoveEffect1.storeAsByte(effect1);
-    }
-
-    public byte getEffect2Byte() {
-        return MoveEffect2.storeAsByte(effect2);
-    }
-
-    public byte getEffect3Byte() {
-        return MoveEffect3.storeAsByte(effect3);
-    }
-
-    public byte getEffect4Byte() {
-        return MoveEffect4.storeAsByte(effect4);
-    }
-
-    public byte getAnimation() {
-        return animation;
     }
 
     public boolean isEmpty() {
@@ -206,11 +186,11 @@ public class Move {
         builder.append("\nEffectPtr: ");
         builder.append(effect.toString());
         builder.append("\nEffectFlags: ");
-        builder.append(effect1);
+        builder.append(effectFlags1);
         builder.append(", ");
-        builder.append(effect2);
+        builder.append(effectFlags2);
         builder.append(", ");
-        builder.append(effect3);
+        builder.append(effectFlags3);
 
         return builder.toString();
     }
@@ -286,10 +266,10 @@ public class Move {
         category = MoveCategory.readFromByte(moveBytes[index++]);
         effect = new ExistingCardEffect(ByteUtils.readAsShort(moveBytes, index));
         index += 2;
-        effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
-        effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
-        effect3 = MoveEffect3.readFromByte(moveBytes[index++]);
-        effect4 = new HashSet<>(MoveEffect4.readFromByte(moveBytes[index++], effect2));
+        effectFlags1 = MoveEffectFlags1.readFromByte(moveBytes[index++]);
+        effectFlags2 = MoveEffectFlags2.readFromByte(moveBytes[index++]);
+        effectFlags3 = MoveEffectFlags3.readFromByte(moveBytes[index++]);
+        effectParam = moveBytes[index++];
         animation = moveBytes[index++];
 
         return index;
@@ -322,9 +302,8 @@ public class Move {
 
         effect.appendToCodeBlock(block);
 
-        block.appendInstruction(
-                new RawBytes(MoveEffect1.storeAsByte(effect1), MoveEffect2.storeAsByte(effect2),
-                        MoveEffect3.storeAsByte(effect3), MoveEffect4.storeAsByte(effect4),
-                        animation));
+        block.appendInstruction(new RawBytes(MoveEffectFlags1.storeAsByte(effectFlags1),
+                MoveEffectFlags2.storeAsByte(effectFlags2),
+                MoveEffectFlags3.storeAsByte(effectFlags3), effectParam, animation));
     }
 }

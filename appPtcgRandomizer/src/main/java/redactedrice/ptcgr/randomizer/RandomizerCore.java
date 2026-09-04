@@ -25,6 +25,12 @@ import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.constants.romenums.MoveCategory;
+import redactedrice.ptcgr.constants.romenums.CardAiFlags;
+import redactedrice.ptcgr.constants.romenums.MoveEffectParam;
+import redactedrice.ptcgr.constants.romenums.MoveEffectFlags1;
+import redactedrice.ptcgr.constants.romenums.MoveEffectFlags2;
+import redactedrice.ptcgr.constants.romenums.MoveEffectFlags3;
+import redactedrice.ptcgr.constants.romenums.WeaknessResistanceFlags;
 import redactedrice.ptcgr.data.CardGroup;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rules.Rules;
@@ -295,6 +301,12 @@ public class RandomizerCore {
                 Map.of("FIRE", "Fire", "GRASS", "Grass", "LIGHTNING", "Lightning", "WATER", "Water",
                         "FIGHTING", "Fighting", "PSYCHIC", "Psychic", "COLORLESS", "Colorless",
                         "UNUSED_TYPE", "Unused Type"));
+        wrapper.registerSharedEnum(WeaknessResistanceFlags.class);
+        wrapper.registerSharedEnum(MoveEffectFlags1.class);
+        wrapper.registerSharedEnum(MoveEffectFlags2.class);
+        wrapper.registerSharedEnum(MoveEffectFlags3.class);
+        wrapper.registerSharedEnum(CardAiFlags.class);
+        wrapper.registerSharedEnum(MoveEffectParam.class);
         // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)
         wrapper.registerSharedEnum(EvolutionStage.class);
         // User friendly aliases for HP pool table keys. Same canonical values under the hood
