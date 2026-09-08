@@ -62,6 +62,18 @@ if not findSummary(attackOverrides, "move1_category") then
 	error("move1 category should be summarized for attack layout")
 end
 
+local function makeFlagSet(values)
+	local set = {}
+	for _, value in ipairs(values or {}) do
+		table.insert(set, value)
+	end
+	return setmetatable(set, {
+		__tostring = function(self)
+			return table.concat(self, ", ")
+		end,
+	})
+end
+
 local function makeMove(fields)
 	fields = fields or {}
 	return {
@@ -107,8 +119,8 @@ local card = {
 		return ""
 	end },
 	retreatCost = 1,
-	weakness = 0x80,
-	resistance = 0,
+	weakness = makeFlagSet({ "FIRE" }),
+	resistance = makeFlagSet({}),
 	monsterCategory = { toString = function()
 		return "Seed"
 	end },
@@ -121,7 +133,7 @@ local card = {
 	description = { toString = function()
 		return "desc"
 	end },
-	aiFlags = 0,
+	aiFlags = makeFlagSet({}),
 	hp = 50,
 	getNumMoves = function()
 		return 1
