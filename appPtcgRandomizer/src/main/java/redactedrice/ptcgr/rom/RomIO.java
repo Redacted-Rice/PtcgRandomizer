@@ -15,6 +15,7 @@ import redactedrice.gbcframework.addressing.AssignedAddresses;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
+import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.DataManager;
@@ -34,7 +35,7 @@ public class RomIO {
         return new RomData(rawBytes, cards, texts, sourceMap, romBlanks, rules);
     }
 
-    private static void verifyRom(byte[] rawBytes) {
+    public static void verifyRom(byte[] rawBytes) {
         int expectedSize = PtcgRomConstants.NUMBER_OF_BANKS * PtcgRomConstants.BANK_SIZE;
         if (rawBytes.length != expectedSize) {
             throw new IllegalArgumentException("Failed to verify the rom: Expected size "
@@ -49,19 +50,19 @@ public class RomIO {
             }
         }
 
-        verifyGbChecksum(rawBytes);
+        verifyGbHeaderChecksum(rawBytes);
     }
 
     // The standard GB approach for the header checksum. This is not the whole rom but
     // just the header stuff.
-    private static void verifyGbChecksum(byte[] rawBytes) {
+    public static void verifyGbHeaderChecksum(byte[] rawBytes) {
         int checksum = 0;
-        for (int i = 0; i <= 0x14D; i++) {
-            checksum = (checksum + ByteUtils.unsignedByteAsShort(rawBytes[i])) & 0xFF;
+        for (int i = 0x134; i <= 0x14C; i++) {
+            checksum = (checksum - ByteUtils.unsignedByteAsShort(rawBytes[i]) - 1) & 0xFF;
         }
-        if (checksum != 0) {
+        if (checksum != ByteUtils.unsignedByteAsShort(rawBytes[0x14D])) {
             throw new IllegalArgumentException(
-                    "Failed to verify the rom: GB checksum is incorrect!");
+                    "Failed to verify the rom: GB header checksum is incorrect!");
         }
     }
 
@@ -75,6 +76,8 @@ public class RomIO {
     }
 
     public static void writePatch(RomData romData, File patchFile) {
+        HardcodedEffects.reset();
+
         PtcgInstructionSetParser ptcgParser = new PtcgInstructionSetParser();
         InstructionParser parser = new InstructionParser(List.of(ptcgParser,
                 new BpsInstructionSetParser(), new GbZ80InstructionSetParser()));
@@ -85,8 +88,7 @@ public class RomIO {
                 parser, ptcgParser);
 
         DataManager manager = new DataManager();
-        AssignedAddresses assignedAddresses =
-                manager.allocateBlocks(romData.rawBytes, writeBlocks);
+        AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.rawBytes, writeBlocks);
 
         RomIO.writeBpsPatch(patchFile, romData.rawBytes, writeBlocks, assignedAddresses);
     }
