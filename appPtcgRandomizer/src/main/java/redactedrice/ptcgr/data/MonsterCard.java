@@ -137,12 +137,16 @@ public class MonsterCard extends Card {
         return new NameWithLevel(cardName, Integer.parseInt(matcher.group(2)));
     }
 
+    public int getLevelValue() {
+        return level & 0xFF;
+    }
+
     public boolean matchesNameWithLevel(NameWithLevel ref) {
-        return name.toString().equalsIgnoreCase(ref.name()) && level == ref.level();
+        return name.toString().equalsIgnoreCase(ref.name()) && getLevelValue() == ref.level();
     }
 
     public String toNameWithLevelSpecifier() {
-        return name.toString() + " lvl" + level;
+        return name.toString() + " lvl" + getLevelValue();
     }
 
     public static MonsterCard findByNameWithLevel(CardGroup<MonsterCard> cards, NameWithLevel ref) {

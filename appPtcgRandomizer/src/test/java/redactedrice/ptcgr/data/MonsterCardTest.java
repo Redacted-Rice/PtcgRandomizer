@@ -32,6 +32,15 @@ class MonsterCardTest {
     }
 
     @Test
+    void highLevelUsesUnsignedByteValue() {
+        MonsterCard card = someMonster(200, CardId.MONSTER_146_1);
+
+        assertEquals("SomeMonster lvl200", card.toNameWithLevelSpecifier());
+        assertTrue(card.matchesNameWithLevel(new NameWithLevel("SomeMonster", 200)));
+        assertFalse(card.matchesNameWithLevel(new NameWithLevel("SomeMonster", 56)));
+    }
+
+    @Test
     void nameWithLevelParsingAndLookup() {
         assertTrue(MonsterCard.isNameWithLevel("SomeMonster lvl65"));
         NameWithLevel ref = MonsterCard.parseNameWithLevel("SomeMonster lvl65");
