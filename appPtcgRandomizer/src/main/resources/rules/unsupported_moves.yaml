@@ -39,6 +39,9 @@ rules:
       move: Barrier
     - remove_from_pool: true
       exclude_from_randomization: true
+      move: Call for Family
+    - remove_from_pool: true
+      exclude_from_randomization: true
       move: Boyfriends
     - remove_from_pool: true
       exclude_from_randomization: true
@@ -46,6 +49,9 @@ rules:
     - remove_from_pool: true
       exclude_from_randomization: true
       move: Energy Trans
+    - remove_from_pool: true
+      exclude_from_randomization: false
+      move: Swords Dance
     - remove_from_pool: true
       exclude_from_randomization: true
       move: Energy Burn
