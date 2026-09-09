@@ -301,7 +301,10 @@ public class RandomizerCore {
                 Map.of("FIRE", "Fire", "GRASS", "Grass", "LIGHTNING", "Lightning", "WATER", "Water",
                         "FIGHTING", "Fighting", "PSYCHIC", "Psychic", "COLORLESS", "Colorless",
                         "UNUSED_TYPE", "Unused Type"));
-        wrapper.registerSharedEnum(WeaknessResistanceFlags.class);
+        wrapper.registerSharedEnum(WeaknessResistanceFlags.class,
+                Map.of("COLORLESS", "Colorless", "PSYCHIC", "Psychic", "FIGHTING", "Fighting",
+                        "WATER", "Water", "LIGHTNING", "Lightning", "GRASS", "Grass", "FIRE",
+                        "Fire", "UNKNOWN_BIT_0", "Unknown Bit 0"));
         wrapper.registerSharedEnum(MoveEffectFlags1.class);
         wrapper.registerSharedEnum(MoveEffectFlags2.class);
         wrapper.registerSharedEnum(MoveEffectFlags3.class);

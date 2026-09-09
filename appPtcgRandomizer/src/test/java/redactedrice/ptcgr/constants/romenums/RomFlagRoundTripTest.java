@@ -50,6 +50,25 @@ class RomFlagRoundTripTest {
     @Test
     void energyTypeMapsToWeaknessResistanceFlag() {
         assertEquals(WeaknessResistanceFlags.WATER, EnergyType.WATER.toWeaknessResistanceFlag());
-        assertEquals(null, EnergyType.COLORLESS.toWeaknessResistanceFlag());
+        assertEquals(WeaknessResistanceFlags.COLORLESS,
+                EnergyType.COLORLESS.toWeaknessResistanceFlag());
+        assertEquals(null, EnergyType.UNUSED_TYPE.toWeaknessResistanceFlag());
+    }
+
+    @Test
+    void colorlessWeaknessResistanceFlagRoundTrips() {
+        byte raw = WeaknessResistanceFlags.COLORLESS.getValue();
+        Set<WeaknessResistanceFlags> flags = WeaknessResistanceFlags.readFromByte(raw);
+        assertEquals(EnumSet.of(WeaknessResistanceFlags.COLORLESS), flags);
+        assertEquals(raw, WeaknessResistanceFlags.storeAsByte(flags));
+        assertEquals(EnergyType.COLORLESS, WeaknessResistanceFlags.COLORLESS.toEnergyType());
+    }
+
+    @Test
+    void multiTypeWeaknessResistanceFlagsRoundTrip() {
+        Set<WeaknessResistanceFlags> multi = EnumSet.of(WeaknessResistanceFlags.COLORLESS,
+                WeaknessResistanceFlags.FIGHTING, WeaknessResistanceFlags.FIRE);
+        byte raw = WeaknessResistanceFlags.storeAsByte(multi);
+        assertEquals(multi, WeaknessResistanceFlags.readFromByte(raw));
     }
 }

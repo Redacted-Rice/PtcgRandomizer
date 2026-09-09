@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.data;
 
-
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -27,7 +26,9 @@ public class Move {
     public EnumMap<EnergyType, Byte> energyCost;
     public MoveName name;
     public EffectDescription description;
-    public byte damage; // TODO: non multiple of 10?
+    // Non multiples of 10 work in gameplay but don't display correctly (same as
+    // HP).
+    public byte damage;
     public MoveCategory category;
     public CardEffect effect;
     public Set<MoveEffectFlags1> effectFlags1;
@@ -123,7 +124,8 @@ public class Move {
 
     public boolean doesDamage() {
         if (isAttack()) {
-            // If its listed as doing damage or is one of the moves that does damage just doesn't
+            // If its listed as doing damage or is one of the moves that does damage just
+            // doesn't
             // have an associated damage number, this will return true
             return damage > 0
                     || PtcgRomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.toString());
@@ -241,7 +243,8 @@ public class Move {
         int index = startIndex;
 
         // They are stored in octects corresponding to their energy type. Since we
-        // read them as bytes, we mask each byte and increment the index every other time
+        // read them as bytes, we mask each byte and increment the index every other
+        // time
         energyCost = new EnumMap<>(EnergyType.class);
         setCost(EnergyType.FIRE, ByteUtils.readUpperHexChar(moveBytes[index]));
         setCost(EnergyType.GRASS, ByteUtils.readLowerHexChar(moveBytes[index]));
@@ -258,7 +261,7 @@ public class Move {
 
         index = name.readDataAndConvertIds(moveBytes, index, idToText);
 
-        int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
+        int[] descIndexes = { index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES };
         description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText);
         index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 

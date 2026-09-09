@@ -8,8 +8,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 public enum WeaknessResistanceFlags {
     // @formatter:off
     UNKNOWN_BIT_0 (1 << 0),
-    // TODO: Colorless?
-    UNKNOWN_BIT_1 (1 << 1),
+    COLORLESS     (1 << 1),
     PSYCHIC       (1 << 2),
     FIGHTING      (1 << 3),
     WATER         (1 << 4),
@@ -32,7 +31,6 @@ public enum WeaknessResistanceFlags {
         return value;
     }
 
-    // TODO: Colorless?
     public EnergyType toEnergyType() {
         switch (this) {
             case FIRE:
@@ -47,14 +45,15 @@ public enum WeaknessResistanceFlags {
                 return EnergyType.FIGHTING;
             case PSYCHIC:
                 return EnergyType.PSYCHIC;
+            case COLORLESS:
+                return EnergyType.COLORLESS;
             default:
                 return EnergyType.UNUSED_TYPE;
         }
     }
 
     public static Set<WeaknessResistanceFlags> readFromByte(byte b) {
-        EnumSet<WeaknessResistanceFlags> readInFlags =
-                EnumSet.noneOf(WeaknessResistanceFlags.class);
+        EnumSet<WeaknessResistanceFlags> readInFlags = EnumSet.noneOf(WeaknessResistanceFlags.class);
         for (WeaknessResistanceFlags flag : WeaknessResistanceFlags.values()) {
             if ((flag.getValue() & b) != 0) {
                 readInFlags.add(flag);

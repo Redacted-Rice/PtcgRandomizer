@@ -26,28 +26,40 @@ public class MonsterCard extends Card {
     private static final Pattern NAME_WITH_LEVEL_PATTERN = Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$",
             Pattern.CASE_INSENSITIVE);
 
+    // Non multiples of 10 and values above 120 work in gameplay but don't display
+    // correctly.
     public byte hp;
     public EvolutionStage stage;
     public CardName prevEvoName;
 
     // TODO: Consider encapsulating these data classes instead of just having a few
-    // random
-    // encapsulated fields
+    // random encapsulated fields
     private Move[] moves;
     // Number of active move slots (0..MAX_NUM_MOVES)
     private int numMoves;
 
-    public byte retreatCost; // TODO: Max valid value? 0x64 is unable to retreat during gameplay
+    // No practical upper limit found. Tested up to 20 and it seemed to work.
+    // CardDataConstants.RETREAT_COST_UNABLE_TO_RETREAT blocks retreat in gameplay.
+    // This does prevent the card from retreating but also displays poorly as it
+    // wraps the colorless characters
+    public byte retreatCost;
+    // Can be multiple values including colorless and can be all types even
+    // (weakness and resistance)
     public Set<WeaknessResistanceFlags> weakness;
     public Set<WeaknessResistanceFlags> resistance;
-    public MonsterCategory monsterCategory; // TODO: Investigate? Any gameplay impact?
+    // No gameplay effect
+    public MonsterCategory monsterCategory;
+    // Determines the card's order in pokedex. No real gameplay effect.
     public byte dexNumber;
-    // Always 0 in rom data. May have run time significance
+    // No gameplay effect - seems to always be 0
     public byte unknownByte;
-    public byte level; // TODO: Investigate No gameplay impact?
-    public byte lengthFt; // TODO: Investigate No gameplay impact?
-    public byte lengthIn; // TODO: Investigate No gameplay impact?
-    public short weight; // TODO: Investigate No gameplay impact?
+    // No gameplay effect
+    public byte level;
+    // No gameplay effect
+    public byte lengthFt;
+    public byte lengthIn;
+    // No gameplay effect. Tenth of pounds (e.g. weight of 6.5 lbs is 65)
+    public short weight;
     public PokeDescription description;
     public Set<CardAiFlags> aiFlags;
 
