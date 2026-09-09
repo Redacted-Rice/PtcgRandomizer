@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.constants;
 
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,20 +7,22 @@ import java.util.Map;
 import java.util.Set;
 
 public final class PtcgRomConstants {
-    private PtcgRomConstants() {}
+    private PtcgRomConstants() {
+    }
 
     // Counts
     // TODO: Needed? If so move to a config file? applies to many in here
     public static final int TOTAL_NUM_MONSTER_CARDS = 187;
     public static final int TOTAL_NUM_ENERGY_CARDS = 7;
     public static final int TOTAL_NUM_TRAINER_CARDS = 34;
-    public static final int TOTAL_NUM_CARDS =
-            TOTAL_NUM_MONSTER_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
+    public static final int TOTAL_NUM_CARDS = TOTAL_NUM_MONSTER_CARDS + TOTAL_NUM_ENERGY_CARDS
+            + TOTAL_NUM_TRAINER_CARDS;
 
     public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000;
 
     // Text info
-    // not including starting "charset" char. For reasons monster names have to be shorter
+    // not including starting "charset" char. For reasons monster names have to be
+    // shorter
     public static final int MAX_CHARS_MONSTER_NAME = 20;
     // not including starting "charset" char
     public static final int MAX_CHARS_CARD_NAME = 25;
@@ -48,21 +49,34 @@ public final class PtcgRomConstants {
     public static final int BANK_SIZE = 0x4000;
     public static final byte NUMBER_OF_BANKS = 64;
 
-    // TODO: It would potentially be more stable to read in from a location in the engine than
-    // hardcoded locations in case we ever want to support adding more cards or hacks that add
+    // TODO: It would potentially be more stable to read in from a location in the
+    // engine than
+    // hardcoded locations in case we ever want to support adding more cards or
+    // hacks that add
     // more cards or shifted data around. Not sure how easy that would be though
 
-    // Note: We have to block 0x30000 to 0x67fff that is used to store decks, cards, and text.
-    // In order to add more cards, we would need to shift all the data back but as long as it
-    // doesn't pass 0x67fff it shouldn't be too difficult. The one complication is that the
-    // text has a hardcoded offset of 0x4000 from 0x30000 which be hard to change and the game
-    // does this offset by setting bit 7 (i.e. adding 0x4000). We would need to figure some way
-    // to replace this hopefully without having to rewrite the whole engine as changing it to the
-    // 8th bit (0x8000) would be too high as there is currently only 0x3667 bytes of space before
-    // the end of the text block. Also there may be other data after that that we can shift back
-    // instead. You could potentially get sneaky and adjust the input by 0x2000 before multiplying
-    // by 3 to get an offset of 0x6000 and that should still be the same number of commands
-    // (i.e you wouldn't have to shift all the game logic). Regardless, that's not my current focus
+    // Note: We have to block 0x30000 to 0x67fff that is used to store decks, cards,
+    // and text.
+    // In order to add more cards, we would need to shift all the data back but as
+    // long as it
+    // doesn't pass 0x67fff it shouldn't be too difficult. The one complication is
+    // that the
+    // text has a hardcoded offset of 0x4000 from 0x30000 which be hard to change
+    // and the game
+    // does this offset by setting bit 7 (i.e. adding 0x4000). We would need to
+    // figure some way
+    // to replace this hopefully without having to rewrite the whole engine as
+    // changing it to the
+    // 8th bit (0x8000) would be too high as there is currently only 0x3667 bytes of
+    // space before
+    // the end of the text block. Also there may be other data after that that we
+    // can shift back
+    // instead. You could potentially get sneaky and adjust the input by 0x2000
+    // before multiplying
+    // by 3 to get an offset of 0x6000 and that should still be the same number of
+    // commands
+    // (i.e you wouldn't have to shift all the game logic). Regardless, that's not
+    // my current focus
     // so I'm shelving it for now but wanted to get some thoughts down first
 
     // Does NOT start with a null pointer but pointers to unnamed decks
@@ -83,7 +97,8 @@ public final class PtcgRomConstants {
     public static final int TEXT_POINTER_OFFSET = 0x34000;
 
     // TODO: Config File instead?
-    // TODO now: Why did I comment out Ninetales?
+    // TODO: Why did I comment out Ninetales? Maybe add back in once I start
+    // modifying moves themselves some
     // Misspelled card names
     public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {
@@ -111,15 +126,17 @@ public final class PtcgRomConstants {
         tempSet.add("Poisonpowder");
 
         // Possibilities not added to the list
-        // tempSet.put("Supersonic"); // Flip a coin. If heads, the Defending Pok`mon is now
+        // tempSet.put("Supersonic"); // Flip a coin. If heads, the Defending Pok`mon is
+        // now
         // Confused.
-        // Mirror Move DAMAGE_NORMAL -* If was attacked last turn, do the final result of that
+        // Mirror Move DAMAGE_NORMAL -* If was attacked last turn, do the final result
+        // of that
         // attack on to the Defending Pok`mon.
         ZERO_DAMAGE_DAMAGING_MOVES = Collections.unmodifiableSet(tempSet);
     }
 
     // Misc
-    public static final byte[] HEADER = {0x50, 0x4F, 0x4B, 0x45, 0x43, 0x41, 0x52, 0x44, 0x00, 0x00,
+    public static final byte[] HEADER = { 0x50, 0x4F, 0x4B, 0x45, 0x43, 0x41, 0x52, 0x44, 0x00, 0x00,
             0x00, 0x41, 0x58, 0x51, 0x45, (byte) 0x80, 0x30, 0x31, 0x03, 0x1B, 0x05, 0x03, 0x01,
-            0x33, 0x00, 0x34, 0x26, (byte) 0xA6};
+            0x33, 0x00, 0x34, 0x26, (byte) 0xA6 };
 }

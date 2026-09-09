@@ -79,7 +79,8 @@ public class CardGroup<T extends Card> {
                     .getCardNumFromNameIfMatches(numberOrNameWithNumber);
         }
 
-        // If we found an index (0 means no name, negative means failed to match name), return based
+        // If we found an index (0 means no name, negative means failed to match name),
+        // return based
         // on the index
         if (cardIndex > 0) {
             // If we found an index, try to get it shifting it to 0 based
@@ -112,8 +113,8 @@ public class CardGroup<T extends Card> {
         return found;
     }
 
-    // TODO: Remoev this maybe? May not be needed with scripting approach or could be handled
-    // by that (e.g. evo line id stuff)
+    // TODO: Remove this maybe? May not be needed with scripting approach or could
+    // be handled by that (e.g. evo line id stuff)
     public CardGroup<Card> determineBasicEvolutionOfCard(MonsterCard card) {
         CardGroup<Card> basics = new CardGroup<>();
         if (card.stage == EvolutionStage.BASIC) {
@@ -131,7 +132,7 @@ public class CardGroup<T extends Card> {
                     break;
                 }
 
-                // TODO now: Doesn't work with mysterious fossil - we only check the parent not
+                // TODO: Doesn't work with mysterious fossil - we only check the parent not
                 // the child is a poke card. Need to think more on how to handle this case
                 card = (MonsterCard) basics.listOrderedByCardId().get(0);
             }
@@ -279,7 +280,8 @@ public class CardGroup<T extends Card> {
     }
 
     /**
-     * Resolved by move name. If optionalFromCard is null the first card in ROM order with that move
+     * Resolved by move name. If optionalFromCard is null the first card in ROM
+     * order with that move
      * is used and a warning is logged if more than one card matches.
      */
     public Move resolveMoveByName(String moveName, MonsterCard optionalFromCard,
