@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.data;
 
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,14 +23,15 @@ public class MonsterCard extends Card {
     public static final int TOTAL_SIZE_IN_BYTES = 65;
     public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
     public static final int MAX_NUM_MOVES = 2;
-    private static final Pattern NAME_WITH_LEVEL_PATTERN =
-            Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAME_WITH_LEVEL_PATTERN = Pattern.compile("(.+?)\\s+lvl\\s*(\\d+)\\s*$",
+            Pattern.CASE_INSENSITIVE);
 
     public byte hp;
     public EvolutionStage stage;
     public CardName prevEvoName;
 
-    // TODO: Consider encapsulating these data classes instead of just having a few random
+    // TODO: Consider encapsulating these data classes instead of just having a few
+    // random
     // encapsulated fields
     private Move[] moves;
     // Number of active move slots (0..MAX_NUM_MOVES)
@@ -87,7 +87,8 @@ public class MonsterCard extends Card {
         prevEvoName = new CardName(toCopy.prevEvoName);
         // Set the moves. This will copy and retarget the moves metadata
         setMoves(toCopy.getAllMoves(true));
-        // Copy over if its locked as well - this is not done as part of typical move copying as its
+        // Copy over if its locked as well - this is not done as part of typical move
+        // copying as its
         // more metadata about the move for this specific card
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
             setMoveLockedViaAssignment(moveIndex, toCopy.moves[moveIndex].isLockedViaAssignment());
@@ -150,7 +151,9 @@ public class MonsterCard extends Card {
         return findByNameWithLevel(cards, ref);
     }
 
-    /** Returns copies of this card's move slots, optionally including empty slots. */
+    /**
+     * Returns copies of this card's move slots, optionally including empty slots.
+     */
     public List<Move> getAllMoves(boolean includeEmpty) {
         List<Move> movesList = new ArrayList<>();
         for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++) {
@@ -166,15 +169,18 @@ public class MonsterCard extends Card {
     }
 
     /**
-     * Sets how many move slots are active. Trailing slots beyond the new count are cleared.
-     * Expanding the count exposes existing (cleared) slots as empty until setMove fills them.
+     * Sets how many move slots are active. Trailing slots beyond the new count are
+     * cleared.
+     * Expanding the count exposes existing (cleared) slots as empty until setMove
+     * fills them.
      */
     public boolean setNumMoves(int numMoves) {
         return setNumMoves(numMoves, false);
     }
 
     /**
-     * Sets how many move slots are active. Reducing the count refuses to clear locked assignment
+     * Sets how many move slots are active. Reducing the count refuses to clear
+     * locked assignment
      * slots unless forceOverride is true.
      */
     public boolean setNumMoves(int numMoves, boolean forceOverride) {
@@ -215,7 +221,10 @@ public class MonsterCard extends Card {
         return lockedIndexes;
     }
 
-    /** Returns the highest 0-based index of an active move slot locked via assignment. */
+    /**
+     * Returns the highest 0-based index of an active move slot locked via
+     * assignment.
+     */
     public int getMaxLockedMoveIndex() {
         int maxLockedIndex = -1;
         for (int moveIndex = 0; moveIndex < numMoves; moveIndex++) {
@@ -246,8 +255,10 @@ public class MonsterCard extends Card {
     }
 
     /**
-     * Copies move data into the slot and updates numMoves so it remains the source of truth for
-     * active slots. Locked assignment slots are left unchanged unless {@code forceOverride} is
+     * Copies move data into the slot and updates numMoves so it remains the source
+     * of truth for
+     * active slots. Locked assignment slots are left unchanged unless
+     * {@code forceOverride} is
      * true.
      */
     public boolean setMove(Move move, int moveSlot) {
@@ -297,7 +308,8 @@ public class MonsterCard extends Card {
     }
 
     /**
-     * Replaces move slots up to {@link #MAX_NUM_MOVES} and sets numMoves to the highest non-empty
+     * Replaces move slots up to {@link #MAX_NUM_MOVES} and sets numMoves to the
+     * highest non-empty
      * slot index + 1. Shorter lists clear the remaining slots.
      *
      * @return 0-based indexes of slots that were successfully updated
@@ -346,30 +358,15 @@ public class MonsterCard extends Card {
             else if (!moves[moveIndex].isPokePower() && moves[moveIndex + 1].isPokePower()) {
                 needsSwap = true;
             } else {
-                int numColorless1 = moves[moveIndex].getCost(EnergyType.COLORLESS);
-                int numColorless2 = moves[moveIndex + 1].getCost(EnergyType.COLORLESS);
-                int numNonColorless1 = moves[moveIndex].getNonColorlessEnergyCosts();
-                int numNonColorless2 = moves[moveIndex + 1].getNonColorlessEnergyCosts();
+                int totalEnergy1 = moves[moveIndex].getCost(EnergyType.COLORLESS)
+                        + moves[moveIndex].getNonColorlessEnergyCosts();
+                int totalEnergy2 = moves[moveIndex + 1].getCost(EnergyType.COLORLESS)
+                        + moves[moveIndex + 1].getNonColorlessEnergyCosts();
 
-                // Move higher total energies last
-                if (numColorless1 + numNonColorless1 > numColorless2 + numNonColorless2) {
+                // Higher total energy last. When totals match, keep existing order. Further tie
+                // breakers (typed energy, damage, scaling) seem to disagree with vanilla order.
+                if (totalEnergy1 > totalEnergy2) {
                     needsSwap = true;
-                } else if (numColorless1 + numNonColorless1 == numColorless2 + numNonColorless2) {
-                    // If equal num, move more non-colorless last
-                    if (numNonColorless1 > numNonColorless2) {
-                        needsSwap = true;
-                    } else if (numNonColorless1 == numNonColorless2) {
-                        // If equal move higher damage last
-                        if (moves[moveIndex].damage > moves[moveIndex + 1].damage) {
-                            needsSwap = true;
-                        }
-                        // If equal, moves with effects last
-                        else if (moves[moveIndex].damage == moves[moveIndex + 1].damage
-                                && !moves[moveIndex].description.isEmpty()
-                                && moves[moveIndex + 1].description.isEmpty()) {
-                            needsSwap = true;
-                        }
-                    }
                 }
             }
 
