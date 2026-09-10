@@ -5,31 +5,9 @@ local pool_utils = require("modules.util.pool_utils")
 
 local move_utils = {}
 
-function move_utils.moveKindArg()
-	return {
-		name = "moveKind",
-		displayName = "Moves To Randomize",
-		description = "'All Moves' randomizes attacks and powers together. 'Attacks' and 'Powers' keep each kind on its own slots",
-		definition = {
-			type = "enum",
-			constraint = "MoveKind",
-		},
-		default = "ALL_MOVES",
-	}
-end
-
-function move_utils.withinTypeArg()
-	return {
-		name = "withinType",
-		displayName = "Within Energy Type",
-		description = "When enabled moves are pooled by Energy type so, for example, a fire type card will only get moves from Fire type cards",
-		definition = {
-			type = "boolean",
-		},
-		default = false,
-	}
-end
-
+-- one representative move per name. same name can appear on many cards
+-- TODO later: Check if they are all the same or if they can have the same
+-- name but be different (I think the latter is the case)
 function move_utils.uniqueMoves(moveList)
 	return randomizer.groupBy(moveList, function(move)
 		return move.name:toString()
@@ -38,6 +16,7 @@ function move_utils.uniqueMoves(moveList)
 	end)
 end
 
+-- narrow a move list to attacks, powers, or leave both
 function move_utils.filterByKind(moveList, moveKind)
 	if moveKind == "ATTACKS" then
 		return moveList:filter("isAttack")
@@ -47,7 +26,7 @@ function move_utils.filterByKind(moveList, moveKind)
 	return moveList
 end
 
--- All together uses type when withinType is on. By stage uses stage, or type:stage.
+-- all together uses type when withinType is on. by stage uses stage, or type:stage
 function move_utils.groupKey(args)
 	return function(move)
 		local card = move:getSourceCard()
@@ -61,6 +40,7 @@ function move_utils.groupKey(args)
 	end
 end
 
+-- like groupKey but keyed by pool_utils.stageAndMaxStageKey, optionally prefixed with type
 function move_utils.stageAndMaxStageGroupKey(args)
 	return function(move)
 		local card = move:getSourceCard()
@@ -72,12 +52,17 @@ function move_utils.stageAndMaxStageGroupKey(args)
 	end
 end
 
+-- source moves filtered by moveKind before pooling or grouping
 function move_utils.filteredMoves(context, args)
+	local cardSource = context.original
+	if args.source == "CURRENT" then
+		cardSource = context.modified
+	end
 	return move_utils.filterByKind(randomizer.list(
-		pool_utils.sourceData(context, args.source):getRandomizableMoves(true, false)),
-		args.moveKind)
+		cardSource:getRandomizableMoves(true, false)), args.moveKind)
 end
 
+-- flat move pool from source, with optional unique-by-name dedup
 function move_utils.buildPool(context, args)
 	local movePool = move_utils.filteredMoves(context, args)
 	if args.duplicates == "REMOVE_DUPLICATES" then
@@ -86,8 +71,7 @@ function move_utils.buildPool(context, args)
 	return movePool
 end
 
--- Group first, then uniquify inside each bucket. Doing unique-by-name on the
--- whole list first can empty a type or stage pool when names are shared.
+-- group first, then uniquify inside each bucket
 function move_utils.buildGroupedPool(context, args, groupKey)
 	local grouped = move_utils.filteredMoves(context, args):groupBy(groupKey)
 	if args.duplicates == "KEEP_DUPLICATES" then
@@ -103,6 +87,7 @@ function move_utils.buildGroupedPool(context, args, groupKey)
 	return randomizer.group(selected, keyOrder)
 end
 
+-- cards being randomized. uses modified set, not the ROM source pool
 function move_utils.targets(context, args)
 	return move_utils.filterByKind(
 		randomizer.list(context.modified:getRandomizableMoves(false, false)), args.moveKind)

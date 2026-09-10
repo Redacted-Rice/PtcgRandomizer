@@ -3,10 +3,10 @@ local pool_utils = require("modules.util.pool_utils")
 
 local module
 module = {
-	id = "randomize_num_moves_by_stage_max_stage",
-	name = "Randomize Num Moves (By Stage + Max Stage)",
-	description = "Randomizes the number of moves per card using pools grouped by evolution line max stage and card stage",
-	groups = { "Monsters", "Support", "Moves", "Attacks", "Powers" },
+	id = "retreat_cost_cards_stage_max_stage",
+	name = "Randomize Retreat Cost (From Cards, By Stage + Max Stage)",
+	description = "Randomizes retreat cost using existing card values grouped by evolution line max stage and card stage",
+	groups = { "Monsters", "Retreat Cost" },
 	author = "Redacted Rice",
 	version = "0.9",
 	requires = {
@@ -21,17 +21,17 @@ module = {
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 	},
 	execute = function(context, args)
-		return module.randomizeNumMoves(context, args)
+		return module.randomizeRetreatCost(context, args)
 	end,
 }
 
-function module.randomizeNumMoves(context, args)
+function module.randomizeRetreatCost(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
-	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey, "getNumMoves",
-		args.duplicates):useToRandomize(targets, pool_utils.stageAndMaxStageKey, "setNumMoves",
-		options)
+	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey,
+			"retreatCost", args.duplicates ):useToRandomize(targets,
+				pool_utils.stageAndMaxStageKey, "retreatCost", options)
 end
 
 return module

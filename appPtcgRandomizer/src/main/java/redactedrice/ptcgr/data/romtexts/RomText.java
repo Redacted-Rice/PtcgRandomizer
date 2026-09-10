@@ -52,17 +52,26 @@ public class RomText {
     }
 
     public void setText(String newText) {
-        textBlocks.clear();
-        textBlockIds.clear();
+        clear();
+        if (newText == null || newText.isEmpty()) {
+            return;
+        }
         detectCharSet(newText);
         textBlocks.add(processForInternalManaging(newText));
     }
 
     public void setText(CharSetPrefix charSet, String newText) {
-        textBlocks.clear();
-        textBlockIds.clear();
+        clear();
+        if (newText == null || newText.isEmpty()) {
+            return;
+        }
         this.charSet = charSet;
         textBlocks.add(processForInternalManaging(newText));
+    }
+
+    public void clear() {
+        textBlocks.clear();
+        textBlockIds.clear();
     }
 
     public void setTextBlocks(List<String> newText) {

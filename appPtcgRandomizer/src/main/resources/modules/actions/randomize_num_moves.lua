@@ -1,3 +1,4 @@
+local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 
 local module
@@ -11,9 +12,12 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
-	arguments = pool_utils.standardArgs({
-		pool_utils.groupingArg("ALL_TOGETHER"),
-	}),
+	arguments = {
+		common_field_defs.ARG_DEF_SOURCE,
+		common_field_defs.ARG_DEF_DUPLICATES,
+		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
+		common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER,
+	},
 	execute = function(context, args)
 		return module.randomizeNumMoves(context, args)
 	end,

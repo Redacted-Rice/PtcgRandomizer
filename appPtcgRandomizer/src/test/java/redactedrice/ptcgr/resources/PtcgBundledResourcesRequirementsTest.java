@@ -47,7 +47,7 @@ class PtcgBundledResourcesRequirementsTest {
         List<ExecutionRequest> requests = List.of(
                 ExecutionRequest.forUnseededModule(wrapper.getModule("set_evo_line_metadata"),
                         Map.of()),
-                ExecutionRequest.forUnseededModule(wrapper.getModule("fix_evo_line_hp"),
+                ExecutionRequest.forUnseededModule(wrapper.getModule("hp_fix_evo_line"),
                         Map.of()));
 
         List<Issue> issues = wrapper.validateExecutionPlan(requests);

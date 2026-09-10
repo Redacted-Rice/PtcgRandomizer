@@ -7,7 +7,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
+import redactedrice.ptcgr.constants.romenums.CardAiFlags;
 import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
@@ -25,6 +27,8 @@ import redactedrice.randomizer.scripttests.ScriptTestValues;
 // Every card spec and expect row needs id. name is only for game fields like prevEvoName.
 final class PtcgScriptTestFixtures implements ScriptTestFixtures {
     private static final List<CardId> MONSTER_IDS = monsterIds();
+    private static final List<FlagSetField<?>> FLAG_SET_FIELDS = List.of(
+            flagSet("aiFlags", card -> card.aiFlags, CardAiFlags.class));
 
     @Override
     public void populateContext(JavaContext context, ScriptTestCase testCase) {
@@ -67,8 +71,9 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
                 continue;
             }
             claimed.add(card);
-            ScriptTestFields.collectMismatches(context, card,
-                    ScriptTestValues.withoutKey(expected, "id"), mismatches, cardLabel);
+            collectFlagMismatches(card, expected, mismatches, cardLabel);
+            ScriptTestFields.collectMismatches(context, card, expected, mismatches, cardLabel,
+                    idAndFlagFields());
         }
 
         ScriptTestFields.failIfMismatches(label, mismatches);
@@ -99,11 +104,94 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
         card.type = CardType.MONSTER_COLORLESS;
         card.stage = EvolutionStage.BASIC;
 
-        ScriptTestFields.apply(context, card, ScriptTestValues.withoutKey(spec, "id"));
+        applyFlagFields(card, spec);
+        ScriptTestFields.apply(context, card, spec, idAndFlagFields());
         if (card.name.toString().isBlank()) {
             card.name.setText(id.name());
         }
         return card;
+    }
+
+    private static List<String> flagFieldNames() {
+        return FLAG_SET_FIELDS.stream().map(FlagSetField::name).toList();
+    }
+
+    private static List<String> idAndFlagFields() {
+        List<String> fields = new ArrayList<>(FLAG_SET_FIELDS.size() + 1);
+        fields.add("id");
+        fields.addAll(flagFieldNames());
+        return fields;
+    }
+
+    private static void applyFlagFields(MonsterCard card, Map<String, Object> spec) {
+        for (FlagSetField<?> field : FLAG_SET_FIELDS) {
+            field.apply(card, spec);
+        }
+    }
+
+    private static void collectFlagMismatches(MonsterCard card, Map<String, Object> expected,
+            List<String> mismatches, String cardLabel) {
+        for (FlagSetField<?> field : FLAG_SET_FIELDS) {
+            field.collectMismatch(card, expected, mismatches, cardLabel);
+        }
+    }
+
+    private static <E extends Enum<E>> FlagSetField<E> flagSet(String name,
+            Function<MonsterCard, Set<E>> accessor, Class<E> enumClass) {
+        return new FlagSetField<>(name, accessor, enumClass);
+    }
+
+    // Lua {} for flag sets often becomes an empty Map in Java, not a List.
+    private static List<?> flagNamesFromSpecValue(Object value) {
+        if (value instanceof List<?> list) {
+            return list;
+        }
+        if (value instanceof Map<?, ?> map && map.isEmpty()) {
+            return List.of();
+        }
+        return null;
+    }
+
+    private record FlagSetField<E extends Enum<E>>(String name, Function<MonsterCard, Set<E>> accessor,
+            Class<E> enumClass) {
+
+        void apply(MonsterCard card, Map<String, Object> spec) {
+            Object value = spec.get(name);
+            if (value == null) {
+                return;
+            }
+            List<?> flagNames = flagNamesFromSpecValue(value);
+            if (flagNames == null) {
+                throw new IllegalArgumentException(
+                        "Expected list for " + name + " but got " + value.getClass().getSimpleName());
+            }
+            Set<E> flags = accessor.apply(card);
+            flags.clear();
+            for (Object item : flagNames) {
+                flags.add(Enum.valueOf(enumClass, String.valueOf(item)));
+            }
+        }
+
+        void collectMismatch(MonsterCard card, Map<String, Object> expected, List<String> mismatches,
+                String cardLabel) {
+            Object wantedFlags = expected.get(name);
+            if (wantedFlags == null) {
+                return;
+            }
+            List<?> flagNames = flagNamesFromSpecValue(wantedFlags);
+            if (flagNames == null) {
+                mismatches.add(cardLabel + " " + name + " expected a flag list");
+                return;
+            }
+            Set<E> wanted = new HashSet<>();
+            for (Object item : flagNames) {
+                wanted.add(Enum.valueOf(enumClass, String.valueOf(item)));
+            }
+            Set<E> actual = accessor.apply(card);
+            if (!actual.equals(wanted)) {
+                mismatches.add(cardLabel + " " + name + " expected " + wanted + " but was " + actual);
+            }
+        }
     }
 
     private static CardId requireCardId(Map<String, Object> spec, Set<CardId> usedIds) {

@@ -3,14 +3,22 @@ local card_sets = require("support.card_sets")
 
 return {
 	{
-		name = "raise_minimums",
-		module = "fix_evo_line_hp",
+		name = "match_previous",
+		module = "hp_fix_evo_line",
 		args = {
-			mode = "Raise Minimums",
+			mode = "Match Previous",
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
 		expect = {
+			-- Solo basics unchanged
+			{ id = "MONSTER_001", hp = 10 },
+			{ id = "MONSTER_002", hp = 20 },
+			{ id = "MONSTER_003_1", hp = 30 },
+			{ id = "MONSTER_004", hp = 100 },
+			{ id = "MONSTER_005", hp = 110 },
+			{ id = "MONSTER_006", hp = 120 },
+
 			-- Inverted: evo raised to match basic
 			{ id = "MONSTER_010", hp = 80 },
 			{ id = "MONSTER_011", hp = 80 },
@@ -28,13 +36,21 @@ return {
 	},
 	{
 		name = "redistribute",
-		module = "fix_evo_line_hp",
+		module = "hp_fix_evo_line",
 		args = {
 			mode = "Redistribute",
 		},
 		original = card_sets.STD_TEST_CARDS_ROM,
 		modified = card_sets.STD_TEST_CARDS_CURRENT,
 		expect = {
+			-- Solo basics unchanged
+			{ id = "MONSTER_001", hp = 10 },
+			{ id = "MONSTER_002", hp = 20 },
+			{ id = "MONSTER_003_1", hp = 30 },
+			{ id = "MONSTER_004", hp = 100 },
+			{ id = "MONSTER_005", hp = 110 },
+			{ id = "MONSTER_006", hp = 120 },
+
 			-- Inverted: swapped
 			{ id = "MONSTER_010", hp = 40 },
 			{ id = "MONSTER_011", hp = 80 },
