@@ -1,9 +1,10 @@
+local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 
 local module
 module = {
 	id = "randomize_num_moves_by_stage_max_stage",
-	name = "Randomize Num Moves (By Stage and Max Stage)",
+	name = "Randomize Num Moves (By Stage + Max Stage)",
 	description = "Randomizes the number of moves per card using pools grouped by evolution line max stage and card stage",
 	groups = { "Monsters", "Support", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
@@ -14,7 +15,11 @@ module = {
 	needs = {
 		{ name = "evoLineMaxStage", type = "EvolutionStage" },
 	},
-	arguments = pool_utils.standardArgs(),
+	arguments = {
+		common_field_defs.ARG_DEF_SOURCE,
+		common_field_defs.ARG_DEF_DUPLICATES,
+		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
+	},
 	execute = function(context, args)
 		return module.randomizeNumMoves(context, args)
 	end,

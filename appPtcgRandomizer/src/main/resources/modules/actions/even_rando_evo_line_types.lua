@@ -1,4 +1,5 @@
 local randomizer = require("randomizer")
+local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 
 -- Keeps each evo line on the same type drawn from ROM or CURRENT. Only even when REMOVE_DUPLICATES.
@@ -16,7 +17,11 @@ module = {
 	needs = {
 		{ name = "evoLineId", type = "integer" },
 	},
-	arguments = pool_utils.standardArgs(),
+	arguments = {
+		common_field_defs.ARG_DEF_SOURCE,
+		common_field_defs.ARG_DEF_DUPLICATES,
+		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
+	},
 	execute = function(context, args)
 		return module.randomizeEvoLineTypes(context, args)
 	end,

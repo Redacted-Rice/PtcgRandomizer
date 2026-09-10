@@ -78,14 +78,14 @@ class ActionBankTest {
         ActionBank actionBank = bundledActionBank(workDir);
 
         List<String> hpModules = actionBank.get("HP").stream().map(Action::getModuleId).toList();
-        assertTrue(hpModules.contains("shuffle_hp"));
+        assertTrue(hpModules.contains("hp_cards_together_and_stage"));
         assertFalse(hpModules.contains("hp_by_stage_from_rom"));
         assertFalse(hpModules.contains("randomize_moves"));
 
         List<String> attackModules =
                 actionBank.get("Attacks").stream().map(Action::getModuleId).toList();
         assertTrue(attackModules.contains("randomize_moves"));
-        assertFalse(attackModules.contains("shuffle_hp"));
+        assertFalse(attackModules.contains("hp_cards_together_and_stage"));
 
         List<String> supportModules =
                 actionBank.get("Support").stream().map(Action::getModuleId).toList();
@@ -99,8 +99,8 @@ class ActionBankTest {
         List<String> lowerGroup =
                 actionBank.get("monsters").stream().map(Action::getModuleId).toList();
         List<String> upperGroup = actionBank.get("HP").stream().map(Action::getModuleId).toList();
-        assertTrue(lowerGroup.contains("shuffle_hp"));
-        assertTrue(upperGroup.contains("shuffle_hp"));
+        assertTrue(lowerGroup.contains("hp_cards_together_and_stage"));
+        assertTrue(upperGroup.contains("hp_cards_together_and_stage"));
     }
 
     @Test

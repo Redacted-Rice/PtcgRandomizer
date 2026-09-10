@@ -232,7 +232,7 @@ class RulesConfigTest {
         loaded.getRulesConfig().applyTo(rules, null);
 
         assertTrue(loaded.hasRules());
-        assertEquals(26, rules.getMoveExclusions().getAllExclusions().size());
+        assertEquals(28, rules.getMoveExclusions().getAllExclusions().size());
     }
 
     @Test
