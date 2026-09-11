@@ -4,7 +4,7 @@ local fields = require("support.fields")
 
 return {
 	name = "rewrite_to_colorless",
-	module = "all_moves_colorless",
+	module = "move_types_colorless",
 	cards = card_sets.MIXED_COST_CARDS,
 	expect = {
 		{

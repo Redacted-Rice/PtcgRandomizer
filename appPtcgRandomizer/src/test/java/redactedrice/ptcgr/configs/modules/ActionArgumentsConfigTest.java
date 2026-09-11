@@ -17,7 +17,7 @@ import org.luaj.vm2.lib.ZeroArgFunction;
 class ActionArgumentsConfigTest {
     @Test
     void fromActionSavesStoredModuleArguments() {
-        Module module = new Module("set_num_moves", "set_num_moves", "", java.util.Set.of("dev"),
+        Module module = new Module("num_moves_set", "num_moves_set", "", java.util.Set.of("dev"),
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(), 2)),
                 new ZeroArgFunction() {

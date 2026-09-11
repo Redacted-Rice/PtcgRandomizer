@@ -39,8 +39,10 @@ class PtcgBundledResourcesFatJarTest {
 
         String javaBin = System.getProperty("java.home") + File.separator + "bin"
                 + File.separator + "java";
-        Process process = new ProcessBuilder(javaBin, "-jar", jar.toAbsolutePath().toString(),
-                "--script-tests", "test_set_num_moves").inheritIO().start();
+        Process process = new ProcessBuilder(javaBin,
+                "-D" + PtcgBundledResources.FORCE_REINSTALL_SYSTEM_PROPERTY + "=true", "-jar",
+                jar.toAbsolutePath().toString(), "--script-tests", "test_num_moves_set")
+                .inheritIO().start();
 
         assertEquals(0, process.waitFor(), "Script tests CLI failed on runnable JAR");
     }

@@ -68,7 +68,7 @@ public final class ActionConfig extends ModuleConfig {
     }
 
     // Builds a warning label using the module's display name with its id in parenthesis,
-    // e.g. Module "Set X Moves Per Card" (set_num_moves)
+    // e.g. Module "Set X Moves Per Card" (num_moves_set)
     private static String moduleLabel(Module module) {
         String name = module.getName();
         if (name == null || name.isBlank()) {

@@ -66,9 +66,9 @@ class ConfigTest {
         var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
         var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
         ActionBank actionBank =
-                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
-        Action action = actionBank.getModule("shuffle_hp") != null
-                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
+                testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+        Action action = actionBank.getModule("hp_cards_together_and_stage") != null
+                ? new Action(actionBank.getModule("hp_cards_together_and_stage"), actionBank.getEnumRegistry())
                 : null;
         assertTrue(action != null);
         Config config = Config.fromAppState(settings.getSeedString(), List.of(action), actionBank,
@@ -101,7 +101,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 987654321
                 actions:
-                  - module: shuffle_hp
+                  - module: hp_cards_together_and_stage
                     version: 0.1
                     seedOffset: 12
                 prescripts: []
@@ -116,7 +116,7 @@ class ConfigTest {
         assertEquals("987654321", loaded.getSeed());
         assertEquals(PtcgRandomizerVersion.VERSION, loaded.getAppVersion());
         assertEquals(1, loaded.getActionConfigs().size());
-        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+        assertEquals("hp_cards_together_and_stage", loaded.getActionConfigs().get(0).getModule());
         assertEquals("0.1", loaded.getActionConfigs().get(0).getVersion());
         assertEquals(12, loaded.getActionConfigs().get(0).getConfig().getSeedOffset());
     }
@@ -128,7 +128,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 1
                 actions:
-                  - module: set_num_moves
+                  - module: num_moves_set
                     arguments:
                       numMoves: 1
                 prescripts: []
@@ -142,7 +142,7 @@ class ConfigTest {
         assertEquals(1, loaded.getActionConfigs().size());
         assertEquals(1, loaded.getActionConfigs().get(0).getConfig().getArguments().get("numMoves"));
 
-        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+        ActionBank actionBank = testActionBank("num_moves_set", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
         var actions = loaded.getActions(actionBank);
@@ -157,7 +157,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 1
                 actions:
-                  - module: set_num_moves
+                  - module: num_moves_set
                     arguments:
                       numMoves: "1"
                 prescripts: []
@@ -168,7 +168,7 @@ class ConfigTest {
 
         IssueTracker.clear();
         Config loaded = readYaml(configFile.toFile());
-        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+        ActionBank actionBank = testActionBank("num_moves_set", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
@@ -185,7 +185,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 1
                 actions:
-                  - module: set_num_moves
+                  - module: num_moves_set
                     arguments:
                       numMoves: "not-a-number"
                 prescripts: []
@@ -196,7 +196,7 @@ class ConfigTest {
 
         IssueTracker.clear();
         Config loaded = readYaml(configFile.toFile());
-        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+        ActionBank actionBank = testActionBank("num_moves_set", "0.9",
                 List.of(new ArgumentDefinition("numMoves",
                         TypeDefinition.integer(ArgumentConstraint.range(0, 2)), 2)),
                 List.of(), List.of());
@@ -277,7 +277,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 1
                 actions:
-                  - module: set_num_moves
+                  - module: num_moves_set
                     arguments:
                       numMoves: 1
                       bogusArg: 5
@@ -289,7 +289,7 @@ class ConfigTest {
 
         IssueTracker.clear();
         Config loaded = readYaml(configFile.toFile());
-        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+        ActionBank actionBank = testActionBank("num_moves_set", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
         var actions = loaded.getActions(actionBank);
@@ -307,7 +307,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 1
                 actions:
-                  - module: set_num_moves
+                  - module: num_moves_set
                     arguments: {}
                 prescripts: []
                 postscripts: []
@@ -317,7 +317,7 @@ class ConfigTest {
 
         IssueTracker.clear();
         Config loaded = readYaml(configFile.toFile());
-        ActionBank actionBank = testActionBank("set_num_moves", "0.9",
+        ActionBank actionBank = testActionBank("num_moves_set", "0.9",
                 List.of(new ArgumentDefinition("numMoves", TypeDefinition.integer(), 2)),
                 List.of(), List.of());
         var actions = loaded.getActions(actionBank);
@@ -363,7 +363,7 @@ class ConfigTest {
                 appVersion: %s
                 seed: 987654321
                 actions:
-                  - module: shuffle_hp
+                  - module: hp_cards_together_and_stage
                     seedOffset: 12
                 prescripts: []
                 postscripts: []
@@ -376,7 +376,7 @@ class ConfigTest {
         assertTrue(!IssueTracker.hasWarnings());
         assertEquals("987654321", loaded.getSeed());
         assertEquals(1, loaded.getActionConfigs().size());
-        assertEquals("shuffle_hp", loaded.getActionConfigs().get(0).getModule());
+        assertEquals("hp_cards_together_and_stage", loaded.getActionConfigs().get(0).getModule());
         assertEquals(null, loaded.getActionConfigs().get(0).getVersion());
         assertEquals(12, loaded.getActionConfigs().get(0).getConfig().getSeedOffset());
     }
@@ -420,9 +420,9 @@ class ConfigTest {
         var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
         var detectScript = scriptWithVersion("changedetector_detect", "0.2", "module");
         ActionBank actionBank =
-                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+                testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
         Config config = new Config("1",
-                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ActionConfig("hp_cards_together_and_stage", "0.9", ActionArgumentsConfig.empty())),
                 List.of(new ScriptConfig("changedetector_setup", "0.1")),
                 List.of(new ScriptConfig("changedetector_detect", "0.2")), RulesConfig.empty());
 
@@ -435,10 +435,10 @@ class ConfigTest {
     @Test
     void scriptFingerprintsWarnWhenRequiredScriptMissingFromApp() {
         Config config = new Config("1",
-                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ActionConfig("hp_cards_together_and_stage", "0.9", ActionArgumentsConfig.empty())),
                 List.of(new ScriptConfig("changedetector_setup", "0.1")),
                 List.of(new ScriptConfig("missing_postscript", "0.1")), RulesConfig.empty());
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(),
+        ActionBank actionBank = testActionBank("hp_cards_together_and_stage", "0.9", List.of(),
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")), List.of());
 
         IssueTracker.clear();
@@ -451,10 +451,10 @@ class ConfigTest {
     @Test
     void scriptFingerprintsWarnOnVersionMismatch() {
         Config config = new Config("1",
-                List.of(new ActionConfig("shuffle_hp", "0.9", ActionArgumentsConfig.empty())),
+                List.of(new ActionConfig("hp_cards_together_and_stage", "0.9", ActionArgumentsConfig.empty())),
                 List.of(new ScriptConfig("changedetector_setup", "0.0")),
                 List.of(new ScriptConfig("changedetector_detect", "0.0")), RulesConfig.empty());
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(),
+        ActionBank actionBank = testActionBank("hp_cards_together_and_stage", "0.9", List.of(),
                 List.of(scriptWithVersion("changedetector_setup", "0.1", "randomize")),
                 List.of(scriptWithVersion("changedetector_detect", "0.2", "module")));
 
@@ -470,10 +470,10 @@ class ConfigTest {
     @Test
     void versionMismatchWarnsButStillLoadsAction() {
         Config config = new Config("1",
-                List.of(new ActionConfig("shuffle_hp", "0.1", ActionArgumentsConfig.empty())),
+                List.of(new ActionConfig("hp_cards_together_and_stage", "0.1", ActionArgumentsConfig.empty())),
                 List.of(), List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
+        ActionBank actionBank = testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(), List.of());
 
         IssueTracker.clear();
         var actions = config.getActions(actionBank);
@@ -656,9 +656,9 @@ class ConfigTest {
 
     @Test
     void convertActionsOnlyToYamlMapUsesConfigStructure() {
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
-        Action action = actionBank.getModule("shuffle_hp") != null
-                ? new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry())
+        ActionBank actionBank = testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(), List.of());
+        Action action = actionBank.getModule("hp_cards_together_and_stage") != null
+                ? new Action(actionBank.getModule("hp_cards_together_and_stage"), actionBank.getEnumRegistry())
                 : null;
         assertTrue(action != null);
 
@@ -671,7 +671,7 @@ class ConfigTest {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> actions = (List<Map<String, Object>>) document.get("actions");
         assertEquals(1, actions.size());
-        assertEquals("shuffle_hp", actions.get(0).get("module"));
+        assertEquals("hp_cards_together_and_stage", actions.get(0).get("module"));
         assertFalse(document.containsKey("prescripts"));
         assertFalse(document.containsKey("postscripts"));
     }
@@ -681,8 +681,8 @@ class ConfigTest {
         var setupScript = scriptWithVersion("changedetector_setup", "0.1", "randomize");
         var detectScript = scriptWithVersion("changedetector_detect", "0.1", "module");
         ActionBank actionBank =
-                testActionBank("shuffle_hp", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
-        Action action = new Action(actionBank.getModule("shuffle_hp"), actionBank.getEnumRegistry());
+                testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(setupScript), List.of(detectScript));
+        Action action = new Action(actionBank.getModule("hp_cards_together_and_stage"), actionBank.getEnumRegistry());
 
         Path actionsFile = tempDir.resolve("user_actions.yaml");
         YamlIO.save(actionsFile.toFile(), Config.convertActionsOnlyToYamlMap(List.of(action), actionBank));
@@ -694,7 +694,7 @@ class ConfigTest {
         assertTrue(loaded.hasPostScripts());
         loaded.checkRequiredScriptFingerprints(actionBank);
         assertFalse(IssueTracker.hasWarnings());
-        assertEquals("shuffle_hp", loaded.getActions(actionBank).get(0).getModule().getId());
+        assertEquals("hp_cards_together_and_stage", loaded.getActions(actionBank).get(0).getModule().getId());
     }
 
     @Test
@@ -740,10 +740,10 @@ class ConfigTest {
     @Test
     void missingModuleVersionWarnsButStillLoadsAction() {
         Config config = new Config("1",
-                List.of(new ActionConfig("shuffle_hp", null, ActionArgumentsConfig.empty())),
+                List.of(new ActionConfig("hp_cards_together_and_stage", null, ActionArgumentsConfig.empty())),
                 List.of(), List.of(), RulesConfig.empty());
 
-        ActionBank actionBank = testActionBank("shuffle_hp", "0.9", List.of(), List.of(), List.of());
+        ActionBank actionBank = testActionBank("hp_cards_together_and_stage", "0.9", List.of(), List.of(), List.of());
 
         IssueTracker.clear();
         var actions = config.getActions(actionBank);

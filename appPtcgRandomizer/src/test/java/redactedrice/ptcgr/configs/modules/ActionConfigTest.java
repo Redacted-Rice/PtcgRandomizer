@@ -10,16 +10,16 @@ class ActionConfigTest {
     @Test
     void convertToYamlMapSavesModuleVersion() {
         ActionConfig actionPreset =
-                new ActionConfig("shuffle_hp", "0.1", ActionArgumentsConfig.empty());
+                new ActionConfig("hp_cards_together_and_stage", "0.1", ActionArgumentsConfig.empty());
         Map<String, Object> node = actionPreset.convertToYamlMap();
-        assertEquals("shuffle_hp", node.get("module"));
+        assertEquals("hp_cards_together_and_stage", node.get("module"));
         assertEquals("0.1", node.get("version"));
     }
 
     @Test
     void convertToYamlMapWritesUnknownWhenVersionMissing() {
         ActionConfig actionPreset =
-                new ActionConfig("shuffle_hp", null, ActionArgumentsConfig.empty());
+                new ActionConfig("hp_cards_together_and_stage", null, ActionArgumentsConfig.empty());
         Map<String, Object> node = actionPreset.convertToYamlMap();
         assertEquals("<unknown>", node.get("version"));
     }

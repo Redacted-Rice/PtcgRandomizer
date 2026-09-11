@@ -2,7 +2,7 @@
 return {
 	{
 		name = "set_to_2",
-		module = "set_num_moves",
+		module = "num_moves_set",
 		args = {
 			numMoves = 2,
 		},

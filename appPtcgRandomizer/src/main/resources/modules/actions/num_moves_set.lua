@@ -2,7 +2,7 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "set_num_moves",
+	id = "num_moves_set",
 	name = "Set X Moves Per Card",
 	description = "Sets the number of moves per card",
 	seeded = false,

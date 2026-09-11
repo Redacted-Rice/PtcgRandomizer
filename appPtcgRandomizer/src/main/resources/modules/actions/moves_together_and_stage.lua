@@ -5,7 +5,7 @@ local move_utils = require("modules.util.move_utils")
 
 local module
 module = {
-	id = "randomize_moves",
+	id = "moves_together_and_stage",
 	name = "Randomize Existing Moves",
 	description = "Randomizes existing attacks and/or powers, either from one shared pool or grouped by evolution stage. Keeps the same number of moves per card",
 	groups = { "Monsters", "Moves", "Attacks", "Powers" },

@@ -5,7 +5,7 @@ local fields = require("support.fields")
 local function caseFor(energyType)
 	return {
 		name = energyType:lower(),
-		module = "all_moves_non_colorless_to_type",
+		module = "move_types_non_colorless_to_type",
 		args = {
 			energyType = energyType,
 		},

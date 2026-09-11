@@ -71,12 +71,14 @@ public final class PtcgBundledResources {
             String version = PtcgRandomizerVersion.VERSION;
             File marker = new File(workingDir, RESOURCES_VERSION_FILE_NAME);
 
-            if (VersionedResourceInstaller.needsReinstall(marker, version,
-                    isForceReinstallEnabled())) {
+            boolean forceReinstall = isForceReinstallEnabled();
+            if (VersionedResourceInstaller.needsReinstall(marker, version, forceReinstall)) {
                 VersionedResourceInstaller.backupAndInstall(MODULES_RESOURCE,
-                        new File(workingDir, MODULES_DIR_NAME), backupsDir, MODULES_DIR_NAME);
+                        new File(workingDir, MODULES_DIR_NAME), backupsDir, MODULES_DIR_NAME,
+                        forceReinstall);
                 VersionedResourceInstaller.backupAndInstall(RULES_RESOURCE,
-                        new File(workingDir, RULES_DIR_NAME), backupsDir, RULES_DIR_NAME);
+                        new File(workingDir, RULES_DIR_NAME), backupsDir, RULES_DIR_NAME,
+                        forceReinstall);
                 // No backupSubDir: run-scripts extracts to workingDir's root, so back it up
                 // there too instead of nesting it under a "run-scripts" folder.
                 VersionedResourceInstaller.backupAndInstall(RUN_SCRIPTS_RESOURCE, workingDir,
@@ -166,7 +168,7 @@ public final class PtcgBundledResources {
     static void verifyInstalled(File dir) {
         requireFile(RandomizerBundledResources.getInstalledDir(dir).toPath().resolve("init.lua")
                 .toFile());
-        requireFile(new File(dir, "modules/actions/shuffle_hp.lua"));
+        requireFile(new File(dir, "modules/actions/hp_cards_together_and_stage.lua"));
         requireFile(new File(dir, "rules/unsupported_moves.yaml"));
     }
 

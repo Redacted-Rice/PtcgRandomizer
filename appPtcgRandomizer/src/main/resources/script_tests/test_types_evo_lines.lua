@@ -48,7 +48,7 @@ local modified = {
 return {
 	{
 		name = "keep_duplicates",
-		module = "even_rando_evo_line_types",
+		module = "types_evo_lines",
 		seed = seed,
 		args = {
 			source = "ROM",
@@ -59,29 +59,30 @@ return {
 		modified = modified,
 		-- ROM has 2 FIRE lines and 1 of other types. This distro matches
 		expect = {
-			{ id = "MONSTER_001", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_002", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_003_1", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
 
 			{ id = "MONSTER_010", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_011", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_012", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_013", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_014", type = "MONSTER_PSYCHIC" },
-			{ id = "MONSTER_015", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_014", type = "MONSTER_WATER" },
+			{ id = "MONSTER_015", type = "MONSTER_WATER" },
 
-			{ id = "MONSTER_023", type = "MONSTER_WATER" },
+			{ id = "MONSTER_023", type = "MONSTER_LIGHTNING" },
 
 			{ id = "MONSTER_024", type = "MONSTER_FIRE" },
 
-			{ id = "MONSTER_031", type = "MONSTER_LIGHTNING" },
-			{ id = "MONSTER_032", type = "MONSTER_LIGHTNING" },
+			{ id = "MONSTER_031", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_032", type = "MONSTER_FIRE" },
 		},
+
 	},
 	{
 		name = "from_current",
-		module = "even_rando_evo_line_types",
+		module = "types_evo_lines",
 		seed = seed,
 		args = {
 			source = "CURRENT",
@@ -92,29 +93,30 @@ return {
 		modified = modified,
 		-- CURRENT has 3 PSYCHIC lines and 1 of other types. This distro matches
 		expect = {
-			{ id = "MONSTER_001", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_002", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_003_1", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
 
 			{ id = "MONSTER_010", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_011", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_012", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_013", type = "MONSTER_PSYCHIC" },
 
-			{ id = "MONSTER_014", type = "MONSTER_PSYCHIC" },
-			{ id = "MONSTER_015", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_014", type = "MONSTER_FIGHTING" },
+			{ id = "MONSTER_015", type = "MONSTER_FIGHTING" },
 
-			{ id = "MONSTER_023", type = "MONSTER_FIGHTING" },
+			{ id = "MONSTER_023", type = "MONSTER_PSYCHIC" },
 
 			{ id = "MONSTER_024", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_031", type = "MONSTER_PSYCHIC" },
-			{ id = "MONSTER_032", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_031", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_032", type = "MONSTER_COLORLESS" },
 		},
+
 	},
 	{
 		name = "remove_duplicates",
-		module = "even_rando_evo_line_types",
+		module = "types_evo_lines",
 		seed = seed,
 		args = {
 			source = "CURRENT",
@@ -123,31 +125,32 @@ return {
 		},
 		original = original,
 		modified = modified,
-		-- Four unique CURRENT types, then two refills. FIGHTING and PSYCHIC double up, not PSYCHIC only like keep_duplicates.
+		-- Four unique CURRENT types, then two refills. COLORLESS and GRASS double up, not PSYCHIC only like keep_duplicates.
 		expect = {
-			{ id = "MONSTER_001", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_002", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_003_1", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
 
 			{ id = "MONSTER_010", type = "MONSTER_FIGHTING" },
 			{ id = "MONSTER_011", type = "MONSTER_FIGHTING" },
 			{ id = "MONSTER_012", type = "MONSTER_FIGHTING" },
 			{ id = "MONSTER_013", type = "MONSTER_FIGHTING" },
 
-			{ id = "MONSTER_014", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_015", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_014", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_015", type = "MONSTER_COLORLESS" },
 
-			{ id = "MONSTER_023", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_023", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_024", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_024", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_031", type = "MONSTER_FIGHTING" },
-			{ id = "MONSTER_032", type = "MONSTER_FIGHTING" },
+			{ id = "MONSTER_031", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_032", type = "MONSTER_COLORLESS" },
 		},
+
 	},
 	{
 		name = "fully_random",
-		module = "even_rando_evo_line_types",
+		module = "types_evo_lines",
 		seed = seed,
 		args = {
 			source = "ROM",
@@ -156,27 +159,28 @@ return {
 		},
 		original = original,
 		modified = modified,
-		-- FIRE landed on four lines. GRASS and LIGHTNING were unused.
-		-- This is improbable but completely valid for FULLY_RANDOM
+		-- PSYCHIC and GRASS each were selected twice. FIRE was unused
+		-- This matches expectations for fully random
 		expect = {
-			{ id = "MONSTER_001", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_002", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_003_1", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
 
-			{ id = "MONSTER_010", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_011", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_012", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_013", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_010", type = "MONSTER_WATER" },
+			{ id = "MONSTER_011", type = "MONSTER_WATER" },
+			{ id = "MONSTER_012", type = "MONSTER_WATER" },
+			{ id = "MONSTER_013", type = "MONSTER_WATER" },
 
-			{ id = "MONSTER_014", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_015", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_014", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_015", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_023", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_023", type = "MONSTER_PSYCHIC" },
 
-			{ id = "MONSTER_024", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_024", type = "MONSTER_LIGHTNING" },
 
-			{ id = "MONSTER_031", type = "MONSTER_WATER" },
-			{ id = "MONSTER_032", type = "MONSTER_WATER" },
+			{ id = "MONSTER_031", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_032", type = "MONSTER_GRASS" },
 		},
+
 	},
 }
