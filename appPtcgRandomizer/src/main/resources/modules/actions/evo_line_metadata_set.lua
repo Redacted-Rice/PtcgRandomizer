@@ -4,7 +4,7 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "set_evo_line_metadata",
+	id = "evo_line_metadata_set",
 	name = "Set Evo Line Metadata",
 	description = "Sets metadata for each evolution line in the rom for other modules reference. Makes no changes to the ROM",
 	groups = { "Monsters", "Support", "Evolutions" },
@@ -98,7 +98,7 @@ function module.applyEvoLineMetadata(monsterCards)
 			end)
 		end
 	end)
-	logger.info("Module set_evo_line_metadata completed for "
+	logger.info("Module evo_line_metadata_set completed for "
 		.. randomizer.list(monsterCards):size() .. " cards")
 end
 

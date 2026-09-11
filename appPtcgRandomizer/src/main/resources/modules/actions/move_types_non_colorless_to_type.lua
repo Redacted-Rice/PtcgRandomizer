@@ -2,9 +2,9 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "all_moves_match_type",
-	name = "All Moves Match Type",
-	description = "Changes all moves non-colorless energy types to match their card Energy Type",
+	id = "move_types_non_colorless_to_type",
+	name = "All Non-Colorless To Type",
+	description = "Changes all moves non-colorless energy types to the specified Energy Type",
 	seeded = false,
 	groups = { "Monsters", "Moves", "Attacks", "Energy Type" },
 	author = "Redacted Rice",
@@ -12,28 +12,35 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
+	arguments = {
+		{
+			name = "energyType",
+			displayName = "Energy Type",
+			description = "Energy Type to change all non-colorless energy costs to be",
+			definition = {
+				type = "enum",
+				constraint = "EnergyType",
+				exclude = { "COLORLESS", "UNUSED_TYPE" },
+			},
+			default = "FIRE",
+		},
+	},
 	execute = function(context, args)
-		return module.setMoveCostsToMatchType(context, args)
+		return module.setNonColorlessToType(context, args)
 	end,
 }
 
--- Keeps colorless costs as is and only change non colorless energy to the card's type
-function module.setMoveCostsToMatchType(context)
+function module.setNonColorlessToType(context, args)
 	local EnergyType = context.EnergyType
+	local targetType = EnergyType[args.energyType]
 	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(mon)
-		local energyType = mon.type:convertToEnergyType()
 		for moveSlot = 0, mon:getNumMoves() - 1 do
 			local move = mon:getMove(moveSlot)
 			local colorlessCost = move:getCost(EnergyType.COLORLESS)
 			local nonColorlessCost = move:getNonColorlessEnergyCosts()
 			move:clearCosts()
-
-			if energyType == EnergyType.COLORLESS then
-				move:setCost(EnergyType.COLORLESS, colorlessCost + nonColorlessCost)
-			else
-				move:setCost(EnergyType.COLORLESS, colorlessCost)
-				move:setCost(energyType, nonColorlessCost)
-			end
+			move:setCost(EnergyType.COLORLESS, colorlessCost)
+			move:setCost(targetType, nonColorlessCost)
 			-- True = force set even for assignments
 			mon:setMove(move, moveSlot, true)
 		end

@@ -80,16 +80,16 @@ class ActionBankTest {
         List<String> hpModules = actionBank.get("HP").stream().map(Action::getModuleId).toList();
         assertTrue(hpModules.contains("hp_cards_together_and_stage"));
         assertFalse(hpModules.contains("hp_by_stage_from_rom"));
-        assertFalse(hpModules.contains("randomize_moves"));
+        assertFalse(hpModules.contains("moves_together_and_stage"));
 
         List<String> attackModules =
                 actionBank.get("Attacks").stream().map(Action::getModuleId).toList();
-        assertTrue(attackModules.contains("randomize_moves"));
+        assertTrue(attackModules.contains("moves_together_and_stage"));
         assertFalse(attackModules.contains("hp_cards_together_and_stage"));
 
         List<String> supportModules =
                 actionBank.get("Support").stream().map(Action::getModuleId).toList();
-        assertTrue(supportModules.contains("set_num_moves"));
+        assertTrue(supportModules.contains("num_moves_set"));
     }
 
     @Test

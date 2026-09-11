@@ -27,7 +27,7 @@ local testCards = cardsWithAiFlagOverrides()
 return {
 	{
 		name = "clears_evo_links_and_ai_flags",
-		module = "remove_evolutions",
+		module = "evolutions_remove",
 		seed = 1,
 		args = {},
 		original = testCards,

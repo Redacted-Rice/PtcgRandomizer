@@ -3,7 +3,7 @@
 return {
 	{
 		name = "assigns_line_metadata",
-		module = "set_evo_line_metadata",
+		module = "evo_line_metadata_set",
 		cards = {
 			{ id = "MONSTER_001", name = "LineOneBase", type = "MONSTER_FIRE", stage = "BASIC" },
 			{ id = "MONSTER_002", name = "LineOneBase", type = "MONSTER_FIRE", stage = "BASIC" },

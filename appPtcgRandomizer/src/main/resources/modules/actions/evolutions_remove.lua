@@ -3,7 +3,7 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "remove_evolutions",
+	id = "evolutions_remove",
 	name = "Remove Evolutions",
 	description = "Removes evolutions by making all monsters basics and cleaning up related ROM internals",
 	groups = { "Monsters", "Evolutions" },

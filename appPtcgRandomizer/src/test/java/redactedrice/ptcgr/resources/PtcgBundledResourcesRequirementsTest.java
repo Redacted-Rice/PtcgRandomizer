@@ -45,7 +45,7 @@ class PtcgBundledResourcesRequirementsTest {
         LuaRandomizerWrapper wrapper = loadBundledModules();
 
         List<ExecutionRequest> requests = List.of(
-                ExecutionRequest.forUnseededModule(wrapper.getModule("set_evo_line_metadata"),
+                ExecutionRequest.forUnseededModule(wrapper.getModule("evo_line_metadata_set"),
                         Map.of()),
                 ExecutionRequest.forUnseededModule(wrapper.getModule("hp_fix_evo_line"),
                         Map.of()));
@@ -88,7 +88,7 @@ class PtcgBundledResourcesRequirementsTest {
             assertTrue(new File(modulesDir, "actions/dev_test_list_args.lua").isFile());
             assertTrue(new File(modulesDir, "actions/dev_test_table_args.lua").isFile());
             // Regular modules should still be there too, unaffected by the dev merge
-            assertTrue(new File(modulesDir, "actions/shuffle_hp.lua").isFile());
+            assertTrue(new File(modulesDir, "actions/hp_cards_together_and_stage.lua").isFile());
 
             List<String> allowedDirectories = new ArrayList<>();
             allowedDirectories.add(resources.getRandomizerDir().getAbsolutePath());

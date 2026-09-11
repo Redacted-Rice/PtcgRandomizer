@@ -5,7 +5,7 @@ local pool_utils = require("modules.util.pool_utils")
 -- Keeps each evo line on the same type drawn from ROM or CURRENT. Only even when REMOVE_DUPLICATES.
 local module
 module = {
-	id = "even_rando_evo_line_types",
+	id = "types_evo_lines",
 	name = "Randomize Evo Line Types (Keep Line Types From Source)",
 	description = "Randomizes the energy type for each card in each evolution line to the same type",
 	groups = { "Monsters", "Energy Type", "Evolutions" },

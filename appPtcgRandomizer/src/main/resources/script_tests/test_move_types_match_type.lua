@@ -4,7 +4,7 @@ local fields = require("support.fields")
 
 return {
 	name = "match_card_type",
-	module = "all_moves_match_type",
+	module = "move_types_match_type",
 	cards = card_sets.MIXED_COST_CARDS,
 	expect = {
 		{

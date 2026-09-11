@@ -8,9 +8,9 @@ REM Run the app once to install bundled resources (including this wrapper).
 REM
 REM Usage:
 REM   run-script-tests.bat                  run every test_*.lua case
-REM   run-script-tests.bat test_set_num_moves    run one case file (.lua is optional)
+REM   run-script-tests.bat test_num_moves_set    run one case file (.lua is optional)
 REM   run-script-tests.bat --log-level INFO      run all with more logging
-REM   run-script-tests.bat --log-level DEBUG test_set_num_moves
+REM   run-script-tests.bat --log-level DEBUG test_num_moves_set
 REM
 REM Log level defaults to WARN. Use DEBUG, INFO, WARN, or ERROR.
 REM

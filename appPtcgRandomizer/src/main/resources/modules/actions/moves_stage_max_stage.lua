@@ -5,7 +5,7 @@ local move_utils = require("modules.util.move_utils")
 
 local module
 module = {
-	id = "randomize_moves_by_stage_max_stage",
+	id = "moves_stage_max_stage",
 	name = "Randomize Existing Moves (By Stage + Max Stage)",
 	description = "Randomizes existing attacks and/or powers using pools grouped by evolution line max stage and card stage. Keeps the same number of moves per card.",
 	groups = { "Monsters", "Moves", "Attacks", "Powers" },

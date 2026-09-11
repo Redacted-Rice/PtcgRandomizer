@@ -2,7 +2,7 @@ local randomizer = require("randomizer")
 
 local module
 module = {
-	id = "all_moves_colorless",
+	id = "move_types_colorless",
 	name = "All Moves Colorless",
 	description = "Changes all moves to only use colorless energies instead of specific types",
 	seeded = false,
