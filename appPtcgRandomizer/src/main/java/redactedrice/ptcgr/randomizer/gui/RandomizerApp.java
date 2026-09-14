@@ -72,14 +72,18 @@ public class RandomizerApp {
     private RulesPanel rulesPanel;
     private SupportPanel supportPanel;
 
-    // Forces PtcgBundledResources to redo the backup and reinstall of resources
+    // Forces PtcgBundledResources to redo the backup and reinstall of resources like on version
+    // update
     private static final String REINSTALL_RESOURCES_FLAG = "--reinstall-resources";
+    // Forces PtcgBundledResources to backup the whole install folder, clean it and reinstall
+    // resources. Mainly intended for testing/dev
+    private static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
 
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-        args = consumeReinstallResourcesFlag(args);
+        args = consumeResourceReinstallFlags(args);
 
         if (ScriptTestRunner.handles(args)) {
             System.exit(ScriptTestRunner.run(args));
@@ -97,18 +101,25 @@ public class RandomizerApp {
         });
     }
 
-    private static String[] consumeReinstallResourcesFlag(String[] args) {
+    private static String[] consumeResourceReinstallFlags(String[] args) {
         List<String> remaining = new ArrayList<>();
-        boolean force = false;
+        boolean reinstall = false;
+        boolean cleanReinstall = false;
         for (String arg : args) {
             if (REINSTALL_RESOURCES_FLAG.equals(arg)) {
-                force = true;
+                reinstall = true;
+            } else if (CLEAN_REINSTALL_RESOURCES_FLAG.equals(arg)) {
+                cleanReinstall = true;
             } else {
                 remaining.add(arg);
             }
         }
-        if (force) {
-            System.setProperty(PtcgBundledResources.FORCE_REINSTALL_SYSTEM_PROPERTY, "true");
+        if (reinstall) {
+            System.setProperty(PtcgBundledResources.REINSTALL_RESOURCES_SYSTEM_PROPERTY, "true");
+        }
+        if (cleanReinstall) {
+            System.setProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY,
+                    "true");
         }
         return remaining.toArray(new String[0]);
     }

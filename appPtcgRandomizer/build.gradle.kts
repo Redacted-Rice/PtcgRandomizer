@@ -235,11 +235,11 @@ tasks.register<Jar>("fatJar") {
 
 tasks.named<JavaExec>("run") {
     dependsOn("processResources")
-    // run is the dev build/run path, so refresh bundled modules/rules from the classpath
+    // run is the dev build/run path, so clean and reinstall bundled modules/rules from the classpath
     // and install the dev only test modules alongside the regular ones. Release packages
     // (fatJar) never set these properties.
     systemProperty("ptcgr.devModules", "true")
-    systemProperty("ptcgr.forceReinstallResources", "true")
+    systemProperty("ptcgr.cleanReinstallResources", "true")
 }
 
 // test needs the packaged jar too: PtcgBundledResourcesFatJarTest shells out to it directly.
@@ -247,7 +247,7 @@ tasks.named<Test>("test") {
     dependsOn("fatJar")
     useJUnitPlatform()
     systemProperty("ptcgr.devModules", "true")
-    systemProperty("ptcgr.forceReinstallResources", "true")
+    systemProperty("ptcgr.cleanReinstallResources", "true")
 }
 
 tasks.register<JavaExec>("runScriptTests") {
@@ -258,7 +258,7 @@ tasks.register<JavaExec>("runScriptTests") {
     classpath = sourceSets.main.get().runtimeClasspath
     args = listOf("--script-tests")
     systemProperty("ptcgr.devModules", "true")
-    systemProperty("ptcgr.forceReinstallResources", "true")
+    systemProperty("ptcgr.cleanReinstallResources", "true")
 }
 
 tasks.named("assemble") {
