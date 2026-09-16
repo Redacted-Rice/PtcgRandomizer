@@ -85,8 +85,8 @@ function fix_evo_line_utils.modeArg(fieldDisplayName, fieldDisplayPlural)
 		name = "mode",
 		displayName = "Mode",
 		description = "'Match Previous' raises later stage cards " .. fieldDisplayName
-			.. " to the highest " .. fieldDisplayName .. " seen in earlier stages. 'Redistribute' swaps around existing "
-			.. fieldDisplayPlural .. " so existing values are kept when possible",
+						.. " to the highest " .. fieldDisplayName .. " seen in earlier stages. 'Redistribute' swaps around existing "
+						.. fieldDisplayPlural .. " so existing values are kept when possible",
 		definition = {
 			type = "string",
 			constraint = {

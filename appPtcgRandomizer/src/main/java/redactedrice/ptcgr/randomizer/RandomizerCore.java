@@ -315,15 +315,15 @@ public class RandomizerCore {
         // User friendly aliases for HP pool table keys. Same canonical values under the hood
         wrapper.registerSharedEnum("EvoStage", EvolutionStage.class,
                 Map.of("BASIC", "Basic", "STAGE_1", "Second stage", "STAGE_2", "Third stage"));
-        wrapper.registerSharedEnum("EvoLineStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
+        wrapper.registerSharedEnum("NumEvoStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
                 "STAGE_1", "Two-stage evo", "STAGE_2", "Three-stage evo"));
         wrapper.registerSharedEnum(RandomizationApproach.class,
                 Map.of("FULLY_RANDOM", "Fully Random", "MINIMIZE_REPEATS", "Minimize Repeats"));
         wrapper.registerSharedEnum(DataSource.class, Map.of("CURRENT", "Current"));
         wrapper.registerSharedEnum(DuplicateHandling.class, Map.of("REMOVE_DUPLICATES",
                 "Remove Duplicates", "KEEP_DUPLICATES", "Keep Duplicates"));
-        wrapper.registerSharedEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together", "BY_STAGE",
-                "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
+        wrapper.registerSharedEnum(StageGrouping.class, Map.of("ALL_TOGETHER", "All Together",
+                "BY_STAGE", "By Stage", "BY_STAGE_AND_MAX_STAGE", "By Stage And Max Stage"));
         wrapper.registerSharedEnum(MoveKind.class,
                 Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks", "POWERS", "Powers"));
         wrapper.registerSharedEnum(MoveCategory.class);

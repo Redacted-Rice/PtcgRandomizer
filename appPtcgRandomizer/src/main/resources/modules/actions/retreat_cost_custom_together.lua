@@ -18,7 +18,8 @@ module = {
 		{
 			name = "retreatPool",
 			displayName = "Retreat Cost Pool",
-			description = "Shared weighted retreat cost values used for every card. Repeat a value in the list to make it more likely",
+			description = "Shared weighted retreat cost values used for every card. Repeat a value in the list to"
+							.. " make it more likely",
 			definition = {
 				type = "list",
 				elementDefinition = common_field_defs.ELEMENT_DEF_RETREAT_COST_LIST,

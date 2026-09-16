@@ -12,6 +12,7 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
+	seeded = false,
 	execute = function(context, args)
 		return module.removeEvolutions(context, args)
 	end,

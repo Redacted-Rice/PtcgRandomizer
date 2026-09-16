@@ -18,7 +18,8 @@ module = {
 		{
 			name = "hpPools",
 			displayName = "HP Pools by Stage",
-			description = "Weighted HP values for each card's evolution stage. When randomizing it will take a value from the pool that matches the current card's evolution stage",
+			description = "Weighted HP values for each card's evolution stage. When randomizing it will take a value"
+							.. " from the pool that matches the current card's evolution stage",
 			definition = {
 				type = "table",
 				keyDefinition = common_field_defs.KEY_DEF_EVO_STAGE,

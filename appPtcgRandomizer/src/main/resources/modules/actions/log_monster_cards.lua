@@ -24,7 +24,7 @@ module = {
 					constraint = {
 						type = "enum",
 						values = {
-                            "Lvl", "Type", "HP", "Stage", "Prev Evo", "Num Moves",
+							"Lvl", "Type", "HP", "Stage", "Prev Evo", "Num Moves",
 							"Retreat", "Weakness", "Resistance", "Category", "Dex #", "Evo Line",
 							"Max Stage", "Move 1", "Move 1 Cost", "Move 1 Dmg", "Move 2",
 							"Move 2 Cost", "Move 2 Dmg",

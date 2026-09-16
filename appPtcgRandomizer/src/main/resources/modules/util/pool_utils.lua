@@ -21,8 +21,12 @@ end
 
 -- composite key for scripts that use max stages. First digit is
 -- evo max stage, second digit is card stage
+function pool_utils.stageMaxStageKeyFromValues(maxStage, stage)
+	return maxStage:getValue() * 10 + stage:getValue()
+end
+
 function pool_utils.stageAndMaxStageKey(mc)
-	return mc.evoLineMaxStage:getValue() * 10 + mc.stage:getValue()
+	return pool_utils.stageMaxStageKeyFromValues(mc.evoLineMaxStage, mc.stage)
 end
 
 -- flat pool of values pulled from source cards

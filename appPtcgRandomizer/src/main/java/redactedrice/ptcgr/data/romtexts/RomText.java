@@ -99,6 +99,9 @@ public class RomText {
         // If its full width 0, that just means there was no prefix
         // so we don't set it and instead leave it as is since we
         // don't assume that it always has a prefix if it needs one
+        if (text == null || text.isEmpty()) {
+            return;
+        }
         CharSetPrefix foundPref = CharSetPrefix.readFromByte((byte) text.charAt(0));
         if (foundPref != CharSetPrefix.FULL_WIDTH_0) {
             charSet = foundPref;
