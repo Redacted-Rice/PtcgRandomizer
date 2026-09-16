@@ -6,6 +6,7 @@ local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 local randomizer = require("randomizer")
 local utils = require("randomizer.utils")
+local logger = require("randomizer.logger")
 
 local module
 module = {
@@ -62,15 +63,16 @@ function module.getStageCounts(line)
 	return counts
 end
 
-function module.getMaxStage(stageCounts)
-	local prevStage = module.evolutionStage.BASIC
-	for _, stage in ipairs(module.EVO_STAGES) do
-		if stageCounts[stage:getValue()] <= 0 then
-			return prevStage
+function module.getLineMaxStage(sourceLine)
+	local lineMaxStage = nil
+	sourceLine:each(function(card)
+		local cardMaxStage = card.evoLineMaxStage
+		if cardMaxStage ~= nil and (lineMaxStage == nil
+				or cardMaxStage:getValue() > lineMaxStage:getValue()) then
+			lineMaxStage = cardMaxStage
 		end
-		prevStage = stage
-	end
-	return prevStage
+	end)
+	return lineMaxStage or module.evolutionStage.BASIC
 end
 
 function module.createNamePools(sourceCards, args)
@@ -88,27 +90,34 @@ function module.createNamePools(sourceCards, args)
 	end
 end
 
-function module.getFromPool(namePools, grouping, stageEnum, maxStage)
+function module.getFromPool(namePools, grouping, stageEnum, lineMaxStage)
 	local pool
 	if grouping == "BY_STAGE_AND_MAX_STAGE" then
-		pool = namePools:get(pool_utils.stageMaxStageKeyFromValues(maxStage, stageEnum))
+		pool = namePools:get(pool_utils.stageMaxStageKeyFromValues(lineMaxStage, stageEnum))
 	elseif grouping == "BY_STAGE" then
 		pool = namePools:get(utils.asTableKey(stageEnum))
 	else
 		pool = namePools
 	end
+	if pool == nil or pool:isEmpty() then
+		error("No name pool for stage " .. tostring(stageEnum))
+	end
 	return utils.consumeRandomElement(pool.items)
 end
 
-function module.applyToCards(cardsOfName, prevEvo, stage)
+function module.applyToCards(cardsOfName, prevEvo, stage, lastCardName)
+	if cardsOfName == nil then
+		logger.warn("evo_line_cards apply skipped, no target cards for name "
+				.. tostring(lastCardName))
+		return
+	end
 	cardsOfName:each(function(card)
 		card.prevEvoName:setText(prevEvo)
 		card.stage = stage
 	end)
 end
 
-function module.randomizeLine(lineStageCounts, namePools, args, toModifyByName)
-	local maxStage = module.getMaxStage(lineStageCounts)
+function module.randomizeLine(lineStageCounts, lineMaxStage, namePools, args, toModifyByName)
 	local prevEvo = ""
 	local stage = module.evolutionStage.BASIC
 
@@ -118,10 +127,10 @@ function module.randomizeLine(lineStageCounts, namePools, args, toModifyByName)
 		local slotCount = lineStageCounts[stageEnum:getValue()]
 		local lastCardName = ""
 		for i = 1, slotCount do
-            -- Step 3.a: Get a random card from the pool
-			lastCardName = module.getFromPool(namePools, args.grouping, stageEnum, maxStage)
-            -- Step 3.b: Apply the card to the cards to modify
-            module.applyToCards(toModifyByName:get(lastCardName), prevEvo, stageEnum)
+			-- Step 3.a: Get a random card from the pool
+			lastCardName = module.getFromPool(namePools, args.grouping, stageEnum, lineMaxStage)
+			-- Step 3.b: Apply the card to the cards to modify
+			module.applyToCards(toModifyByName:get(lastCardName), prevEvo, stageEnum, lastCardName)
 		end
         -- After we finish with the stage, update the prev evo name and next stage
 		prevEvo = lastCardName
@@ -137,14 +146,16 @@ function module.randomizeEvoLinesWithinType(context, args, sourceCards, toModify
 	local namePools = module.createNamePools(sourceCards, args)
     -- 1.b. Cards to modify by name for convinience in setting data later
 	local toModifyByName = randomizer.groupBy(toModifyCards, "name")
-    -- 1.c. Line Stage Data for determining what to generate when randomizing
-    local allLineStageCounts = randomizer.groupBy(sourceCards, "evoLineId"):map(function(lineId, sourceLine)
-        return module.getStageCounts(sourceLine)
-    end)
+	-- Step 2: Snapshot line shape + max stage before any pool draws
+	local lineData = randomizer.groupBy(sourceCards, "evoLineId"):map(function(lineId, sourceLine)
+		return {
+			stageCounts = module.getStageCounts(sourceLine),
+			lineMaxStage = module.getLineMaxStage(sourceLine),
+		}
+	end)
 
-	-- Step 2: Go through each line stage data and randomize it
-	allLineStageCounts:each(function(lineStageCounts)
-		module.randomizeLine(lineStageCounts, namePools, args, toModifyByName)
+	lineData:each(function(line)
+		module.randomizeLine(line.stageCounts, line.lineMaxStage, namePools, args, toModifyByName)
 	end)
 end
 
@@ -160,17 +171,32 @@ function module.randomizeEvoLines(context, args)
 	local sourceCards = randomizer.list(pool_utils.sourceCards(context, args.source))
 	local targets = randomizer.list(context.modified:getRandomizableMonsterCards())
 
+	logger.debug("evo_line_cards source=" .. tostring(args.source)
+			.. " withinType=" .. tostring(args.withinType)
+			.. " grouping=" .. tostring(args.grouping)
+			.. " cards=" .. sourceCards:size())
+
 	-- Stage 0: Type is just handled by doing it by groups of one type at a time
 	if args.withinType then
 		-- Its awkward but we need by type for both targets and soruce cards. Group one
 		-- loop the other and get the matching keys from the grouped one to pass in tandem
 		local targetsByType = randomizer.groupBy(targets, "type")
-		randomizer.groupBy(sourceCards, "type"):each(function(type, typedSourceCards)
+		local sourceByType = randomizer.groupBy(sourceCards, "type")
+		local passesRun = 0
+		local passesSkipped = 0
+		sourceByType:each(function(type, typedSourceCards)
 			local typedTargets = targetsByType:get(type)
 			if typedTargets ~= nil then
+				passesRun = passesRun + 1
 				module.randomizeEvoLinesWithinType(context, args, typedSourceCards, typedTargets)
+			else
+				passesSkipped = passesSkipped + 1
+				logger.warn("evo_line_cards skipped type=" .. tostring(type)
+						.. " (no matching target group)")
 			end
 		end)
+		logger.debug("evo_line_cards withinType passesRun=" .. passesRun
+				.. " passesSkipped=" .. passesSkipped)
 	else
 		module.randomizeEvoLinesWithinType(context, args, sourceCards, targets)
 	end
