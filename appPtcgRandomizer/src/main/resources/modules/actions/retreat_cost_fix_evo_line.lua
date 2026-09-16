@@ -8,7 +8,8 @@ local module
 module = {
 	id = "retreat_cost_fix_evo_line",
 	name = "Make Retreat Cost Consistent for Evo Lines",
-	description = "For each evolution line, ensures retreat cost is non-decreasing by stage by either making higher stages match lower stages or swapping values between stages",
+	description = "For each evolution line, ensures retreat cost is non-decreasing by stage by either making higher"
+					.. " stages match lower stages or swapping values between stages",
 	groups = { "Monsters", "Retreat Cost", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
 	version = "0.9",

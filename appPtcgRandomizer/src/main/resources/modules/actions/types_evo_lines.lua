@@ -6,7 +6,7 @@ local pool_utils = require("modules.util.pool_utils")
 local module
 module = {
 	id = "types_evo_lines",
-	name = "Randomize Evo Line Types (Keep Line Types From Source)",
+	name = "Randomize Evo Line Types (From Cards)",
 	description = "Randomizes the energy type for each card in each evolution line to the same type",
 	groups = { "Monsters", "Energy Type", "Evolutions" },
 	author = "Redacted Rice",

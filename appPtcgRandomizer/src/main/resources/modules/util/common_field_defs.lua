@@ -16,7 +16,8 @@ common_field_defs.ELEMENT_DEF_RETREAT_COST_LIST = {
 common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH = {
 	name = "approach",
 	displayName = "Randomization Approach",
-	description = "How values are drawn from the pool. Minimize Repeats consumes values and refills when empty",
+	description = "How values are drawn from the pool. Fully random can result in repeated values or disproportional"
+					.. " values. Minimize Repeats consumes values and refills when empty guaranteeing an even distribution",
 	definition = {
 		type = "enum",
 		constraint = "RandomizationApproach",
@@ -50,7 +51,8 @@ common_field_defs.ARG_DEF_DUPLICATES = {
 common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER = {
 	name = "grouping",
 	displayName = "Evo Stage Grouping",
-	description = "How source values are grouped into pools. 'All Together' uses a single pool. 'By Stage' groups by the card's evolution stage.",
+	description = "How source values are grouped into pools. 'All Together' uses a single pool. 'By Stage' groups by"
+					.. " the card's evolution stage.",
 	definition = {
 		type = "enum",
 		constraint = "StageGrouping",
@@ -60,21 +62,18 @@ common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER = {
 }
 
 common_field_defs.ARG_DEF_STAGE_GROUPING_BY_STAGE = {
-	name = "grouping",
-	displayName = "Evo Stage Grouping",
-	description = "How source values are grouped into pools. 'All Together' uses a single pool. 'By Stage' groups by the card's evolution stage.",
-	definition = {
-		type = "enum",
-		constraint = "StageGrouping",
-		exclude = { "BY_STAGE_AND_MAX_STAGE" },
-	},
+	name = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.name,
+	displayName = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.displayName,
+	description = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.description,
+	definition = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.definition,
 	default = "BY_STAGE",
 }
 
 common_field_defs.ARG_DEF_MOVE_KIND = {
 	name = "moveKind",
 	displayName = "Moves To Randomize",
-	description = "'All Moves' randomizes attacks and powers together. 'Attacks' and 'Powers' keep each kind on its own slots",
+	description = "'All Moves' randomizes attacks and powers together. 'Attacks' and 'Powers' keep each kind on its"
+					.. " own slots",
 	definition = {
 		type = "enum",
 		constraint = "MoveKind",
@@ -85,7 +84,7 @@ common_field_defs.ARG_DEF_MOVE_KIND = {
 common_field_defs.ARG_DEF_WITHIN_TYPE = {
 	name = "withinType",
 	displayName = "Within Energy Type",
-	description = "When enabled moves are pooled by Energy type so, for example, a fire type card will only get moves from Fire type cards",
+	description = "When enabled, pooling stays inside each Energy type. When disabled, all types are pooled together",
 	definition = {
 		type = "boolean",
 	},
@@ -95,11 +94,13 @@ common_field_defs.ARG_DEF_WITHIN_TYPE = {
 common_field_defs.KEY_DEF_EVO_STAGE = {
 	type = "enum",
 	constraint = "EvoStage",
+	exclude = { "STAGE_2_WITHOUT_STAGE_1" },
 }
 
 common_field_defs.KEY_DEF_EVO_LINE_STAGES = {
 	type = "enum",
-	constraint = "EvoLineStages",
+	constraint = "NumEvoStages",
+	exclude = { "STAGE_2_WITHOUT_STAGE_1" },
 }
 
 return common_field_defs

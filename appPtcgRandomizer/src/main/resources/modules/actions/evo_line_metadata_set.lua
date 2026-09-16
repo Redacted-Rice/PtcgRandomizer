@@ -35,13 +35,13 @@ function module.setMaxStageIfHigher(cardsList, cardEvoStage)
 end
 
 function module.setEvoLineMetadata(context)
-    -- Add the fields to the change detector first so it will log what is assigned
+	-- Add the fields to the change detector first so it will log what is assigned
 	randomizer.changedetector.addFields("Monster Cards", {
 		{ field = "evoLineId", header = "Evo Line", align = "right" },
 		{ field = "evoLineMaxStage", header = "Max Stage", align = "right" },
 	})
 
-    -- Set evo line metadata for both original and modified
+	-- Set evo line metadata for both original and modified
 	module.applyEvoLineMetadata(context.original:getRandomizableMonsterCards())
 	module.applyEvoLineMetadata(context.modified:getRandomizableMonsterCards())
 end

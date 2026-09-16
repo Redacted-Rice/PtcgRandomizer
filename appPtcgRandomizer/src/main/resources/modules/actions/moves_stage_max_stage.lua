@@ -7,7 +7,8 @@ local module
 module = {
 	id = "moves_stage_max_stage",
 	name = "Randomize Existing Moves (By Stage + Max Stage)",
-	description = "Randomizes existing attacks and/or powers using pools grouped by evolution line max stage and card stage. Keeps the same number of moves per card.",
+	description = "Randomizes existing attacks and/or powers using pools grouped by evolution line max stage and card"
+					.. " stage. Keeps the same number of moves per card.",
 	groups = { "Monsters", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",

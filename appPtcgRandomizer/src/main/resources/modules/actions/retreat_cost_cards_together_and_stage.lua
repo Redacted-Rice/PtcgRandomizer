@@ -5,7 +5,8 @@ local module
 module = {
 	id = "retreat_cost_cards_together_and_stage",
 	name = "Randomize Retreat Cost (From Cards, Together or By Stage)",
-	description = "Randomizes retreat cost using existing card values either from one shared pool or keyed by evolution stage",
+	description = "Randomizes retreat cost using existing card values either from one shared pool or keyed by"
+					.. " evolution stage",
 	groups = { "Monsters", "Retreat Cost" },
 	author = "Redacted Rice",
 	version = "0.9",

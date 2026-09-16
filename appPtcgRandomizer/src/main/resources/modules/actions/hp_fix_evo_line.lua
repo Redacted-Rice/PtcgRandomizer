@@ -8,7 +8,8 @@ local module
 module = {
 	id = "hp_fix_evo_line",
 	name = "Make HP Consistent for Evo Lines",
-	description = "For each evolution line, ensures HP is non-decreasing by stage by either making higher stages match lower stages or swapping values between stages",
+	description = "For each evolution line, ensures HP is non-decreasing by stage by either making higher stages"
+					.. "match lower stages or swapping values between stages",
 	groups = { "Monsters", "HP", "Evolutions", "Support", "Consistency" },
 	author = "Redacted Rice",
 	version = "0.9",

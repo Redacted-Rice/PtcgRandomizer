@@ -21,7 +21,9 @@ module = {
 		{
 			name = "retreatPools",
 			displayName = "Retreat Cost Pools by Max Stage then Stage",
-			description = "Weighted retreat cost values keyed by the evolution line's max stage then card's evolution stage. When randomizing it will pick the pool that matches the current cards max stage and stage to pull a value from.",
+			description = "Weighted retreat cost values keyed by the evolution line's max stage then card's evolution"
+							.. " stage. When randomizing it will pick the pool that matches the current cards max stage and"
+							.. " stage to pull a value from.",
 			definition = {
 				type = "table",
 				keyDefinition = common_field_defs.KEY_DEF_EVO_LINE_STAGES,

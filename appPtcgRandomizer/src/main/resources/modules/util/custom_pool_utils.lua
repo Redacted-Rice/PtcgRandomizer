@@ -145,7 +145,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(context, usedInner)) do
 				if not providedInner[stageName] then
 					table.insert(missingLabels,
-						custom_pool_utils.displayName(context.EvoLineStages, maxName)
+						custom_pool_utils.displayName(context.NumEvoStages, maxName)
 						.. " -> "
 						.. custom_pool_utils.displayName(context.EvoStage, stageName))
 				end
@@ -159,7 +159,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(context, providedInner)) do
 				if not usedInner[stageName] then
 					table.insert(extraLabels,
-						custom_pool_utils.displayName(context.EvoLineStages, maxName)
+						custom_pool_utils.displayName(context.NumEvoStages, maxName)
 						.. " -> "
 						.. custom_pool_utils.displayName(context.EvoStage, stageName))
 				end

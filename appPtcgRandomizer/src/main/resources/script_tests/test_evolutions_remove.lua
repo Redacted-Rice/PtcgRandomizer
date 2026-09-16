@@ -28,7 +28,6 @@ return {
 	{
 		name = "clears_evo_links_and_ai_flags",
 		module = "evolutions_remove",
-		seed = 1,
 		args = {},
 		original = testCards,
 		modified = testCards,

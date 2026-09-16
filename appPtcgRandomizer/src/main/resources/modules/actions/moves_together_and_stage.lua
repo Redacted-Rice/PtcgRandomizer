@@ -7,7 +7,8 @@ local module
 module = {
 	id = "moves_together_and_stage",
 	name = "Randomize Existing Moves",
-	description = "Randomizes existing attacks and/or powers, either from one shared pool or grouped by evolution stage. Keeps the same number of moves per card",
+	description = "Randomizes existing attacks and/or powers, either from one shared pool or grouped by evolution"
+					.. " stage. Keeps the same number of moves per card",
 	groups = { "Monsters", "Moves", "Attacks", "Powers" },
 	author = "Redacted Rice",
 	version = "0.9",
