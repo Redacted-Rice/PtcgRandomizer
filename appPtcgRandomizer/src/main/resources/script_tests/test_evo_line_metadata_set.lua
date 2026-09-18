@@ -1,4 +1,4 @@
--- Derives evoLineId and evoLineMaxStage from prevEvoName chains.
+-- Derives evoLineId, evoBranchIds, and evoLineMaxStage from prevEvoName chains.
 -- LineOne is a two stager, LineTwo is a three stager.
 return {
 	{
@@ -17,16 +17,57 @@ return {
 			{ id = "MONSTER_024", name = "Solo", type = "MONSTER_GRASS", stage = "BASIC" },
 		},
 		expect = {
-			{ id = "MONSTER_001", evoLineId = 1, evoLineMaxStage = "STAGE_1" },
-			{ id = "MONSTER_002", evoLineId = 1, evoLineMaxStage = "STAGE_1" },
-			{ id = "MONSTER_003_1", evoLineId = 1, evoLineMaxStage = "STAGE_1" },
-			{ id = "MONSTER_010", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-			{ id = "MONSTER_011", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-			{ id = "MONSTER_012", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-			{ id = "MONSTER_013", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-			{ id = "MONSTER_014", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-			{ id = "MONSTER_023", evoLineId = 3, evoLineMaxStage = "BASIC" },
-			{ id = "MONSTER_024", evoLineId = 3, evoLineMaxStage = "BASIC" },
+			{ id = "MONSTER_001", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_002", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_003_1", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_010", evoLineId = 2, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_011", evoLineId = 2, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_012", evoLineId = 2, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_013", evoLineId = 2, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_014", evoLineId = 2, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_023", evoLineId = 3, evoBranchIds = { 3 }, evoLineMaxStage = "BASIC" },
+			{ id = "MONSTER_024", evoLineId = 3, evoBranchIds = { 3 }, evoLineMaxStage = "BASIC" },
+		},
+	},
+	{
+		name = "assigns_branch_metadata_for_split_stage_one",
+		module = "evo_line_metadata_set",
+		cards = {
+			{ id = "MONSTER_080", name = "BranchBasic", type = "MONSTER_FIGHTING", stage = "BASIC" },
+			{ id = "MONSTER_081_1", name = "BranchA", type = "MONSTER_FIGHTING", stage = "STAGE_1",
+				prevEvoName = "BranchBasic" },
+			{ id = "MONSTER_081_2", name = "BranchB", type = "MONSTER_FIGHTING", stage = "STAGE_1",
+				prevEvoName = "BranchBasic" },
+		},
+		expect = {
+			{ id = "MONSTER_080", evoLineId = 1, evoBranchIds = { 1, 2 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_081_1", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_081_2", evoLineId = 1, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_1" },
+		},
+	},
+	{
+		name = "assigns_branch_max_stage_for_fossil_shape",
+		module = "evo_line_metadata_set",
+		cards = {
+			{ id = "MONSTER_121", name = "FossilBasic", type = "MONSTER_FIRE", stage = "BASIC" },
+			{ id = "MONSTER_129", name = "FossilS1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+				prevEvoName = "FossilBasic" },
+			{ id = "MONSTER_130", name = "FossilS1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+				prevEvoName = "FossilBasic" },
+			{ id = "MONSTER_131", name = "FossilS1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+				prevEvoName = "FossilBasic" },
+			{ id = "MONSTER_138", name = "FossilS2A", type = "MONSTER_FIRE", stage = "STAGE_2",
+				prevEvoName = "FossilS1C" },
+			{ id = "MONSTER_139", name = "FossilS2B", type = "MONSTER_FIRE", stage = "STAGE_2",
+				prevEvoName = "FossilS1B" },
+		},
+		expect = {
+			{ id = "MONSTER_121", evoLineId = 1, evoBranchIds = { 1, 2, 3 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_129", evoLineId = 1, evoBranchIds = { 3 }, evoLineMaxStage = "STAGE_1" },
+			{ id = "MONSTER_130", evoLineId = 1, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_131", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_138", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_2" },
+			{ id = "MONSTER_139", evoLineId = 1, evoBranchIds = { 2 }, evoLineMaxStage = "STAGE_2" },
 		},
 	},
 }
