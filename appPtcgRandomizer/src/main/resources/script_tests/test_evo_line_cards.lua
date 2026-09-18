@@ -3,6 +3,47 @@ local card_sets = require("support.card_sets")
 local seed = 42
 local romCards = card_sets.EVO_LINE_CARDS_ROM
 local currentCards = card_sets.EVO_LINE_CARDS_CURRENT
+local byStageAndMax = { withinType = false, grouping = "BY_STAGE_AND_MAX_STAGE", source = "ROM" }
+
+-- One line each for prevForSlot distribution (1->3, 2->3, 3->2). Keep isolated so pools dont mix.
+local prevDist1To3 = {
+	{ id = "MONSTER_100", name = "PrevDistBasic1", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 100, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_101_1", name = "PrevDist1S1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistBasic1", evoLineId = 100, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_102", name = "PrevDist1S1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistBasic1", evoLineId = 100, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_103", name = "PrevDist1S1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistBasic1", evoLineId = 100, evoLineMaxStage = "STAGE_1" },
+}
+
+local prevDist2To3 = {
+	{ id = "MONSTER_116", name = "PrevDist2BasicA", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 101, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_117", name = "PrevDist2BasicB", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 101, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_118", name = "PrevDist2S1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDist2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_119", name = "PrevDist2S1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDist2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1" },
+	{ id = "MONSTER_120", name = "PrevDist2S1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDist2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1" },
+}
+
+local prevDist3To2 = {
+	{ id = "MONSTER_121", name = "PrevDistFossilBasic", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+	{ id = "MONSTER_129", name = "PrevDistFossilS1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistFossilBasic", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+	{ id = "MONSTER_130", name = "PrevDistFossilS1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistFossilBasic", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+	{ id = "MONSTER_131", name = "PrevDistFossilS1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "PrevDistFossilBasic", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+	{ id = "MONSTER_138", name = "PrevDistFossilS2A", type = "MONSTER_FIRE", stage = "STAGE_2",
+		prevEvoName = "PrevDistFossilS1A", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+	{ id = "MONSTER_139", name = "PrevDistFossilS2B", type = "MONSTER_FIRE", stage = "STAGE_2",
+		prevEvoName = "PrevDistFossilS1A", evoLineId = 102, evoLineMaxStage = "STAGE_2" },
+}
 
 local function caseFor(name, args, original, modified, expect, caseSeed)
 	return {
@@ -298,5 +339,32 @@ return {
 		{ id = "MONSTER_081_2", name = "FightABranchB", stage = "BASIC", prevEvoName = "" },
 		{ id = "MONSTER_007", name = "GrassCBasic", stage = "STAGE_1", prevEvoName = "FightABranchB" },
 		{ id = "MONSTER_081_1", name = "FightABranchA", stage = "STAGE_2", prevEvoName = "GrassCBasic" },
+	}),
+
+	-- 1 basic, 3 stage 1. All three stage 1 slots point back to the one basic.
+	caseFor("prev_dist_1_to_3", byStageAndMax, prevDist1To3, prevDist1To3, {
+		{ id = "MONSTER_100", name = "PrevDistBasic1", stage = "BASIC", prevEvoName = "" },
+		{ id = "MONSTER_102", name = "PrevDist1S1B", stage = "STAGE_1", prevEvoName = "PrevDistBasic1" },
+		{ id = "MONSTER_103", name = "PrevDist1S1C", stage = "STAGE_1", prevEvoName = "PrevDistBasic1" },
+		{ id = "MONSTER_101_1", name = "PrevDist1S1A", stage = "STAGE_1", prevEvoName = "PrevDistBasic1" },
+	}),
+
+	-- 2 basics, 3 stage 1. One basic gets two stage 1 links, the other gets one.
+	caseFor("prev_dist_2_to_3", byStageAndMax, prevDist2To3, prevDist2To3, {
+		{ id = "MONSTER_117", name = "PrevDist2BasicB", stage = "BASIC", prevEvoName = "" },
+		{ id = "MONSTER_116", name = "PrevDist2BasicA", stage = "BASIC", prevEvoName = "" },
+		{ id = "MONSTER_119", name = "PrevDist2S1B", stage = "STAGE_1", prevEvoName = "PrevDist2BasicB" },
+		{ id = "MONSTER_120", name = "PrevDist2S1C", stage = "STAGE_1", prevEvoName = "PrevDist2BasicB" },
+		{ id = "MONSTER_118", name = "PrevDist2S1A", stage = "STAGE_1", prevEvoName = "PrevDist2BasicA" },
+	}),
+
+	-- 1 basic, 3 stage 1, 2 stage 2. Fossil shape. Third stage 1 branch has no stage 2 evo.
+	caseFor("prev_dist_3_to_2", byStageAndMax, prevDist3To2, prevDist3To2, {
+		{ id = "MONSTER_121", name = "PrevDistFossilBasic", stage = "BASIC", prevEvoName = "" },
+		{ id = "MONSTER_130", name = "PrevDistFossilS1B", stage = "STAGE_1", prevEvoName = "PrevDistFossilBasic" },
+		{ id = "MONSTER_131", name = "PrevDistFossilS1C", stage = "STAGE_1", prevEvoName = "PrevDistFossilBasic" },
+		{ id = "MONSTER_129", name = "PrevDistFossilS1A", stage = "STAGE_1", prevEvoName = "PrevDistFossilBasic" },
+		{ id = "MONSTER_139", name = "PrevDistFossilS2B", stage = "STAGE_2", prevEvoName = "PrevDistFossilS1B" },
+		{ id = "MONSTER_138", name = "PrevDistFossilS2A", stage = "STAGE_2", prevEvoName = "PrevDistFossilS1C" },
 	}),
 }

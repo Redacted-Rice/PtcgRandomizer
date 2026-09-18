@@ -41,9 +41,9 @@ function module.setEvoLineMetadata(context)
 		{ field = "evoLineMaxStage", header = "Max Stage", align = "right" },
 	})
 
-	-- Set evo line metadata for both original and modified
-	module.applyEvoLineMetadata(context.original:getRandomizableMonsterCards())
-	module.applyEvoLineMetadata(context.modified:getRandomizableMonsterCards())
+	-- Set evo line metadata for both original and modified (includes trainer proxies)
+	module.applyEvoLineMetadata(context.original:getRandomizableMonsterCardsWithProxies())
+	module.applyEvoLineMetadata(context.modified:getRandomizableMonsterCardsWithProxies())
 end
 
 function module.applyEvoLineMetadata(monsterCards)
@@ -98,6 +98,7 @@ function module.applyEvoLineMetadata(monsterCards)
 			end)
 		end
 	end)
+
 	logger.info("Module evo_line_metadata_set completed for "
 		.. randomizer.list(monsterCards):size() .. " cards")
 end
