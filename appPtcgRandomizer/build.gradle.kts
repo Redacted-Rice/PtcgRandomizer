@@ -252,13 +252,29 @@ tasks.named<Test>("test") {
 
 tasks.register<JavaExec>("runScriptTests") {
     group = "verification"
-    description = "Runs bundled Lua script tests"
+    description =
+        "Runs bundled Lua script tests headlessly. Filter with -PscriptTestCase=test_evo_line_cards"
     dependsOn("classes", "processResources")
     mainClass.set(application.mainClass.get())
     classpath = sourceSets.main.get().runtimeClasspath
-    args = listOf("--script-tests")
     systemProperty("ptcgr.devModules", "true")
     systemProperty("ptcgr.cleanReinstallResources", "true")
+    systemProperty("java.awt.headless", "true")
+
+    val logLevel = project.findProperty("scriptTestLogLevel") as String?
+    val testCase = project.findProperty("scriptTestCase") as String?
+    args(
+        buildList {
+            add("--script-tests")
+            if (logLevel != null) {
+                add("--log-level")
+                add(logLevel)
+            }
+            if (testCase != null) {
+                add(testCase)
+            }
+        }
+    )
 }
 
 tasks.named("assemble") {
