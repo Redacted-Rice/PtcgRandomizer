@@ -10,7 +10,10 @@ import java.util.regex.Pattern;
 import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.RawBytePacker;
 import redactedrice.gbcframework.utils.ByteUtils;
-import redactedrice.ptcgr.constants.romenums.*;
+import redactedrice.ptcgr.constants.romenums.CardAiFlags;
+import redactedrice.ptcgr.constants.romenums.EnergyType;
+import redactedrice.ptcgr.constants.romenums.EvolutionStage;
+import redactedrice.ptcgr.constants.romenums.WeaknessResistanceFlags;
 import redactedrice.ptcgr.data.romtexts.CardName;
 import redactedrice.ptcgr.data.romtexts.MonsterCategory;
 import redactedrice.ptcgr.data.romtexts.PokeDescription;
@@ -62,6 +65,10 @@ public class MonsterCard extends Card {
     public short weight;
     public PokeDescription description;
     public Set<CardAiFlags> aiFlags;
+
+    // Virtual basics for trainer cards that can be played as monsters. Not written
+    // to ROM.
+    public boolean isTrainerProxy;
 
     public MonsterCard() {
         super();
@@ -117,6 +124,7 @@ public class MonsterCard extends Card {
         weight = toCopy.weight;
         description = new PokeDescription(toCopy.description);
         aiFlags = new HashSet<>(toCopy.aiFlags);
+        isTrainerProxy = toCopy.isTrainerProxy;
     }
 
     public static boolean isNameWithLevel(String cardSpecifier) {
@@ -476,6 +484,9 @@ public class MonsterCard extends Card {
 
     @Override
     public CodeBlock convertToCodeBlock() {
+        if (isTrainerProxy) {
+            throw new IllegalStateException("Trainer proxy cards are not written to ROM");
+        }
         CodeBlock block = convertCommonDataToCodeBlock();
 
         RawBytePacker bytes = new RawBytePacker();

@@ -15,6 +15,7 @@ import redactedrice.gbcframework.addressing.AssignedAddresses;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
+import redactedrice.ptcgr.data.TrainerMonsterProxyFactory;
 import redactedrice.ptcgr.data.customcardeffects.HardcodedEffects;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.rompacker.Blocks;
@@ -31,6 +32,7 @@ public class RomIO {
         Blocks romBlanks = new Blocks();
         Texts texts = RomReader.readTextsFromData(rawBytes, romBlanks, sourceMap);
         Cards cards = RomReader.readCardsFromData(rawBytes, texts, romBlanks, sourceMap);
+        TrainerMonsterProxyFactory.attachProxies(cards);
 
         return new RomData(rawBytes, cards, texts, sourceMap, romBlanks, rules);
     }
