@@ -69,7 +69,8 @@ public final class RomBlockAssembler {
                 newPointerTable("internal_cardPointers", sourceMap.getCardPointerTable());
         cardPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0));
 
-        for (Card card : cards.cards().iterable()) {
+        // Monsters by dexNumber so randomized pokedex order matches the pointer table.
+        for (Card card : cards.cards().listCustomSort(Card.ROM_SORTER)) {
             HybridBlock cardBlock = toCardHybridBlock(card, sourceMap);
             blocks.addHybridBlock(cardBlock);
             cardPtrs.appendInstruction(

@@ -243,6 +243,87 @@ card_sets.EVO_LINE_CARDS_CURRENT = {
 		prevEvoName = "", evoLineId = 8, evoLineMaxStage = "BASIC" },
 }
 
+-- Branching evo line shapes (1->3, 2->3, 3->2). Isolated evoLineIds so pools dont mix.
+-- evoBranchIds match evo_line_metadata_set (tips first; shared ancestors hold all branch ids).
+-- dexNumber seeds line ordering only (lowest basic dex).
+card_sets.EVO_BRANCH_1_TO_3 = {
+	{ id = "MONSTER_100", name = "Branch1Basic", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 100, evoLineMaxStage = "STAGE_1", dexNumber = 10,
+		evoBranchIds = { 1, 2, 3 } },
+	{ id = "MONSTER_101_1", name = "Branch1S1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch1Basic", evoLineId = 100, evoLineMaxStage = "STAGE_1", dexNumber = 20,
+		evoBranchIds = { 3 } },
+	{ id = "MONSTER_102", name = "Branch1S1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch1Basic", evoLineId = 100, evoLineMaxStage = "STAGE_1", dexNumber = 30,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_103", name = "Branch1S1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch1Basic", evoLineId = 100, evoLineMaxStage = "STAGE_1", dexNumber = 40,
+		evoBranchIds = { 2 } },
+}
+
+card_sets.EVO_BRANCH_2_TO_3 = {
+	{ id = "MONSTER_116", name = "Branch2BasicA", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 101, evoLineMaxStage = "STAGE_1", dexNumber = 10,
+		evoBranchIds = { 1, 2, 3 } },
+	{ id = "MONSTER_117", name = "Branch2BasicB", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 101, evoLineMaxStage = "STAGE_1", dexNumber = 15,
+		evoBranchIds = { 4 } },
+	{ id = "MONSTER_118", name = "Branch2S1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1", dexNumber = 20,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_119", name = "Branch2S1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1", dexNumber = 30,
+		evoBranchIds = { 2 } },
+	{ id = "MONSTER_120", name = "Branch2S1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch2BasicA", evoLineId = 101, evoLineMaxStage = "STAGE_1", dexNumber = 40,
+		evoBranchIds = { 3 } },
+}
+
+-- 1 basic -> 3 stage 1 -> 2 stage 2 (S1C is a tip with no stage 2).
+card_sets.EVO_BRANCH_3_TO_2 = {
+	{ id = "MONSTER_121", name = "Branch3Basic", type = "MONSTER_FIRE", stage = "BASIC",
+		prevEvoName = "", evoLineId = 102, evoLineMaxStage = "STAGE_2", dexNumber = 50,
+		evoBranchIds = { 1, 2, 3 } },
+	{ id = "MONSTER_129", name = "Branch3S1A", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch3Basic", evoLineId = 102, evoLineMaxStage = "STAGE_2", dexNumber = 80,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_130", name = "Branch3S1B", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch3Basic", evoLineId = 102, evoLineMaxStage = "STAGE_2", dexNumber = 90,
+		evoBranchIds = { 2 } },
+	{ id = "MONSTER_131", name = "Branch3S1C", type = "MONSTER_FIRE", stage = "STAGE_1",
+		prevEvoName = "Branch3Basic", evoLineId = 102, evoLineMaxStage = "STAGE_1", dexNumber = 100,
+		evoBranchIds = { 3 } },
+	{ id = "MONSTER_138", name = "Branch3S2A", type = "MONSTER_FIRE", stage = "STAGE_2",
+		prevEvoName = "Branch3S1A", evoLineId = 102, evoLineMaxStage = "STAGE_2", dexNumber = 81,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_139", name = "Branch3S2B", type = "MONSTER_FIRE", stage = "STAGE_2",
+		prevEvoName = "Branch3S1B", evoLineId = 102, evoLineMaxStage = "STAGE_2", dexNumber = 91,
+		evoBranchIds = { 2 } },
+}
+
+-- Same 3->2 shape with a trainer proxy as the basic (Mysterious Fossil / Clefairy Doll style).
+-- Proxy is structural only; S1A/S2A share branch 1 and must get consecutive dex numbers.
+card_sets.EVO_BRANCH_PROXY_3_TO_2 = {
+	{ id = "MONSTER_148", name = "Proxy3Basic", type = "MONSTER_COLORLESS", stage = "BASIC",
+		prevEvoName = "", evoLineId = 103, evoLineMaxStage = "STAGE_2", dexNumber = 0,
+		evoBranchIds = { 1, 2, 3 }, isTrainerProxy = true },
+	{ id = "MONSTER_140", name = "Proxy3S1A", type = "MONSTER_FIGHTING", stage = "STAGE_1",
+		prevEvoName = "Proxy3Basic", evoLineId = 103, evoLineMaxStage = "STAGE_2", dexNumber = 80,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_141", name = "Proxy3S1B", type = "MONSTER_FIGHTING", stage = "STAGE_1",
+		prevEvoName = "Proxy3Basic", evoLineId = 103, evoLineMaxStage = "STAGE_1", dexNumber = 90,
+		evoBranchIds = { 3 } },
+	{ id = "MONSTER_142", name = "Proxy3S1C", type = "MONSTER_WATER", stage = "STAGE_1",
+		prevEvoName = "Proxy3Basic", evoLineId = 103, evoLineMaxStage = "STAGE_2", dexNumber = 100,
+		evoBranchIds = { 2 } },
+	{ id = "MONSTER_143", name = "Proxy3S2A", type = "MONSTER_FIGHTING", stage = "STAGE_2",
+		prevEvoName = "Proxy3S1A", evoLineId = 103, evoLineMaxStage = "STAGE_2", dexNumber = 81,
+		evoBranchIds = { 1 } },
+	{ id = "MONSTER_147", name = "Proxy3S2B", type = "MONSTER_WATER", stage = "STAGE_2",
+		prevEvoName = "Proxy3S1C", evoLineId = 103, evoLineMaxStage = "STAGE_2", dexNumber = 101,
+		evoBranchIds = { 2 } },
+}
+
 card_sets.MIXED_COST_CARDS = {
 	{
 		id = "MONSTER_001", type = "MONSTER_FIRE", moves = fields.moves({

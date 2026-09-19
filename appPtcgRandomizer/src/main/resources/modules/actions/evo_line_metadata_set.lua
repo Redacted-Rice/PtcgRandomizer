@@ -1,4 +1,5 @@
--- Assigns evoLineId and evoLineMaxStage on each monster card wrapper.
+-- Assigns evoLineId, evoBranchIds, and evoLineMaxStage on each monster card wrapper.
+-- Clears any prior values first so re runs rebuild from current prevEvo chains.
 -- These are Lua side fields (not ROM data) used by other randomization modules.
 local randomizer = require("randomizer")
 
@@ -81,6 +82,13 @@ function module.setEvoLineMetadata(context)
 end
 
 function module.applyEvoLineMetadata(monsterCards)
+	-- First clear any previous values
+	for _, mc in ipairs(monsterCards) do
+		mc.evoLineId = nil
+		mc.evoBranchIds = nil
+		mc.evoLineMaxStage = nil
+	end
+
 	local cards = randomizer.list(monsterCards)
 	local cardsByName = cards:groupBy(function(card)
 		return card.name:toString()
@@ -162,8 +170,7 @@ function module.applyEvoLineMetadata(monsterCards)
 		end)
 	end)
 
-	logger.info("Module evo_line_metadata_set completed for "
-		.. cards:size() .. " cards")
+	logger.info("Module evo_line_metadata_set completed for " .. cards:size() .. " cards")
 end
 
 return module
