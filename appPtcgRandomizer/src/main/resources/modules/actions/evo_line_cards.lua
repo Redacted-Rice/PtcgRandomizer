@@ -1,7 +1,7 @@
--- Randomizes evo lines by stage-count triplet: dedupe names per line, group, shuffle pool, apply.
--- BY_STAGE_AND_MAX_STAGE keeps names and shuffles prevEvo within each stage pool.
--- BY_STAGE keeps stage slots but shuffles names within each stage pool.
--- ALL_TOGETHER keeps stage slots but shuffles names from one shared pool.
+-- Randomizes evo lines from per-line slot lists: dedupe names, shuffle pools, apply stage then prevEvo.
+-- BY_STAGE_AND_MAX_STAGE keeps slot shape and shuffles names within each maxStage/stage pool.
+-- BY_STAGE keeps slot shape but shuffles names within each stage pool.
+-- ALL_TOGETHER keeps slot shape but ignores stage when picking names.
 local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 local randomizer = require("randomizer")
@@ -43,6 +43,8 @@ module = {
 	execute = function(context, args)
 		return module.randomizeEvoLines(context, args)
 	end,
+
+	ALL_TOGETHER_POOL_KEY = 0,
 }
 
 function module.sourceCards(context, source)
@@ -52,170 +54,217 @@ function module.sourceCards(context, source)
 	return context.original:getRandomizableMonsterCardsWithProxies()
 end
 
--- Returns the number of distinct monsters per evo stage
--- Typically this is one per stage except for branching evos
-function module.getStageCounts(line)
-	local byName = randomizer.groupBy(line, "name")
-
-	local counts = {}
-	for _, stage in ipairs(module.EVO_STAGES) do
-		counts[stage:getValue()] = 0
-	end
-
-	byName:each(function(_, cardsOfName)
-		local card = cardsOfName:get(1)
-		local stageValue = card.stage:getValue()
-		counts[stageValue] = counts[stageValue] + 1
-	end)
-	return counts
-end
-
-function module.getLineMaxStage(sourceLine)
-	local lineMaxStage = nil
-	sourceLine:each(function(card)
-		local cardMaxStage = card.evoLineMaxStage
-		if cardMaxStage ~= nil and (lineMaxStage == nil or cardMaxStage:getValue() > lineMaxStage:getValue()) then
-			lineMaxStage = cardMaxStage
+-- Constructs the pool key for an entry based on the args. They key is
+-- variable and will reflect the args to effectively create separate
+-- subpools for any permutation of the args
+function module.poolKey(cardType, stage, maxStage, grouping, withinType)
+	if grouping == "ALL_TOGETHER" then
+		if not withinType then
+			-- No key - eveything is in one pool. Just return an arbitrary
+			-- key so we can treat all cases as keyed for simplicity
+			return module.ALL_TOGETHER_POOL_KEY
 		end
-	end)
-	return lineMaxStage or module.evolutionStage.BASIC
+		-- Key is just type
+		return cardType:getValue()
+	end
+	if grouping == "BY_STAGE" then
+		if withinType then
+			-- key is a combo of type and stage
+			return pool_utils.typeStageKeyFromValues(cardType, stage)
+		end
+		-- Key is just the stage
+		return utils.asTableKey(stage)
+	end
+	if withinType then
+		-- key is a combo of type, maxStage, and stage
+		return pool_utils.typeStageMaxStageKeyFromValues(cardType, maxStage, stage)
+	end
+	-- key is just the maxStage and stage
+	return pool_utils.stageMaxStageKeyFromValues(maxStage, stage)
 end
 
-function module.createNamePools(sourceCards, args)
-	-- We need to stringify name to make sure it matches up correctly for
-	-- remove duplicates
-	if args.grouping == "BY_STAGE_AND_MAX_STAGE" then
-		-- Uses a composite max stage + stage key for simplicity
-		return randomizer
-			.groupFromField(sourceCards, pool_utils.stageAndMaxStageKey, "name:toString")
-			:applyToEachList("removeDuplicates")
-	elseif args.grouping == "BY_STAGE" then
-		return randomizer.groupFromField(sourceCards, "stage", "name:toString"):applyToEachList("removeDuplicates")
-	else
-		return sourceCards:select("name:toString"):removeDuplicates()
-	end
-end
-
-function module.getFromPool(namePools, grouping, stageEnum, lineMaxStage)
-	local pool
-	if grouping == "BY_STAGE_AND_MAX_STAGE" then
-		pool = namePools:get(pool_utils.stageMaxStageKeyFromValues(lineMaxStage, stageEnum))
-	elseif grouping == "BY_STAGE" then
-		pool = namePools:get(utils.asTableKey(stageEnum))
-	else
-		pool = namePools
-	end
-	if pool == nil or pool:isEmpty() then
-		error("No name pool for stage " .. tostring(stageEnum))
-	end
+-- Draws a random item from the pool
+function module.drawNameFromPool(namePools, grouping, withinType, entry)
+	local pool = namePools:get(module.poolKey(entry.type, entry.stage, entry.maxStage, grouping, withinType))
 	return utils.consumeRandomElement(pool.items)
 end
 
-function module.applyToCards(cardsOfName, prevEvo, stage, lastCardName)
-	if cardsOfName == nil then
-		logger.warn("evo_line_cards apply skipped, no target cards for name " .. tostring(lastCardName))
-		return
-	end
+-- Creates a list of each cards' data (type, stage, maxStage, prevEvoIdx) in the line
+function module.extractLineData(sourceLine)
+	local nameToIdx = {}
+	local entries = {}
+
+	-- first sort by stage. This just makes it so we can know the prev evo should have been processed
+	-- making the logic a bit simpler
+	local sortedByStage = sourceLine:sort(function(a, b)
+		return a.stage:getValue() < b.stage:getValue()
+	end)
+
+	-- group by name then for each group of names create and add one line entry data
+	sortedByStage:groupBy("name"):each(function(name, cardsOfName)
+		local card = cardsOfName:get(1)
+		local prevEvoIdx = nil
+		local prevName = card.prevEvoName:toString()
+		if prevName ~= "" then
+			prevEvoIdx = nameToIdx[prevName]
+		end
+
+		table.insert(entries, {
+			type = card.type,
+			stage = card.stage,
+			maxStage = card.evoLineMaxStage,
+			prevEvoIdx = prevEvoIdx,
+		})
+		-- Store the index by name for quick lookup of prev evo
+		nameToIdx[name] = #entries
+	end)
+
+	return randomizer.list(entries)
+end
+
+-- Extract the evo line data from the cards
+function module.extractAllEvoLineData(sourceCards)
+	-- For each evo line, map it to the evo line data
+	return randomizer.groupBy(sourceCards, "evoLineId"):map(function(evoLineId, sourceLine)
+		return {
+			-- We don't need original evo line id but keep it for debugging
+			evoLineId = evoLineId,
+			entries = module.extractLineData(sourceLine),
+		}
+	end)
+end
+
+function module.applyStageToCards(cardsOfName, stage, cardName)
 	cardsOfName:each(function(card)
-		card.prevEvoName:setText(prevEvo)
 		card.stage = stage
 	end)
 end
 
--- Currently for logging only. Eventually will probably add branch ids
--- to solve some issues with branching lines
-function module.stageCountsHasBranch(stageCounts)
-	local basic = stageCounts[module.evolutionStage.BASIC:getValue()]
-	local stage1 = stageCounts[module.evolutionStage.STAGE_1:getValue()]
-	local stage2 = stageCounts[module.evolutionStage.STAGE_2:getValue()]
-	return basic > 1 or stage1 > 1 or stage2 > 1
+function module.applyPrevEvoToCards(cardsOfName, prevEvo, cardName)
+	cardsOfName:each(function(card)
+		card.prevEvoName:setText(prevEvo)
+	end)
 end
 
--- For logging evo lineshape for debug
-function module.formatStageCounts(stageCounts)
+-- For debug logging
+function module.lineEntriesHasBranch(entries)
+	local seenStages = {}
+	local branched = false
+	entries:each(function(entry)
+		if branched then
+			return
+		end
+		local stageValue = entry.stage:getValue()
+		if seenStages[stageValue] then
+			branched = true
+			return
+		end
+		seenStages[stageValue] = true
+	end)
+	return branched
+end
+
+-- For debug logging
+function module.formatLineEntries(entries)
+	local stageCounts = {}
+	for _, stage in ipairs(module.EVO_STAGES) do
+		stageCounts[stage:getValue()] = 0
+	end
+	entries:each(function(entry)
+		local stageValue = entry.stage:getValue()
+		stageCounts[stageValue] = stageCounts[stageValue] + 1
+	end)
 	local basic = stageCounts[module.evolutionStage.BASIC:getValue()]
 	local stage1 = stageCounts[module.evolutionStage.STAGE_1:getValue()]
 	local stage2 = stageCounts[module.evolutionStage.STAGE_2:getValue()]
 	return "shape  = [" .. basic .. ", " .. stage1 .. ", " .. stage2 .. "]"
 end
 
--- map card slot index onto previous stage slots as evenly as possible
-function module.prevForSlot(slotIndex, slotCount, prevStageNames)
-	if #prevStageNames == 0 then
-		return ""
-	end
-	local prevEvoIndex = math.floor((slotIndex - 1) * #prevStageNames / slotCount) + 1
-	return prevStageNames[prevEvoIndex]
-end
-
-function module.randomizeLine(evoLineId, sourceLine, lineStageCounts, lineMaxStage, namePools, args, toModifyByName)
-	local prevStageNames = {}
-	local branched = module.stageCountsHasBranch(lineStageCounts)
-
+function module.assignEvoLineList(evoLineId, entries, namePools, grouping, withinType, toModifyByName)
+	local branched = module.lineEntriesHasBranch(entries)
 	if branched then
-		logger.info(
-			"evo_line_cards filling lineId="
-				.. tostring(evoLineId)
-				.. " shape "
-				.. module.formatStageCounts(lineStageCounts)
-				.. " maxStage="
-				.. tostring(lineMaxStage)
-		)
+		logger.info("evo_line_cards filling lineId=" .. tostring(evoLineId) .. " " .. module.formatLineEntries(entries))
 	end
 
-	-- Step 3: Go through each evo stage in the stages and assign cards
-	-- for each slot (can be multiple if branching)
-	for _, stageEnum in ipairs(module.EVO_STAGES) do
-		local slotCount = lineStageCounts[stageEnum:getValue()]
-		local stageNames = {}
-		for slotIndex = 1, slotCount do
-			local prevEvo = module.prevForSlot(slotIndex, slotCount, prevStageNames)
-			-- Step 3.a: Get a random card from the pool
-			local drawnName = module.getFromPool(namePools, args.grouping, stageEnum, lineMaxStage)
-			-- Step 3.b: Apply the card to the cards to modify
-			module.applyToCards(toModifyByName:get(drawnName), prevEvo, stageEnum, drawnName)
-			table.insert(stageNames, drawnName)
-			if branched then
-				logger.info(
-					"evo_line_cards lineId="
-						.. tostring(evoLineId)
-						.. " assign "
-						.. tostring(stageEnum)
-						.. " #"
-						.. slotIndex
-						.. " name="
-						.. drawnName
-						.. " prev="
-						.. (prevEvo == "" and "(root)" or prevEvo)
-				)
-			end
-		end
+	local idxToName = {}
+	entries:each(function(entry, idx)
+		local drawnName = module.drawNameFromPool(namePools, grouping, withinType, entry)
+		idxToName[idx] = drawnName
+		module.applyStageToCards(toModifyByName:get(drawnName), entry.stage, drawnName)
 		if branched then
+			local prevLabel = "(root)"
+			if entry.prevEvoIdx ~= nil then
+				prevLabel = tostring(idxToName[entry.prevEvoIdx] or entry.prevEvoIdx)
+			end
 			logger.info(
 				"evo_line_cards lineId="
 					.. tostring(evoLineId)
-					.. " after "
-					.. tostring(stageEnum)
-					.. " slots=["
-					.. table.concat(stageNames, ", ")
-					.. "]"
+					.. " assign #"
+					.. idx
+					.. " name="
+					.. drawnName
+					.. " stage="
+					.. tostring(entry.stage)
+					.. " prev="
+					.. prevLabel
 			)
 		end
-		prevStageNames = stageNames
-	end
+	end)
+
+	entries:each(function(entry, idx)
+		local cardName = idxToName[idx]
+		local prevEvo = ""
+		if entry.prevEvoIdx ~= nil then
+			prevEvo = idxToName[entry.prevEvoIdx] or ""
+		end
+		module.applyPrevEvoToCards(toModifyByName:get(cardName), prevEvo, cardName)
+	end)
 end
 
--- Used for fixing proxies to make sure they are basics
-function module.basicNonProxyNames(toModifyCards)
+function module.assignEvoLineData(evoLineData, namePools, grouping, withinType, toModifyByName)
+	evoLineData:each(function(line)
+		module.assignEvoLineList(line.evoLineId, line.entries, namePools, grouping, withinType, toModifyByName)
+	end)
+end
+
+function module.isColorlessBasic(card)
+	return card.type == module.cardType.MONSTER_COLORLESS
+		and card.stage:getValue() == module.evolutionStage.BASIC:getValue()
+end
+
+-- Used for fixing proxies to make sure they are basics.
+-- Excludes trainer proxies and any basic that a proxy currently evolves from,
+-- so swapping into the proxy's slot cannot create a self reference
+function module.potentialNonProxySwapTargets(toModifyCards, colorlessOnly)
+	local proxyPrevNames = {}
+	toModifyCards:each(function(card)
+		if card.isTrainerProxy and not card.prevEvoName:isEmpty() then
+			proxyPrevNames[card.prevEvoName:toString()] = true
+		end
+	end)
+
 	return toModifyCards
 		:filter(function(card)
-			return not card.isTrainerProxy and card.stage:getValue() == module.evolutionStage.BASIC:getValue()
+			if card.isTrainerProxy then
+				return false
+			end
+			if card.stage:getValue() ~= module.evolutionStage.BASIC:getValue() then
+				return false
+			end
+			if proxyPrevNames[card.name:toString()] then
+				return false
+			end
+			if colorlessOnly and not module.isColorlessBasic(card) then
+				return false
+			end
+			return true
 		end)
 		:select("name:toString")
 		:removeDuplicates()
 end
 
 -- Used for fixing proxies to make sure they are basics
+-- Gets all the cards that are not proxies that have a prev evo
 function module.nonBasicNonProxyByPrevEvo(toModifyCards)
 	return toModifyCards
 		:filter(function(card)
@@ -232,6 +281,10 @@ function module.fixAllTogetherProxies(toModifyCards, args, toModifyByName)
 		return
 	end
 
+	-- Step 0: construct maps of data for convinience
+	local potentialSwapTargets = module.potentialNonProxySwapTargets(toModifyCards, args.withinType)
+	local evosByPrevEvo = module.nonBasicNonProxyByPrevEvo(toModifyCards)
+
 	toModifyCards:each(function(proxy)
 		-- If its not a proxy or the proxy is already a basic, we are good
 		if not proxy.isTrainerProxy then
@@ -241,34 +294,26 @@ function module.fixAllTogetherProxies(toModifyCards, args, toModifyByName)
 			return
 		end
 
-		-- Step 0: construct maps of data for convinience
-		-- Step 0.a: list of all basic, non proxy names regardless of max stage
-		local basicNames = module.basicNonProxyNames(toModifyCards)
-		-- Step 0.b: non basic, non proxy cards grouped by prev evo name
-		local byPrevEvo = module.nonBasicNonProxyByPrevEvo(toModifyCards)
-
-		-- Step 1: random basic that is not a proxy, any max evo stage
-		if basicNames:isEmpty() then
-			logger.warn("evo_line_cards no basic available to swap proxy " .. proxy.name:toString())
-			return
-		end
-		local swapName = utils.consumeRandomElement(utils.deepCopy(basicNames.items))
+		-- Step 1: random basic that is not a proxy and not a proxy's current prev evo
+		local swapName = utils.consumeRandomElement(utils.deepCopy(potentialSwapTargets.items))
 
 		-- Step 2: swap evo data between the selected card and the proxy
 		local proxyName = proxy.name:toString()
 		local proxyStage = proxy.stage
 		local proxyPrev = proxy.prevEvoName:toString()
-		module.applyToCards(toModifyByName:get(proxyName), "", module.evolutionStage.BASIC, proxyName)
-		module.applyToCards(toModifyByName:get(swapName), proxyPrev, proxyStage, swapName)
+		module.applyStageToCards(toModifyByName:get(proxyName), module.evolutionStage.BASIC, proxyName)
+		module.applyPrevEvoToCards(toModifyByName:get(proxyName), "", proxyName)
+		module.applyStageToCards(toModifyByName:get(swapName), proxyStage, swapName)
+		module.applyPrevEvoToCards(toModifyByName:get(swapName), proxyPrev, swapName)
 
 		-- Step 3: swap prev evo on next stage cards for each side of the swap
-		local proxyEvos = byPrevEvo:get(proxyName)
+		local proxyEvos = evosByPrevEvo:get(proxyName)
 		if proxyEvos ~= nil then
 			proxyEvos:each(function(card)
 				card.prevEvoName:setText(swapName)
 			end)
 		end
-		local swapEvos = byPrevEvo:get(swapName)
+		local swapEvos = evosByPrevEvo:get(swapName)
 		if swapEvos ~= nil then
 			swapEvos:each(function(card)
 				card.prevEvoName:setText(proxyName)
@@ -279,41 +324,9 @@ function module.fixAllTogetherProxies(toModifyCards, args, toModifyByName)
 	end)
 end
 
-function module.randomizeEvoLinesWithinType(context, args, sourceCards, toModifyCards)
-	-- Step 1: Get all the needed data now so when we modify it, if its the same
-	-- source and target, we already have it copied and it won't be impacted
-
-	-- 1.a. Name pools by grouping
-	local namePools = module.createNamePools(sourceCards, args)
-	-- 1.b. Cards to modify by name for convinience in setting data later
-	local toModifyByName = randomizer.groupBy(toModifyCards, "name")
-	-- Step 2: Snapshot line shape + max stage before any pool draws
-	local lineData = randomizer.groupBy(sourceCards, "evoLineId"):map(function(evoLineId, sourceLine)
-		return {
-			evoLineId = evoLineId,
-			sourceLine = sourceLine,
-			stageCounts = module.getStageCounts(sourceLine),
-			lineMaxStage = module.getLineMaxStage(sourceLine),
-		}
-	end)
-
-	lineData:each(function(line)
-		module.randomizeLine(
-			line.evoLineId,
-			line.sourceLine,
-			line.stageCounts,
-			line.lineMaxStage,
-			namePools,
-			args,
-			toModifyByName
-		)
-	end)
-	module.fixAllTogetherProxies(toModifyCards, args, toModifyByName)
-end
-
 function module.randomizeEvoLines(context, args)
-	-- These need to be created with the context as its not available at load time
 	module.evolutionStage = context.EvolutionStage
+	module.cardType = context.CardType
 	module.EVO_STAGES = {
 		context.EvolutionStage.BASIC,
 		context.EvolutionStage.STAGE_1,
@@ -322,7 +335,6 @@ function module.randomizeEvoLines(context, args)
 
 	local sourceCards = randomizer.list(module.sourceCards(context, args.source))
 	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
-
 	logger.debug(
 		"evo_line_cards source="
 			.. tostring(args.source)
@@ -334,28 +346,17 @@ function module.randomizeEvoLines(context, args)
 			.. sourceCards:size()
 	)
 
-	-- Stage 0: Type is just handled by doing it by groups of one type at a time
-	if args.withinType then
-		-- Its awkward but we need by type for both targets and soruce cards. Group one
-		-- loop the other and get the matching keys from the grouped one to pass in tandem
-		local targetsByType = randomizer.groupBy(targets, "type")
-		local sourceByType = randomizer.groupBy(sourceCards, "type")
-		local passesRun = 0
-		local passesSkipped = 0
-		sourceByType:each(function(type, typedSourceCards)
-			local typedTargets = targetsByType:get(type)
-			if typedTargets ~= nil then
-				passesRun = passesRun + 1
-				module.randomizeEvoLinesWithinType(context, args, typedSourceCards, typedTargets)
-			else
-				passesSkipped = passesSkipped + 1
-				logger.warn("evo_line_cards skipped type=" .. tostring(type) .. " (no matching target group)")
-			end
-		end)
-		logger.debug("evo_line_cards withinType passesRun=" .. passesRun .. " passesSkipped=" .. passesSkipped)
-	else
-		module.randomizeEvoLinesWithinType(context, args, sourceCards, targets)
-	end
+	-- Create the names with the pool key for the given args
+	local namePools = randomizer
+		.groupFromField(sourceCards, function(card)
+			return module.poolKey(card.type, card.stage, card.evoLineMaxStage, args.grouping, args.withinType)
+		end, "name:toString")
+		:applyToEachList("removeDuplicates")
+	local toModifyByName = randomizer.groupBy(targets, "name")
+	local evoLineData = module.extractAllEvoLineData(sourceCards)
+
+	module.assignEvoLineData(evoLineData, namePools, args.grouping, args.withinType, toModifyByName)
+	module.fixAllTogetherProxies(targets, args, toModifyByName)
 end
 
 return module
