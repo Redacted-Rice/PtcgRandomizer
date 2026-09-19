@@ -61,7 +61,7 @@ function module.applyAndPropagateBranchId(lineCardsByName, cards, branchId, bran
 	end
 	local prevCards = lineCardsByName:get(prevName)
 	if prevCards == nil then
-        error("Previous cards not found for " .. card.name:toString())
+		error("Previous cards not found for " .. card.name:toString())
 		return
 	end
 	module.applyAndPropagateBranchId(lineCardsByName, prevCards, branchId, branchMaxStage)
@@ -71,7 +71,7 @@ function module.setEvoLineMetadata(context)
 	-- Add the fields to the change detector first so it will log what is assigned
 	randomizer.changedetector.addFields("Monster Cards", {
 		{ field = "evoLineId", header = "Evo Line", align = "right" },
-        { field = "evoBranchIds", header = "Branch Ids", align = "right" },
+		{ field = "evoBranchIds", header = "Branch Ids", align = "right" },
 		{ field = "evoLineMaxStage", header = "Max Stage", align = "right" },
 	})
 
@@ -129,10 +129,10 @@ function module.applyEvoLineMetadata(monsterCards)
 		end
 	end)
 
-    -- Now we go through the evo lines and set the branch ids and max stages for each branch
-    -- 1. Group and iterate through each evo line
+	-- Now we go through the evo lines and set the branch ids and max stages for each branch
+	-- 1. Group and iterate through each evo line
 	cards:groupBy("evoLineId"):each(function(_, line)
-        -- 2. For each evo line, group by stage (reverse sorted) then name
+		-- 2. For each evo line, group by stage (reverse sorted) then name
 		local byStage = line:groupBy("stage"):sort(function(a, b)
 			return a > b
 		end)
@@ -140,21 +140,21 @@ function module.applyEvoLineMetadata(monsterCards)
 			return card.name:toString()
 		end)
 
-        -- 3. for each stage group (in reverse order), check if there is a evoBranchId.
+		-- 3. for each stage group (in reverse order), check if there is a evoBranchId.
 		byStage:each(function(stage, stageCards)
 			local stageCardsByName = stageCards:groupBy(function(card)
 				return card.name:toString()
 			end)
-            stageCardsByName:each(function(name, cardsWithName)
+			stageCardsByName:each(function(name, cardsWithName)
 				local firstCard = cardsWithName:get(1)
 
-                -- 4.a. If there is at least one, do nothing. If there is none, assing the next one
+				-- 4.a. If there is at least one, do nothing. If there is none, assing the next one
 				if firstCard.evoBranchIds ~= nil and #firstCard.evoBranchIds > 0 then
 					return
 				end
 
-                -- 4.b If there is not one, assign the next one and then recursively find its prevEvo in the name
-                -- and add that evoBranchId to its list and repeat until we get to the end of the branch
+				-- 4.b If there is not one, assign the next one and then recursively find its prevEvo in the name
+				-- and add that evoBranchId to its list and repeat until we get to the end of the branch
 				local branchId = nextBranchId
 				nextBranchId = nextBranchId + 1
 				module.applyAndPropagateBranchId(byName, cardsWithName, branchId, firstCard.stage)
