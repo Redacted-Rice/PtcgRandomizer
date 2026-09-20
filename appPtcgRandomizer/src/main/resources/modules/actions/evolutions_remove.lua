@@ -1,4 +1,5 @@
 -- Turns every monster into a basic with no previous evolution link.
+-- Clears HAS_EVOLUTION from aiFlags, and clears CardAiInfo.ENCOURAGE_EVO to NONE.
 local randomizer = require("randomizer")
 
 local module
@@ -21,13 +22,16 @@ module = {
 function module.removeEvolutions(context)
 	local basicStage = context.EvolutionStage.BASIC
 	local hasEvolution = context.CardAiFlags.HAS_EVOLUTION
-	local encourageEvo = context.CardAiFlags.ENCOURAGE_EVO
+	local encourageEvo = context.CardAiInfo.ENCOURAGE_EVO
+	local noAiInfo = context.CardAiInfo.NONE
 
 	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
 		card.stage = basicStage
 		card.prevEvoName:clear()
 		card.aiFlags:remove(hasEvolution)
-		card.aiFlags:remove(encourageEvo)
+		if card.aiInfo == encourageEvo then
+			card.aiInfo = noAiInfo
+		end
 	end)
 end
 
