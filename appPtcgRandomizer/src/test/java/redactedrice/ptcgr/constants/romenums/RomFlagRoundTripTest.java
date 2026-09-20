@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import redactedrice.gbcframework.utils.ByteUtils;
+
 class RomFlagRoundTripTest {
 
     @Test
@@ -40,11 +42,25 @@ class RomFlagRoundTripTest {
     }
 
     @Test
+    void cardAiInfoAndFlagsPackLikeSetAndPack() {
+        Set<CardAiFlags> flags = EnumSet.of(CardAiFlags.HAS_EVOLUTION);
+        byte raw = ByteUtils.packHexCharsToByte(CardAiFlags.storeAsByte(flags),
+                CardAiInfo.UNK_03.getValue());
+        assertEquals((byte) 0x13, raw);
+
+        assertEquals(CardAiInfo.UNK_03,
+                CardAiInfo.readFromHexChar(ByteUtils.readLowerHexChar(raw)));
+        assertEquals(flags, CardAiFlags.readFromByte(ByteUtils.readUpperHexChar(raw)));
+        assertEquals(raw, ByteUtils.packHexCharsToByte(CardAiFlags.storeAsByte(flags),
+                CardAiInfo.UNK_03.getValue()));
+    }
+
+    @Test
     void cardAiFlagsRoundTripUnknownBits() {
-        byte raw = CardAiFlags.UNKNOWN_BIT_7.getValue();
-        Set<CardAiFlags> flags = CardAiFlags.readFromByte(raw);
-        assertEquals(EnumSet.of(CardAiFlags.UNKNOWN_BIT_7), flags);
-        assertEquals(raw, CardAiFlags.storeAsByte(flags));
+        byte nibble = CardAiFlags.UNKNOWN_BIT_3.getValue();
+        Set<CardAiFlags> flags = CardAiFlags.readFromByte(nibble);
+        assertEquals(EnumSet.of(CardAiFlags.UNKNOWN_BIT_3), flags);
+        assertEquals(nibble, CardAiFlags.storeAsByte(flags));
     }
 
     @Test

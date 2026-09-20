@@ -26,6 +26,7 @@ import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.constants.romenums.MoveCategory;
 import redactedrice.ptcgr.constants.romenums.CardAiFlags;
+import redactedrice.ptcgr.constants.romenums.CardAiInfo;
 import redactedrice.ptcgr.constants.romenums.MoveEffectParam;
 import redactedrice.ptcgr.constants.romenums.MoveEffectFlags1;
 import redactedrice.ptcgr.constants.romenums.MoveEffectFlags2;
@@ -308,6 +309,7 @@ public class RandomizerCore {
         wrapper.registerSharedEnum(MoveEffectFlags1.class);
         wrapper.registerSharedEnum(MoveEffectFlags2.class);
         wrapper.registerSharedEnum(MoveEffectFlags3.class);
+        wrapper.registerSharedEnum(CardAiInfo.class);
         wrapper.registerSharedEnum(CardAiFlags.class);
         wrapper.registerSharedEnum(MoveEffectParam.class);
         // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)

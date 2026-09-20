@@ -249,6 +249,7 @@ function script.buildMonsterCardFields()
 		{ field = "lengthIn", header = "Length In", align = "right" },
 		{ field = "weight", header = "Weight", align = "right" },
 		{ field = "description", header = "Description" },
+		{ field = "aiInfo", header = "AI Info", align = "right" },
 		{ field = "aiFlags", header = "AI Flags", align = "right" },
 	}
 

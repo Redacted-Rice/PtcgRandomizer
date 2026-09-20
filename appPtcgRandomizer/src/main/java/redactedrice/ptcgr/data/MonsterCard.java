@@ -11,6 +11,7 @@ import redactedrice.compiler.CodeBlock;
 import redactedrice.compiler.RawBytePacker;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.romenums.CardAiFlags;
+import redactedrice.ptcgr.constants.romenums.CardAiInfo;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.constants.romenums.WeaknessResistanceFlags;
@@ -64,6 +65,9 @@ public class MonsterCard extends Card {
     // No gameplay effect. Tenth of pounds (e.g. weight of 6.5 lbs is 65)
     public short weight;
     public PokeDescription description;
+    // AI info for how to utilize the card. These are stored in one byte:
+    // bits 0-3 are the ai info, bits 4-7 are the ai flags
+    public CardAiInfo aiInfo;
     public Set<CardAiFlags> aiFlags;
 
     // Virtual basics for trainer cards that can be played as monsters. Not written
@@ -83,6 +87,7 @@ public class MonsterCard extends Card {
         description = new PokeDescription();
         weakness = new HashSet<>();
         resistance = new HashSet<>();
+        aiInfo = CardAiInfo.NONE;
         aiFlags = new HashSet<>();
     }
 
@@ -123,6 +128,7 @@ public class MonsterCard extends Card {
         lengthIn = toCopy.lengthIn;
         weight = toCopy.weight;
         description = new PokeDescription(toCopy.description);
+        aiInfo = toCopy.aiInfo;
         aiFlags = new HashSet<>(toCopy.aiFlags);
         isTrainerProxy = toCopy.isTrainerProxy;
     }
@@ -459,7 +465,10 @@ public class MonsterCard extends Card {
 
         index = description.readDataAndConvertIds(cardBytes, index, idToText);
 
-        aiFlags = new HashSet<>(CardAiFlags.readFromByte(cardBytes[index++]));
+        // Low nibble = aiInfo, high nibble = aiFlags
+        byte aiInfoByte = cardBytes[index++];
+        aiFlags = CardAiFlags.readFromByte(ByteUtils.readUpperHexChar(aiInfoByte));
+        aiInfo = CardAiInfo.readFromHexChar(ByteUtils.readLowerHexChar(aiInfoByte));
 
         return TOTAL_SIZE_IN_BYTES;
     }
@@ -506,7 +515,8 @@ public class MonsterCard extends Card {
         bytes.append(lengthFt, lengthIn);
         bytes.append(ByteUtils.shortToLittleEndianBytes(weight));
         bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
-        bytes.append(CardAiFlags.storeAsByte(aiFlags));
+        bytes.append(ByteUtils.packHexCharsToByte(CardAiFlags.storeAsByte(aiFlags),
+                aiInfo.getValue()));
         block.appendInstruction(bytes.createRawByteInsruct());
 
         return block;

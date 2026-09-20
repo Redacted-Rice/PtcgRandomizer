@@ -5,23 +5,19 @@ import java.util.Set;
 
 import redactedrice.gbcframework.utils.ByteUtils;
 
+// This is a nibble - shared with CardAiInfo
 public enum CardAiFlags {
-    // pret CARD_DATA_AI_INFO
     // @formatter:off
-    BENCH_UTILITY (1 << 0),
-    ENCOURAGE_EVO (1 << 1),
+    HAS_EVOLUTION (1 << 0),
+    UNKNOWN_BIT_1 (1 << 1),
     UNKNOWN_BIT_2 (1 << 2),
-    UNKNOWN_BIT_3 (1 << 3),
-    HAS_EVOLUTION (1 << 4),
-    UNKNOWN_BIT_5 (1 << 5),
-    UNKNOWN_BIT_6 (1 << 6),
-    UNKNOWN_BIT_7 (1 << 7);
+    UNKNOWN_BIT_3 (1 << 3);
     // @formatter:on
 
     private final byte value;
 
     private CardAiFlags(int inValue) {
-        if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE) {
+        if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE) {
             throw new IllegalArgumentException(
                     "Invalid constant input for CardAiFlags enum: " + inValue);
         }

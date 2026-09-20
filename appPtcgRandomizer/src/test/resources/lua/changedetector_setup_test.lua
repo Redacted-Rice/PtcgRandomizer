@@ -133,6 +133,7 @@ local card = {
 	description = { toString = function()
 		return "desc"
 	end },
+	aiInfo = "NONE",
 	aiFlags = makeFlagSet({}),
 	hp = 50,
 	getNumMoves = function()

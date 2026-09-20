@@ -1,7 +1,5 @@
 package redactedrice.ptcgr.data;
 
-
-
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.romenums.BoosterPack;
 import redactedrice.ptcgr.constants.romenums.CardId;
@@ -103,14 +101,10 @@ public abstract class Card {
 
         rarity = CardRarity.readFromByte(cardBytes[index++]);
 
-        pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(cardBytes[index])); // no ++ -
-                                                                                          // this
-                                                                                          // reads
-                                                                                          // only
-                                                                                          // half
-                                                                                          // the
-                                                                                          // byte
-        set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(cardBytes[index++]));
+        // Low nibble = pack, high nibble = set
+        byte packSetByte = cardBytes[index++];
+        pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(packSetByte));
+        set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(packSetByte));
 
         id = CardId.readFromByte(cardBytes[index++]);
 
