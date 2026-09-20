@@ -357,6 +357,33 @@ function module.randomizeEvoLines(context, args)
 
 	module.assignEvoLineData(evoLineData, namePools, args.grouping, args.withinType, toModifyByName)
 	module.fixAllTogetherProxies(targets, args, toModifyByName)
+	module.syncEvoAiData(context, targets)
+end
+
+-- After we have randomized evo lines, set HAS_EVOLUTION as appropriate and
+-- clear ENCOURAGE_EVO when the name cannot evolve.
+function module.syncEvoAiData(context, cards)
+	local hasEvolution = context.CardAiFlags.HAS_EVOLUTION
+	local encourageEvo = context.CardAiInfo.ENCOURAGE_EVO
+	local noAiInfo = context.CardAiInfo.NONE
+
+	-- Get all the prev evo names
+	local namesThatEvolve = cards:groupBy("prevEvoName:toString")
+	-- Go through each name of cards and see if it can evolve or not
+	-- If it can, set HAS_EVOLUTION. If it can't, remove HAS_EVOLUTION and clear ENCOURAGE_EVO.
+	cards:groupBy("name:toString"):each(function(name, cardsOfName)
+		local canEvolve = namesThatEvolve:get(name) ~= nil
+		cardsOfName:each(function(card)
+			if canEvolve then
+				card.aiFlags:add(hasEvolution)
+			else
+				card.aiFlags:remove(hasEvolution)
+				if card.aiInfo == encourageEvo then
+					card.aiInfo = noAiInfo
+				end
+			end
+		end)
+	end)
 end
 
 return module
