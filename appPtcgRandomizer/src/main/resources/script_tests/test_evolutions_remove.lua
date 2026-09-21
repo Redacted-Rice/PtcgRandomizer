@@ -43,7 +43,7 @@ return {
 		original = testCards,
 		modified = testCards,
 		expect = {
-			-- UNK_03 is a distinct aiInfo value, not ENCOURAGE_EVO — leave it
+			-- UNK_03 is a distinct aiInfo value, not ENCOURAGE_EVO - leave it
 			{ id = "MONSTER_001", stage = "BASIC", prevEvoName = "", aiInfo = "UNK_03", aiFlags = {} },
 			{ id = "MONSTER_002", stage = "BASIC", prevEvoName = "", aiInfo = "NONE", aiFlags = {} },
 			{ id = "MONSTER_003_1", stage = "BASIC", aiInfo = "BENCH_UTILITY", aiFlags = {} },

@@ -9,9 +9,10 @@ import redactedrice.gbcframework.utils.IOUtils;
 import redactedrice.randomizer.utils.IssueTracker;
 
 // Swing presentation for issues already logged into IssueTracker.
-// Does not log — IssueTracker logs immediately on add. After display, the phase store is cleared.
+// Does not log - IssueTracker logs immediately on add. After display, the phase store is cleared.
 public final class IssuePresenter {
-    private IssuePresenter() {}
+    private IssuePresenter() {
+    }
 
     // Show collected warnings (if any), then clear warnings.
     public static void displayWarnings(Component parent, String handlingContext) {
@@ -46,7 +47,8 @@ public final class IssuePresenter {
 
     private static void showDialog(Component parent, String handlingContext, List<String> messages,
             int messageType) {
-        // No parent (tests / headless consumers): skip UI; caller still clears the store
+        // No parent (tests / headless consumers): skip UI; caller still clears the
+        // store
         if (parent == null) {
             return;
         }

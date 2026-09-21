@@ -7,16 +7,18 @@ import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentType;
 import redactedrice.randomizer.lua.arguments.ConstraintType;
+import redactedrice.randomizer.lua.arguments.TupleFieldDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Builds short constraint labels for display in the module config dialog, e.g. "0 - 2",
-// "Enum", or "Enum → 0 - 10". Unbounded integers have no constraint label. Kept separate
+// "Enum", or "Enum -> 0 - 10". Unbounded integers have no constraint label. Kept separate
 // from URJ ArgumentConstraint.getDescription() since that one is meant for log/error messages
 // rather than compact UI display and we have some special handling to do.
 public final class ArgumentConstraintDescription {
     private static final String NONE = "none";
 
-    private ArgumentConstraintDescription() {}
+    private ArgumentConstraintDescription() {
+    }
 
     public static String describe(TypeDefinition typeDef) {
         if (!hasAnyConstraint(typeDef)) {
@@ -44,6 +46,13 @@ public final class ArgumentConstraintDescription {
             checkType(module, path + " (value)", typeDef.getValueType());
             return;
         }
+        if (typeDef.isTuple()) {
+            checkType(module, path + " (" + typeDef.getTupleField(0).name() + ")",
+                    typeDef.getTupleField(0).type());
+            checkType(module, path + " (" + typeDef.getTupleField(1).name() + ")",
+                    typeDef.getTupleField(1).type());
+            return;
+        }
         if (!typeDef.isPrimitive() || !typeDef.declaresIgnoredConstraint()) {
             return;
         }
@@ -62,6 +71,10 @@ public final class ArgumentConstraintDescription {
             return hasAnyConstraint(typeDef.getKeyType())
                     || hasAnyConstraint(typeDef.getValueType());
         }
+        if (typeDef.isTuple()) {
+            return hasAnyConstraint(typeDef.getTupleField(0).type())
+                    || hasAnyConstraint(typeDef.getTupleField(1).type());
+        }
         if (typeDef.isEnum()) {
             return true;
         }
@@ -77,11 +90,17 @@ public final class ArgumentConstraintDescription {
             return formatLayer(typeDef.getKeyType()) + StructuredText.ARROW_SEPARATOR
                     + formatLayer(typeDef.getValueType());
         }
+        if (typeDef.isTuple()) {
+            TupleFieldDefinition field0 = typeDef.getTupleField(0);
+            TupleFieldDefinition field1 = typeDef.getTupleField(1);
+            return formatLayer(field0.type()) + StructuredText.TUPLE_SEPARATOR
+                    + formatLayer(field1.type());
+        }
         return formatLayer(typeDef);
     }
 
     private static String formatLayer(TypeDefinition typeDef) {
-        if (typeDef.isList() || typeDef.isTable()) {
+        if (typeDef.isList() || typeDef.isTable() || typeDef.isTuple()) {
             return formatStructuredConstraints(typeDef);
         }
         String constraint = describeLeafConstraint(typeDef);
@@ -92,7 +111,7 @@ public final class ArgumentConstraintDescription {
         if (typeDef.isEnum()) {
             return "Enum";
         }
-        if (typeDef.isList() || typeDef.isTable()) {
+        if (typeDef.isList() || typeDef.isTable() || typeDef.isTuple()) {
             return describe(typeDef);
         }
         return describePrimitiveConstraint(typeDef.getBaseType(), typeDef.getConstraint());

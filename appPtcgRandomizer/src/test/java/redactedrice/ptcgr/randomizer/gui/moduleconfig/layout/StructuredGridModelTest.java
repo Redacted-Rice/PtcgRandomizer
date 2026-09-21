@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.LayoutControlCounts;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.RawEntry;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridModel;
+import redactedrice.randomizer.lua.arguments.TupleEntry;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 public class StructuredGridModelTest {
@@ -37,6 +38,11 @@ public class StructuredGridModelTest {
         TypeDefinition tableOfList = TypeDefinition.tableOf(TypeDefinition.string(),
                 TypeDefinition.listOf(TypeDefinition.integer()));
         assertEquals(6, StructuredGridModel.totalColumns(tableOfList));
+
+        TypeDefinition weightedList = TypeDefinition.listOf(TypeDefinition.tupleOf("weight",
+                TypeDefinition.integer(), "shape", TypeDefinition.string()));
+        assertEquals(3, StructuredGridModel.totalColumns(weightedList));
+        assertFalse(StructuredGridModel.showsArrowColumn(weightedList));
     }
 
     @Test
@@ -86,5 +92,23 @@ public class StructuredGridModelTest {
         List<Object> duplicateKeys = List.of(new RawEntry("dup", 1), new RawEntry("dup", 2));
         assertThrows(IllegalArgumentException.class,
                 () -> StructuredGridModel.toPublic(tableType, duplicateKeys));
+
+        TypeDefinition weightedListType = TypeDefinition.listOf(TypeDefinition.tupleOf("weight",
+                TypeDefinition.integer(), "shape", TypeDefinition.string()));
+        List<Map<String, Object>> weightedValue = List.of(
+                TupleEntry.of("weight", 5, "shape", "linear_3"),
+                TupleEntry.of("weight", 5, "shape", "branch_1_3"));
+        List<Object> weightedRaw = StructuredGridModel.toRaw(weightedListType, weightedValue);
+        assertEquals(new RawEntry(5, "linear_3"), weightedRaw.get(0));
+        assertEquals(weightedValue, StructuredGridModel.toPublic(weightedListType, weightedRaw));
+
+        TypeDefinition tableOfTuple = TypeDefinition.tableOf(TypeDefinition.string(),
+                TypeDefinition.tupleOf("min", TypeDefinition.integer(), "max",
+                        TypeDefinition.integer()));
+        Map<String, Object> tupleTableValue = new LinkedHashMap<>();
+        tupleTableValue.put("hp", Map.of("min", 30, "max", 120));
+        List<Object> tupleTableRaw = StructuredGridModel.toRaw(tableOfTuple, tupleTableValue);
+        assertEquals(tupleTableValue, StructuredGridModel.toPublic(tableOfTuple, tupleTableRaw));
+        assertEquals(4, StructuredGridModel.totalColumns(tableOfTuple));
     }
 }

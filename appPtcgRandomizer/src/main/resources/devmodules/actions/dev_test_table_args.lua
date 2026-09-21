@@ -29,7 +29,7 @@ module = {
 			default = { hp = 120, damage = 80 },
 		},
 		{
-			-- Table<String, List<Integer>> — former group-style pools
+			-- Table<String, List<Integer>> - former group-style pools
 			name = "poolsByType",
 			definition = {
 				type = "table",
@@ -68,7 +68,7 @@ module = {
 			},
 		},
 		{
-			-- Table<String, Table<String, List<Integer>>> — three levels deep
+			-- Table<String, Table<String, List<Integer>>> - three levels deep
 			name = "nestedGroups",
 			definition = {
 				type = "table",
@@ -159,12 +159,15 @@ function module.formatTable(map)
 end
 
 function module.logArgs(context, args)
-	logger.info(string.format(
-		"dev_test_table_args received caps=%s poolsByType=%s typeWeights=%s nestedGroups=%s",
-		module.formatTable(args.caps),
-		module.formatTable(args.poolsByType),
-		module.formatTable(args.typeWeights),
-		module.formatTable(args.nestedGroups)))
+	logger.info(
+		string.format(
+			"dev_test_table_args received caps=%s poolsByType=%s typeWeights=%s nestedGroups=%s",
+			module.formatTable(args.caps),
+			module.formatTable(args.poolsByType),
+			module.formatTable(args.typeWeights),
+			module.formatTable(args.nestedGroups)
+		)
+	)
 end
 
 return module

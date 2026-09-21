@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.EnumValuesProvider;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.dialog.InvalidInputDialogs;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.TupleValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.factory.ArgumentEditorFactory;
 
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
@@ -100,8 +101,7 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
     private int renderCollection(StructuredGridCollectionNode node, List<Object> rawEntries, int colOffset,
             int rowOffset) {
         TypeDefinition collType = node.type;
-        TypeDefinition childType =
-                collType.isTable() ? collType.getValueType() : collType.getElementType();
+        TypeDefinition childType = collType.getCollectionValueType();
         int removeCol = StructuredGridModel.removeColumn(colOffset, collType);
         boolean showHorizontalSeparators = StructuredGridModel.showsHorizontalSeparators(collType);
         int row = rowOffset;
@@ -113,7 +113,7 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
             }
             Object rawEntry = rawEntries.get(i);
             Object childValue =
-                    collType.isTable() ? ((RawEntry) rawEntry).value()
+                    collType.hasPairRows() ? ((RawEntry) rawEntry).value()
                             : rawEntry;
             int entryRows = StructuredGridModel.entryRowCount(childType, childValue);
 
@@ -122,18 +122,22 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
             entry.removeButton = removeButton;
 
             int valueColOffset = colOffset;
-            if (collType.isTable()) {
+            if (collType.hasPairRows()) {
                 ArgumentValueEditor keyEditor =
-                        ArgumentEditorFactory.createForType(collType.getKeyType(), enumValuesProvider);
+                        ArgumentEditorFactory.createForType(collType.getRowHeadType(), enumValuesProvider);
                 keyEditor.setValue(((RawEntry) rawEntry).key());
                 keyEditor.setEditable(editable);
                 entry.keyEditor = keyEditor;
                 addSpanningCell(
                         StructuredGridHelpers.wrapExpandableField(keyEditor.getComponent()),
                         colOffset, row, entryRows, true, colOffset, true);
-                addSpanningCell(StructuredGridHelpers.createArrowLabel(), colOffset + 1, row,
-                        entryRows, true, colOffset, false);
-                valueColOffset = colOffset + 2;
+                if (StructuredGridModel.showsArrowColumn(collType)) {
+                    addSpanningCell(StructuredGridHelpers.createArrowLabel(), colOffset + 1, row,
+                            entryRows, true, colOffset, false);
+                    valueColOffset = colOffset + 2;
+                } else {
+                    valueColOffset = colOffset + 1;
+                }
             }
 
             if (childType.isComplex()) {
@@ -144,6 +148,15 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
                 List<Object> childRaw = (List<Object>) childValue;
                 renderCollection(childNode, childRaw, valueColOffset + 1, row);
                 addFramedRemoveCell(removeButton, removeCol, row, entryRows);
+            } else if (childType.isTuple()) {
+                TupleValueEditor tupleEditor = new TupleValueEditor(childType, enumValuesProvider);
+                tupleEditor.setValue(childValue);
+                tupleEditor.setEditable(editable);
+                entry.leafEditor = tupleEditor;
+                addSpanningCell(
+                        StructuredGridHelpers.wrapExpandableField(tupleEditor.getComponent()),
+                        valueColOffset, row, entryRows, false, colOffset, true);
+                addRemoveCell(removeButton, removeCol, row);
             } else {
                 ArgumentValueEditor leafEditor =
                         ArgumentEditorFactory.createForType(childType, enumValuesProvider);
@@ -173,14 +186,13 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
 
     private void renderAddRow(StructuredGridCollectionNode node, int colOffset, TypeDefinition collType,
             int row) {
-        TypeDefinition childType =
-                collType.isTable() ? collType.getValueType() : collType.getElementType();
+        TypeDefinition childType = collType.getCollectionValueType();
 
         JButton addButton = StructuredGridHelpers.createAddButton(editable);
         addButton.addActionListener(e -> addEntry(node));
         node.addButton = addButton;
 
-        int addGridwidth = !collType.isTable() && childType.isComplex() ? 2 : 1;
+        int addGridwidth = !collType.hasPairRows() && childType.isComplex() ? 2 : 1;
         addAddCell(addButton, colOffset, row, addGridwidth, colOffset);
     }
 
@@ -189,17 +201,23 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
     }
 
     private void addEntry(StructuredGridCollectionNode node) {
-        TypeDefinition childType =
-                node.type.isTable() ? node.type.getValueType() : node.type.getElementType();
+        TypeDefinition childType = node.type.getCollectionValueType();
         Object defaultChildValue =
                 ArgumentEditorFactory.defaultValueFor(childType, enumValuesProvider);
         Object defaultChildRaw =
                 childType.isComplex() ? StructuredGridModel.toRaw(childType, defaultChildValue)
                         : defaultChildValue;
         Object newRawEntry = defaultChildRaw;
-        if (node.type.isTable()) {
-            Object defaultKey = ArgumentEditorFactory.defaultValueFor(node.type.getKeyType(),
+        if (node.type.hasPairRows()) {
+            Object defaultKey = ArgumentEditorFactory.defaultValueFor(node.type.getRowHeadType(),
                     enumValuesProvider);
+            if (defaultKey instanceof Integer intKey && intKey.intValue() == 0
+                    && node.type.getRowHeadType().getEnforcedConstraint().getType()
+                            != redactedrice.randomizer.lua.arguments.ConstraintType.ANY
+                    && node.type.getRowHeadType().getEnforcedConstraint().getMin() != null
+                    && node.type.getRowHeadType().getEnforcedConstraint().getMin() >= 1) {
+                defaultKey = node.type.getRowHeadType().getEnforcedConstraint().getMin().intValue();
+            }
             newRawEntry = new RawEntry(defaultKey, defaultChildRaw);
         }
         final Object newRawEntryFinal = newRawEntry;
@@ -226,7 +244,7 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
             Object value = entry.nestedCollection != null
                     ? extractRawApplying(entry.nestedCollection, target, mutation)
                     : entry.leafEditor.getValue();
-            raw.add(node.type.isTable()
+            raw.add(node.type.hasPairRows()
                     ? new RawEntry(entry.keyEditor.getValue(), value)
                     : value);
         }
