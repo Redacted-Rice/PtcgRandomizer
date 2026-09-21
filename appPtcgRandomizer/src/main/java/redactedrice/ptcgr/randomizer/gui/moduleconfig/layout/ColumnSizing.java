@@ -31,12 +31,16 @@ public final class ColumnSizing {
         if (!editable) {
             return VIEW_MODE_MIN_WIDTH;
         }
-        if (valueType == null || (!valueType.isList() && !valueType.isTable())) {
+        if (valueType == null) {
             return ENTRY_BOX_WIDTH;
         }
-        LayoutControlCounts counts = StructuredGridModel.layoutControlCounts(valueType);
-        return counts.entryBoxes() * ENTRY_BOX_WIDTH + counts.removeButtons() * REMOVE_BUTTON_WIDTH
-                + counts.tableLevels() * TABLE_ARROW_WIDTH;
+        if (valueType.isTuple() || valueType.isComplex()) {
+            LayoutControlCounts counts = StructuredGridModel.layoutControlCounts(valueType);
+            return counts.entryBoxes() * ENTRY_BOX_WIDTH
+                    + counts.removeButtons() * REMOVE_BUTTON_WIDTH
+                    + counts.tableLevels() * TABLE_ARROW_WIDTH;
+        }
+        return ENTRY_BOX_WIDTH;
     }
 
     public static int measureContent(JComponent content) {

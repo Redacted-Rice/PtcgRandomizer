@@ -12,6 +12,8 @@ import redactedrice.randomizer.lua.ExecutionRequest;
 import redactedrice.randomizer.lua.Module;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentType;
+import redactedrice.randomizer.lua.arguments.TupleEntry;
+import redactedrice.randomizer.lua.arguments.TupleFieldDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 public class Action {
@@ -180,6 +182,16 @@ public class Action {
             }
             return copy;
         }
+        if (typeDef.isTuple()) {
+            if (!(value instanceof Map<?, ?> entry)) {
+                return value;
+            }
+            TupleFieldDefinition field0 = typeDef.getTupleField(0);
+            TupleFieldDefinition field1 = typeDef.getTupleField(1);
+            return TupleEntry.of(field0.name(),
+                    copyArgumentValue(entry.get(field0.name()), field0.type()), field1.name(),
+                    copyArgumentValue(entry.get(field1.name()), field1.type()));
+        }
         return value;
     }
 
@@ -199,6 +211,12 @@ public class Action {
         if (typeDef.isList()) {
             return new ArrayList<>();
         }
+        if (typeDef.isTuple()) {
+            TupleFieldDefinition field0 = typeDef.getTupleField(0);
+            TupleFieldDefinition field1 = typeDef.getTupleField(1);
+            return TupleEntry.of(field0.name(), emptyValueForType(field0.type()), field1.name(),
+                    emptyValueForType(field1.type()));
+        }
         return null;
     }
 
@@ -212,7 +230,7 @@ public class Action {
     }
 
     private static boolean isScalarString(TypeDefinition typeDef) {
-        return !typeDef.isList() && !typeDef.isTable() && !typeDef.isEnum()
+        return !typeDef.isComplex() && !typeDef.isEnum()
                 && typeDef.getBaseType() == ArgumentType.STRING;
     }
 

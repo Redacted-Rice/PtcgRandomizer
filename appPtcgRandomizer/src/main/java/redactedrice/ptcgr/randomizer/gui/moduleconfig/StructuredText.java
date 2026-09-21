@@ -4,15 +4,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import redactedrice.randomizer.lua.arguments.TupleFieldDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Type shape labels and compact read only previews for LIST/TABLE argument values.
 public final class StructuredText {
     public static final String ARROW = "\u2192";
     public static final String ARROW_SEPARATOR = " " + ARROW + " ";
+    public static final String TUPLE_SEPARATOR = ", ";
     public static final String EMPTY_VALUE = "(empty)";
 
-    private StructuredText() {}
+    private StructuredText() {
+    }
 
     public static String describeStructuredShape(TypeDefinition typeDef) {
         if (typeDef.isList()) {
@@ -21,6 +24,12 @@ public final class StructuredText {
         if (typeDef.isTable()) {
             return describeStructuredShape(typeDef.getKeyType()) + ARROW_SEPARATOR
                     + describeStructuredShape(typeDef.getValueType());
+        }
+        if (typeDef.isTuple()) {
+            TupleFieldDefinition field0 = typeDef.getTupleField(0);
+            TupleFieldDefinition field1 = typeDef.getTupleField(1);
+            return describeStructuredShape(field0.type()) + TUPLE_SEPARATOR
+                    + describeStructuredShape(field1.type());
         }
         return describeScalarShape(typeDef);
     }
@@ -37,6 +46,9 @@ public final class StructuredText {
         if (typeDefinition.isTable()) {
             return formatTable(typeDefinition, value, enumValuesProvider);
         }
+        if (typeDefinition.isTuple()) {
+            return formatTuple(typeDefinition, value, enumValuesProvider);
+        }
         if (typeDefinition.isEnum() && enumValuesProvider != null && value != null) {
             return enumValuesProvider.getEnumValueDisplayName(typeDefinition.getEnumName(),
                     String.valueOf(value));
@@ -47,11 +59,13 @@ public final class StructuredText {
     private static String formatList(TypeDefinition typeDefinition, Object value,
             EnumValuesProvider enumValuesProvider) {
         if (!(value instanceof List<?> list) || list.isEmpty()) {
-            return EMPTY_VALUE;
+            return "[]";
         }
         TypeDefinition elementType = typeDefinition.getElementType();
-        return list.stream().map(element -> formatNested(elementType, element, enumValuesProvider))
+        String elements = list.stream()
+                .map(element -> formatNested(elementType, element, enumValuesProvider))
                 .collect(Collectors.joining(", "));
+        return "[" + elements + "]";
     }
 
     private static String formatTable(TypeDefinition typeDefinition, Object value,
@@ -68,11 +82,22 @@ public final class StructuredText {
                 .collect(Collectors.joining(", "));
     }
 
+    private static String formatTuple(TypeDefinition typeDefinition, Object value,
+            EnumValuesProvider enumValuesProvider) {
+        if (!(value instanceof Map<?, ?> entry)) {
+            return String.valueOf(value);
+        }
+        TupleFieldDefinition field0 = typeDefinition.getTupleField(0);
+        TupleFieldDefinition field1 = typeDefinition.getTupleField(1);
+        Object head = entry.get(field0.name());
+        Object tail = entry.get(field1.name());
+        String fields = formatValue(field0.type(), head, enumValuesProvider) + TUPLE_SEPARATOR
+                + formatNested(field1.type(), tail, enumValuesProvider);
+        return "(" + fields + ")";
+    }
+
     private static String formatNested(TypeDefinition typeDefinition, Object value,
             EnumValuesProvider enumValuesProvider) {
-        if (typeDefinition.isList() || typeDefinition.isTable()) {
-            return "(" + formatValue(typeDefinition, value, enumValuesProvider) + ")";
-        }
         return formatValue(typeDefinition, value, enumValuesProvider);
     }
 

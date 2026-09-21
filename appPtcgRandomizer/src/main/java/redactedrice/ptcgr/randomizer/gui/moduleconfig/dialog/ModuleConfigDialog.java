@@ -87,9 +87,9 @@ public class ModuleConfigDialog extends JDialog {
             ColumnSpec.bounded(TYPE_COLUMN_MIN_WIDTH, TYPE_COLUMN_MAX_WIDTH, COLUMN_GROW_WEIGHT),
             ColumnSpec.bounded(CONSTRAINTS_COLUMN_MIN_WIDTH, CONSTRAINTS_COLUMN_MAX_WIDTH,
                     COLUMN_GROW_WEIGHT),
-            ColumnSpec.minOnly(VALUE_COLUMN_MIN_WIDTH, COLUMN_GROW_WEIGHT),};
-    private static final int COLUMN_HORIZONTAL_CHROME =
-            ModuleConfigColumnWidths.horizontalChrome(4, 3, CELL_PADDING_H, LINE_WIDTH);
+            ColumnSpec.minOnly(VALUE_COLUMN_MIN_WIDTH, COLUMN_GROW_WEIGHT), };
+    private static final int COLUMN_HORIZONTAL_CHROME = ModuleConfigColumnWidths.horizontalChrome(4, 3, CELL_PADDING_H,
+            LINE_WIDTH);
 
     private final Action action;
     private final boolean editable;
@@ -144,8 +144,7 @@ public class ModuleConfigDialog extends JDialog {
     private ModuleConfigScrollPane buildRowsPanel() {
         Module module = action.getModule();
 
-        ModuleConfigGridPanel grid =
-                new ModuleConfigGridPanel(COLUMN_SPECS, COLUMN_HORIZONTAL_CHROME);
+        ModuleConfigGridPanel grid = new ModuleConfigGridPanel(COLUMN_SPECS, COLUMN_HORIZONTAL_CHROME);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(CELL_PADDING_V, CELL_PADDING_H, CELL_PADDING_V, CELL_PADDING_H);
         gbc.anchor = GridBagConstraints.WEST;
@@ -187,8 +186,7 @@ public class ModuleConfigDialog extends JDialog {
             String label = argDef.getDisplayName();
             JComponent valueComponent;
             if (editable) {
-                ArgumentValueEditor editor =
-                        ArgumentEditorFactory.create(argDef, enumValuesProvider);
+                ArgumentValueEditor editor = ArgumentEditorFactory.create(argDef, enumValuesProvider);
                 editor.setValue(action.getArgument(name));
                 argumentEditors.put(name, editor);
                 valueComponent = editor.getComponent();
@@ -329,7 +327,8 @@ public class ModuleConfigDialog extends JDialog {
         }
     }
 
-    // Solid vertical rules spanning the header and data rows between the top and bottom horizontal
+    // Solid vertical rules spanning the header and data rows between the top and
+    // bottom horizontal
     // lines.
     private void addColumnSeparator(ModuleConfigGridPanel grid, GridBagConstraints gbc,
             int startRow, int column, int rowSpan) {
@@ -360,17 +359,18 @@ public class ModuleConfigDialog extends JDialog {
         gbc.gridwidth = 1;
     }
 
-    // Read only rows show the value as a plain label rather than a disabled input widget, so
+    // Read only rows show the value as a plain label rather than a disabled input
+    // widget, so
     // it's visually clear that it can't be edited here
     private static WrappingLabel readOnlyValueLabel(Object value) {
         return new WrappingLabel(value == null ? "" : String.valueOf(value));
     }
 
-    // LIST/TABLE values get compact preview text, e.g. "common, uncommon" or
-    // "fire → 10, water → (1, 2, 3)" for nested complex values.
+    // LIST/TABLE values get compact preview text, e.g. "[common, uncommon]" or
+    // "fire -> 10, water -> [1, 2, 3]" for nested complex values.
     private WrappingLabel readOnlyValueLabel(TypeDefinition typeDef, Object value,
             EnumValuesProvider enumValuesProvider) {
-        if (typeDef.isList() || typeDef.isTable()) {
+        if (typeDef.isComplex()) {
             return new WrappingLabel(
                     StructuredText.formatValue(typeDef, value, enumValuesProvider));
         }
@@ -446,8 +446,10 @@ public class ModuleConfigDialog extends JDialog {
         rowsScrollPane.getHorizontalScrollBar().setValue(0);
     }
 
-    // Extra dialog size so AS_NEEDED scroll bars are fully visible (one pass, no loop).
-    // Uses planned scroll-pane dimensions — viewport extent is unreliable before/while sizing.
+    // Extra dialog size so AS_NEEDED scroll bars are fully visible (one pass, no
+    // loop).
+    // Uses planned scroll-pane dimensions - viewport extent is unreliable
+    // before/while sizing.
     private Dimension scrollBarSlack(int scrollPaneWidth, int scrollPaneHeight) {
         Component view = rowsScrollPane.getViewport().getView();
         if (view == null || scrollPaneWidth <= 0 || scrollPaneHeight <= 0) {
@@ -473,7 +475,7 @@ public class ModuleConfigDialog extends JDialog {
             extraWidth += verticalBarWidth;
             viewportWidth -= verticalBarWidth;
         }
-        // Vertical bar steals viewport width — may require a horizontal bar too.
+        // Vertical bar steals viewport width - may require a horizontal bar too.
         if (viewSize.width > viewportWidth) {
             extraHeight += horizontalBarHeight;
         }
@@ -519,8 +521,7 @@ public class ModuleConfigDialog extends JDialog {
 
     public static void show(Window owner, Action action, boolean editable,
             EnumValuesProvider enumValuesProvider) {
-        ModuleConfigDialog dialog =
-                new ModuleConfigDialog(owner, action, editable, enumValuesProvider);
+        ModuleConfigDialog dialog = new ModuleConfigDialog(owner, action, editable, enumValuesProvider);
         dialog.setVisible(true);
     }
 }

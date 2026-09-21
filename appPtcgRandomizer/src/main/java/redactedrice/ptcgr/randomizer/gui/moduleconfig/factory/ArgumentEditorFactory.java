@@ -11,12 +11,15 @@ import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.DiscreteChoiceEdito
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.EnumEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.NumberFieldEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.StringFieldEditor;
+import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.TupleValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.editor.UnsupportedValueEditor;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.layout.StructuredGridPanel;
 import redactedrice.randomizer.lua.arguments.ArgumentConstraint;
 import redactedrice.randomizer.lua.arguments.ArgumentDefinition;
 import redactedrice.randomizer.lua.arguments.ArgumentType;
 import redactedrice.randomizer.lua.arguments.ConstraintType;
+import redactedrice.randomizer.lua.arguments.TupleEntry;
+import redactedrice.randomizer.lua.arguments.TupleFieldDefinition;
 import redactedrice.randomizer.lua.arguments.TypeDefinition;
 
 // Builds the right widget for an argument definition based on its base type and constraint.
@@ -49,6 +52,11 @@ public final class ArgumentEditorFactory {
             @Override
             public ArgumentValueEditor visitTable(TypeDefinition type) {
                 return new StructuredGridPanel(type, enumValuesProvider);
+            }
+
+            @Override
+            public ArgumentValueEditor visitTuple(TypeDefinition type) {
+                return new TupleValueEditor(type, enumValuesProvider);
             }
 
             @Override
@@ -90,6 +98,15 @@ public final class ArgumentEditorFactory {
             }
 
             @Override
+            public Object visitTuple(TypeDefinition type) {
+                TupleFieldDefinition field0 = type.getTupleField(0);
+                TupleFieldDefinition field1 = type.getTupleField(1);
+                return TupleEntry.of(field0.name(),
+                        defaultValueFor(field0.type(), enumValuesProvider), field1.name(),
+                        defaultValueFor(field1.type(), enumValuesProvider));
+            }
+
+            @Override
             public Object visitEnum(TypeDefinition type) {
                 List<String> values = resolveEnumChoices(type, enumValuesProvider);
                 return values != null && !values.isEmpty() ? values.get(0) : "";
@@ -125,6 +142,9 @@ public final class ArgumentEditorFactory {
         }
         if (typeDef.isTable()) {
             return visitor.visitTable(typeDef);
+        }
+        if (typeDef.isTuple()) {
+            return visitor.visitTuple(typeDef);
         }
         if (typeDef.isEnum()) {
             return visitor.visitEnum(typeDef);

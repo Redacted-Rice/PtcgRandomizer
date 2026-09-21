@@ -83,8 +83,7 @@ public class RandomizerCore {
         Component parent = warningParent != null ? warningParent : popupParent;
         try {
             File rulesFile = bundledResources.getUnsupportedMovesFile();
-            Config loaded =
-                    Config.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
+            Config loaded = Config.readFromLoadedYamlMap(YamlIO.load(rulesFile), "Unsupported moves");
             rules.clear();
             if (loaded.isValid() && loaded.hasRules()) {
                 loaded.getRulesConfig().applyTo(rules, null);
@@ -234,9 +233,8 @@ public class RandomizerCore {
             return false;
         }
 
-        // Execute modules — failures are logged immediately via IssueTracker.addError
-        List<ExecutionResult> results =
-                luaRandomizer.executeModules(executionRequests, context, seed);
+        // Execute modules - failures are logged immediately via IssueTracker.addError
+        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context, seed);
 
         for (ExecutionResult result : results) {
             if (result.isSuccess()) {
@@ -261,7 +259,8 @@ public class RandomizerCore {
         return actions != null && !actions.isEmpty();
     }
 
-    // Same wrapper live setup and tests use. Registers PTCG enums then loads modules.
+    // Same wrapper live setup and tests use. Registers PTCG enums then loads
+    // modules.
     public static LuaRandomizerWrapper createLuaRandomizer(PtcgBundledResources resources) {
         if (resources == null) {
             throw new IllegalArgumentException("Resources cannot be null");
@@ -283,7 +282,8 @@ public class RandomizerCore {
         return wrapper;
     }
 
-    // original/modified/rules plus change detection. Same keys live Lua modules read.
+    // original/modified/rules plus change detection. Same keys live Lua modules
+    // read.
     public static void bindRandomizeContext(JavaContext context, Object original, Object modified,
             Rules rules) {
         if (context == null) {
@@ -312,9 +312,11 @@ public class RandomizerCore {
         wrapper.registerSharedEnum(CardAiInfo.class);
         wrapper.registerSharedEnum(CardAiFlags.class);
         wrapper.registerSharedEnum(MoveEffectParam.class);
-        // Keep EvolutionStage under its class name for Lua scripts (context.EvolutionStage)
+        // Keep EvolutionStage under its class name for Lua scripts
+        // (context.EvolutionStage)
         wrapper.registerSharedEnum(EvolutionStage.class);
-        // User friendly aliases for HP pool table keys. Same canonical values under the hood
+        // User friendly aliases for HP pool table keys. Same canonical values under the
+        // hood
         wrapper.registerSharedEnum("EvoStage", EvolutionStage.class,
                 Map.of("BASIC", "Basic", "STAGE_1", "Second stage", "STAGE_2", "Third stage"));
         wrapper.registerSharedEnum("NumEvoStages", EvolutionStage.class, Map.of("BASIC", "No Evo",
