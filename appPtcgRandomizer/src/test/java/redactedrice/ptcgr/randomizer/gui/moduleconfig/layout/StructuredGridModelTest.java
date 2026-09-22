@@ -111,4 +111,30 @@ public class StructuredGridModelTest {
         assertEquals(tupleTableValue, StructuredGridModel.toPublic(tableOfTuple, tupleTableRaw));
         assertEquals(4, StructuredGridModel.totalColumns(tableOfTuple));
     }
+
+    @Test
+    void fixedKeyTableUsesPresetRowsWithoutAddRow() {
+        TypeDefinition fixedTable = TypeDefinition.tableOf(TypeDefinition.string(),
+                TypeDefinition.integer(), List.of("BASIC", "STAGE_1", "STAGE_2"),
+                Map.of("BASIC", 1));
+        assertFalse(StructuredGridModel.showsAddRow(fixedTable));
+        assertEquals(3, StructuredGridModel.totalColumns(fixedTable));
+        assertEquals(new LayoutControlCounts(3, 0, 1),
+                StructuredGridModel.layoutControlCounts(fixedTable));
+
+        Map<String, Integer> partialValue = new LinkedHashMap<>();
+        partialValue.put("STAGE_1", 3);
+        List<Object> raw = StructuredGridModel.toRaw(fixedTable, partialValue);
+        assertEquals(3, raw.size());
+        assertEquals(new RawEntry("BASIC", 1), raw.get(0));
+        assertEquals(new RawEntry("STAGE_1", 3), raw.get(1));
+        assertEquals(new RawEntry("STAGE_2", 0), raw.get(2));
+        assertEquals(3, StructuredGridModel.rowCount(fixedTable, raw));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> roundTrip =
+                (Map<String, Integer>) StructuredGridModel.toPublic(fixedTable, raw);
+        assertEquals(1, roundTrip.get("BASIC"));
+        assertEquals(3, roundTrip.get("STAGE_1"));
+    }
 }

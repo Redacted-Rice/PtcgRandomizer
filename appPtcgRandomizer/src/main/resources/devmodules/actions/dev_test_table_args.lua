@@ -1,5 +1,5 @@
 -- Dev only module used to manually verify the module config UI renders and saves TABLE arguments
--- (simple tables, nested list values, and enum keys).
+-- (simple tables, nested list values, enum keys, and fixedKeys/fixedValues preset rows).
 local module
 module = {
 	id = "dev_test_table_args",
@@ -8,7 +8,7 @@ module = {
 	seeded = true,
 	groups = { "dev" },
 	author = "PTCGR Dev Tools",
-	version = "0.1",
+	version = "0.2",
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
@@ -98,6 +98,49 @@ module = {
 				},
 			},
 		},
+		{
+			-- Table<EvoStage, Integer> with fixedKeys - preset rows, no add/remove, editable values
+			name = "fixedStageCounts",
+			definition = {
+				type = "table",
+				keyDefinition = {
+					type = "enum",
+					constraint = "EvoStage",
+					exclude = { "STAGE_2_WITHOUT_STAGE_1" },
+				},
+				valueDefinition = {
+					type = "int",
+					constraint = { type = "range", min = 0, max = 99 },
+				},
+				fixedKeys = { "BASIC", "STAGE_1", "STAGE_2" },
+			},
+			default = {
+				STAGE_1 = 2,
+				STAGE_2 = 1,
+			},
+		},
+		{
+			-- Table<EvoStage, Integer> with fixedKeys + fixedValues - BASIC count locked at 1
+			name = "fixedStageCountsWithLockedBasic",
+			definition = {
+				type = "table",
+				keyDefinition = {
+					type = "enum",
+					constraint = "EvoStage",
+					exclude = { "STAGE_2_WITHOUT_STAGE_1" },
+				},
+				valueDefinition = {
+					type = "int",
+					constraint = { type = "range", min = 0, max = 99 },
+				},
+				fixedKeys = { "BASIC", "STAGE_1", "STAGE_2" },
+				fixedValues = { BASIC = 1 },
+			},
+			default = {
+				STAGE_1 = 2,
+				STAGE_2 = 1,
+			},
+		},
 	},
 	execute = function(context, args)
 		return module.logArgs(context, args)
@@ -161,11 +204,14 @@ end
 function module.logArgs(context, args)
 	logger.info(
 		string.format(
-			"dev_test_table_args received caps=%s poolsByType=%s typeWeights=%s nestedGroups=%s",
+			"dev_test_table_args received caps=%s poolsByType=%s typeWeights=%s nestedGroups=%s"
+				.. " fixedStageCounts=%s fixedStageCountsWithLockedBasic=%s",
 			module.formatTable(args.caps),
 			module.formatTable(args.poolsByType),
 			module.formatTable(args.typeWeights),
-			module.formatTable(args.nestedGroups)
+			module.formatTable(args.nestedGroups),
+			module.formatTable(args.fixedStageCounts),
+			module.formatTable(args.fixedStageCountsWithLockedBasic)
 		)
 	)
 end

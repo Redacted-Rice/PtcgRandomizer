@@ -126,7 +126,7 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
                 ArgumentValueEditor keyEditor =
                         ArgumentEditorFactory.createForType(collType.getRowHeadType(), enumValuesProvider);
                 keyEditor.setValue(((RawEntry) rawEntry).key());
-                keyEditor.setEditable(editable);
+                keyEditor.setEditable(editable && !collType.hasFixedKeys());
                 entry.keyEditor = keyEditor;
                 addSpanningCell(
                         StructuredGridHelpers.wrapExpandableField(keyEditor.getComponent()),
@@ -147,28 +147,48 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
                 @SuppressWarnings("unchecked")
                 List<Object> childRaw = (List<Object>) childValue;
                 renderCollection(childNode, childRaw, valueColOffset + 1, row);
-                addFramedRemoveCell(removeButton, removeCol, row, entryRows);
+                if (!collType.hasFixedKeys()) {
+                    addFramedRemoveCell(removeButton, removeCol, row, entryRows);
+                }
             } else if (childType.isTuple()) {
                 TupleValueEditor tupleEditor = new TupleValueEditor(childType, enumValuesProvider);
                 tupleEditor.setValue(childValue);
-                tupleEditor.setEditable(editable);
+                boolean valueEditable = editable;
+                if (collType.hasFixedKeys() && collType.hasPairRows()) {
+                    String fixedKey = String.valueOf(((RawEntry) rawEntry).key());
+                    valueEditable = valueEditable && !collType.isFixedValue(fixedKey);
+                }
+                tupleEditor.setEditable(valueEditable);
                 entry.leafEditor = tupleEditor;
                 addSpanningCell(
                         StructuredGridHelpers.wrapExpandableField(tupleEditor.getComponent()),
                         valueColOffset, row, entryRows, false, colOffset, true);
-                addRemoveCell(removeButton, removeCol, row);
+                if (!collType.hasFixedKeys()) {
+                    addRemoveCell(removeButton, removeCol, row);
+                }
             } else {
                 ArgumentValueEditor leafEditor =
                         ArgumentEditorFactory.createForType(childType, enumValuesProvider);
                 leafEditor.setValue(childValue);
-                leafEditor.setEditable(editable);
+                boolean valueEditable = editable;
+                if (collType.hasFixedKeys() && collType.hasPairRows()) {
+                    String fixedKey = String.valueOf(((RawEntry) rawEntry).key());
+                    valueEditable = valueEditable && !collType.isFixedValue(fixedKey);
+                }
+                leafEditor.setEditable(valueEditable);
                 entry.leafEditor = leafEditor;
                 addLeafCell(leafEditor.getComponent(), valueColOffset, row, colOffset);
-                addRemoveCell(removeButton, removeCol, row);
+                if (!collType.hasFixedKeys()) {
+                    addRemoveCell(removeButton, removeCol, row);
+                }
             }
 
             node.entries.add(entry);
-            removeButton.addActionListener(e -> removeEntry(node, entry));
+            if (!collType.hasFixedKeys()) {
+                removeButton.addActionListener(e -> removeEntry(node, entry));
+            } else {
+                removeButton.setVisible(false);
+            }
 
             row += entryRows;
         }
@@ -178,8 +198,10 @@ public final class StructuredGridPanel extends JPanel implements ArgumentValueEd
             row++;
         }
 
-        renderAddRow(node, colOffset, collType, row);
-        row++;
+        if (StructuredGridModel.showsAddRow(collType)) {
+            renderAddRow(node, colOffset, collType, row);
+            row++;
+        }
 
         return row - rowOffset;
     }
