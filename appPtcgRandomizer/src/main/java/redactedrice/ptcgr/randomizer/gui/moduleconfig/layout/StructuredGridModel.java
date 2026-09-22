@@ -27,6 +27,10 @@ public final class StructuredGridModel {
         return type.isTable();
     }
 
+    public static boolean showsAddRow(TypeDefinition type) {
+        return !type.hasFixedKeys();
+    }
+
     // Counts key/value entry fields, remove buttons, and TABLE levels (each adds an
     // arrow column) required by a type's structured grid layout. This does not
     // count collection levels.
@@ -41,11 +45,16 @@ public final class StructuredGridModel {
         if (!type.isComplex()) {
             return new LayoutControlCounts(1, 0, 0);
         }
+        if (type.isTable() && type.hasFixedKeys()) {
+            return new LayoutControlCounts(type.getFixedKeys().size(), 0, 1);
+        }
         TypeDefinition child = type.getCollectionValueType();
         if (type.hasPairRows()) {
             LayoutControlCounts childCounts = layoutControlCounts(child);
-            return new LayoutControlCounts(1 + childCounts.entryBoxes(),
-                    1 + childCounts.removeButtons(), 1 + childCounts.tableLevels());
+            int removeButtons = type.hasFixedKeys() ? childCounts.removeButtons()
+                    : 1 + childCounts.removeButtons();
+            return new LayoutControlCounts(1 + childCounts.entryBoxes(), removeButtons,
+                    1 + childCounts.tableLevels());
         }
         if (child.isComplex()) {
             LayoutControlCounts childCounts = layoutControlCounts(child);
@@ -72,10 +81,17 @@ public final class StructuredGridModel {
         } else {
             contentColumns += 1;
         }
-        return contentColumns + 1;
+        int columns = contentColumns + 1;
+        if (type.hasFixedKeys()) {
+            columns -= 1;
+        }
+        return columns;
     }
 
     public static int removeColumn(int colOffset, TypeDefinition type) {
+        if (type.hasFixedKeys()) {
+            return colOffset + totalColumns(type);
+        }
         return colOffset + totalColumns(type) - 1;
     }
 
@@ -115,13 +131,39 @@ public final class StructuredGridModel {
         } else if (type.isTable()) {
             TypeDefinition valueType = type.getValueType();
             Map<?, ?> map = publicValue instanceof Map<?, ?> m ? m : Map.of();
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
-                Object value = entry.getValue();
-                raw.add(new RawEntry(entry.getKey(),
-                        valueType.isComplex() ? toRaw(valueType, value) : value));
+            if (type.hasFixedKeys()) {
+                for (String key : type.getFixedKeys()) {
+                    Object value;
+                    if (type.isFixedValue(key)) {
+                        value = type.getFixedValues().get(key);
+                    } else {
+                        value = map.get(key);
+                        if (value == null) {
+                            value = defaultLeafValue(valueType);
+                        }
+                    }
+                    raw.add(new RawEntry(key,
+                            valueType.isComplex() ? toRaw(valueType, value) : value));
+                }
+            } else {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    Object value = entry.getValue();
+                    raw.add(new RawEntry(entry.getKey(),
+                            valueType.isComplex() ? toRaw(valueType, value) : value));
+                }
             }
         }
         return raw;
+    }
+
+    private static Object defaultLeafValue(TypeDefinition type) {
+        return switch (type.getBaseType()) {
+            case STRING -> "";
+            case INTEGER -> 0;
+            case DOUBLE -> 0.0;
+            case BOOLEAN -> Boolean.FALSE;
+            default -> null;
+        };
     }
 
     // Converts internal raw entries back into the public shape (List/Map), throwing
@@ -139,7 +181,10 @@ public final class StructuredGridModel {
                 if (result.containsKey(key)) {
                     throw new IllegalArgumentException("Duplicate table key: " + key);
                 }
-                result.put(key, toPublicValue(valueType, pair.value()));
+                String fixedKey = String.valueOf(key);
+                Object value = type.isFixedValue(fixedKey) ? type.getFixedValues().get(fixedKey)
+                        : toPublicValue(valueType, pair.value());
+                result.put(key, value);
             }
             return result;
         }
@@ -190,7 +235,7 @@ public final class StructuredGridModel {
                 rows += 1;
             }
         }
-        return rows + 1;
+        return rows + (showsAddRow(type) ? 1 : 0);
     }
 
     // Grid rows a single LIST element / TABLE value occupies - 1 for a scalar/enum
