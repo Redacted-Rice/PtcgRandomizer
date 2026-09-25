@@ -18,13 +18,17 @@ module = {
 		{
 			name = "retreatPool",
 			displayName = "Retreat Cost Pool",
-			description = "Shared weighted retreat cost values used for every card. Repeat a value in the list to"
-							.. " make it more likely",
+			description = "Shared weighted retreat cost values used for every card",
 			definition = {
 				type = "list",
-				elementDefinition = common_field_defs.ELEMENT_DEF_RETREAT_COST_LIST,
+				elementDefinition = common_field_defs.VALUE_DEF_RETREAT_COST_WEIGHTED,
 			},
-			default = { 0, 1, 1, 1, 1, 1, 2, 2, 2, 3 },
+			default = {
+				{ weight = 1, value = 0 },
+				{ weight = 5, value = 1 },
+				{ weight = 3, value = 2 },
+				{ weight = 1, value = 3 },
+			},
 		},
 	},
 	execute = function(context, args)
@@ -35,7 +39,7 @@ module = {
 function module.randomizeRetreatCost(context, args)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
-	custom_pool_utils.retreat.listPool(args.retreatPool):useToRandomize(targets, "retreatCost",
+	custom_pool_utils.retreat.expandWeightedList(args.retreatPool):useToRandomize(targets, "retreatCost",
 			options)
 end
 

@@ -1,9 +1,21 @@
 local card_sets = require("support.card_sets")
 
 local hpPools = {
-	BASIC = { 10, 20, 30 },
-	STAGE_1 = { 40, 50, 60 },
-	STAGE_2 = { 70, 80, 90 },
+	BASIC = {
+		{ weight = 1, value = 10 },
+		{ weight = 1, value = 20 },
+		{ weight = 1, value = 30 },
+	},
+	STAGE_1 = {
+		{ weight = 1, value = 40 },
+		{ weight = 1, value = 50 },
+		{ weight = 1, value = 60 },
+	},
+	STAGE_2 = {
+		{ weight = 1, value = 70 },
+		{ weight = 1, value = 80 },
+		{ weight = 1, value = 90 },
+	},
 }
 
 return {

@@ -18,15 +18,22 @@ module = {
 		{
 			name = "hpPool",
 			displayName = "HP Pool",
-			description = "Shared weighted HP values used for every card. Repeat a value in the list to make it more"
-							.. " likely",
+			description = "Shared weighted HP values used for every card",
 			definition = {
 				type = "list",
-				elementDefinition = common_field_defs.ELEMENT_DEF_HP_LIST,
+				elementDefinition = common_field_defs.TYPE_DEF_HP_WEIGHTED,
 			},
 			default = {
-				30, 40, 40, 50, 50, 50, 60, 60, 60, 70, 70, 70, 80, 80, 90, 90, 100, 100,
-				110, 120,
+				{ weight = 1, value = 30 },
+				{ weight = 2, value = 40 },
+				{ weight = 3, value = 50 },
+				{ weight = 3, value = 60 },
+				{ weight = 3, value = 70 },
+				{ weight = 2, value = 80 },
+				{ weight = 2, value = 90 },
+				{ weight = 2, value = 100 },
+				{ weight = 1, value = 110 },
+				{ weight = 1, value = 120 },
 			},
 		},
 	},
@@ -38,7 +45,7 @@ module = {
 function module.randomizeHp(context, args)
 	local targets = context.modified:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
-	custom_pool_utils.hp.listPool(args.hpPool):useToRandomize(targets, "hp", options)
+	custom_pool_utils.hp.expandWeightedList(args.hpPool):useToRandomize(targets, "hp", options)
 end
 
 return module

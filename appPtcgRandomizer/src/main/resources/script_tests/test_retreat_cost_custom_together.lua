@@ -1,7 +1,11 @@
 local card_sets = require("support.card_sets")
 
--- repeats weight the pool. minimize_repeats pops each entry before refilling
-local retreatPool = { 0, 1, 1, 2, 2 }
+-- weights expand into the pool. minimize_repeats pops each entry before refilling
+local retreatPool = {
+	{ weight = 1, value = 0 },
+	{ weight = 2, value = 1 },
+	{ weight = 2, value = 2 },
+}
 
 return {
 	{

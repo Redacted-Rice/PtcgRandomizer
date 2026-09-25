@@ -1,4 +1,5 @@
--- Pool validation and group building for user defined value lists (HP, retreat, etc).
+-- Pool validation and group building for user defined value lists (HP and retreat
+-- currently, maybe more in the future).
 -- Require as modules.util.custom_pool_utils
 local randomizer = require("randomizer")
 
@@ -67,11 +68,16 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		end
 	end
 
-	-- wrap a user supplied value list as a randomizer list pool.
-	-- duplicate entries stay in the list so repeats can weight the pool
-	function utils.listPool(values)
-		utils.requireNonEmptyList(values, listPoolName)
-		return randomizer.list(values)
+	-- expand weight/value tuples into a flat value pool
+	function utils.expandWeightedList(weightedValues, label)
+		utils.requireNonEmptyList(weightedValues, label)
+		local expanded = randomizer.list(weightedValues):flatMapNTimes("weight", function(entry)
+			return entry.value
+		end)
+		if expanded:isEmpty() then
+			error(label .. " must include at least one entry with a positive weight")
+		end
+		return expanded
 	end
 
 	-- report extras, then abort on missing so the user sees both in one run
@@ -176,12 +182,12 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		local selected = {}
 		local keyOrder = {}
 
-		for stageName, values in pairs(pools or {}) do
-			utils.requireNonEmptyList(values, string.format("%s[%s]", poolsName, tostring(stageName)))
+		for stageName, weightedValues in pairs(pools or {}) do
 			if context.EvolutionStage[stageName] == nil then
 				error("Unknown EvolutionStage in " .. poolsName .. ": " .. tostring(stageName))
 			end
-			selected[stageName] = randomizer.list(values)
+			selected[stageName] = utils.expandWeightedList(weightedValues,
+				string.format("%s[%s]", poolsName, tostring(stageName)))
 			table.insert(keyOrder, stageName)
 		end
 
@@ -197,11 +203,11 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 
 		for maxStageName, byStage in pairs(pools or {}) do
 			local maxStageValue = utils.stageValue(context, maxStageName)
-			for stageName, values in pairs(byStage or {}) do
-				utils.requireNonEmptyList(values, string.format("%s[%s][%s]", poolsName,
-					tostring(maxStageName), tostring(stageName)))
+			for stageName, weightedValues in pairs(byStage or {}) do
 				local key = maxStageValue * 10 + utils.stageValue(context, stageName)
-				selected[key] = randomizer.list(values)
+				selected[key] = utils.expandWeightedList(weightedValues,
+					string.format("%s[%s][%s]", poolsName, tostring(maxStageName),
+						tostring(stageName)))
 				table.insert(keyOrder, key)
 			end
 		end
@@ -212,7 +218,8 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	return utils
 end
 
-custom_pool_utils.hp = custom_pool_utils.create("hpPools", "hpPool", "HP values")
-custom_pool_utils.retreat = custom_pool_utils.create("retreatPools", "retreatPool", "retreat cost values")
+custom_pool_utils.hp = custom_pool_utils.create("hpPools", "hpPool", "weighted HP values")
+custom_pool_utils.retreat = custom_pool_utils.create("retreatPools", "retreatPool",
+		"weighted retreat cost values")
 
 return custom_pool_utils
