@@ -1,9 +1,21 @@
 local card_sets = require("support.card_sets")
 
 local retreatPools = {
-	BASIC = { 0, 1, 2 },
-	STAGE_1 = { 1, 2, 3 },
-	STAGE_2 = { 1, 2, 3 },
+	BASIC = {
+		{ weight = 1, value = 0 },
+		{ weight = 1, value = 1 },
+		{ weight = 1, value = 2 },
+	},
+	STAGE_1 = {
+		{ weight = 1, value = 1 },
+		{ weight = 1, value = 2 },
+		{ weight = 1, value = 3 },
+	},
+	STAGE_2 = {
+		{ weight = 1, value = 1 },
+		{ weight = 1, value = 2 },
+		{ weight = 1, value = 3 },
+	},
 }
 
 return {
