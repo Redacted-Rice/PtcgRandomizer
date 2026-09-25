@@ -32,22 +32,47 @@ module = {
 					keyDefinition = common_field_defs.KEY_DEF_EVO_STAGE,
 					valueDefinition = {
 						type = "list",
-						elementDefinition = common_field_defs.ELEMENT_DEF_RETREAT_COST_LIST,
+						elementDefinition = common_field_defs.VALUE_DEF_RETREAT_COST_WEIGHTED,
 					},
 				},
 			},
 			default = {
 				BASIC = {
-					BASIC = { 0, 1, 1, 2, 2, 2, 2, 3, 3 },
+					BASIC = {
+						{ weight = 1, value = 0 },
+						{ weight = 2, value = 1 },
+						{ weight = 4, value = 2 },
+						{ weight = 2, value = 3 },
+					},
 				},
 				STAGE_1 = {
-					BASIC = { 0, 0, 1, 1, 1, 1, 2 },
-					STAGE_1 = { 0, 1, 1, 1, 1, 2, 2, 3 },
+					BASIC = {
+						{ weight = 2, value = 0 },
+						{ weight = 4, value = 1 },
+						{ weight = 1, value = 2 },
+					},
+					STAGE_1 = {
+						{ weight = 1, value = 0 },
+						{ weight = 4, value = 1 },
+						{ weight = 2, value = 2 },
+						{ weight = 1, value = 3 },
+					},
 				},
 				STAGE_2 = {
-					BASIC = { 0, 0, 1, 1, 1, 1},
-					STAGE_1 = { 0, 1, 1, 1, 1, 2, 2 },
-					STAGE_2 = { 1, 2, 2, 3, 3, 3, 3 },
+					BASIC = {
+						{ weight = 2, value = 0 },
+						{ weight = 4, value = 1 },
+					},
+					STAGE_1 = {
+						{ weight = 1, value = 0 },
+						{ weight = 4, value = 1 },
+						{ weight = 2, value = 2 },
+					},
+					STAGE_2 = {
+						{ weight = 1, value = 1 },
+						{ weight = 2, value = 2 },
+						{ weight = 4, value = 3 },
+					},
 				},
 			},
 		},

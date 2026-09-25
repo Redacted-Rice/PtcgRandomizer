@@ -1,16 +1,39 @@
--- Shared argument field defs for HP, retreat cost, pool, and move modules.
+-- Shared argument and type degs
 -- Require as modules.util.common_field_defs
 local common_field_defs = {}
 
-common_field_defs.ELEMENT_DEF_HP_LIST = {
+common_field_defs.VALUE_DEF_WEIGHT = {
+	type = "int",
+	constraint = { type = "range", min = 1, max = 100 },
+}
+
+-- TODO: Rename all these VLAUE_DEF and KEY_DEF to TYPE_DEF
+-- TODO: Think about how to organize these better
+common_field_defs.VALUE_DEF_HP = {
 	type = "int",
 	constraint = { type = "discrete_range", min = 10, max = 120, step = 10 },
 }
 
+common_field_defs.TYPE_DEF_HP_WEIGHTED = {
+    type = "tuple",
+    fields = {
+        { name = "weight", definition = common_field_defs.VALUE_DEF_WEIGHT },
+        { name = "value", definition = common_field_defs.VALUE_DEF_HP },
+    },
+}
+
 -- ROM range is 0-3 but the UI allows up to 10 (todo later: actually determine value) before text runs over lines
-common_field_defs.ELEMENT_DEF_RETREAT_COST_LIST = {
+common_field_defs.VALUE_DEF_RETREAT_COST = {
 	type = "int",
 	constraint = { type = "discrete_range", min = 0, max = 10, step = 1 },
+}
+
+common_field_defs.VALUE_DEF_RETREAT_COST_WEIGHTED = {
+    type = "tuple",
+    fields = {
+        { name = "weight", definition = common_field_defs.VALUE_DEF_WEIGHT },
+        { name = "value", definition = common_field_defs.VALUE_DEF_RETREAT_COST },
+    },
 }
 
 common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH = {
