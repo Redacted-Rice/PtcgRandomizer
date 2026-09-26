@@ -70,6 +70,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 
 	-- expand weight/value tuples into a flat value pool
 	function utils.expandWeightedList(weightedValues, label)
+		label = label or listPoolName
 		utils.requireNonEmptyList(weightedValues, label)
 		local expanded = randomizer.list(weightedValues):flatMapNTimes("weight", function(entry)
 			return entry.value

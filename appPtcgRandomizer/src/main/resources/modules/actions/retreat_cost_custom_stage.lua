@@ -25,7 +25,7 @@ module = {
 				keyDefinition = common_field_defs.KEY_DEF_EVO_STAGE,
 				valueDefinition = {
 					type = "list",
-					elementDefinition = common_field_defs.VALUE_DEF_RETREAT_COST_WEIGHTED,
+					elementDefinition = common_field_defs.TYPE_DEF_RETREAT_COST_WEIGHTED,
 				},
 			},
 			default = {
