@@ -21,7 +21,7 @@ module = {
 			description = "Shared weighted retreat cost values used for every card",
 			definition = {
 				type = "list",
-				elementDefinition = common_field_defs.VALUE_DEF_RETREAT_COST_WEIGHTED,
+				elementDefinition = common_field_defs.TYPE_DEF_RETREAT_COST_WEIGHTED,
 			},
 			default = {
 				{ weight = 1, value = 0 },
