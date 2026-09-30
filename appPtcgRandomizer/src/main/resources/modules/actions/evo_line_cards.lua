@@ -5,6 +5,7 @@
 local common_field_defs = require("modules.util.common_field_defs")
 local evo_line_randomize_utils = require("modules.util.evo_line_randomize_utils")
 local randomizer = require("randomizer")
+local logger = require("randomizer.logger")
 
 local module
 module = {
@@ -25,82 +26,30 @@ module = {
 	arguments = {
 		common_field_defs.ARG_DEF_SOURCE,
 		common_field_defs.ARG_DEF_WITHIN_TYPE,
-		{
-			name = "grouping",
-			displayName = "Evo Stage Grouping",
-			description = "By Stage And Max Stage keeps names and shuffles who they evolve from."
-				.. " By Stage keeps line shape and stage but shuffles names within each stage pool."
-				.. " All Together keeps line shape but ignores stage when picking names.",
-			definition = {
-				type = "enum",
-				constraint = "StageGrouping",
-			},
-			default = "BY_STAGE_AND_MAX_STAGE",
-		},
+		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 	},
 	execute = function(context, args)
 		return module.randomizeEvoLines(context, args)
 	end,
 }
 
-function module.sourceCards(context, source)
-	if source == "CURRENT" then
-		return context.modified:getRandomizableMonsterCardsWithProxies()
-	end
-	return context.original:getRandomizableMonsterCardsWithProxies()
-end
-
--- Creates a list of each cards' data (type, stage, maxStage, prevEvoIdx) in the line
-function module.extractLineData(sourceLine)
-	local nameToIdx = {}
-	local entries = {}
-
-	-- first sort by stage. This just makes it so we can know the prev evo should have been processed
-	-- making the logic a bit simpler
-	local sortedByStage = sourceLine:sort(function(a, b)
-		return a.stage:getValue() < b.stage:getValue()
-	end)
-
-	-- group by name then for each group of names create and add one line entry data
-	sortedByStage:groupBy("name"):each(function(name, cardsOfName)
-		local card = cardsOfName:get(1)
-		local prevEvoIdx = nil
-		local prevName = card.prevEvoName:toString()
-		if prevName ~= "" then
-			prevEvoIdx = nameToIdx[prevName]
-		end
-
-		table.insert(entries, {
-			type = card.type,
-			stage = card.stage,
-			maxStage = card.evoLineMaxStage,
-			prevEvoIdx = prevEvoIdx,
-		})
-		-- Store the index by name for quick lookup of prev evo
-		nameToIdx[name] = #entries
-	end)
-
-	return randomizer.list(entries)
-end
-
--- Extract the evo line data from the cards
-function module.extractAllEvoLineData(sourceCards)
-	-- For each evo line, map it to the evo line data
-	return randomizer.groupBy(sourceCards, "evoLineId"):map(function(evoLineId, sourceLine)
-		return {
-			-- We don't need original evo line id but keep it for debugging
-			evoLineId = evoLineId,
-			entries = module.extractLineData(sourceLine),
-		}
-	end)
-end
-
 function module.randomizeEvoLines(context, args)
-	local sourceCards = randomizer.list(module.sourceCards(context, args.source))
-	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
-	local evoLineData = module.extractAllEvoLineData(sourceCards)
+	evo_line_randomize_utils.init(context)
 
-	evo_line_randomize_utils.randomize(context, args, sourceCards, evoLineData, targets)
+	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source))
+	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	local evoLineData = evo_line_randomize_utils.extractAllEvoLineData(sourceCards)
+
+	logger.debug("evo_line_cards source=" .. tostring(args.source) .. " withinType="
+			.. tostring(args.withinType) .. " grouping=" .. tostring(args.grouping)
+			.. " cards=" .. sourceCards:size())
+
+	local namePools = evo_line_randomize_utils.buildNamePools(sourceCards, args.grouping, args.withinType)
+	local toModifyByName = randomizer.groupBy(targets, "name")
+
+	evo_line_randomize_utils.assignEvoLineData(evoLineData, namePools, args.grouping, args.withinType,
+			toModifyByName)
+	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName)
 end
 
 return module

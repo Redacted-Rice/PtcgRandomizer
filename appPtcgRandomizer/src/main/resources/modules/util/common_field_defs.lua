@@ -4,6 +4,7 @@ local common_field_defs = {}
 
 -- TODO: Rename remaining KEY_DEF to TYPE_DEF
 -- TODO: Think about how to organize these better
+-- TODO: Look for opportunities to consolidate similar ones
 common_field_defs.TYPE_DEF_WEIGHT = {
 	type = "int",
 	constraint = { type = "range", min = 1, max = 100 },
@@ -40,7 +41,7 @@ common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH = {
 	name = "approach",
 	displayName = "Randomization Approach",
 	description = "How values are drawn from the pool. Fully random can result in repeated values or disproportional"
-					.. " values. Minimize Repeats consumes values and refills when empty guaranteeing an even distribution",
+			.. " values. Minimize Repeats consumes values and refills when empty guaranteeing an even distribution",
 	definition = {
 		type = "enum",
 		constraint = "RandomizationApproach",
@@ -75,7 +76,7 @@ common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER = {
 	name = "grouping",
 	displayName = "Evo Stage Grouping",
 	description = "How source values are grouped into pools. 'All Together' uses a single pool. 'By Stage' groups by"
-					.. " the card's evolution stage.",
+			.. " the card's evolution stage.",
 	definition = {
 		type = "enum",
 		constraint = "StageGrouping",
@@ -92,11 +93,25 @@ common_field_defs.ARG_DEF_STAGE_GROUPING_BY_STAGE = {
 	default = "BY_STAGE",
 }
 
+common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING = {
+	name = "grouping",
+	displayName = "Evo Stage Grouping",
+	description = "By Stage And Max Stage keeps names and shuffles who they evolve from."
+			.. " By Stage keeps line shape and stage but shuffles cards within each stage."
+			.. " All Together keeps line shape but ignores stage when picking and changes stage"
+			.. " appropriately.",
+	definition = {
+		type = "enum",
+		constraint = "StageGrouping",
+	},
+	default = "BY_STAGE_AND_MAX_STAGE",
+}
+
 common_field_defs.ARG_DEF_MOVE_KIND = {
 	name = "moveKind",
 	displayName = "Moves To Randomize",
 	description = "'All Moves' randomizes attacks and powers together. 'Attacks' and 'Powers' keep each kind on its"
-					.. " own slots",
+			.. " own slots",
 	definition = {
 		type = "enum",
 		constraint = "MoveKind",
