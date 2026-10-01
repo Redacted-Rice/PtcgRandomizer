@@ -186,9 +186,13 @@ function module.assignOneLineFromPool(poolState, namePools, grouping, withinType
 		end
 
 		-- If we failed, remove it from all pools to speed things up
-		poolState.pool:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
+		logger.debug("evo_line_custom discarding shape "
+				.. evo_line_randomize_utils.formatEvoLineCounts(evoLine)
+				.. " poolLeft=" .. poolState.pool:size()
+				.. " used=" .. poolState.used:size())
+		poolState.pool = poolState.pool:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
 		if poolState.consumable then
-			poolState.used:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
+			poolState.used = poolState.used:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
 		end
 	end
 end
@@ -208,6 +212,13 @@ function module.processStagePass(stage, linePoolByMaxStage, namePools, grouping,
 		if not assigned then
 			logger.warn("evo_line_custom could not assign remaining " .. tostring(stage)
 					.. " names with available line shapes")
+			logger.info("evo_line_custom abort " .. tostring(stage)
+					.. " remainingNames="
+					.. evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, grouping,
+							withinType, sourceTypes)
+					.. " shapesLeft=" .. poolState.pool:size()
+					.. " shapesUsed=" .. poolState.used:size()
+					.. " pools=[" .. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
 			break
 		end
 	end
@@ -223,6 +234,11 @@ function module.processAllTogetherPass(linePool, namePools, grouping, withinType
 				withinType, sourceTypes, toModifyByName)
 		if not assigned then
 			logger.warn("evo_line_custom could not assign remaining names with available line shapes")
+			logger.info("evo_line_custom abort ALL_TOGETHER remainingNames="
+					.. namePools:itemCount()
+					.. " shapesLeft=" .. poolState.pool:size()
+					.. " shapesUsed=" .. poolState.used:size()
+					.. " pools=[" .. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
 			break
 		end
 	end

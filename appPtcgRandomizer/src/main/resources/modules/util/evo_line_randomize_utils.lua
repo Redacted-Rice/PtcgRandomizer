@@ -203,13 +203,17 @@ end
 -- Preferred pool key first, then other maxStage buckets for the same stage when fallback is on.
 function evo_line_randomize_utils.poolKeysForDraw(cardType, stage, maxStage, grouping, withinType,
 		allowStageFallback)
-	-- Start with the full key for the passed args
+	-- Start with the full key for the passed args - always prefer the asked key
 	local keys = { evo_line_randomize_utils.poolKey(cardType, stage, maxStage, grouping, withinType) }
 	-- This only makes sense if we are grouping by stage and max stage
 	if allowStageFallback and grouping == "BY_STAGE_AND_MAX_STAGE" then
-		-- From stage+1 maxStage to the end - skip any less than or equal to achieve this easily
-		for _, otherMaxStage in ipairs(evo_line_randomize_utils.EVO_STAGES) do
-			if otherMaxStage:getValue() > stage:getValue() and otherMaxStage ~= maxStage then
+		-- Add any remaining valid bucket for this stage (maxStage >= stage) preferring higher max evo
+		-- stages first by reverse iterating
+		local evoStages = evo_line_randomize_utils.EVO_STAGES
+		for stageIndex = #evoStages, 1, -1 do
+			local otherMaxStage = evoStages[stageIndex]
+			-- We already add the desired max stage first
+			if otherMaxStage:getValue() >= stage:getValue() and otherMaxStage ~= maxStage then
 				table.insert(keys, evo_line_randomize_utils.poolKey(cardType, stage, otherMaxStage,
 						grouping, withinType))
 			end
@@ -381,7 +385,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, prevType, name
 	-- try other source types first, leave prevType for the end if we skipped it
 	local potentialTypes = randomizer.list(sourceTypes)
 	if prevType ~= nil then
-		potentialTypes:removeFirstMatch(prevType)
+		potentialTypes = potentialTypes:removeFirstMatch(prevType)
 	end
 
 	while not potentialTypes:isEmpty() do
@@ -403,6 +407,21 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, prevType, name
 	return false
 end
 
+function evo_line_randomize_utils.formatEvoLineCounts(evoLine)
+	return "[" .. (evoLine.BASIC or 1) .. ", " .. (evoLine.STAGE_1 or 0) .. ", "
+			.. (evoLine.STAGE_2 or 0) .. "]"
+end
+
+function evo_line_randomize_utils.formatSlots(slots)
+	local parts = {}
+	for _, entry in ipairs(slots) do
+		local typeLabel = entry.type ~= nil and tostring(entry.type) or "?"
+		table.insert(parts, typeLabel .. "/" .. tostring(entry.stage)
+				.. "(max=" .. tostring(entry.maxStage) .. ")")
+	end
+	return table.concat(parts, " -> ")
+end
+
 -- Assigns types to the entry at the base index and all cards that evolve from it. If there is
 -- a branch, it will recursively handle it
 function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, prevType, namePools,
@@ -414,6 +433,9 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, prevT
 	if not evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, prevType, namePools, grouping,
 			reservedCounts, sourceTypes, allowStageFallback)
 	then
+		logger.debug("evo_line_custom type segment failed prevType=" .. tostring(prevType)
+				.. " slots=[" .. evo_line_randomize_utils.formatSlots(slots) .. "] branches="
+				.. branchIndexes:size())
 		return false
 	end
 
@@ -437,7 +459,9 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, prevT
 end
 
 -- Attempt to assign types to each entry in this line. If there are branches, they may
--- not all be the same type or not but its biased towards same type
+-- not all be the same type or not but its biased towards same type.
+-- If the shuffled sibling order greedily fails, retry with largest-then-smallest branch
+-- order (deterministic, no extra RNG). If that works, the shuffle order was the problem.
 function evo_line_randomize_utils.assignTypesToLine(entries, namePools, grouping, sourceTypes,
 		allowStageFallback)
 	local reservedCounts = {}
@@ -508,16 +532,21 @@ function evo_line_randomize_utils.tryAssignDrawnLine(evoLine, namePools, groupin
 	-- Custom reshapes lines, so when maxStage buckets matter allow drawing BASIC/STAGE_1
 	-- names from other maxStage pools and rewrite maxStage on assign
 	local allowStageFallback = grouping == "BY_STAGE_AND_MAX_STAGE"
+	local shapeLabel = evo_line_randomize_utils.formatEvoLineCounts(evoLine)
 
 	-- If we are within type, assign types to the entries while ensuring there are cards of that type for them
 	if withinType then
 		if not evo_line_randomize_utils.assignTypesToLine(entries, namePools, grouping, sourceTypes,
 				allowStageFallback)
 		then
+			logger.debug("evo_line_custom tryAssign failed type-assign shape=" .. shapeLabel
+					.. " branched="
+					.. tostring(evo_line_randomize_utils.lineEntriesHasBranch(entries)))
 			return false
 		end
 	-- Otherwise, just ensure there is cards for the entries
 	elseif not evo_line_randomize_utils.canFillEntries(entries, namePools, grouping, allowStageFallback) then
+		logger.debug("evo_line_custom tryAssign failed canFill shape=" .. shapeLabel)
 		return false
 	end
 
