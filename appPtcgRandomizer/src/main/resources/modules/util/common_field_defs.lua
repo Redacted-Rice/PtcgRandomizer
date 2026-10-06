@@ -10,6 +10,12 @@ common_field_defs.TYPE_DEF_WEIGHT = {
 	constraint = { type = "range", min = 1, max = 100 },
 }
 
+-- Allows 0 so types can be excluded from a weighted pool
+common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT = {
+	type = "int",
+	constraint = { type = "range", min = 0, max = 100 },
+}
+
 common_field_defs.TYPE_DEF_HP = {
 	type = "int",
 	constraint = { type = "discrete_range", min = 10, max = 120, step = 10 },
@@ -139,6 +145,42 @@ common_field_defs.KEY_DEF_EVO_LINE_STAGES = {
 	type = "enum",
 	constraint = "NumEvoStages",
 	exclude = { "STAGE_2_WITHOUT_STAGE_1" },
+}
+
+common_field_defs.ENERGY_TYPE_KEYS = {
+	"FIRE",
+	"GRASS",
+	"LIGHTNING",
+	"WATER",
+	"FIGHTING",
+	"PSYCHIC",
+	"COLORLESS",
+}
+
+common_field_defs.ARG_DEF_TYPE_WEIGHTS = {
+	name = "typeWeights",
+	displayName = "Type Weights",
+	description = "Weights for each monster energy type in the randomization pool",
+	definition = {
+		type = "table",
+		keyDefinition = {
+			type = "enum",
+			constraint = "EnergyType",
+			exclude = { "UNUSED_TYPE" },
+		},
+		valueDefinition = common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT,
+		fixedKeys = common_field_defs.ENERGY_TYPE_KEYS,
+	},
+	-- even spread except colorless a bit higher. not 2:3 so minimize reuse has room to vary
+	default = {
+		FIRE = 4,
+		GRASS = 4,
+		LIGHTNING = 4,
+		WATER = 4,
+		FIGHTING = 4,
+		PSYCHIC = 4,
+		COLORLESS = 6,
+	},
 }
 
 return common_field_defs
