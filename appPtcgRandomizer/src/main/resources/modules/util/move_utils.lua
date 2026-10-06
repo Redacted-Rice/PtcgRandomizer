@@ -11,7 +11,7 @@ local move_utils = {}
 function move_utils.uniqueMoves(moveList)
 	return randomizer.groupBy(moveList, function(move)
 		return move.name:toString()
-	end):map(function(_, movesOfName)
+	end):mapToList(function(_, movesOfName)
 		return movesOfName:get(1)
 	end)
 end

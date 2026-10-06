@@ -26,12 +26,12 @@ end
 function evo_line_randomize_utils.buildNamePools(sourceCards, grouping, withinType)
 	return randomizer.groupFromField(sourceCards,
 			function(card)
-				return evo_line_randomize_utils.poolKey(card.type, card.stage, card.evoLineMaxStage, grouping,
-						withinType)
+				return evo_line_randomize_utils.poolKey(card.type, card.stage,
+						card.evoLineMaxStage, grouping, withinType)
 			end, "name:toString"):applyToEachList("removeDuplicates")
 end
 
--- Creates a list of each cards' data (type, stage, maxStage, prevEvoIdx) in the line
+-- Creates an array of each cards' data (type, stage, maxStage, prevEvoIdx) in the line
 function evo_line_randomize_utils.extractLineData(sourceLine)
 	local nameToIdx = {}
 	local entries = {}
@@ -51,6 +51,7 @@ function evo_line_randomize_utils.extractLineData(sourceLine)
 			prevEvoIdx = nameToIdx[prevName]
 		end
 
+		entries[card.stage:getName()] = (entries[card.stage:getName()] or 0) + 1
 		table.insert(entries, {
 			type = card.type,
 			stage = card.stage,
@@ -61,13 +62,13 @@ function evo_line_randomize_utils.extractLineData(sourceLine)
 		nameToIdx[name] = #entries
 	end)
 
-	return randomizer.list(entries)
+	return entries
 end
 
 -- Extract the evo line data from the cards
 function evo_line_randomize_utils.extractAllEvoLineData(sourceCards)
 	-- For each evo line, map it to the evo line data
-	return randomizer.groupBy(sourceCards, "evoLineId"):map(function(evoLineId, sourceLine)
+	return randomizer.groupBy(sourceCards, "evoLineId"):mapToList(function(evoLineId, sourceLine)
 		return {
 			-- We don't need original evo line id but keep it for debugging
 			evoLineId = evoLineId,
@@ -81,7 +82,11 @@ function evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
 	local stage1Count = evoLine.STAGE_1 or 0
 	local stage2Count = evoLine.STAGE_2 or 0
 	local lineMaxStage = evolutionStage.BASIC
-	local entries = {}
+	local entries = {
+		[evolutionStage.BASIC:getName()] = 1,
+		[evolutionStage.STAGE_1:getName()] = stage1Count,
+		[evolutionStage.STAGE_2:getName()] = stage2Count
+	}
 
 	table.insert(entries, {
 		stage = evolutionStage.BASIC,
@@ -117,7 +122,7 @@ function evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
 
 	-- Update the base entry with the max stage
 	entries[1].maxStage = lineMaxStage
-	return randomizer.list(entries)
+	return entries
 end
 
 
@@ -137,16 +142,15 @@ function evo_line_randomize_utils.isColorlessBasic(card)
 		and card.stage:getValue() == evo_line_randomize_utils.evolutionStage.BASIC:getValue()
 end
 
--- Used for fixing proxies to make sure they are basics
--- Gets all the cards that are not proxies that have a prev evo
+--- Used for fixing proxies to make sure they are basics
+--- Gets all the cards that are not proxies that have a prev evo
 function evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
-	return toModifyCards
-		:filter(function(card)
+	return toModifyCards:filter(function(card)
 			return not card.isTrainerProxy
-				and card.stage:getValue() ~= evo_line_randomize_utils.evolutionStage.BASIC:getValue()
-				and not card.prevEvoName:isEmpty()
-		end)
-		:groupBy("prevEvoName:toString")
+					and card.stage:getValue() ~= evo_line_randomize_utils.evolutionStage.BASIC
+							:getValue()
+					and not card.prevEvoName:isEmpty()
+		end):groupBy("prevEvoName:toString")
 end
 
 -- Filter for finding matching evo lines after they are expanded in the pool
@@ -238,7 +242,8 @@ end
 
 -- Names left for one stage across types/max stage buckets when grouping splits that way.
 -- When not withinType, pools are not keyed by type so count once with a nil type.
-function evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, grouping, withinType, sourceTypes)
+function evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, grouping, withinType,
+			sourceTypes)
 	if not withinType then
 		return evo_line_randomize_utils.stagePoolCountForType(namePools, nil, stage, grouping,
 				withinType)
@@ -268,24 +273,24 @@ end
 -- (including the base) and the indexes of entries that evolve from the last
 -- entry (if any)
 function evo_line_randomize_utils.collectLinearEvos(entries, baseIndex)
-	local slots = { entries:get(baseIndex) }
+	local slots = { entries[baseIndex] }
 	local currentIndex = baseIndex
-	local evoIndexes = randomizer.list({})
+	local evoIndexes = {}
 	while true do
-		-- Get all entries that evolve from the current index
-		evoIndexes = entries:map(function(entry, idx)
+		evoIndexes = {}
+		for index, entry in ipairs(entries) do
 			if entry.prevEvoIdx == currentIndex then
-				return idx
+				table.insert(evoIndexes, index)
 			end
-		end)
+		end
 		-- If there is not one, (i.e. none because we reached the end or more than 1
 		-- because we hit a branch)
-		if evoIndexes:size() ~= 1 then
+		if #evoIndexes ~= 1 then
 			break
 		end
 		-- Otherwise add the entry to the slots and keep going
-		currentIndex = evoIndexes:get(1)
-		table.insert(slots, entries:get(currentIndex))
+		currentIndex = evoIndexes[1]
+		table.insert(slots, entries[currentIndex])
 	end
 	return slots, evoIndexes
 end
@@ -327,7 +332,7 @@ function evo_line_randomize_utils.canFillEntries(entries, namePools, grouping, a
 	local neededByBucket = {}
 	local availableByBucket = {}
 
-	entries:each(function(entry)
+	for _, entry in ipairs(entries) do
 		local keys = evo_line_randomize_utils.poolKeysForDraw(entry.type, entry.stage,
 				entry.maxStage, grouping, false, allowStageFallback)
 		local bucket = keys[1]
@@ -343,7 +348,7 @@ function evo_line_randomize_utils.canFillEntries(entries, namePools, grouping, a
 			end
 			availableByBucket[bucket] = available
 		end
-	end)
+	end
 
 	for bucket, needed in pairs(neededByBucket) do
 		if availableByBucket[bucket] < needed then
@@ -407,9 +412,30 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, prevType, name
 	return false
 end
 
-function evo_line_randomize_utils.formatEvoLineCounts(evoLine)
+function evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
 	return "[" .. (evoLine.BASIC or 1) .. ", " .. (evoLine.STAGE_1 or 0) .. ", "
 			.. (evoLine.STAGE_2 or 0) .. "]"
+end
+
+function evo_line_randomize_utils.formatEntriesStagesCounts(evoLine)
+	return "[" .. (evoLine[evo_line_randomize_utils.evolutionStage.BASIC:getName()] or 1) .. ", "
+			.. (evoLine[evo_line_randomize_utils.evolutionStage.STAGE_1:getName()] or 0) .. ", "
+			.. (evoLine[evo_line_randomize_utils.evolutionStage.STAGE_2:getName()] or 0) .. "]"
+end
+
+-- Debug: remaining name pool sizes keyed by pool key.
+function evo_line_randomize_utils.formatNamePoolCounts(namePools)
+	local parts = {}
+	namePools:each(function(key, pool)
+		table.insert(parts, tostring(key) .. "=" .. pool:size())
+	end)
+	return table.concat(parts, ", ")
+end
+
+-- Shape key string for one evo line, e.g. "[1, 3, 2]".
+function evo_line_randomize_utils.evoLineShapeKey(lineCards)
+	return evo_line_randomize_utils.formatEntriesStagesCounts(
+			evo_line_randomize_utils.extractLineData(lineCards))
 end
 
 function evo_line_randomize_utils.formatSlots(slots)
@@ -435,33 +461,25 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, prevT
 	then
 		logger.debug("evo_line_custom type segment failed prevType=" .. tostring(prevType)
 				.. " slots=[" .. evo_line_randomize_utils.formatSlots(slots) .. "] branches="
-				.. branchIndexes:size())
+				.. #branchIndexes)
 		return false
 	end
 
 	-- Continue recursively for each evo of the last slot (empty when the line ends)
 	-- Type of the first entry is the previous type for higher weighting
 	local segmentType = slots[1].type
-	local failed = false
-	branchIndexes:shuffle():each(function(branchIndex)
-		-- If any failed, early abort
-		if failed then
-			return
-		end
+	for _, branchIndex in ipairs(branchIndexes) do
 		-- Assign this evo branch recursively
 		if not evo_line_randomize_utils.assignTypesFromEntry(entries, branchIndex, segmentType,
-				namePools, grouping, reservedCounts, sourceTypes, allowStageFallback)
-		then
-			failed = true
+				namePools, grouping, reservedCounts, sourceTypes, allowStageFallback) then
+			return false
 		end
-	end)
-	return not failed
+	end
+	return true
 end
 
 -- Attempt to assign types to each entry in this line. If there are branches, they may
 -- not all be the same type or not but its biased towards same type.
--- If the shuffled sibling order greedily fails, retry with largest-then-smallest branch
--- order (deterministic, no extra RNG). If that works, the shuffle order was the problem.
 function evo_line_randomize_utils.assignTypesToLine(entries, namePools, grouping, sourceTypes,
 		allowStageFallback)
 	local reservedCounts = {}
@@ -481,17 +499,49 @@ function evo_line_randomize_utils.applyPrevEvoToCards(cardsOfName, prevEvo)
 	end)
 end
 
+-- Swap stage/prevEvo between two names and rewrite anyone pointing at either.
+function evo_line_randomize_utils.swapEvoSlots(nameA, nameB, toModifyByName, cardsByPrev)
+	local cardsA = toModifyByName:get(nameA)
+	local cardsB = toModifyByName:get(nameB)
+	local sampleA = cardsA:get(1)
+	local sampleB = cardsB:get(1)
+	local stageA = sampleA.stage
+	local prevA = sampleA.prevEvoName:toString()
+	local stageB = sampleB.stage
+	local prevB = sampleB.prevEvoName:toString()
+
+	-- Swap stage and prevEvo
+	evo_line_randomize_utils.applyStageToCards(cardsA, stageB)
+	evo_line_randomize_utils.applyPrevEvoToCards(cardsA, prevB)
+	evo_line_randomize_utils.applyStageToCards(cardsB, stageA)
+	evo_line_randomize_utils.applyPrevEvoToCards(cardsB, prevA)
+
+	-- Swap any cards that evolve from them as well
+	local evosA = cardsByPrev:get(nameA)
+	local evosB = cardsByPrev:get(nameB)
+	if evosA ~= nil then
+		evosA:each(function(card)
+			card.prevEvoName:setText(nameB)
+		end)
+	end
+	if evosB ~= nil then
+		evosB:each(function(card)
+			card.prevEvoName:setText(nameA)
+		end)
+	end
+end
+
 -- Errors if a name cannot be drawn from the pool.
 function evo_line_randomize_utils.assignEvoLineList(evoLineId, entries, namePools, grouping,
 		withinType, toModifyByName, allowStageFallback)
 	local branched = evo_line_randomize_utils.lineEntriesHasBranch(entries)
 	if branched and evoLineId ~= nil then
 		logger.info("evo_line_cards filling lineId=" .. tostring(evoLineId) .. " "
-				.. evo_line_randomize_utils.formatLineEntries(entries))
+				.. "evoLine = " .. evo_line_randomize_utils.formatEntriesStagesCounts(entries))
 	end
 
 	local idxToName = {}
-	entries:each(function(entry, idx)
+	for idx, entry in ipairs(entries) do
 		local drawnName = evo_line_randomize_utils.drawNameFromPool(namePools, grouping,
 				withinType, entry, allowStageFallback)
 		idxToName[idx] = drawnName
@@ -505,16 +555,16 @@ function evo_line_randomize_utils.assignEvoLineList(evoLineId, entries, namePool
 					.. " assign #" .. idx .. " name=" .. drawnName
 					.. " stage=" .. tostring(entry.stage) .. " prev=" .. prevLabel)
 		end
-	end)
+	end
 
-	entries:each(function(entry, idx)
+	for idx, entry in ipairs(entries) do
 		local cardName = idxToName[idx]
 		local prevEvo = ""
 		if entry.prevEvoIdx ~= nil then
 			prevEvo = idxToName[entry.prevEvoIdx] or ""
 		end
 		evo_line_randomize_utils.applyPrevEvoToCards(toModifyByName:get(cardName), prevEvo)
-	end)
+	end
 end
 
 function evo_line_randomize_utils.assignEvoLineData(evoLineData, namePools, grouping, withinType, toModifyByName)
@@ -532,7 +582,7 @@ function evo_line_randomize_utils.tryAssignDrawnLine(evoLine, namePools, groupin
 	-- Custom reshapes lines, so when maxStage buckets matter allow drawing BASIC/STAGE_1
 	-- names from other maxStage pools and rewrite maxStage on assign
 	local allowStageFallback = grouping == "BY_STAGE_AND_MAX_STAGE"
-	local shapeLabel = evo_line_randomize_utils.formatEvoLineCounts(evoLine)
+	local shapeLabel = evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
 
 	-- If we are within type, assign types to the entries while ensuring there are cards of that type for them
 	if withinType then
@@ -600,7 +650,7 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, args, toM
 
 	-- Step 0: construct maps of data for convinience
 	local potentialSwapTargets = evo_line_randomize_utils.potentialNonProxySwapTargets(toModifyCards, args.withinType)
-	local evosByPrevEvo = evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
+	local cardsByPrev = evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
 
 	toModifyCards:each(function(proxy)
 		-- If its not a proxy or the proxy is already a basic, we are good
@@ -611,32 +661,13 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, args, toM
 			return
 		end
 
+		-- TODO: Remove deep copy. Also remove .items usage and instead make them use tables
 		-- Step 1: random basic that is not a proxy and not a proxy's current prev evo
 		local swapName = utils.consumeRandomElement(utils.deepCopy(potentialSwapTargets.items))
 
-		-- Step 2: swap evo data between the selected card and the proxy
+		-- Step 2: swap evo slots (stage/prev and anyone pointing at either name)
 		local proxyName = proxy.name:toString()
-		local proxyStage = proxy.stage
-		local proxyPrev = proxy.prevEvoName:toString()
-		evo_line_randomize_utils.applyStageToCards(toModifyByName:get(proxyName),
-				evo_line_randomize_utils.evolutionStage.BASIC)
-		evo_line_randomize_utils.applyPrevEvoToCards(toModifyByName:get(proxyName), "")
-		evo_line_randomize_utils.applyStageToCards(toModifyByName:get(swapName), proxyStage)
-		evo_line_randomize_utils.applyPrevEvoToCards(toModifyByName:get(swapName), proxyPrev)
-
-		-- Step 3: swap prev evo on next stage cards for each side of the swap
-		local proxyEvos = evosByPrevEvo:get(proxyName)
-		if proxyEvos ~= nil then
-			proxyEvos:each(function(card)
-				card.prevEvoName:setText(swapName)
-			end)
-		end
-		local swapEvos = evosByPrevEvo:get(swapName)
-		if swapEvos ~= nil then
-			swapEvos:each(function(card)
-				card.prevEvoName:setText(proxyName)
-			end)
-		end
+		evo_line_randomize_utils.swapEvoSlots(proxyName, swapName, toModifyByName, cardsByPrev)
 
 		logger.debug("evo_line_cards swapped proxy evo " .. proxyName .. " <-> " .. swapName)
 	end)
@@ -680,36 +711,14 @@ end
 -- For debug logging
 function evo_line_randomize_utils.lineEntriesHasBranch(entries)
 	local seenStages = {}
-	local branched = false
-	entries:each(function(entry)
-		if branched then
-			return
-		end
+	for _, entry in ipairs(entries) do
 		local stageValue = entry.stage:getValue()
 		if seenStages[stageValue] then
-			branched = true
-			return
+			return true
 		end
 		seenStages[stageValue] = true
-	end)
-	return branched
-end
-
--- For debug logging
-function evo_line_randomize_utils.formatLineEntries(entries)
-	local stageCounts = {}
-	for _, stage in ipairs(evo_line_randomize_utils.EVO_STAGES) do
-		stageCounts[stage:getValue()] = 0
 	end
-	entries:each(function(entry)
-		local stageValue = entry.stage:getValue()
-		stageCounts[stageValue] = stageCounts[stageValue] + 1
-	end)
-	local evolutionStage = evo_line_randomize_utils.evolutionStage
-	local basic = stageCounts[evolutionStage.BASIC:getValue()]
-	local stage1 = stageCounts[evolutionStage.STAGE_1:getValue()]
-	local stage2 = stageCounts[evolutionStage.STAGE_2:getValue()]
-	return "evoLine = [" .. basic .. ", " .. stage1 .. ", " .. stage2 .. "]"
+	return false
 end
 
 return evo_line_randomize_utils

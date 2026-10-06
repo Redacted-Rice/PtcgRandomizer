@@ -31,7 +31,7 @@ function module.buildTypePool(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
 	-- One type per evo line to keep the evo line numbers the same for each type
 	local byEvoLine = randomizer.groupBy(sourceCards, "evoLineId")
-	local types = byEvoLine:map(function(_, line)
+	local types = byEvoLine:mapToList(function(_, line)
 		return line:get(1).type
 	end)
 
@@ -50,7 +50,7 @@ function module.randomizeEvoLineTypes(context, args)
 
 	-- Get one card from each evo line to set the type of
 	local byEvoLine = randomizer.groupBy(monsterCards, "evoLineId")
-	local representatives = byEvoLine:map(function(_, line)
+	local representatives = byEvoLine:mapToList(function(_, line)
 		return line:get(1)
 	end)
 
