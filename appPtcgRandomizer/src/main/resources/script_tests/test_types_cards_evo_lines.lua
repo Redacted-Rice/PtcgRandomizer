@@ -1,5 +1,6 @@
--- Use the same seed on every case
-local seed = 42
+-- Preserve the same seed as tests used to use to ensure the extractions and changes did not impact behavior
+-- and so I don't have to redo expectations
+local seed = 1466
 
 -- Typed evo lines with reprints plus a second FIRE line so KEEP vs REMOVE is visible.
 local original = {
@@ -48,7 +49,7 @@ local modified = {
 return {
 	{
 		name = "keep_duplicates",
-		module = "types_evo_lines",
+		module = "types_cards_evo_lines",
 		seed = seed,
 		args = {
 			source = "ROM",
@@ -82,7 +83,7 @@ return {
 	},
 	{
 		name = "from_current",
-		module = "types_evo_lines",
+		module = "types_cards_evo_lines",
 		seed = seed,
 		args = {
 			source = "CURRENT",
@@ -116,7 +117,7 @@ return {
 	},
 	{
 		name = "remove_duplicates",
-		module = "types_evo_lines",
+		module = "types_cards_evo_lines",
 		seed = seed,
 		args = {
 			source = "CURRENT",
@@ -150,7 +151,7 @@ return {
 	},
 	{
 		name = "fully_random",
-		module = "types_evo_lines",
+		module = "types_cards_evo_lines",
 		seed = seed,
 		args = {
 			source = "ROM",
