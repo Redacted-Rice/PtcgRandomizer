@@ -109,20 +109,16 @@ function module.fixDexNumbers(context)
 
 	-- Lines ordered by lowest basic dex so relative pokedex placement stays stable.
 	-- Within each line, branches get consecutive ids.
-	randomizer
-		.groupBy(cards, "evoLineId")
-		:map(function(_, line)
-			return {
-				line = line,
-				lowestBasicDexNum = module.lowestBasicDexNumber(line) or 999,
-			}
-		end)
-		:sort(function(a, b)
+	randomizer.groupBy(cards, "evoLineId"):mapToList(function(_, line)
+		return {
+			line = line,
+			lowestBasicDexNum = module.lowestBasicDexNumber(line) or 999,
+		}
+	end):sort(function(a, b)
 			return a.lowestBasicDexNum < b.lowestBasicDexNum
-		end)
-		:each(function(entry)
+	end):each(function(entry)
 			nextId = module.assignLine(entry.line, nextId, assignedNames)
-		end)
+	end)
 end
 
 return module

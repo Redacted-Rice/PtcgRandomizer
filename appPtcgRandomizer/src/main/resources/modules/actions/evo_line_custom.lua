@@ -187,7 +187,7 @@ function module.assignOneLineFromPool(poolState, namePools, grouping, withinType
 
 		-- If we failed, remove it from all pools to speed things up
 		logger.debug("evo_line_custom discarding shape "
-				.. evo_line_randomize_utils.formatEvoLineCounts(evoLine)
+				.. evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
 				.. " poolLeft=" .. poolState.pool:size()
 				.. " used=" .. poolState.used:size())
 		poolState.pool = poolState.pool:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
