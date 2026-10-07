@@ -3,6 +3,7 @@
 -- that reaches them; later branches skip already-named cards.
 -- Run after dex number randomization. Needs evoLineId and evoBranchIds on each card.
 local randomizer = require("randomizer")
+local branch_utils = require("modules.util.branch_utils")
 local conversion_utils = require("modules.util.conversion_utils")
 
 local module
@@ -37,47 +38,13 @@ function module.lowestBasicDexNumber(line)
 	end)
 end
 
--- Does this card have the given branch id?
-function module.hasBranchId(mc, branchId)
-	if mc.evoBranchIds == nil then
-		return false
-	end
-	for _, id in ipairs(mc.evoBranchIds) do
-		if id == branchId then
-			return true
-		end
-	end
-	return false
-end
-
--- Returns a list of all branch ids in the line, sorted.
-function module.sortedBranchIds(line)
-	local seen = {}
-	local ids = {}
-	line:each(function(mc)
-		if mc.evoBranchIds == nil then
-			return
-		end
-		for _, id in ipairs(mc.evoBranchIds) do
-			if not seen[id] then
-				seen[id] = true
-				table.insert(ids, id)
-			end
-		end
-	end)
-	table.sort(ids)
-	return ids
-end
-
 -- Depth first along one branch assigning dex numbers
 -- One dex per card name - names already assigned (shared earlier in the line) are skipped
 function module.assignBranch(line, branchId, startId, assignedNames)
 	local dexId = startId
-	local branchCards = line:filter(function(mc)
-		return module.hasBranchId(mc, branchId)
-	end)
-
-	branchCards:groupBy("stage"):sort():each(function(_, cardsAtStage)
+	line:filter(function(mc)
+		return branch_utils.hasBranchId(mc, branchId)
+	end):groupBy("stage"):sort():each(function(_, cardsAtStage)
 		cardsAtStage:groupBy("name:toString"):each(function(name, named)
 			if assignedNames[name] ~= nil then
 				return
@@ -96,7 +63,9 @@ end
 -- so they are assigned in depth first order
 function module.assignLine(line, startId, assignedNames)
 	local dexId = startId
-	for _, branchId in ipairs(module.sortedBranchIds(line)) do
+	local branchIds = branch_utils.branchIds(line)
+	table.sort(branchIds)
+	for _, branchId in ipairs(branchIds) do
 		dexId = module.assignBranch(line, branchId, dexId, assignedNames)
 	end
 	return dexId
