@@ -106,8 +106,8 @@ return {
 			{ id = "MONSTER_144_1", retreatCost = 1 },	-- 2ab
 			{ id = "MONSTER_145_1", retreatCost = 1 },	-- 1b
 			{ id = "MONSTER_145_2", retreatCost = 0 },	-- 1b
-			{ id = "MONSTER_146_1", retreatCost = 0 },	-- 2ba
-			{ id = "MONSTER_147", retreatCost = 2 },	-- 2bb
+			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
+			{ id = "MONSTER_147", retreatCost = 0 },	-- 2bb
 		},
 	},
 	{
@@ -151,8 +151,8 @@ return {
 			{ id = "MONSTER_144_1", retreatCost = 3 },	-- 2ab
 			{ id = "MONSTER_145_1", retreatCost = 1 },	-- 1b
 			{ id = "MONSTER_145_2", retreatCost = 1 },	-- 1b
-			{ id = "MONSTER_146_1", retreatCost = 1 },	-- 2ba
-			{ id = "MONSTER_147", retreatCost = 2 },	-- 2bb
+			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
+			{ id = "MONSTER_147", retreatCost = 1 },	-- 2bb
 		},
 	},
 	{
@@ -194,6 +194,130 @@ return {
 			{ id = "MONSTER_145_2", retreatCost = 1 },	-- 1b
 			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
 			{ id = "MONSTER_147", retreatCost = 3 },	-- 2bb
+		},
+	},
+	{
+		name = "branch_individual_redistribute",
+		module = "retreat_cost_fix_evo_line",
+		args = {
+			mode = "Redistribute",
+			branchHandling = "Individual Branches",
+		},
+		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expect = {
+			-- 1-3-0: Lowest swapped to basic. 1s are >= b max (0)
+			{ id = "MONSTER_101_1", retreatCost = 0 },	-- b
+			{ id = "MONSTER_101_2", retreatCost = 1 },	-- b
+			{ id = "MONSTER_102", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_105_1", retreatCost = 3 },	-- 1b
+			{ id = "MONSTER_105_2", retreatCost = 2 },	-- 1b
+			{ id = "MONSTER_104", retreatCost = 3 },	-- 1c
+
+			-- 1-3-2: Each branch individually increases each stage
+			{ id = "MONSTER_121", retreatCost = 0 },	-- b
+			{ id = "MONSTER_122", retreatCost = 0 },	-- b
+			{ id = "MONSTER_123", retreatCost = 2 },	-- 1a
+			{ id = "MONSTER_124", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_125_1", retreatCost = 3 },	-- 2a
+			{ id = "MONSTER_125_2", retreatCost = 2 },	-- 2a
+			{ id = "MONSTER_126_1", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_127", retreatCost = 1 },	-- 2b
+			{ id = "MONSTER_128", retreatCost = 2 },	-- 1c
+
+			-- 1-2-4: Each branch individually increases each stage
+			{ id = "MONSTER_140", retreatCost = 0 },	-- b
+			{ id = "MONSTER_141", retreatCost = 0 },	-- 1a
+			{ id = "MONSTER_142", retreatCost = 1 },	-- 2aa
+			{ id = "MONSTER_143", retreatCost = 2 },	-- 2ab
+			{ id = "MONSTER_144_1", retreatCost = 3 },	-- 2ab
+			{ id = "MONSTER_145_1", retreatCost = 0 },	-- 1b
+			{ id = "MONSTER_145_2", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
+			{ id = "MONSTER_147", retreatCost = 1 },	-- 2bb
+		},
+	},
+	{
+		name = "branch_all_together_redistribute",
+		module = "retreat_cost_fix_evo_line",
+		args = {
+			mode = "Redistribute",
+			branchHandling = "All Together",
+		},
+		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expect = {
+			-- 1-3-0: All basics are all <= stage 1s
+			{ id = "MONSTER_101_1", retreatCost = 0 },	-- b
+			{ id = "MONSTER_101_2", retreatCost = 1 },	-- b
+			{ id = "MONSTER_102", retreatCost = 2 },	-- 1a
+			{ id = "MONSTER_105_1", retreatCost = 3 },	-- 1b
+			{ id = "MONSTER_105_2", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_104", retreatCost = 3 },	-- 1c
+
+			-- 1-3-2: All basics are all <= stage 1s and all stage 1s are all <= stage 2s
+			{ id = "MONSTER_121", retreatCost = 0 },	-- b
+			{ id = "MONSTER_122", retreatCost = 0 },	-- b
+			{ id = "MONSTER_123", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_124", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_125_1", retreatCost = 2 },	-- 2a
+			{ id = "MONSTER_125_2", retreatCost = 2 },	-- 2a
+			{ id = "MONSTER_126_1", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_127", retreatCost = 3 },	-- 2b
+			{ id = "MONSTER_128", retreatCost = 2 },	-- 1c
+
+			-- 1-2-4: cross-branch swaps; 1a and 1b reprints differ from individual
+			{ id = "MONSTER_140", retreatCost = 0 },	-- b
+			{ id = "MONSTER_141", retreatCost = 0 },	-- 1a
+			{ id = "MONSTER_142", retreatCost = 3 },	-- 2aa
+			{ id = "MONSTER_143", retreatCost = 2 },	-- 2ab
+			{ id = "MONSTER_144_1", retreatCost = 1 },	-- 2ab
+			{ id = "MONSTER_145_1", retreatCost = 0 },	-- 1b
+			{ id = "MONSTER_145_2", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
+			{ id = "MONSTER_147", retreatCost = 1 },	-- 2bb
+		},
+	},
+	{
+		name = "branch_separate_redistribute",
+		module = "retreat_cost_fix_evo_line",
+		args = {
+			mode = "Redistribute",
+			branchHandling = "Separate Branches",
+		},
+		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expect = {
+			-- 1-3-0: Branches alone. No change or continuity
+			{ id = "MONSTER_101_1", retreatCost = 3 },	-- b
+			{ id = "MONSTER_101_2", retreatCost = 2 },	-- b
+			{ id = "MONSTER_102", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_105_1", retreatCost = 3 },	-- 1b
+			{ id = "MONSTER_105_2", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_104", retreatCost = 0 },	-- 1c
+
+			-- 1-3-2: No continuity between basic and stage 1s
+			-- 1 & 2s are in order though
+			{ id = "MONSTER_121", retreatCost = 2 },	-- b
+			{ id = "MONSTER_122", retreatCost = 1 },	-- b
+			{ id = "MONSTER_123", retreatCost = 0 },	-- 1a
+			{ id = "MONSTER_124", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_125_1", retreatCost = 3 },	-- 2a
+			{ id = "MONSTER_125_2", retreatCost = 2 },	-- 2a
+			{ id = "MONSTER_126_1", retreatCost = 0 },	-- 1b
+			{ id = "MONSTER_127", retreatCost = 1 },	-- 2b
+			{ id = "MONSTER_128", retreatCost = 2 },	-- 1c
+
+			-- 1-2-4: Branches alone. No change or continuity
+			{ id = "MONSTER_140", retreatCost = 1 },	-- b
+			{ id = "MONSTER_141", retreatCost = 3 },	-- 1a
+			{ id = "MONSTER_142", retreatCost = 0 },	-- 2aa
+			{ id = "MONSTER_143", retreatCost = 2 },	-- 2ab
+			{ id = "MONSTER_144_1", retreatCost = 1 },	-- 2ab
+			{ id = "MONSTER_145_1", retreatCost = 1 },	-- 1b
+			{ id = "MONSTER_145_2", retreatCost = 0 },	-- 1b
+			{ id = "MONSTER_146_1", retreatCost = 3 },	-- 2ba
+			{ id = "MONSTER_147", retreatCost = 0 },	-- 2bb
 		},
 	},
 }

@@ -386,7 +386,7 @@ card_sets.FIX_EVO_BRANCH_COMPLEX = {
 		evoBranchIds = { 7, 8 }, hp = 100, retreatCost = 3 },
 	{ id = "MONSTER_142", name = "1-2-4-s2aa", type = "MONSTER_GRASS", stage = "STAGE_2",
 		prevEvoName = "1-2-4-s1a", evoLineId = 3, evoLineMaxStage = "STAGE_2",
-		evoBranchIds = { 7 }, hp = 30, retreatCost = 0 },
+		evoBranchIds = { 7 }, hp = 20, retreatCost = 0 },
 	{ id = "MONSTER_143", name = "1-2-4-s2ab", type = "MONSTER_GRASS", stage = "STAGE_2",
 		prevEvoName = "1-2-4-s1a", evoLineId = 3, evoLineMaxStage = "STAGE_2",
 		evoBranchIds = { 8 }, hp = 80, retreatCost = 2 },
@@ -401,10 +401,10 @@ card_sets.FIX_EVO_BRANCH_COMPLEX = {
 		evoBranchIds = { 9, 10 }, hp = 50, retreatCost = 0 },
 	{ id = "MONSTER_146_1", name = "1-2-4-s2ba", type = "MONSTER_GRASS", stage = "STAGE_2",
 		prevEvoName = "1-2-4-s1b", evoLineId = 3, evoLineMaxStage = "STAGE_2",
-		evoBranchIds = { 9 }, hp = 50, retreatCost = 0 },
+		evoBranchIds = { 9 }, hp = 90, retreatCost = 3 },
 	{ id = "MONSTER_147", name = "1-2-4-s2bb", type = "MONSTER_GRASS", stage = "STAGE_2",
 		prevEvoName = "1-2-4-s1b", evoLineId = 3, evoLineMaxStage = "STAGE_2",
-		evoBranchIds = { 10 }, hp = 70, retreatCost = 2 },
+		evoBranchIds = { 10 }, hp = 10, retreatCost = 0 },
 }
 
 card_sets.MIXED_COST_CARDS = {
