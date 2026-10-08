@@ -96,7 +96,7 @@ return {
 			{ id = "MONSTER_127", hp = 70 },	-- 2b
 			{ id = "MONSTER_128", hp = 70 },	-- 1c
 
-			-- 1-2-4: 2ba (60) and 2bb (70) stay below 1a (100)
+			-- 1-2-4: 2ba (90) and 2bb (70) stay below 1a (100)
 			{ id = "MONSTER_140", hp = 60 },	-- b
 			{ id = "MONSTER_141", hp = 100 },	-- 1a
 			{ id = "MONSTER_142", hp = 100 },	-- 2aa
@@ -104,8 +104,8 @@ return {
 			{ id = "MONSTER_144_1", hp = 100 },	-- 2ab
 			{ id = "MONSTER_145_1", hp = 60 },	-- 1b
 			{ id = "MONSTER_145_2", hp = 60 },	-- 1b
-			{ id = "MONSTER_146_1", hp = 60 },	-- 2ba
-			{ id = "MONSTER_147", hp = 70 },	-- 2bb
+			{ id = "MONSTER_146_1", hp = 90 },	-- 2ba
+			{ id = "MONSTER_147", hp = 60 },	-- 2bb
 		},
 	},
 	{
@@ -146,6 +146,88 @@ return {
 			{ id = "MONSTER_145_1", hp = 60 },	-- 1b
 			{ id = "MONSTER_145_2", hp = 60 },	-- 1b
 			{ id = "MONSTER_146_1", hp = 100 },	-- 2ba
+			{ id = "MONSTER_147", hp = 100 },	-- 2bb
+		},
+	},
+	{
+		name = "branch_individual_redistribute",
+		module = "hp_fix_evo_line",
+		args = {
+			mode = "Redistribute",
+			branchHandling = "Individual Branches",
+		},
+		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expect = {
+			-- 1-3-0: basics swap down and are lower than all branches
+			{ id = "MONSTER_101_1", hp = 40 },	-- b
+			{ id = "MONSTER_101_2", hp = 20 },	-- b
+			{ id = "MONSTER_102", hp = 80 },	-- 1a
+			{ id = "MONSTER_105_1", hp = 100 },	-- 1b
+			{ id = "MONSTER_105_2", hp = 90 },	-- 1b
+			{ id = "MONSTER_104", hp = 50 },	-- 1c
+
+			-- 1-3-2: bs are lower than all 1s, each 1 is lower than its 2
+			{ id = "MONSTER_121", hp = 20 },	-- b
+			{ id = "MONSTER_122", hp = 10 },	-- b
+			{ id = "MONSTER_123", hp = 30 },	-- 1a
+			{ id = "MONSTER_124", hp = 40 },	-- 1a
+			{ id = "MONSTER_125_1", hp = 100 },	-- 2a
+			{ id = "MONSTER_125_2", hp = 60 },	-- 2a
+			{ id = "MONSTER_126_1", hp = 50 },	-- 1b
+			{ id = "MONSTER_127", hp = 70 },	-- 2b
+			{ id = "MONSTER_128", hp = 50 },	-- 1c
+
+			-- 1-2-4: bs are lower than all 1s, each 1 is lower than its 2
+			{ id = "MONSTER_140", hp = 10 },	-- b
+			{ id = "MONSTER_141", hp = 20 },	-- 1a
+			{ id = "MONSTER_142", hp = 100 },	-- 2aa
+			{ id = "MONSTER_143", hp = 80 },	-- 2ab
+			{ id = "MONSTER_144_1", hp = 80 },	-- 2ab
+			{ id = "MONSTER_145_1", hp = 40 },	-- 1b
+			{ id = "MONSTER_145_2", hp = 50 },	-- 1b
+			{ id = "MONSTER_146_1", hp = 90 },	-- 2ba
+			{ id = "MONSTER_147", hp = 60 },	-- 2bb
+		},
+	},
+	{
+		name = "branch_all_together_redistribute",
+		module = "hp_fix_evo_line",
+		args = {
+			mode = "Redistribute",
+			branchHandling = "All Together",
+		},
+		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expect = {
+			-- 1-3-0: bs are lower than all 1s
+			{ id = "MONSTER_101_1", hp = 40 },	-- b
+			{ id = "MONSTER_101_2", hp = 20 },	-- b
+			{ id = "MONSTER_102", hp = 80 },	-- 1a
+			{ id = "MONSTER_105_1", hp = 100 },	-- 1b
+			{ id = "MONSTER_105_2", hp = 50 },	-- 1b
+			{ id = "MONSTER_104", hp = 90 },	-- 1c
+
+			-- 1-3-2: all 1s are lower than all 2s
+			{ id = "MONSTER_121", hp = 20 },	-- b
+			{ id = "MONSTER_122", hp = 10 },	-- b
+			{ id = "MONSTER_123", hp = 50 },	-- 1a
+			{ id = "MONSTER_124", hp = 40 },	-- 1a
+			{ id = "MONSTER_125_1", hp = 70 },	-- 2a
+			{ id = "MONSTER_125_2", hp = 60 },	-- 2a
+			{ id = "MONSTER_126_1", hp = 30 },	-- 1b
+			{ id = "MONSTER_127", hp = 100 },	-- 2b
+			{ id = "MONSTER_128", hp = 50 },	-- 1c
+
+			-- 1-2-4: all 1s are lower than all 2s
+			{ id = "MONSTER_140", hp = 10 },	-- b
+			{ id = "MONSTER_141", hp = 40 },	-- 1a
+			{ id = "MONSTER_142", hp = 60 },	-- 2aa
+			{ id = "MONSTER_143", hp = 80 },	-- 2ab
+			{ id = "MONSTER_144_1", hp = 80 },	-- 2ab
+			{ id = "MONSTER_145_1", hp = 20 },	-- 1b
+			{ id = "MONSTER_145_2", hp = 50 },	-- 1b
+			{ id = "MONSTER_146_1", hp = 90 },	-- 2ba
 			{ id = "MONSTER_147", hp = 100 },	-- 2bb
 		},
 	},
