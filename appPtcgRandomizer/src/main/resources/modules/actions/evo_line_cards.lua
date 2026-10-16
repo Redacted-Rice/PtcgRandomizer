@@ -47,9 +47,11 @@ function module.randomizeEvoLines(context, args)
 	local namePools = evo_line_randomize_utils.buildNamePools(sourceCards, args.grouping, args.withinType)
 	local toModifyByName = randomizer.groupBy(targets, "name")
 
-	evo_line_randomize_utils.assignEvoLineData(evoLineData, namePools, args.grouping, args.withinType,
-			toModifyByName)
-	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName)
+	evoLineData:each(function(line)
+		evo_line_randomize_utils.assignEvoLineList(line.evoLineId, line.entries, namePools,
+				args.grouping, args.withinType, toModifyByName, false)
+	end)
+	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, args.withinType)
 end
 
 return module
