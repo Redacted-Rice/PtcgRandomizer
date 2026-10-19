@@ -158,33 +158,33 @@ return {
 		copyCards(policyBranchCards),
 		{
 			-- shape: [1-3-2]
-			-- each branch separate
+			-- each branch is a different type
 			{ id = "MONSTER_107", name = "Card_7", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
 			{ id = "MONSTER_110", name = "Card_10", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_WATER" },
 			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_2", prevEvoName = "Card_10", type = "MONSTER_WATER" },
 			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_2", prevEvoName = "Card_16", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_13", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_13", type = "MONSTER_FIRE" },
 
 			-- shape: [1-2-4]
 			-- Stage 1s are different, each separate stage 1's stage 2's are different
 			{ id = "MONSTER_121", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
 			{ id = "MONSTER_122", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_WATER" },
-			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_WATER" },
-			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_2", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_2", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_2", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_2", prevEvoName = "Card_9", type = "MONSTER_WATER" },
+			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_9", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_WATER" },
 
 			-- shape: [1-2-0]
 			-- Each line is different
 			{ id = "MONSTER_138", name = "Card_15", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
 			{ id = "MONSTER_103", name = "Card_3", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_GRASS" },
 		},
 		1 + SEED_OFFSET_ADJUST
 	),
@@ -207,33 +207,33 @@ return {
 		copyCards(policyBranchCards),
 		{
 			-- shape: [1-3-2]
-			-- One branch matches root
+			-- One branch matches root (water)
 			{ id = "MONSTER_110", name = "Card_10", stage = "BASIC", prevEvoName = "", type = "MONSTER_WATER" },
-			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_WATER" },
-			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_WATER" },
-			{ id = "MONSTER_103", name = "Card_3", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_107", name = "Card_7", stage = "STAGE_2", prevEvoName = "Card_3", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_WATER" },
+			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_2", prevEvoName = "Card_2", type = "MONSTER_WATER" },
+			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_1", prevEvoName = "Card_10", type = "MONSTER_FIRE" },
 
 			-- shape: [1-2-4]
-			-- For each branch/root at least one of the branches match
-			{ id = "MONSTER_101_1", name = "Card_1", stage = "BASIC", prevEvoName = "", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_101_2", name = "Card_1", stage = "BASIC", prevEvoName = "", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_1", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_2", prevEvoName = "Card_9", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_9", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_9", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_1", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_1", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_2", prevEvoName = "Card_12", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_12", type = "MONSTER_GRASS" },
+			-- F We ran out of fires so we couldn't match the basic node but each of the stage 1 nodes have a match
+			{ id = "MONSTER_109", name = "Card_9", stage = "BASIC", prevEvoName = "", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_1", prevEvoName = "Card_9", type = "MONSTER_WATER" },
+			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_1", prevEvoName = "Card_9", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_103", name = "Card_3", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_GRASS" },
 
 			-- shape: [1-2-0]
-			-- One branch matches root
-			{ id = "MONSTER_121", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_122", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_138", name = "Card_15", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_WATER" },
+			-- All branches happened to match
+			{ id = "MONSTER_138", name = "Card_15", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_121", name = "Card_11", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_122", name = "Card_11", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_107", name = "Card_7", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_COLORLESS" },
 		},
 		3 + SEED_OFFSET_ADJUST
 	),
@@ -258,31 +258,32 @@ return {
 			-- shape: [1-3-2]
 			-- Branch node doesn't match evo lines
 			{ id = "MONSTER_107", name = "Card_7", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_13", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_13", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_WATER" },
+			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_WATER" },
+			{ id = "MONSTER_110", name = "Card_10", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_WATER" },
+			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_2", prevEvoName = "Card_16", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_7", type = "MONSTER_FIRE" },
 
 			-- shape: [1-2-4]
-			-- We ran out of cards for the stage 1 Card 14 evos and had to use the remaining water
+			-- Again all don't match
 			{ id = "MONSTER_105_1", name = "Card_5", stage = "BASIC", prevEvoName = "", type = "MONSTER_FIRE" },
 			{ id = "MONSTER_105_2", name = "Card_5", stage = "BASIC", prevEvoName = "", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_110", name = "Card_10", stage = "STAGE_1", prevEvoName = "Card_5", type = "MONSTER_WATER" },
-			{ id = "MONSTER_121", name = "Card_11", stage = "STAGE_2", prevEvoName = "Card_10", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_122", name = "Card_11", stage = "STAGE_2", prevEvoName = "Card_10", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_10", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_1", prevEvoName = "Card_5", type = "MONSTER_WATER" },
-			{ id = "MONSTER_103", name = "Card_3", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_WATER" },
+			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_1", prevEvoName = "Card_5", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_121", name = "Card_11", stage = "STAGE_2", prevEvoName = "Card_8", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_122", name = "Card_11", stage = "STAGE_2", prevEvoName = "Card_8", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_2", prevEvoName = "Card_8", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_103", name = "Card_3", stage = "STAGE_1", prevEvoName = "Card_5", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_2", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_2", prevEvoName = "Card_3", type = "MONSTER_WATER" },
 
 			-- shape: [1-2-0]
-			-- Branch node doesn't match evo lines
+			-- This must be a lucky seed - these all don't match too - we happened to pick such that all could fulfil
+			-- the conditions
 			{ id = "MONSTER_138", name = "Card_15", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
 			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_WATER" },
 		},
 		1 + SEED_OFFSET_ADJUST
 	),
@@ -307,27 +308,27 @@ return {
 			-- shape: [1-3-2]
 			{ id = "MONSTER_121", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
 			{ id = "MONSTER_122", name = "Card_11", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_110", name = "Card_10", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_WATER" },
+			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_2", prevEvoName = "Card_10", type = "MONSTER_WATER" },
 			{ id = "MONSTER_104", name = "Card_4", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_16", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_4", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_1", prevEvoName = "Card_11", type = "MONSTER_WATER" },
 
 			-- shape: [1-2-4]
 			{ id = "MONSTER_103", name = "Card_3", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_131", name = "Card_14", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_WATER" },
-			{ id = "MONSTER_106", name = "Card_6", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_WATER" },
-			{ id = "MONSTER_110", name = "Card_10", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_WATER" },
-			{ id = "MONSTER_129", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_132", name = "Card_12", stage = "STAGE_2", prevEvoName = "Card_14", type = "MONSTER_GRASS" },
-			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_FIRE" },
-			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_2", prevEvoName = "Card_6", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_1", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_101_2", name = "Card_1", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_130", name = "Card_13", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_2", prevEvoName = "Card_1", type = "MONSTER_WATER" },
+			{ id = "MONSTER_105_1", name = "Card_5", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_105_2", name = "Card_5", stage = "STAGE_1", prevEvoName = "Card_3", type = "MONSTER_FIRE" },
+			{ id = "MONSTER_139", name = "Card_16", stage = "STAGE_2", prevEvoName = "Card_5", type = "MONSTER_GRASS" },
+			{ id = "MONSTER_108", name = "Card_8", stage = "STAGE_2", prevEvoName = "Card_5", type = "MONSTER_GRASS" },
 
 			-- shape: [1-2-0]
 			{ id = "MONSTER_138", name = "Card_15", stage = "BASIC", prevEvoName = "", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_102", name = "Card_2", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_WATER" },
+			{ id = "MONSTER_109", name = "Card_9", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_FIRE" },
 			{ id = "MONSTER_107", name = "Card_7", stage = "STAGE_1", prevEvoName = "Card_15", type = "MONSTER_COLORLESS" },
 		},
 		45 + SEED_OFFSET_ADJUST

@@ -79,16 +79,17 @@ public final class PtcgBundledResources {
             ResourceInstallMode installMode = resolveInstallMode();
             if (VersionedResourceInstaller.needsReinstall(marker, version,
                     shouldReinstallResources())) {
+                ClassLoader resources = PtcgBundledResources.class.getClassLoader();
                 VersionedResourceInstaller.backupAndInstall(MODULES_RESOURCE,
                         new File(workingDir, MODULES_DIR_NAME), backupsDir, MODULES_DIR_NAME,
-                        installMode);
+                        installMode, resources);
                 VersionedResourceInstaller.backupAndInstall(RULES_RESOURCE,
                         new File(workingDir, RULES_DIR_NAME), backupsDir, RULES_DIR_NAME,
-                        installMode);
+                        installMode, resources);
                 // No backupSubDir: run-scripts extracts to workingDir's root, so back it up
                 // there too instead of nesting it under a "run-scripts" folder.
                 VersionedResourceInstaller.backupAndInstall(RUN_SCRIPTS_RESOURCE, workingDir,
-                        backupsDir, null, ResourceInstallMode.UPGRADE);
+                        backupsDir, null, ResourceInstallMode.UPGRADE, resources);
                 VersionedResourceInstaller.writeVersionMarker(marker, version);
 
                 System.out.println("Updated bundled modules/rules/run-scripts to version " + version
@@ -112,7 +113,7 @@ public final class PtcgBundledResources {
     public void installDevAppResources() {
         try {
             ManifestResourceExtractor.extract(DEV_MODULES_RESOURCE,
-                    getModulesDir().getAbsolutePath());
+                    getModulesDir().getAbsolutePath(), PtcgBundledResources.class.getClassLoader());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install PTCG dev test modules", e);
         }
@@ -163,7 +164,8 @@ public final class PtcgBundledResources {
             VersionedResourceInstaller.installIfNeeded(SCRIPT_TESTS_RESOURCE, scriptTestsDir,
                     new File(scriptTestsDir, RESOURCES_VERSION_FILE_NAME),
                     PtcgRandomizerVersion.VERSION, getBackupsDir(), SCRIPT_TESTS_DIR_NAME,
-                    shouldReinstallResources(), resolveInstallMode());
+                    shouldReinstallResources(), resolveInstallMode(),
+                    PtcgBundledResources.class.getClassLoader());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to install script tests", e);
         }

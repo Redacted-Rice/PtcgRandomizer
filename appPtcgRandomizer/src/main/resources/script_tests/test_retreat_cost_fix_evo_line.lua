@@ -199,6 +199,7 @@ return {
 	{
 		name = "branch_individual_redistribute",
 		module = "retreat_cost_fix_evo_line",
+		seed = 42,
 		args = {
 			mode = "Redistribute",
 			branchHandling = "Individual Branches",
@@ -209,20 +210,20 @@ return {
 			-- 1-3-0: Lowest swapped to basic. 1s are >= b max (0)
 			{ id = "MONSTER_101_1", retreatCost = 0 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 1 },	-- b
-			{ id = "MONSTER_102", retreatCost = 1 },	-- 1a
+			{ id = "MONSTER_102", retreatCost = 2 },	-- 1a
 			{ id = "MONSTER_105_1", retreatCost = 3 },	-- 1b
-			{ id = "MONSTER_105_2", retreatCost = 2 },	-- 1b
-			{ id = "MONSTER_104", retreatCost = 3 },	-- 1c
+			{ id = "MONSTER_105_2", retreatCost = 3 },	-- 1b
+			{ id = "MONSTER_104", retreatCost = 1 },	-- 1c
 
 			-- 1-3-2: Each branch individually increases each stage
 			{ id = "MONSTER_121", retreatCost = 0 },	-- b
 			{ id = "MONSTER_122", retreatCost = 0 },	-- b
-			{ id = "MONSTER_123", retreatCost = 2 },	-- 1a
+			{ id = "MONSTER_123", retreatCost = 1 },	-- 1a
 			{ id = "MONSTER_124", retreatCost = 1 },	-- 1a
 			{ id = "MONSTER_125_1", retreatCost = 3 },	-- 2a
 			{ id = "MONSTER_125_2", retreatCost = 2 },	-- 2a
 			{ id = "MONSTER_126_1", retreatCost = 1 },	-- 1b
-			{ id = "MONSTER_127", retreatCost = 1 },	-- 2b
+			{ id = "MONSTER_127", retreatCost = 2 },	-- 2b
 			{ id = "MONSTER_128", retreatCost = 2 },	-- 1c
 
 			-- 1-2-4: Each branch individually increases each stage
