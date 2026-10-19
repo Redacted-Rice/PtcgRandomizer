@@ -13,7 +13,8 @@ repositories {
 
 dependencies {
     testImplementation(libs.junit.jupiter)
-    testImplementation("org.luaj:luaj-jse:3.0.1")
+    // Luaj is not exported from URJ. Tests that stub Lua types compile against this only.
+    testCompileOnly("org.luaj:luaj-jse:3.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation(libs.snakeyaml)
@@ -243,18 +244,21 @@ tasks.named<JavaExec>("run") {
 }
 
 // test needs the packaged jar too: PtcgBundledResourcesFatJarTest shells out to it directly.
+// Bundled Lua coverage runs only via --script-tests (see runScriptTests), same as launching the app.
 tasks.named<Test>("test") {
     dependsOn("fatJar")
     useJUnitPlatform()
     systemProperty("ptcgr.devModules", "true")
     systemProperty("ptcgr.cleanReinstallResources", "true")
+    finalizedBy("runScriptTests")
 }
 
 tasks.register<JavaExec>("runScriptTests") {
     group = "verification"
     description =
-        "Runs bundled Lua script tests headlessly. Filter with -PscriptTestCase=test_evo_line_cards"
+        "Runs bundled Lua script tests via the app entry point (--script-tests). Optional: -PscriptTestCase=name"
     dependsOn("classes", "processResources")
+    mustRunAfter(tasks.named<Test>("test"))
     mainClass.set(application.mainClass.get())
     classpath = sourceSets.main.get().runtimeClasspath
     systemProperty("ptcgr.devModules", "true")

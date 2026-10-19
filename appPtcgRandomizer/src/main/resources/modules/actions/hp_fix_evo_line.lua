@@ -21,7 +21,6 @@ module = {
 		{ name = "evoLineId", type = "integer" },
 		{ name = "evoBranchIds", type = "List<integer>" },
 	},
-	seeded = false,
 	arguments = {
 		fix_evo_line_utils.modeArg("HP", "HPs"),
 		fix_evo_line_utils.branchHandlingArg(fix_evo_line_utils.BRANCH_TOGETHER,
