@@ -30,6 +30,7 @@ module = {
 		common_field_defs.ARG_DEF_EVO_LINE_BRANCH_ROOT_CONSISTENCY,
 		common_field_defs.ARG_DEF_EVO_LINE_INTER_BRANCH_TYPES,
 		common_field_defs.ARG_DEF_EVO_LINE_POOL,
+		common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES,
 	},
 	execute = function(context, args)
 		return module.randomizeEvoLinesWithinType(context, args)

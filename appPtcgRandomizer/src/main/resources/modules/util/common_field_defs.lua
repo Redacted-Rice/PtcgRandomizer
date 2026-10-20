@@ -135,6 +135,17 @@ common_field_defs.ARG_DEF_WITHIN_TYPE = {
 	default = false,
 }
 
+common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES = {
+	name = "excludeTrainerProxies",
+	displayName = "Exclude Trainers from Evo Lines",
+	description = "When enabled, playable trainer will not be included in any evo line but will always be BASIC only"
+			.. " cards. If not set, they are included and any of them can become the first stage of an evo line.",
+	definition = {
+		type = "boolean",
+	},
+	default = false,
+}
+
 common_field_defs.KEY_DEF_EVO_STAGE = {
 	type = "enum",
 	constraint = "EvoStage",

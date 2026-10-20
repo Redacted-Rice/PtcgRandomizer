@@ -130,12 +130,21 @@ end
 -------- Arg Utils and Small Util/getter like functions ----------------
 
 
--- Like pool_utils.sourceCards but includes trainer proxies
-function evo_line_randomize_utils.sourceCards(context, source)
-	if source == "CURRENT" then
-		return context.modified:getRandomizableMonsterCardsWithProxies()
+-- Like pool_utils.sourceCards but can include trainer proxies
+function evo_line_randomize_utils.sourceCards(context, source, excludeTrainerProxies)
+	local deck = source == "CURRENT" and context.modified or context.original
+	if excludeTrainerProxies then
+		return deck:getRandomizableMonsterCards()
 	end
-	return context.original:getRandomizableMonsterCardsWithProxies()
+	return deck:getRandomizableMonsterCardsWithProxies()
+end
+
+-- Can include or not include proxies based on args
+function evo_line_randomize_utils.targetCards(context, excludeTrainerProxies)
+	if excludeTrainerProxies then
+		return context.modified:getRandomizableMonsterCards()
+	end
+	return context.modified:getRandomizableMonsterCardsWithProxies()
 end
 
 function evo_line_randomize_utils.isColorlessBasic(card)
@@ -927,8 +936,9 @@ end
 -- choicePools nil means ignore energy types when drawing names. Non nil enables within type
 -- pools and uses the weighted branch type rules from those pools.
 function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choicePools)
-	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source))
-	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source,
+			args.excludeTrainerProxies))
+	local targets = randomizer.list(evo_line_randomize_utils.targetCards(context, args.excludeTrainerProxies))
 	local toModifyByName = randomizer.groupBy(targets, "name")
 
 	-- Form name pools from source cards and line pools from script args
@@ -1061,8 +1071,14 @@ function evo_line_randomize_utils.syncEvoAiData(context, cards)
 end
 
 function evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, withinType)
-	evo_line_randomize_utils.fixAllTogetherProxies(targets, toModifyByName, args.grouping, withinType)
-	evo_line_randomize_utils.syncEvoAiData(context, targets)
+	if not args.excludeTrainerProxies then
+		evo_line_randomize_utils.fixAllTogetherProxies(targets, toModifyByName, args.grouping,
+				withinType)
+	end
+	-- We need to sync all cards including proxies regardless of if included because if they are excluded
+	-- their evo data could have changed
+	local syncCards = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	evo_line_randomize_utils.syncEvoAiData(context, syncCards)
 end
 
 

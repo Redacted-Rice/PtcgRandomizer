@@ -343,4 +343,29 @@ return {
 			{ id = "MONSTER_005", name = "GrassB2nd", stage = "BASIC", prevEvoName = "" },
 		}
 	),
+
+	caseFor(
+		"exclude_trainer_proxies_isolates_as_basics",
+		{
+			source = "ROM",
+			approach = "MINIMIZE_REPEATS",
+			grouping = "ALL_TOGETHER",
+			excludeTrainerProxies = true,
+			evoLinePool = {
+				{ weight = 1, evoLine = { BASIC = 1, STAGE_1 = 1, STAGE_2 = 1 } },
+				{ weight = 1, evoLine = { BASIC = 1, STAGE_1 = 0, STAGE_2 = 0 } },
+			},
+		},
+		card_sets.EVO_BRANCH_PROXY_3_TO_2,
+		nil,
+		{
+			-- Proxy becomes a basic, others can form lines
+			{ id = "MONSTER_148", name = "Proxy3Basic", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_142", name = "Proxy3S1C", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_143", name = "Proxy3S2A", stage = "STAGE_1", prevEvoName = "Proxy3S1C" },
+			{ id = "MONSTER_141", name = "Proxy3S1B", stage = "STAGE_2", prevEvoName = "Proxy3S2A" },
+			{ id = "MONSTER_140", name = "Proxy3S1A", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_147", name = "Proxy3S2B", stage = "BASIC", prevEvoName = "" },
+		}
+	),
 }

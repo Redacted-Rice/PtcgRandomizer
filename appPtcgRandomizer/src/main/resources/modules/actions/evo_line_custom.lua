@@ -24,6 +24,7 @@ module = {
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 		common_field_defs.ARG_DEF_EVO_LINE_POOL,
+		common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES,
 	},
 	execute = function(context, args)
 		evo_line_randomize_utils.init(context)
