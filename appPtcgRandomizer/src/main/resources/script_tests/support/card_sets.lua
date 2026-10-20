@@ -407,6 +407,26 @@ card_sets.FIX_EVO_BRANCH_COMPLEX = {
 		evoBranchIds = { 10 }, hp = 10, retreatCost = 0 },
 }
 
+local EVO_LINE_METADATA_STRIP_KEYS = {
+	evoLineId = true,
+	evoBranchIds = true,
+	evoLineMaxStage = true,
+}
+
+function card_sets.withoutEvoLineMetadata(cards)
+	local stripped = {}
+	for _, card in ipairs(cards) do
+		local copy = {}
+		for key, value in pairs(card) do
+			if not EVO_LINE_METADATA_STRIP_KEYS[key] then
+				copy[key] = value
+			end
+		end
+		table.insert(stripped, copy)
+	end
+	return stripped
+end
+
 card_sets.MIXED_COST_CARDS = {
 	{
 		id = "MONSTER_001", type = "MONSTER_FIRE", moves = fields.moves({

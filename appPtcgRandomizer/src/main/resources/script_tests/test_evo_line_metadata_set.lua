@@ -48,7 +48,7 @@ return {
 	{
 		name = "assigns_branch_metadata_for_1_to_3",
 		module = "evo_line_metadata_set",
-		cards = card_sets.EVO_BRANCH_1_TO_3,
+		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_1_TO_3),
 		expect = metadataExpect(card_sets.EVO_BRANCH_1_TO_3),
 	},
 	{
@@ -68,13 +68,13 @@ return {
 	{
 		name = "assigns_branch_metadata_for_3_to_2",
 		module = "evo_line_metadata_set",
-		cards = card_sets.EVO_BRANCH_3_TO_2,
+		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_3_TO_2),
 		expect = metadataExpect(card_sets.EVO_BRANCH_3_TO_2),
 	},
 	{
 		name = "assigns_branch_metadata_for_proxy_3_to_2",
 		module = "evo_line_metadata_set",
-		cards = card_sets.EVO_BRANCH_PROXY_3_TO_2,
+		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_PROXY_3_TO_2),
 		expect = metadataExpect(card_sets.EVO_BRANCH_PROXY_3_TO_2),
 	},
 	{
