@@ -613,12 +613,6 @@ function evo_line_randomize_utils.formatNamePoolCounts(namePools)
 	return table.concat(parts, ", ")
 end
 
--- Shape key string for one evo line, e.g. "[1, 3, 2]".
-function evo_line_randomize_utils.evoLineShapeKey(lineCards)
-	return evo_line_randomize_utils.formatEntriesStagesCounts(
-			evo_line_randomize_utils.extractLineData(lineCards))
-end
-
 function evo_line_randomize_utils.formatSlots(slots)
 	local parts = {}
 	for _, entry in ipairs(slots) do
@@ -699,6 +693,51 @@ function evo_line_randomize_utils.applyPrevEvoToCards(cardsOfName, prevEvo)
 	cardsOfName:each(function(card)
 		card.prevEvoName:setText(prevEvo)
 	end)
+end
+
+function evo_line_randomize_utils.addEvoNamesToLine(name, toModifyByPrevEvo, list)
+	local evos = toModifyByPrevEvo:get(name)
+	if evos == nil then
+		return
+	end
+	-- Evos can have multiple versions of the cards so group them for convinience
+	evos:groupBy("name:toString"):each(function(_, evoGroup)
+		table.insert(list, evoGroup)
+	end)
+end
+
+-- Walk evos by depth under rootName. Level 1 is forced to BASIC then any of its evos are updated appropriately
+function evo_line_randomize_utils.demoteEvosOf(rootName, cardsByPrev, logPrefix,
+		logSuffix)
+	local evolutionStage = evo_line_randomize_utils.evolutionStage
+	local stageForLevel = evolutionStage.BASIC
+	local currentLevel = {}
+	evo_line_randomize_utils.addEvoNamesToLine(rootName, cardsByPrev, currentLevel)
+
+	-- If/while we are finding evos, keep going
+	while #currentLevel > 0 do
+		local nextLevel = {}
+		for _, evoGroup in ipairs(currentLevel) do
+			local evoName = evoGroup:get(1).name:toString()
+			evo_line_randomize_utils.addEvoNamesToLine(evoName, cardsByPrev, nextLevel)
+			-- Only apply if its actually lowering - this guards against the case where we have double branches and
+			-- prevents one pass on the branch from overwritting the other without having to do any tracking or
+			-- updating of references while modifying
+			evoGroup:each(function(card)
+				if card.stage:getValue() > stageForLevel:getValue() then
+					card.stage = stageForLevel
+				end
+			end)
+			-- If we are changing to a basic, we need to clear the prev evo
+			if stageForLevel:getValue() == evolutionStage.BASIC:getValue() then
+				evo_line_randomize_utils.applyPrevEvoToCards(evoGroup, "")
+			end
+			logger.debug(logPrefix .. " demoted " .. evoName .. logSuffix)
+		end
+		currentLevel = nextLevel
+		local nextStage = stageForLevel:getNextStage()
+		stageForLevel = nextStage or evolutionStage.STAGE_2
+	end
 end
 
 -- Swap stage/prevEvo between two names and rewrite anyone pointing at either.
