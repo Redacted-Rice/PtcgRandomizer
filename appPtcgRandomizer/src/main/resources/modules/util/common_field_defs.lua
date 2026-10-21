@@ -125,7 +125,37 @@ common_field_defs.ARG_DEF_MOVE_KIND = {
 	default = "ALL_MOVES",
 }
 
+common_field_defs.TYPE_POOL_ALL_TOGETHER = "All Together"
+common_field_defs.TYPE_POOL_WITHIN_TYPE = "Within Type"
+common_field_defs.TYPE_POOL_WITHIN_SUBTYPE = "Within Subtype"
+
+common_field_defs.STAGE_GROUPING_ALL_TOGETHER = "ALL_TOGETHER"
+common_field_defs.STAGE_GROUPING_BY_STAGE = "BY_STAGE"
+common_field_defs.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE = "BY_STAGE_AND_MAX_STAGE"
+
 common_field_defs.ARG_DEF_WITHIN_TYPE = {
+	name = "withinType",
+	displayName = "Type Pool Scope",
+	description = "'All Together' pools every card together."
+			.. " 'Within Type' pools by cards' energy types."
+			.. " 'Within Subtype' pools combining each card's energy type with its weakness and resistance.",
+	definition = {
+		type = "string",
+		constraint = {
+			type = "enum",
+			values = {
+				common_field_defs.TYPE_POOL_ALL_TOGETHER,
+				common_field_defs.TYPE_POOL_WITHIN_TYPE,
+				common_field_defs.TYPE_POOL_WITHIN_SUBTYPE,
+			},
+		},
+	},
+	default = common_field_defs.TYPE_POOL_ALL_TOGETHER,
+}
+
+-- TODO: Remove and update remaining cases to use the new ternary arg
+-- Evo line modules still use a boolean within type option (per branch type locking).
+common_field_defs.ARG_DEF_WITHIN_TYPE_BOOLEAN = {
 	name = "withinType",
 	displayName = "Within Energy Type",
 	description = "When enabled, pooling stays inside each Energy type. When disabled, all types are pooled together",

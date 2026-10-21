@@ -9,7 +9,7 @@ local baseline = {
 	approach = "MINIMIZE_REPEATS",
 	grouping = "ALL_TOGETHER",
 	moveKind = "ALL_MOVES",
-	withinType = false,
+	withinType = "All Together",
 }
 
 local expects = {
@@ -142,6 +142,26 @@ local expects = {
 		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "CurFrenzy" } }) },
 		{ id = "MONSTER_019", moves = fields.moves({ { name = "CurStorm" }, { name = "CurPollen" } }) },
 	},
+	within_subtype = {
+		{ id = "MONSTER_001", moves = fields.moves({ { name = "FirePower" } }) }, -- F-W/N solo
+		{ id = "MONSTER_002", moves = fields.moves({ { name = "Ember" }, { name = "Ember" } }) }, -- F-W/N solo
+		{ id = "MONSTER_003_1", moves = fields.moves() }, -- F-W/N solo
+		{ id = "MONSTER_010", moves = fields.moves({ { name = "Inferno" } }) }, -- F-W/G line 1
+		{ id = "MONSTER_011", moves = fields.moves({ { name = "HeatWave" }, { name = "Burn" } }) }, -- F-W/G line 1
+
+		{ id = "MONSTER_004", moves = fields.moves({ { name = "Splash" }, { name = "SoakPower" } }) }, -- W-L/N solo
+		{ id = "MONSTER_005", moves = fields.moves({ { name = "Wave" } }) }, -- W-G/N solo
+		{ id = "MONSTER_012", moves = fields.moves() }, -- W-L/N line 2
+		{ id = "MONSTER_013", moves = fields.moves({ { name = "Tide" } }) }, -- W-L/N line 2
+
+		{ id = "MONSTER_006", moves = fields.moves({ { name = "Absorb" }, { name = "LeechSeed" } }) }, -- G-F/W solo
+		{ id = "MONSTER_014", moves = fields.moves({ { name = "FrenzyPlant" }, { name = "LeafStorm" } }) }, -- G-P/N line 3
+		{ id = "MONSTER_015", moves = fields.moves({ { name = "Pollen" } }) }, -- G-P/N line 3
+		{ id = "MONSTER_016", moves = fields.moves({ { name = "SeedPower" }, { name = "PetalDance" } }) }, -- G-P/N line 3
+		{ id = "MONSTER_017", moves = fields.moves() }, -- G-P/N line 3
+		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "VineWhip" } }) }, -- G-P/N line 3
+		{ id = "MONSTER_019", moves = fields.moves({ { name = "SolarBeam" }, { name = "RazorLeaf" } }) }, -- G-P/N line 3
+	},
 	within_type = {
 		{ id = "MONSTER_001", moves = fields.moves({ { name = "FirePower" } }) }, -- FIRE
 		{ id = "MONSTER_002", moves = fields.moves({ { name = "Inferno" }, { name = "Ember" } }) }, -- FIRE
@@ -191,5 +211,6 @@ return {
 	caseFor("fully_random", { approach = "FULLY_RANDOM" }),
 	caseFor("attacks", { moveKind = "ATTACKS" }),
 	caseFor("powers", { moveKind = "POWERS" }),
-	caseFor("within_type", { withinType = true }),
+	caseFor("within_type", { withinType = "Within Type" }),
+	caseFor("within_subtype", { withinType = "Within Subtype" }),
 }

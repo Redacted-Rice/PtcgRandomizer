@@ -31,6 +31,7 @@ module = {
 }
 
 function module.randomizeMoves(context, args)
+	pool_utils.init(context)
 	if args.moveKind == "POWERS" then
 		randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 	else

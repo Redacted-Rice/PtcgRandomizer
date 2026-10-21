@@ -71,4 +71,24 @@ public enum WeaknessResistanceFlags {
         }
         return combinedValue;
     }
+
+    /**
+     * Energy type abbreviations for each flag in the set in values() order
+     * combined with no separator. Returns "-" when empty
+     */
+    public static String abbreviationKey(Set<WeaknessResistanceFlags> set) {
+        if (set == null || set.isEmpty()) {
+            return "-";
+        }
+        StringBuilder combined = new StringBuilder();
+        for (WeaknessResistanceFlags flag : WeaknessResistanceFlags.values()) {
+            if (set.contains(flag)) {
+                combined.append(flag.toEnergyType().getAbbreviation());
+            }
+        }
+        if (combined.length() == 0) {
+            return "-";
+        }
+        return combined.toString();
+    }
 }
