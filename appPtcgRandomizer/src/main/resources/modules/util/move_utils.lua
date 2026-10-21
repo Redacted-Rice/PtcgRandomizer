@@ -1,6 +1,7 @@
 -- Shared pieces for existing-move randomizers: kind/type args, filters, group keys.
 -- Require as modules.util.move_utils
 local randomizer = require("randomizer")
+local common_field_defs = require("modules.util.common_field_defs")
 local pool_utils = require("modules.util.pool_utils")
 
 local move_utils = {}
@@ -26,29 +27,24 @@ function move_utils.filterByKind(moveList, moveKind)
 	return moveList
 end
 
--- all together uses type when withinType is on. by stage uses stage, or type:stage
+-- Combines the type/subtype and stage keys as appropriate for the args
 function move_utils.groupKey(args)
 	return function(move)
 		local card = move:getSourceCard()
-		if args.grouping == "BY_STAGE" then
-			if args.withinType then
-				return tostring(card.type) .. ":" .. tostring(card.stage)
-			end
-			return card.stage
+		if args.grouping == common_field_defs.STAGE_GROUPING_BY_STAGE then
+			return pool_utils.combineKeys(pool_utils.getTypeGroupingKey(card, args.withinType),
+					card.stage)
 		end
-		return card.type
+		return pool_utils.getTypeGroupingKey(card, args.withinType)
 	end
 end
 
--- like groupKey but keyed by pool_utils.stageAndMaxStageKey, optionally prefixed with type
+-- like groupKey but keyed by pool_utils.stageAndMaxStageKey, optionally prefixed with type/subtype
 function move_utils.stageAndMaxStageGroupKey(args)
 	return function(move)
 		local card = move:getSourceCard()
-		local stageKey = pool_utils.stageAndMaxStageKey(card)
-		if args.withinType then
-			return tostring(card.type) .. ":" .. tostring(stageKey)
-		end
-		return stageKey
+		return pool_utils.combineKeys(pool_utils.getTypeGroupingKey(card, args.withinType),
+				pool_utils.stageAndMaxStageKey(card))
 	end
 end
 

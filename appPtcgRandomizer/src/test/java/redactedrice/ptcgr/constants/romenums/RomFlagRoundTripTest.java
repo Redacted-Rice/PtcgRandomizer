@@ -87,4 +87,16 @@ class RomFlagRoundTripTest {
         byte raw = WeaknessResistanceFlags.storeAsByte(multi);
         assertEquals(multi, WeaknessResistanceFlags.readFromByte(raw));
     }
+
+    @Test
+    void weaknessResistanceAbbreviationKey() {
+        assertEquals("-", WeaknessResistanceFlags.abbreviationKey(null));
+        assertEquals("-", WeaknessResistanceFlags.abbreviationKey(
+                EnumSet.noneOf(WeaknessResistanceFlags.class)));
+        assertEquals("Fir", WeaknessResistanceFlags.abbreviationKey(
+                EnumSet.of(WeaknessResistanceFlags.FIRE)));
+        assertEquals("ColFgtFir", WeaknessResistanceFlags.abbreviationKey(
+                EnumSet.of(WeaknessResistanceFlags.COLORLESS, WeaknessResistanceFlags.FIGHTING,
+                        WeaknessResistanceFlags.FIRE)));
+    }
 }

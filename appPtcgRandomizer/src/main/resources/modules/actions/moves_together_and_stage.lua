@@ -29,6 +29,7 @@ module = {
 }
 
 function module.randomizeMoves(context, args)
+	pool_utils.init(context)
 	if args.moveKind == "POWERS" then
 		randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 	else
@@ -42,7 +43,8 @@ function module.randomizeMoves(context, args)
 		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
 	end
 
-	if args.grouping == "BY_STAGE" or args.withinType then
+	if pool_utils.stageGroupingSplitsIntoPools(args.grouping)
+			or pool_utils.typeGroupingSplitsIntoPools(args.withinType) then
 		local key = move_utils.groupKey(args)
 		move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key, setter,
 			options)

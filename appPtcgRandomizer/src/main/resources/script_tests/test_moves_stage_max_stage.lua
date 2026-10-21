@@ -8,7 +8,7 @@ local baseline = {
 	duplicates = "KEEP_DUPLICATES",
 	approach = "MINIMIZE_REPEATS",
 	moveKind = "ALL_MOVES",
-	withinType = false,
+	withinType = "All Together",
 }
 
 local expects = {
@@ -151,6 +151,24 @@ local expects = {
 		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "CurFrenzy" } }) }, -- STAGE_2/STAGE_2
 		{ id = "MONSTER_019", moves = fields.moves({ { name = "CurStorm" }, { name = "CurPollen" } }) }, -- STAGE_2/STAGE_2
 	},
+	within_subtype = {
+		{ id = "MONSTER_001", moves = fields.moves({ { name = "Ember" } }) }, -- F-W/N BASIC/BASIC
+		{ id = "MONSTER_002", moves = fields.moves({ { name = "Flare" }, { name = "Inferno" } }) }, -- F-W/N BASIC/BASIC
+		{ id = "MONSTER_003_1", moves = fields.moves() }, -- F-W/N BASIC/BASIC
+		{ id = "MONSTER_004", moves = fields.moves({ { name = "Splash" }, { name = "Splash" } }) }, -- W-L/N BASIC/BASIC
+		{ id = "MONSTER_005", moves = fields.moves({ { name = "Wave" } }) }, -- W-G/N BASIC/BASIC
+		{ id = "MONSTER_006", moves = fields.moves({ { name = "LeechSeed" }, { name = "Absorb" } }) }, -- G-F/W BASIC/BASIC
+		{ id = "MONSTER_010", moves = fields.moves({ { name = "HeatWave" } }) }, -- F-W/G BASIC/STAGE_1
+		{ id = "MONSTER_011", moves = fields.moves({ { name = "Inferno" }, { name = "Inferno" } }) }, -- F-W/G STAGE_1/STAGE_1
+		{ id = "MONSTER_012", moves = fields.moves() }, -- W-L/N BASIC/STAGE_1
+		{ id = "MONSTER_013", moves = fields.moves({ { name = "Surf" } }) }, -- W-L/N STAGE_1/STAGE_1
+		{ id = "MONSTER_014", moves = fields.moves({ { name = "SeedPower" }, { name = "VineWhip" } }) }, -- G-P/N BASIC/STAGE_2
+		{ id = "MONSTER_015", moves = fields.moves({ { name = "RazorLeaf" } }) }, -- G-P/N BASIC/STAGE_2
+		{ id = "MONSTER_016", moves = fields.moves({ { name = "PetalDance" }, { name = "SolarBeam" } }) }, -- G-P/N STAGE_1/STAGE_2
+		{ id = "MONSTER_017", moves = fields.moves() }, -- G-P/N STAGE_1/STAGE_2
+		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "FrenzyPlant" } }) }, -- G-P/N STAGE_2/STAGE_2
+		{ id = "MONSTER_019", moves = fields.moves({ { name = "LeafStorm" }, { name = "LeafStorm" } }) }, -- G-P/N STAGE_2/STAGE_2
+	},
 	within_type = {
 		{ id = "MONSTER_001", moves = fields.moves({ { name = "Ember" } }) }, -- FIRE BASIC/BASIC
 		{ id = "MONSTER_002", moves = fields.moves({ { name = "Flare" }, { name = "Inferno" } }) }, -- FIRE BASIC/BASIC
@@ -197,5 +215,6 @@ return {
 	caseFor("fully_random", { approach = "FULLY_RANDOM" }),
 	caseFor("attacks", { moveKind = "ATTACKS" }),
 	caseFor("powers", { moveKind = "POWERS" }),
-	caseFor("within_type", { withinType = true }),
+	caseFor("within_type", { withinType = "Within Type" }),
+	caseFor("within_subtype", { withinType = "Within Subtype" }),
 }

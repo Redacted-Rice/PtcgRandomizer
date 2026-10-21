@@ -1,4 +1,5 @@
 -- Shared pieces for building pools from ROM/CURRENT card data.
+local common_field_defs = require("modules.util.common_field_defs")
 local randomizer = require("randomizer")
 
 local pool_utils = {}
@@ -35,6 +36,50 @@ end
 
 function pool_utils.stageAndMaxStageKey(mc)
 	return pool_utils.stageMaxStageKeyFromValues(mc.evoLineMaxStage, mc.stage)
+end
+
+function pool_utils.init(context)
+	pool_utils.weaknessResistanceAbbreviationKey = function(flagSet)
+		return context.WeaknessResistanceFlags.abbreviationKey(flagSet)
+	end
+end
+
+function pool_utils.combineKeys(...)
+	local parts = {}
+	for index = 1, select("#", ...) do
+		local part = select(index, ...)
+		if part ~= nil then
+			table.insert(parts, tostring(part))
+		end
+	end
+	if #parts == 0 then
+		return nil
+	end
+	return table.concat(parts, ":")
+end
+
+function pool_utils.typeGroupingSplitsIntoPools(scope)
+	return scope == common_field_defs.TYPE_POOL_WITHIN_TYPE
+			or scope == common_field_defs.TYPE_POOL_WITHIN_SUBTYPE
+end
+
+function pool_utils.stageGroupingSplitsIntoPools(grouping)
+	return grouping == common_field_defs.STAGE_GROUPING_BY_STAGE
+			or grouping == common_field_defs.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE
+end
+
+function pool_utils.getTypeGroupingKey(card, scope)
+	if scope == common_field_defs.TYPE_POOL_WITHIN_TYPE then
+		return card.type:convertToEnergyType():getAbbreviation()
+	end
+	if scope == common_field_defs.TYPE_POOL_WITHIN_SUBTYPE then
+		local abbrevKey = pool_utils.weaknessResistanceAbbreviationKey
+		return pool_utils.combineKeys(
+				card.type:convertToEnergyType():getAbbreviation(),
+				abbrevKey(card.weakness),
+				abbrevKey(card.resistance))
+	end
+	return nil
 end
 
 -- flat pool of values pulled from source cards

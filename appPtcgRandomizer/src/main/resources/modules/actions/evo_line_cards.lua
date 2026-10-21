@@ -25,7 +25,7 @@ module = {
 	},
 	arguments = {
 		common_field_defs.ARG_DEF_SOURCE,
-		common_field_defs.ARG_DEF_WITHIN_TYPE,
+		common_field_defs.ARG_DEF_WITHIN_TYPE_BOOLEAN,
 		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 	},
 	execute = function(context, args)

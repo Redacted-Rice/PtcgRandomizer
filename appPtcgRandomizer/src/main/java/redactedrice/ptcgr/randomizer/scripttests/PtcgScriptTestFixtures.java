@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import redactedrice.ptcgr.constants.romenums.CardAiFlags;
+import redactedrice.ptcgr.constants.romenums.WeaknessResistanceFlags;
 import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
@@ -28,7 +29,9 @@ import redactedrice.randomizer.scripttests.ScriptTestValues;
 final class PtcgScriptTestFixtures implements ScriptTestFixtures {
     private static final List<CardId> MONSTER_IDS = monsterIds();
     private static final List<FlagSetField<?>> FLAG_SET_FIELDS = List.of(
-            flagSet("aiFlags", card -> card.aiFlags, CardAiFlags.class));
+            flagSet("aiFlags", card -> card.aiFlags, CardAiFlags.class),
+            flagSet("weakness", card -> card.weakness, WeaknessResistanceFlags.class),
+            flagSet("resistance", card -> card.resistance, WeaknessResistanceFlags.class));
 
     @Override
     public void populateContext(JavaContext context, ScriptTestCase testCase) {
