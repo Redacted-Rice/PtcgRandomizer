@@ -24,6 +24,7 @@ module = {
 	},
 	arguments = {
 		common_field_defs.ARG_DEF_SOURCE,
+		common_field_defs.ARG_DEF_WITHIN_TYPE_NO_ALL_TOGETHER,
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 		common_field_defs.ARG_DEF_EVO_LINE_BRANCHING_BASES_COLORLESS,
