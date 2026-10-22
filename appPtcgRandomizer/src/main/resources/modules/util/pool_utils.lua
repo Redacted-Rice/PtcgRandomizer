@@ -26,14 +26,6 @@ function pool_utils.stageMaxStageKeyFromValues(maxStage, stage)
 	return maxStage:getValue() * 10 + stage:getValue()
 end
 
-function pool_utils.typeStageKeyFromValues(cardType, stage)
-	return cardType:getValue() * 10 + stage:getValue()
-end
-
-function pool_utils.typeStageMaxStageKeyFromValues(cardType, maxStage, stage)
-	return cardType:getValue() * 100 + pool_utils.stageMaxStageKeyFromValues(maxStage, stage)
-end
-
 function pool_utils.stageAndMaxStageKey(mc)
 	return pool_utils.stageMaxStageKeyFromValues(mc.evoLineMaxStage, mc.stage)
 end

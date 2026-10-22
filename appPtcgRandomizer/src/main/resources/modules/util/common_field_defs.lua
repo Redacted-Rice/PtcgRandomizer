@@ -153,16 +153,23 @@ common_field_defs.ARG_DEF_WITHIN_TYPE = {
 	default = common_field_defs.TYPE_POOL_ALL_TOGETHER,
 }
 
--- TODO: Remove and update remaining cases to use the new ternary arg
--- Evo line modules still use a boolean within type option (per branch type locking).
-common_field_defs.ARG_DEF_WITHIN_TYPE_BOOLEAN = {
+-- Custom within-type evo lines always pool by type. Subtype adds weakness/resistance to the bucket.
+common_field_defs.ARG_DEF_WITHIN_TYPE_NO_ALL_TOGETHER = {
 	name = "withinType",
-	displayName = "Within Energy Type",
-	description = "When enabled, pooling stays inside each Energy type. When disabled, all types are pooled together",
+	displayName = "Type Pool Scope",
+	description = "'Within Type' pools by cards' energy types."
+			.. " 'Within Subtype' pools combining each card's energy type with its weakness and resistance.",
 	definition = {
-		type = "boolean",
+		type = "string",
+		constraint = {
+			type = "enum",
+			values = {
+				common_field_defs.TYPE_POOL_WITHIN_TYPE,
+				common_field_defs.TYPE_POOL_WITHIN_SUBTYPE,
+			},
+		},
 	},
-	default = false,
+	default = common_field_defs.TYPE_POOL_WITHIN_TYPE,
 }
 
 common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES = {

@@ -25,7 +25,7 @@ module = {
 	},
 	arguments = {
 		common_field_defs.ARG_DEF_SOURCE,
-		common_field_defs.ARG_DEF_WITHIN_TYPE_BOOLEAN,
+		common_field_defs.ARG_DEF_WITHIN_TYPE,
 		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 	},
 	execute = function(context, args)
@@ -38,20 +38,22 @@ function module.randomizeEvoLines(context, args)
 
 	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source))
 	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
-	local evoLineData = evo_line_randomize_utils.extractAllEvoLineData(sourceCards)
+	local keyContext = evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards,
+			args.grouping, args.withinType, false)
+	local evoLineData = evo_line_randomize_utils.extractAllEvoLineData(sourceCards, keyContext)
 
 	logger.debug("evo_line_cards source=" .. tostring(args.source) .. " withinType="
 			.. tostring(args.withinType) .. " grouping=" .. tostring(args.grouping)
 			.. " cards=" .. sourceCards:size())
 
-	local namePools = evo_line_randomize_utils.buildNamePools(sourceCards, args.grouping, args.withinType)
+	local namePools = evo_line_randomize_utils.buildNamePools(sourceCards, keyContext)
 	local toModifyByName = randomizer.groupBy(targets, "name")
 
 	evoLineData:each(function(line)
 		evo_line_randomize_utils.assignEvoLineList(line.evoLineId, line.entries, namePools,
-				args.grouping, args.withinType, toModifyByName, false)
+				keyContext, toModifyByName)
 	end)
-	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, args.withinType)
+	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
 end
 
 return module

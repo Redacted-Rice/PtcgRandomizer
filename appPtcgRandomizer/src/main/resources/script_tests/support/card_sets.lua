@@ -5,8 +5,8 @@ local card_sets = {}
 
 -- Full deck used by shuffle / numMoves / moves / custom HP / fix_evo_line tests.
 -- weakness/resistance after type for within-subtype tests. Has the following subtypes:
---		Fire - Water/None, Water/Grass
---		Water - Grass/None, Lighning/None
+--		Fire - Water/None (A & B), Water/Grass (C, D & E)
+--		Water - Lighning/None (A & B), Grass/None (C & D)
 --		Grass - Fire/Water, Psycic/None
 -- HP is a signed byte so stay <= 120, and only use multiples of 10.
 -- dexNumber uses 1-151. ROM is sequential within each evo line. CURRENT has inversions and gaps.
@@ -131,92 +131,95 @@ card_sets.STD_TEST_CARDS_CURRENT = {
 -- Two cards with mixed typed costs for all_moves_* and log_monster_cards.
 -- MONSTER_001 is FIRE and MONSTER_002 is COLORLESS so both conversion cases are covered.
 -- Fire/water deck for evo line card modules. Duplicate ids at basic, 2nd, and 3rd stages.
+-- weakness/resistance after type for within-subtype tests. Has the following subtypes:
+--		Fire - Water/None (A & B), Water/Grass (C, D & E)
+--		Water - Lighning/None (A & B), Grass/None (C & D)
 card_sets.EVO_LINE_CARDS_ROM = {
-	{ id = "MONSTER_003_1", name = "FireABasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_003_1", name = "FireABasic", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_003_2", name = "FireABasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_003_2", name = "FireABasic", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_038_1", name = "FireA2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_038_1", name = "FireA2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_1",
 		prevEvoName = "FireABasic", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_038_2", name = "FireA2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_038_2", name = "FireA2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_1",
 		prevEvoName = "FireABasic", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_059_1", name = "FireA3rd", type = "MONSTER_FIRE", stage = "STAGE_2",
+	{ id = "MONSTER_059_1", name = "FireA3rd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_2",
 		prevEvoName = "FireA2nd", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_059_2", name = "FireA3rd", type = "MONSTER_FIRE", stage = "STAGE_2",
+	{ id = "MONSTER_059_2", name = "FireA3rd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_2",
 		prevEvoName = "FireA2nd", evoLineId = 1, evoLineMaxStage = "STAGE_2" },
 
-	{ id = "MONSTER_025_1", name = "FireBBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_025_1", name = "FireBBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_025_2", name = "FireBBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_025_2", name = "FireBBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_025_3", name = "FireBBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_025_3", name = "FireBBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_026_1", name = "FireB2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_026_1", name = "FireB2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_1",
 		prevEvoName = "FireBBasic", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_026_2", name = "FireB2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_026_2", name = "FireB2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_1",
 		prevEvoName = "FireBBasic", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_081_1", name = "FireB3rd", type = "MONSTER_FIRE", stage = "STAGE_2",
+	{ id = "MONSTER_081_1", name = "FireB3rd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_2",
 		prevEvoName = "FireB2nd", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_081_2", name = "FireB3rd", type = "MONSTER_FIRE", stage = "STAGE_2",
+	{ id = "MONSTER_081_2", name = "FireB3rd", type = "MONSTER_FIRE", weakness = { "WATER" }, stage = "STAGE_2",
 		prevEvoName = "FireB2nd", evoLineId = 2, evoLineMaxStage = "STAGE_2" },
 
-	{ id = "MONSTER_092_1", name = "FireCBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_092_1", name = "FireCBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 3, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_092_2", name = "FireCBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_092_2", name = "FireCBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 3, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_093_1", name = "FireC2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_093_1", name = "FireC2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "STAGE_1",
 		prevEvoName = "FireCBasic", evoLineId = 3, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_093_2", name = "FireC2nd", type = "MONSTER_FIRE", stage = "STAGE_1",
+	{ id = "MONSTER_093_2", name = "FireC2nd", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "STAGE_1",
 		prevEvoName = "FireCBasic", evoLineId = 3, evoLineMaxStage = "STAGE_1" },
 
-	{ id = "MONSTER_080", name = "FireDBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_080", name = "FireDBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 7, evoLineMaxStage = "BASIC" },
 
-	{ id = "MONSTER_018_1", name = "FireEBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_018_1", name = "FireEBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 9, evoLineMaxStage = "BASIC" },
-	{ id = "MONSTER_018_2", name = "FireEBasic", type = "MONSTER_FIRE", stage = "BASIC",
+	{ id = "MONSTER_018_2", name = "FireEBasic", type = "MONSTER_FIRE", weakness = { "WATER" }, resistance = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 9, evoLineMaxStage = "BASIC" },
 
-	{ id = "MONSTER_039_1", name = "WaterABasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_039_1", name = "WaterABasic", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_039_2", name = "WaterABasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_039_2", name = "WaterABasic", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_039_3", name = "WaterABasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_039_3", name = "WaterABasic", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_052_1", name = "WaterA2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_052_1", name = "WaterA2nd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_1",
 		prevEvoName = "WaterABasic", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_052_2", name = "WaterA2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_052_2", name = "WaterA2nd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_1",
 		prevEvoName = "WaterABasic", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_149_1", name = "WaterA3rd", type = "MONSTER_WATER", stage = "STAGE_2",
+	{ id = "MONSTER_149_1", name = "WaterA3rd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_2",
 		prevEvoName = "WaterA2nd", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_149_2", name = "WaterA3rd", type = "MONSTER_WATER", stage = "STAGE_2",
+	{ id = "MONSTER_149_2", name = "WaterA3rd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_2",
 		prevEvoName = "WaterA2nd", evoLineId = 4, evoLineMaxStage = "STAGE_2" },
 
-	{ id = "MONSTER_135_1", name = "WaterBBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_135_1", name = "WaterBBasic", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 5, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_135_2", name = "WaterBBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_135_2", name = "WaterBBasic", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 5, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_145_1", name = "WaterB2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_145_1", name = "WaterB2nd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_1",
 		prevEvoName = "WaterBBasic", evoLineId = 5, evoLineMaxStage = "STAGE_1" },
-	{ id = "MONSTER_145_2", name = "WaterB2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_145_2", name = "WaterB2nd", type = "MONSTER_WATER", weakness = { "LIGHTNING" }, stage = "STAGE_1",
 		prevEvoName = "WaterBBasic", evoLineId = 5, evoLineMaxStage = "STAGE_1" },
 
-	{ id = "MONSTER_151_1", name = "WaterCBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_151_1", name = "WaterCBasic", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_151_2", name = "WaterCBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_151_2", name = "WaterCBasic", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_151_3", name = "WaterCBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_151_3", name = "WaterCBasic", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_105_1", name = "WaterC2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_105_1", name = "WaterC2nd", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "STAGE_1",
 		prevEvoName = "WaterCBasic", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_105_2", name = "WaterC2nd", type = "MONSTER_WATER", stage = "STAGE_1",
+	{ id = "MONSTER_105_2", name = "WaterC2nd", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "STAGE_1",
 		prevEvoName = "WaterCBasic", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_079_1", name = "WaterC3rd", type = "MONSTER_WATER", stage = "STAGE_2",
+	{ id = "MONSTER_079_1", name = "WaterC3rd", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "STAGE_2",
 		prevEvoName = "WaterC2nd", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
-	{ id = "MONSTER_079_2", name = "WaterC3rd", type = "MONSTER_WATER", stage = "STAGE_2",
+	{ id = "MONSTER_079_2", name = "WaterC3rd", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "STAGE_2",
 		prevEvoName = "WaterC2nd", evoLineId = 6, evoLineMaxStage = "STAGE_2" },
 
-	{ id = "MONSTER_094", name = "WaterDBasic", type = "MONSTER_WATER", stage = "BASIC",
+	{ id = "MONSTER_094", name = "WaterDBasic", type = "MONSTER_WATER", weakness = { "GRASS" }, stage = "BASIC",
 		prevEvoName = "", evoLineId = 8, evoLineMaxStage = "BASIC" },
 }
 
