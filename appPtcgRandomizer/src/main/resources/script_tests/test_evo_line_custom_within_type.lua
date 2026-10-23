@@ -326,7 +326,7 @@ return {
 			{ id = "MONSTER_149_2", name = "WaterA3rd", stage = "STAGE_1", prevEvoName = "WaterC3rd" },
 			{ id = "MONSTER_151_1", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
 			{ id = "MONSTER_151_2", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
-			{ id = "MONSTER_151_3", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" }
+			{ id = "MONSTER_151_3", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
 
 			-- shape: [1-0-0]
 			{ id = "MONSTER_059_1", name = "FireA3rd", stage = "BASIC", prevEvoName = "" },

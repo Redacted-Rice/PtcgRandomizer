@@ -916,15 +916,17 @@ end
 -- Done one stage at a time in reverse order to ensure we won't strand any higher level evos
 -- Will continue until all names are assigned
 function evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxStage, namePools,
-		keyContext, toModifyByName, approach, choicePools)
+		keyContext, toModifyByName, approach, choicePools, warnOnFailure)
 	local linePool = linePoolByMaxStage:get(stage:getValue()) or randomizer.list({})
 	local poolState = evo_line_randomize_utils.createPoolDrawState(linePool, approach)
 	while evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext) > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
 				keyContext, toModifyByName, choicePools)
 		if not assigned then
-			logger.warn("evo_line_custom could not assign remaining " .. tostring(stage)
-					.. " names with available line shapes")
+			if warnOnFailure then
+				logger.warn("evo_line_custom could not assign remaining " .. tostring(stage)
+						.. " names with available line shapes")
+			end
 			logger.info("evo_line_custom abort " .. tostring(stage)
 					.. " remainingNames="
 					.. evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext)
@@ -939,14 +941,16 @@ end
 -- Keep drawing lines while any names are left to assign as one giant pool since we don't care about
 -- their current stages
 function evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePools, keyContext,
-		toModifyByName, approach, choicePools)
+		toModifyByName, approach, choicePools, warnOnFailure)
 	local poolState = evo_line_randomize_utils.createPoolDrawState(linePool, approach)
 
 	while namePools:itemCount() > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
 				keyContext, toModifyByName, choicePools)
 		if not assigned then
-			logger.warn("evo_line_custom could not assign remaining names with available line shapes")
+			if warnOnFailure then
+				logger.warn("evo_line_custom could not assign remaining names with available line shapes")
+			end
 			logger.info("evo_line_custom abort ALL_TOGETHER remainingNames="
 					.. namePools:itemCount()
 					.. " shapesLeft=" .. poolState.pool:size()
@@ -959,7 +963,8 @@ end
 
 -- choicePools nil means ignore energy types when drawing names. Non nil enables within type
 -- pools and uses the weighted branch type rules from those pools.
-function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choicePools)
+function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choicePools,
+	warnOnFailure)
 	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source,
 			args.excludeTrainerProxies))
 	local targets = randomizer.list(evo_line_randomize_utils.targetCards(context, args.excludeTrainerProxies))
@@ -982,7 +987,7 @@ function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choiceP
 	if args.grouping == "ALL_TOGETHER" then
 		-- IN a single pass, keep drawing lines while any names are left to assign
 		evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePools, keyContext,
-				toModifyByName, args.approach, choicePools)
+				toModifyByName, args.approach, choicePools, warnOnFailure)
 	else
 		-- Group line pools by the highest stage in each evo line
 		local linePoolByMaxStage = linePool:groupBy(function(evoLine)
@@ -994,11 +999,17 @@ function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choiceP
 		for stageIndex = #evoStages, 1, -1 do
 			local stage = evoStages[stageIndex]
 			evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxStage, namePools,
-					keyContext, toModifyByName, args.approach, choicePools)
+					keyContext, toModifyByName, args.approach, choicePools, warnOnFailure)
 		end
 	end
 
-	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
+	-- If we assigned everthing, we are good and should finalize the changes (e.g. fix any trainer proxies and
+	-- update ai data)
+	local success = namePools:itemCount() == 0
+	if success then
+		evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
+	end
+	return success
 end
 
 
