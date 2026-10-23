@@ -425,41 +425,6 @@ function evo_line_randomize_utils.drawNameFromPool(namePools, keyContext, entry)
 	error("name pool exhausted while assigning a line slot")
 end
 
--- We incrementally draw from the pools so we need to maintain the state externally so we can
--- handle it right and return, remove, and replentish the pool as needed
--- This is needed for evo lines and types as we don't know what will work in advanced so we just
--- fill it as we go as thats much easier than trying to plan and figure it out all in advance.
--- TODO Later: Add support in URC for pools that do this for us
-function evo_line_randomize_utils.createPoolDrawState(pool, approach)
-	return {
-		pool = pool,
-		consumable = approach == "MINIMIZE_REPEATS",
-		used = randomizer.list({}),
-	}
-end
-
--- allowExhausted: return nil instead of error when the pool cannot draw
-function evo_line_randomize_utils.drawFromPoolState(poolState, allowExhausted)
-	if poolState.pool:isEmpty() then
-		if poolState.consumable and not poolState.used:isEmpty() then
-			poolState.pool = poolState.used
-			poolState.used = randomizer.list({})
-		elseif allowExhausted then
-			return nil
-		else
-			error("Pool state items unexpectedly exhausted!")
-		end
-	end
-
-	local choice = utils.consumeRandomElement(poolState.pool.items)
-	if not poolState.consumable then
-		table.insert(poolState.pool.items, choice)
-	else
-		table.insert(poolState.used.items, choice)
-	end
-	return choice
-end
-
 function evo_line_randomize_utils.remapWeightsTableToList(choiceKeys, weightTable)
 	local entries = {}
 	for _, choice in ipairs(choiceKeys) do
@@ -491,7 +456,7 @@ function evo_line_randomize_utils.buildTypePolicyPools(branchingBasesColorless, 
 		local expanded = weightList:flatMapNTimes("weight", function(entry)
 			return entry.choice
 		end)
-		choicePools[key] = evo_line_randomize_utils.createPoolDrawState(expanded, approach)
+		choicePools[key] = pool_utils.statefulPool(expanded, approach)
 	end
 	return choicePools
 end
@@ -515,7 +480,7 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 
 	-- If we have other branches selected already, pull inter branch policy and apply it here
 	if #branchContext.branchTypes > 0 then
-		local interBranchTypes = evo_line_randomize_utils.drawFromPoolState(choicePools.interBranchTypes)
+		local interBranchTypes = choicePools.interBranchTypes:draw()
 		if interBranchTypes == common_field_defs.INTER_BRANCH_MATCH then
 			for _, cardType in ipairs(branchContext.branchTypes) do
 				table.insert(preferred, cardType)
@@ -579,7 +544,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	local chosenType = nil
 
 	-- First see if we are a branch node and should be colorless and try that
-	if isBranchNode and evo_line_randomize_utils.drawFromPoolState(choicePools.branchingBasesColorless)
+	if isBranchNode and choicePools.branchingBasesColorless:draw()
 			== common_field_defs.BRANCHING_BASE_COLORLESS
 			and keyContext.colorlessTypes ~= nil then
 		chosenType = evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(
@@ -698,8 +663,7 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, nameP
 	end
 
 	-- if it is a branch, create the new branch state data from this node
-	local branchRootConsistency = evo_line_randomize_utils.drawFromPoolState(
-			choicePools.branchRootConsistency)
+	local branchRootConsistency = choicePools.branchRootConsistency:draw()
 	local newBranchContext = {
 		rootType = chosenType,
 		branchTypes = {},
@@ -889,7 +853,7 @@ function evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePoo
 		toModifyByName, choicePools)
 	while true do
 		-- Try to get an evo line
-		local evoLine = evo_line_randomize_utils.drawFromPoolState(poolState, true)
+		local evoLine = poolState:draw(true)
 		if evoLine == nil then
 			-- We have exhausted everything, abort
 			return false
@@ -918,7 +882,7 @@ end
 function evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxStage, namePools,
 		keyContext, toModifyByName, approach, choicePools, warnOnFailure)
 	local linePool = linePoolByMaxStage:get(stage:getValue()) or randomizer.list({})
-	local poolState = evo_line_randomize_utils.createPoolDrawState(linePool, approach)
+	local poolState = pool_utils.statefulPool(linePool, approach)
 	while evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext) > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
 				keyContext, toModifyByName, choicePools)
@@ -942,7 +906,7 @@ end
 -- their current stages
 function evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePools, keyContext,
 		toModifyByName, approach, choicePools, warnOnFailure)
-	local poolState = evo_line_randomize_utils.createPoolDrawState(linePool, approach)
+	local poolState = pool_utils.statefulPool(linePool, approach)
 
 	while namePools:itemCount() > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
