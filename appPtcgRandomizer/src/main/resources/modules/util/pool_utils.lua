@@ -12,11 +12,6 @@ function pool_utils.poolOptions(approach)
 	return { consumable = false }
 end
 
--- Stateful pool for incremental draws
-function pool_utils.statefulPool(list, approach)
-	return randomizer.Pool.new(list, pool_utils.poolOptions(approach))
-end
-
 -- monster cards from the chosen source set
 function pool_utils.sourceCards(context, source)
 	if source == "CURRENT" then
