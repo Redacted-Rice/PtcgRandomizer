@@ -15,10 +15,6 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
-	needs = {
-		{ name = "evoLineId", type = "integer" },
-		{ name = "evoLineMaxStage", type = "EvolutionStage" },
-	},
 	arguments = {},
 	seeded = false,
 	execute = function(context, args)
