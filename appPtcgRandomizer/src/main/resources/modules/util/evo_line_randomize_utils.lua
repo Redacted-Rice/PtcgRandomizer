@@ -396,40 +396,25 @@ function evo_line_randomize_utils.drawNameFromPool(namePools, keyContext, entry)
 	return drawnName, key
 end
 
-function evo_line_randomize_utils.remapWeightsTableToList(choiceKeys, weightTable)
-	local entries = {}
-	for _, choice in ipairs(choiceKeys) do
-		local weight = weightTable[choice]
-		if weight ~= nil and weight > 0 then
-			table.insert(entries, { choice = choice, weight = weight })
-		end
-	end
-	return randomizer.List.backedBy(entries)
-end
-
 function evo_line_randomize_utils.buildTypePolicyPools(branchingBasesColorless, branchRootConsistency,
 		interBranchTypes, approach)
-	local weightLists = {
-		branchingBasesColorless = evo_line_randomize_utils.remapWeightsTableToList(
+	local policyLists = {
+		branchingBasesColorless = randomizer.List.fromWeightTable(
 				common_field_defs.ARG_DEF_EVO_LINE_BRANCHING_BASES_COLORLESS.definition.fixedKeys,
 				branchingBasesColorless),
-		branchRootConsistency = evo_line_randomize_utils.remapWeightsTableToList(
+		branchRootConsistency = randomizer.List.fromWeightTable(
 				common_field_defs.ARG_DEF_EVO_LINE_BRANCH_ROOT_CONSISTENCY.definition.fixedKeys,
 				branchRootConsistency),
-		interBranchTypes = evo_line_randomize_utils.remapWeightsTableToList(
+		interBranchTypes = randomizer.List.fromWeightTable(
 				common_field_defs.ARG_DEF_EVO_LINE_INTER_BRANCH_TYPES.definition.fixedKeys,
 				interBranchTypes),
 	}
-	local expandedLists = {}
-	for key, weightList in pairs(weightLists) do
-		if weightList:isEmpty() then
+	for key, policyList in pairs(policyLists) do
+		if policyList:isEmpty() then
 			error(key .. " must include at least one entry with a positive weight")
 		end
-		expandedLists[key] = weightList:flatMapNTimes("weight", function(entry)
-			return entry.choice
-		end)
 	end
-	return randomizer.KeyedPools.new(expandedLists, pool_utils.poolOptions(approach))
+	return randomizer.KeyedPools.new(policyLists, pool_utils.poolOptions(approach))
 end
 
 -- Build preference groups for the potential energy types to prepare for selecting a type
@@ -488,10 +473,11 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 	return { preferred, neutral, avoided }
 end
 
-function evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(group, slots, namePools, keyContext,
-		reservedCounts, exhaustedLabel, triedTypes)
-	while #group > 0 do
-		local cardType = utils.consumeRandomElement(group)
+-- Assumes typeCandidates is safe to mutate - callers should copy if needed
+function evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(typeCandidates, slots, namePools,
+		keyContext, reservedCounts, exhaustedLabel, triedTypes)
+	while #typeCandidates > 0 do
+		local cardType = utils.consumeRandomElement(typeCandidates)
 		if evo_line_randomize_utils.tryReserveTypeForSlots(slots, cardType, namePools, keyContext,
 				reservedCounts)
 		then
@@ -830,8 +816,8 @@ function evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePoo
 		-- If we failed, remove it from all pools so we won't try it again
 		logger.debug("evo_line_custom discarding shape "
 				.. evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
-				.. " poolLeft=" .. #poolState.pool
-				.. " used=" .. #poolState.used)
+				.. " poolLeft=" .. poolState:remainingCount()
+				.. " used=" .. poolState:usedCount())
 		poolState:removeFromPool(evoLine, evo_line_randomize_utils.evoLinesMatch)
 	end
 end
@@ -853,8 +839,8 @@ function evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxSta
 			logger.info("evo_line_custom abort " .. tostring(stage)
 					.. " remainingNames="
 					.. evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext)
-					.. " shapesLeft=" .. #poolState.pool
-					.. " shapesUsed=" .. #poolState.used
+					.. " shapesLeft=" .. poolState:remainingCount()
+					.. " shapesUsed=" .. poolState:usedCount()
 					.. " pools=" .. tostring(namePools))
 			break
 		end
@@ -876,8 +862,8 @@ function evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePoo
 			end
 			logger.info("evo_line_custom abort ALL_TOGETHER remainingNames="
 					.. namePools:itemCount()
-					.. " shapesLeft=" .. #poolState.pool
-					.. " shapesUsed=" .. #poolState.used
+					.. " shapesLeft=" .. poolState:remainingCount()
+					.. " shapesUsed=" .. poolState:usedCount()
 					.. " pools=" .. tostring(namePools))
 			break
 		end
