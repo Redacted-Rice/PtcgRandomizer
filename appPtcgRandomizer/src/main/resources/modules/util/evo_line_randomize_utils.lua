@@ -26,12 +26,13 @@ end
 
 -- Builds the pools of card names based on the args
 function evo_line_randomize_utils.buildNamePools(sourceCards, keyContext)
-	return randomizer.groupFromField(sourceCards,
+	local lists = randomizer.groupFromField(sourceCards,
 			function(card)
 				return evo_line_randomize_utils.poolKey(
 						pool_utils.getTypeGroupingKey(card, keyContext.withinType),
 						card.stage, card.evoLineMaxStage, keyContext)
 			end, "name:toString"):applyToEachList("removeDuplicates")
+	return randomizer.KeyedPools.new(lists, { consumable = true, regenerate = false })
 end
 
 -- Creates an array of each cards' data (stage, maxStage, prevEvoIdx, typeGroupKey) in the line
@@ -250,11 +251,6 @@ function evo_line_randomize_utils.poolKey(cardTypeArg, stage, maxStage, keyConte
 	return pool_utils.stageMaxStageKeyFromValues(maxStage, stage)
 end
 
-function evo_line_randomize_utils.poolCount(namePools, key)
-	local pool = namePools:get(key)
-	return pool == nil and 0 or pool:size()
-end
-
 -- Preferred pool key first, then other maxStage buckets for the same stage when fallback is on.
 function evo_line_randomize_utils.poolKeysForDraw(cardType, stage, maxStage, keyContext)
 	-- Start with the full key for the passed args - always prefer the asked key
@@ -281,11 +277,7 @@ end
 function evo_line_randomize_utils.stagePoolCountForType(namePools, sourceType, stage, keyContext)
 	-- Prefer this stage as maxStage. With fallback that covers every valid bucket for it
 	local keys = evo_line_randomize_utils.poolKeysForDraw(sourceType, stage, stage, keyContext)
-	local total = 0
-	for _, key in ipairs(keys) do
-		total = total + evo_line_randomize_utils.poolCount(namePools, key)
-	end
-	return total
+	return namePools:remainingForKeys(keys)
 end
 
 -- Names left for one stage across types/max stage buckets when grouping splits that way.
@@ -301,17 +293,6 @@ function evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyConte
 				keyContext)
 	end)
 	return total
-end
-
--- First key among keys that still has an unreserved name, or nil
-function evo_line_randomize_utils.firstKeyWithCapacity(namePools, keys, reservedCounts, tempReserved)
-	for _, key in ipairs(keys) do
-		local alreadyReserved = (reservedCounts[key] or 0) + ((tempReserved and tempReserved[key]) or 0)
-		if evo_line_randomize_utils.poolCount(namePools, key) - alreadyReserved >= 1 then
-			return key
-		end
-	end
-	return nil
 end
 
 -- Collects the entries that form a linear, non-branching line from the entry
@@ -344,7 +325,6 @@ end
 
 ---------------------------- Randomization Helper functions -------------------------------
 
-
 -- Try to reserve a type for all slots. Uses a temp reserved map so slots that
 -- share a pool key still need one name each. With allowStageFallback, BASIC/STAGE_1
 -- slots may reserve against other maxStage buckets for the same stage.
@@ -357,14 +337,13 @@ function evo_line_randomize_utils.tryReserveTypeForSlots(slots, cardType, namePo
 	for _, entry in ipairs(slots) do
 		local keys = evo_line_randomize_utils.poolKeysForDraw(cardType, entry.stage, entry.maxStage,
 				keyContext)
-		local key = evo_line_randomize_utils.firstKeyWithCapacity(namePools, keys, reservedCounts, tempReserved)
+		local key = namePools:tryReserveKey(keys, reservedCounts, tempReserved)
 		if key == nil then
 			logger.debug("evo_line_custom type reserve failed cardType=" .. tostring(cardType)
 					.. " stage=" .. tostring(entry.stage) .. " maxStage=" .. tostring(entry.maxStage)
 					.. " keys=" .. table.concat(keys, ","))
 			return false
 		end
-		tempReserved[key] = (tempReserved[key] or 0) + 1
 	end
 
 	for key, count in pairs(tempReserved) do
@@ -394,11 +373,7 @@ function evo_line_randomize_utils.canFillEntries(entries, namePools, keyContext)
 		end
 		neededByBucket[bucket] = (neededByBucket[bucket] or 0) + 1
 		if availableByBucket[bucket] == nil then
-			local available = 0
-			for _, key in ipairs(keys) do
-				available = available + evo_line_randomize_utils.poolCount(namePools, key)
-			end
-			availableByBucket[bucket] = available
+			availableByBucket[bucket] = namePools:remainingForKeys(keys)
 		end
 	end
 
@@ -414,15 +389,11 @@ end
 function evo_line_randomize_utils.drawNameFromPool(namePools, keyContext, entry)
 	local keys = evo_line_randomize_utils.poolKeysForDraw(entry.typeGroupKey, entry.stage, entry.maxStage,
 			keyContext)
-	-- Keys are expected in priority order
-	for _, key in ipairs(keys) do
-		local pool = namePools:get(key)
-		if pool ~= nil and not pool:isEmpty() then
-			return utils.consumeRandomElement(pool.items), key
-		end
+	local drawnName, key = namePools:drawFirstAvailable(keys)
+	if drawnName == nil then
+		error("name pool exhausted while assigning a line slot")
 	end
-
-	error("name pool exhausted while assigning a line slot")
+	return drawnName, key
 end
 
 function evo_line_randomize_utils.remapWeightsTableToList(choiceKeys, weightTable)
@@ -438,7 +409,7 @@ end
 
 function evo_line_randomize_utils.buildTypePolicyPools(branchingBasesColorless, branchRootConsistency,
 		interBranchTypes, approach)
-	local choicePools = {
+	local weightLists = {
 		branchingBasesColorless = evo_line_randomize_utils.remapWeightsTableToList(
 				common_field_defs.ARG_DEF_EVO_LINE_BRANCHING_BASES_COLORLESS.definition.fixedKeys,
 				branchingBasesColorless),
@@ -449,16 +420,16 @@ function evo_line_randomize_utils.buildTypePolicyPools(branchingBasesColorless, 
 				common_field_defs.ARG_DEF_EVO_LINE_INTER_BRANCH_TYPES.definition.fixedKeys,
 				interBranchTypes),
 	}
-	for key, weightList in pairs(choicePools) do
+	local expandedLists = {}
+	for key, weightList in pairs(weightLists) do
 		if weightList:isEmpty() then
 			error(key .. " must include at least one entry with a positive weight")
 		end
-		local expanded = weightList:flatMapNTimes("weight", function(entry)
+		expandedLists[key] = weightList:flatMapNTimes("weight", function(entry)
 			return entry.choice
 		end)
-		choicePools[key] = pool_utils.statefulPool(expanded, approach)
 	end
-	return choicePools
+	return randomizer.KeyedPools.new(expandedLists, pool_utils.poolOptions(approach))
 end
 
 -- Build preference groups for the potential energy types to prepare for selecting a type
@@ -480,7 +451,7 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 
 	-- If we have other branches selected already, pull inter branch policy and apply it here
 	if #branchContext.branchTypes > 0 then
-		local interBranchTypes = choicePools.interBranchTypes:draw()
+		local interBranchTypes = choicePools:get("interBranchTypes"):draw()
 		if interBranchTypes == common_field_defs.INTER_BRANCH_MATCH then
 			for _, cardType in ipairs(branchContext.branchTypes) do
 				table.insert(preferred, cardType)
@@ -532,8 +503,8 @@ function evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(group, slots, na
 	end
 	if exhaustedLabel ~= nil then
 		logger.debug("evo_line_custom " .. exhaustedLabel .. " slots=["
-				.. evo_line_randomize_utils.formatSlots(slots) .. "] pools=["
-				.. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
+				.. evo_line_randomize_utils.formatSlots(slots) .. "] pools="
+				.. tostring(namePools))
 	end
 	return nil
 end
@@ -544,7 +515,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	local chosenType = nil
 
 	-- First see if we are a branch node and should be colorless and try that
-	if isBranchNode and choicePools.branchingBasesColorless:draw()
+	if isBranchNode and choicePools:get("branchingBasesColorless"):draw()
 			== common_field_defs.BRANCHING_BASE_COLORLESS
 			and keyContext.colorlessTypes ~= nil then
 		chosenType = evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(
@@ -561,8 +532,8 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 					reservedCounts) then
 			logger.debug("evo_line_custom branch_root_match could not match rootType="
 					.. tostring(branchContext.rootType) .. " slots=["
-					.. evo_line_randomize_utils.formatSlots(slots) .. "] pools=["
-					.. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
+					.. evo_line_randomize_utils.formatSlots(slots) .. "] pools="
+					.. tostring(namePools))
 			table.insert(triedTypes, chosenType)
 			chosenType = nil
 		else
@@ -617,15 +588,6 @@ function evo_line_randomize_utils.formatEntriesStagesCounts(evoLine)
 			.. (evoLine[evo_line_randomize_utils.evolutionStage.STAGE_2:getName()] or 0) .. "]"
 end
 
--- Debug: remaining name pool sizes keyed by pool key.
-function evo_line_randomize_utils.formatNamePoolCounts(namePools)
-	local parts = {}
-	namePools:each(function(key, pool)
-		table.insert(parts, tostring(key) .. "=" .. pool:size())
-	end)
-	return table.concat(parts, ", ")
-end
-
 function evo_line_randomize_utils.formatSlots(slots)
 	local parts = {}
 	for _, entry in ipairs(slots) do
@@ -663,7 +625,7 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, nameP
 	end
 
 	-- if it is a branch, create the new branch state data from this node
-	local branchRootConsistency = choicePools.branchRootConsistency:draw()
+	local branchRootConsistency = choicePools:get("branchRootConsistency"):draw()
 	local newBranchContext = {
 		rootType = chosenType,
 		branchTypes = {},
@@ -868,12 +830,9 @@ function evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePoo
 		-- If we failed, remove it from all pools so we won't try it again
 		logger.debug("evo_line_custom discarding shape "
 				.. evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
-				.. " poolLeft=" .. poolState.pool:size()
-				.. " used=" .. poolState.used:size())
-		poolState.pool = poolState.pool:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
-		if poolState.consumable then
-			poolState.used = poolState.used:removeAllMatches(evoLine, evo_line_randomize_utils.evoLinesMatch)
-		end
+				.. " poolLeft=" .. #poolState.pool
+				.. " used=" .. #poolState.used)
+		poolState:removeFromPool(evoLine, evo_line_randomize_utils.evoLinesMatch)
 	end
 end
 
@@ -882,7 +841,7 @@ end
 function evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxStage, namePools,
 		keyContext, toModifyByName, approach, choicePools, warnOnFailure)
 	local linePool = linePoolByMaxStage:get(stage:getValue()) or randomizer.list({})
-	local poolState = pool_utils.statefulPool(linePool, approach)
+	local poolState = randomizer.Pool.new(linePool, pool_utils.poolOptions(approach))
 	while evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext) > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
 				keyContext, toModifyByName, choicePools)
@@ -894,9 +853,9 @@ function evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxSta
 			logger.info("evo_line_custom abort " .. tostring(stage)
 					.. " remainingNames="
 					.. evo_line_randomize_utils.stageTotalPoolCount(namePools, stage, keyContext)
-					.. " shapesLeft=" .. poolState.pool:size()
-					.. " shapesUsed=" .. poolState.used:size()
-					.. " pools=[" .. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
+					.. " shapesLeft=" .. #poolState.pool
+					.. " shapesUsed=" .. #poolState.used
+					.. " pools=" .. tostring(namePools))
 			break
 		end
 	end
@@ -906,7 +865,7 @@ end
 -- their current stages
 function evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePools, keyContext,
 		toModifyByName, approach, choicePools, warnOnFailure)
-	local poolState = pool_utils.statefulPool(linePool, approach)
+	local poolState = randomizer.Pool.new(linePool, pool_utils.poolOptions(approach))
 
 	while namePools:itemCount() > 0 do
 		local assigned = evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePools,
@@ -917,9 +876,9 @@ function evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePoo
 			end
 			logger.info("evo_line_custom abort ALL_TOGETHER remainingNames="
 					.. namePools:itemCount()
-					.. " shapesLeft=" .. poolState.pool:size()
-					.. " shapesUsed=" .. poolState.used:size()
-					.. " pools=[" .. evo_line_randomize_utils.formatNamePoolCounts(namePools) .. "]")
+					.. " shapesLeft=" .. #poolState.pool
+					.. " shapesUsed=" .. #poolState.used
+					.. " pools=" .. tostring(namePools))
 			break
 		end
 	end
@@ -1021,6 +980,7 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, toModifyB
 	local colorlessOnly = keyContext.splitsIntoPools
 	local potentialSwapTargets = evo_line_randomize_utils.potentialNonProxySwapTargets(toModifyCards,
 			colorlessOnly)
+	local swapPool = randomizer.Pool.new(potentialSwapTargets, { consumable = true, regenerate = false })
 	local cardsByPrev = evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
 
 	toModifyCards:each(function(proxy)
@@ -1032,9 +992,7 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, toModifyB
 			return
 		end
 
-		-- TODO: Remove deep copy. Also remove .items usage and instead make them use tables
-		-- Step 1: random basic that is not a proxy and not a proxy's current prev evo
-		local swapName = utils.consumeRandomElement(utils.deepCopy(potentialSwapTargets.items))
+		local swapName = swapPool:draw()
 
 		-- Step 2: swap evo slots (stage/prev and anyone pointing at either name)
 		local proxyName = proxy.name:toString()
