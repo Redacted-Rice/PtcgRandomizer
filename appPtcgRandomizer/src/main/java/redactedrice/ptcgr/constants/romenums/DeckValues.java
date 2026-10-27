@@ -2,11 +2,11 @@ package redactedrice.ptcgr.constants.romenums;
 
 public enum DeckValues {
     // @formatter:off
-    UNUSED_DECK_1            (0x00),
-    UNUSED_DECK_2            (0x01),
+    UNUSED_DECK_1            (0x00, false),
+    UNUSED_DECK_2            (0x01, false),
     TUTORIAL_DECK            (0x02),
     TUTORIAL_PLAYER_DECK     (0x03),
-    TUTORIAL_NPC_NORMAL_DECK (0x04),
+    TUTORIAL_DECK_DUP_PTR    (0x04),
     FIRE_STARTER_DECK        (0x05),
     FIRE_EXTRA_DECK          (0x06),
     WATER_STARTER_DECK       (0x07),
@@ -60,48 +60,39 @@ public enum DeckValues {
     // @formatter:on
 
     private byte value;
+    private boolean isValidDeck;
 
     DeckValues(int inValue) {
+        this(inValue, true);
+    }
+
+    DeckValues(int inValue, boolean inIsValidDeck) {
         if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE) {
             throw new IllegalArgumentException(
                     "Invalid constant input for " + "DeckValues enum: " + inValue);
         }
         value = (byte) inValue;
+        isValidDeck = inIsValidDeck;
     }
 
-    boolean isValidDeck() {
-        return value >= 2;
+    public boolean isValidDeck() {
+        return isValidDeck;
     }
 
     byte getValue() {
         return value;
     }
 
-    // Always, *_DECK_ID = *_DECK - 2. UNNAMED_DECK_ID and UNNAMED_2_DECK_ID do not exist.
-    byte getId() {
-        if (value < 2) {
-            return (byte) (value - 2);
-        } else {
-            throw new IllegalArgumentException(
-                    "Attempted to retrieve ID for invalid deck with value: " + value);
+    public static DeckValues getDeckWithValue(int value) {
+        for (DeckValues num : DeckValues.values()) {
+            if (value == num.getValue()) {
+                return num;
+            }
         }
+        throw new IllegalArgumentException("Invalid DeckValues value " + value + " was passed");
     }
 
     public static DeckValues readFromByte(byte b) {
-        for (DeckValues num : DeckValues.values()) {
-            if (b == num.getValue()) {
-                return num;
-            }
-        }
-        throw new IllegalArgumentException("Invalid DeckValues value " + b + " was passed");
-    }
-
-    public static DeckValues readIdFromByte(byte b) {
-        for (DeckValues num : DeckValues.values()) {
-            if (b == num.getId()) {
-                return num;
-            }
-        }
-        throw new IllegalArgumentException("Invalid DeckValues id value " + b + " was passed");
+        return getDeckWithValue(b);
     }
 }

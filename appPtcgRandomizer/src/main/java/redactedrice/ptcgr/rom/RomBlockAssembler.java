@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.rom;
 
-
 import java.util.List;
 
 import redactedrice.compiler.CodeBlock;
@@ -9,10 +8,13 @@ import redactedrice.compiler.instructions.addressref.BlockBankLoadedAddress;
 import redactedrice.compiler.instructions.addressref.BlockGlobalAddress;
 import redactedrice.compiler.instructions.basic.RawBytes;
 import redactedrice.gbcframework.addressing.AddressRange;
+import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
+import redactedrice.ptcgr.constants.romenums.DeckValues;
 import redactedrice.ptcgr.data.Card;
+import redactedrice.ptcgr.data.Deck;
 import redactedrice.ptcgr.data.CardEffect;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.data.Move;
@@ -23,20 +25,25 @@ import redactedrice.rompacker.HybridBlock;
 import redactedrice.rompacker.MovableBlock;
 
 public final class RomBlockAssembler {
-    private RomBlockAssembler() {}
+    private RomBlockAssembler() {
+    }
 
-    public static void assemble(Cards cards, Texts texts, Blocks blocks, RomSourceMap sourceMap,
-            InstructionParser parser, PtcgInstructionSetParser ptcgParser) {
-        finalizeAndAddAllTexts(cards, texts);
+    public static void assemble(Cards cards, Texts texts, Decks decks, Blocks blocks,
+            RomSourceMap sourceMap, InstructionParser parser, PtcgInstructionSetParser ptcgParser) {
+        finalizeAndAddAllTexts(cards, decks, texts);
         addEffectBlocks(cards, blocks, parser);
+        addDeckBlocks(cards, decks, blocks, sourceMap);
         addCardBlocks(cards, blocks, sourceMap);
         ptcgParser.finalizeAndAddTexts(texts);
         addTextBlocks(texts, blocks, sourceMap);
     }
 
-    private static void finalizeAndAddAllTexts(Cards cards, Texts texts) {
+    private static void finalizeAndAddAllTexts(Cards cards, Decks decks, Texts texts) {
         for (Card card : cards.cards().listOrderedByCardId()) {
             card.finalizeAndAddTexts(texts);
+        }
+        for (Deck deck : decks.getDecks()) {
+            deck.finalizeAndAddTexts(texts);
         }
     }
 
@@ -64,9 +71,37 @@ public final class RomBlockAssembler {
         }
     }
 
+    private static void addDeckBlocks(Cards cards, Decks decks, Blocks blocks,
+            RomSourceMap sourceMap) {
+        CodeBlock deckPtrs = newPointerTable("internal_deckPointers", sourceMap.getDeckPointerTable());
+        // No null in this one - its just straight to decks unlike cards
+
+        // Iterate in the same deck order
+        for (DeckValues deckValue : DeckValues.values()) {
+            Deck deck = decks.getDeck(deckValue);
+            if (deck.isPlaceholder()) {
+                AddressRange origRange = sourceMap.getDeckRange(deck.getDeckValue());
+                if (origRange == null) {
+                    throw new IllegalStateException(
+                            "Placeholder deck has no original ROM range: " + deckValue);
+                }
+                int storedPtr = origRange.getStart() - PtcgRomConstants.DECK_POINTER_OFFSET;
+                deckPtrs.appendInstruction(new RawBytes(
+                        ByteUtils.shortToLittleEndianBytes((short) storedPtr)));
+            } else {
+                HybridBlock deckBlock = toDeckHybridBlock(deck, cards, sourceMap);
+                blocks.addHybridBlock(deckBlock);
+                deckPtrs.appendInstruction(
+                        new BlockBankLoadedAddress(deckBlock.getMovableBlock().getId(), false));
+            }
+        }
+
+        deckPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0));
+        blocks.addFixedBlock(new FixedBlock(deckPtrs, PtcgRomConstants.DECK_POINTERS_LOC));
+    }
+
     private static void addCardBlocks(Cards cards, Blocks blocks, RomSourceMap sourceMap) {
-        CodeBlock cardPtrs =
-                newPointerTable("internal_cardPointers", sourceMap.getCardPointerTable());
+        CodeBlock cardPtrs = newPointerTable("internal_cardPointers", sourceMap.getCardPointerTable());
         cardPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0));
 
         // Monsters by dexNumber so randomized pokedex order matches the pointer table.
@@ -82,8 +117,7 @@ public final class RomBlockAssembler {
     }
 
     private static void addTextBlocks(Texts texts, Blocks blocks, RomSourceMap sourceMap) {
-        CodeBlock textPtrs =
-                newPointerTable("internal_textPointers", sourceMap.getTextPointerTable());
+        CodeBlock textPtrs = newPointerTable("internal_textPointers", sourceMap.getTextPointerTable());
         textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 
         String nullTextLabel = "";
@@ -117,6 +151,17 @@ public final class RomBlockAssembler {
             ptrs.addByteSourceHint(pointerTableRange);
         }
         return ptrs;
+    }
+
+    private static HybridBlock toDeckHybridBlock(Deck deck, Cards cards, RomSourceMap sourceMap) {
+        CodeBlock code = deck.convertToCodeBlock(cards.cards());
+        AddressRange origRange = sourceMap.getDeckRange(deck.getDeckValue());
+        if (origRange != null) {
+            code.addByteSourceHint(origRange);
+            return new HybridBlock(new MovableBlock(code, 0, (byte) 0xC, (byte) 0xD),
+                    origRange.getStart());
+        }
+        return new HybridBlock(new MovableBlock(code, 0, (byte) 0xC, (byte) 0xD), -1);
     }
 
     private static HybridBlock toCardHybridBlock(Card card, RomSourceMap sourceMap) {

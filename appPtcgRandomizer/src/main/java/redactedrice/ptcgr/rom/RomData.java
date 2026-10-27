@@ -9,7 +9,11 @@ public class RomData {
     public final byte[] rawBytes;
     /** Parsed cards from the ROM. Not modified by rules or randomization. */
     public final Cards fromRom;
-    /** Text id registry from the ROM. Not mutated by randomization or patch writes. */
+    /** Parsed decks from the ROM. Not modified by rules or randomization. */
+    public final Decks fromRomDecks;
+    /**
+     * Text id registry from the ROM. Not mutated by randomization or patch writes.
+     */
     public final Texts texts;
     /** Original ROM addresses for cards and texts. Immutable after read. */
     public final RomSourceMap sourceMap;
@@ -20,11 +24,16 @@ public class RomData {
     public Cards original;
     /** Working copy for Lua. Created only during a randomization pass. */
     public Cards modified;
+    /** Ruled baseline decks for Lua. Created only during a randomization pass. */
+    public Decks originalDecks;
+    /** Working deck copy for Lua. Created only during a randomization pass. */
+    public Decks modifiedDecks;
 
-    public RomData(byte[] rawBytes, Cards fromRom, Texts texts, RomSourceMap sourceMap,
-            Blocks romBlanks, Rules rules) {
+    public RomData(byte[] rawBytes, Cards fromRom, Decks fromRomDecks, Texts texts,
+            RomSourceMap sourceMap, Blocks romBlanks, Rules rules) {
         this.rawBytes = rawBytes;
         this.fromRom = fromRom;
+        this.fromRomDecks = fromRomDecks;
         this.texts = texts;
         this.sourceMap = sourceMap;
         this.romBlanks = romBlanks;
@@ -46,10 +55,14 @@ public class RomData {
         rules.applyTo(original.cards().monsterCards());
         modified = original.copy();
         modified.bindRules(rules);
+        originalDecks = fromRomDecks.copy();
+        modifiedDecks = originalDecks.copy();
     }
 
     public void discardModificationWorkspace() {
         original = null;
         modified = null;
+        originalDecks = null;
+        modifiedDecks = null;
     }
 }
