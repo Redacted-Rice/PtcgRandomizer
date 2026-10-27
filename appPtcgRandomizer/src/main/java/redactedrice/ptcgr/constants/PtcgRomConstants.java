@@ -30,6 +30,11 @@ public final class PtcgRomConstants {
     public static final int MAX_CHARS_MONSTER_CATEGORY = 20;
     // not including starting "charset" char
     public static final int MAX_CHARS_MOVE_NAME = 20;
+    // not including starting "charset" char
+    // Not really sure what the limit is on this but the longest one in the rom is
+    // 22 so thats what I'm using here. Note that player made decks limit is 20
+    // but this does not apply to preset decks apparantly
+    public static final int MAX_CHARS_DECK_NAME = 22;
     // Not including newline or starting "charset" char
     public static final int MAX_CHARS_PER_LINE_CARD = 36;
     // Not including newline or starting "charset" char
@@ -82,7 +87,11 @@ public final class PtcgRomConstants {
     // Does NOT start with a null pointer but pointers to unnamed decks
     public static final int DECK_POINTER_SIZE_IN_BYTES = 2;
     public static final int DECK_POINTERS_LOC = 0x30000;
-    public static final int DECK_POINTER_OFFSET = 0x30000;
+    // Same base as card pointers
+    public static final int DECK_POINTER_OFFSET = 0x2c000;
+    // 60 cards per deck list. Some unused decks have more for some reason
+    public static final int DECK_SIZE = 0x3C;
+    public static final int MAX_COPIES_PER_CARD = 4;
 
     // Starts with a null pointer
     public static final int CARD_POINTER_SIZE_IN_BYTES = 2;

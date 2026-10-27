@@ -1,31 +1,35 @@
 package redactedrice.ptcgr.rom;
 
-
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
+import redactedrice.ptcgr.constants.romenums.DeckValues;
 import redactedrice.ptcgr.data.Card;
+import redactedrice.ptcgr.data.Deck;
 import redactedrice.rompacker.Blocks;
 
 public final class RomReader {
-    private RomReader() {}
+    private RomReader() {
+    }
 
-    // Note assumes that the first text in the pointer list is the first in the file as well. This
-    // is required since there is no null between the text pointer map and the texts themselves
+    // Note assumes that the first text in the pointer list is the first in the file
+    // as well. This
+    // is required since there is no null between the text pointer map and the texts
+    // themselves
     public static Texts readTextsFromData(byte[] rawBytes, Blocks toBlankSpaceIn,
             RomSourceMap sourceMap) {
         // TODO: Optimize address range adding since they will mostly be in order
 
         Texts texts = new Texts();
-        // Intentionally not clearing addressesReadToAddTo to support chaining calls/adding
+        // Intentionally not clearing addressesReadToAddTo to support chaining
+        // calls/adding
         // to it via other functions
 
         // Read the text based on the pointer map in the rom
         // First pointer is a null pointer so we skip it
-        int ptrIndex =
-                PtcgRomConstants.TEXT_POINTERS_LOC + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+        int ptrIndex = PtcgRomConstants.TEXT_POINTERS_LOC + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
         int ptr = 0;
         int textIndex = 0;
         int firstPtr = Integer.MAX_VALUE;
@@ -47,7 +51,8 @@ public final class RomReader {
             CharSetPrefix charSet = CharSetPrefix.readFromByte(rawBytes[textIndex]);
             if (charSet != CharSetPrefix.EMPTY) {
                 // Loop until we find the ending character if its not an empty text
-                while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR);
+                while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR)
+                    ;
             }
 
             // Read the string to the null char (but not including it) and store where
@@ -70,8 +75,7 @@ public final class RomReader {
 
         // Add the space for the pointers. The ptrIndex will end at the first text
         // + 1 because end is exclusive
-        AddressRange textPtrsRange =
-                new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1);
+        AddressRange textPtrsRange = new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1);
         sourceMap.setTextPointerTable(textPtrsRange);
         toBlankSpaceIn.addBlankedBlock(textPtrsRange);
         return texts;
@@ -82,13 +86,13 @@ public final class RomReader {
         // TODO: Optimize address range adding since they will mostly be in order
 
         Cards cards = new Cards();
-        // Intentionally not clearing addressesReadToAddTo to support chaining calls/adding
+        // Intentionally not clearing addressesReadToAddTo to support chaining
+        // calls/adding
         // to it via other functions
 
         // Read the cards based on the pointer map in the rom
         // Skip the first null pointer
-        int ptrIndex =
-                PtcgRomConstants.CARD_POINTERS_LOC + PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
+        int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC + PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
         int cardIndex = 0;
 
         // Read each pointer one at a time until we reach the ending null pointer
@@ -111,11 +115,48 @@ public final class RomReader {
 
         // Add the space for the pointers. The ptrIndex will end at the first text
         // + 1 because end is exclusive
-        AddressRange cardPtrsRange =
-                new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1);
+        AddressRange cardPtrsRange = new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1);
         sourceMap.setCardPointerTable(cardPtrsRange);
         toBlankSpaceIn.addBlankedBlock(cardPtrsRange);
 
         return cards;
+    }
+
+    public static Decks readDecksFromData(byte[] rawBytes, Texts texts, Blocks toBlankSpaceIn,
+            RomSourceMap sourceMap) {
+        Decks decks = new Decks();
+
+        int deckListPtr = PtcgRomConstants.DECK_POINTERS_LOC;
+        int deckPtr = 0;
+        int deckIndex = 0;
+
+        // Read each pointer one at a time until we reach the ending null pointer
+        while ((deckPtr = (int) ByteUtils.readLittleEndian(rawBytes, deckListPtr,
+                PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES)) != 0) {
+            // Get the id and move the pointer
+            DeckValues deckId = DeckValues.getDeckWithValue(deckIndex);
+            deckListPtr += PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES;
+            deckIndex++;
+
+            // Otherwise read the deck data structure
+            deckPtr += PtcgRomConstants.DECK_POINTER_OFFSET;
+            // If its an invalid deck, skip it
+            if (!deckId.isValidDeck()) {
+                Deck.addPlaceholderDeck(deckId, decks);
+                sourceMap.recordDeckRange(deckId, new AddressRange(deckPtr, deckPtr));
+            } else {
+                int deckSize = Deck.addDeckFromBytes(rawBytes, deckPtr, deckId, texts, decks);
+                AddressRange deckRange = new AddressRange(deckPtr, deckPtr + deckSize);
+                sourceMap.recordDeckRange(deckId, deckRange);
+                toBlankSpaceIn.addBlankedBlock(deckRange);
+            }
+        }
+
+        AddressRange deckPtrsRange = new AddressRange(PtcgRomConstants.DECK_POINTERS_LOC,
+                deckListPtr + PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES);
+        sourceMap.setDeckPointerTable(deckPtrsRange);
+        toBlankSpaceIn.addBlankedBlock(deckPtrsRange);
+
+        return decks;
     }
 }

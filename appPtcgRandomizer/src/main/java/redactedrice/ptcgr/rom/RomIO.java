@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.rom;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,7 +21,8 @@ import redactedrice.rompacker.Blocks;
 import redactedrice.rompacker.DataManager;
 
 public class RomIO {
-    private RomIO() {}
+    private RomIO() {
+    }
 
     public static RomData readFromFile(File romFile, Rules rules) throws IOException {
         byte[] rawBytes = Files.readAllBytes(romFile.toPath());
@@ -31,10 +31,11 @@ public class RomIO {
         RomSourceMap sourceMap = new RomSourceMap();
         Blocks romBlanks = new Blocks();
         Texts texts = RomReader.readTextsFromData(rawBytes, romBlanks, sourceMap);
+        Decks decks = RomReader.readDecksFromData(rawBytes, texts, romBlanks, sourceMap);
         Cards cards = RomReader.readCardsFromData(rawBytes, texts, romBlanks, sourceMap);
         TrainerMonsterProxyFactory.attachProxies(cards);
 
-        return new RomData(rawBytes, cards, texts, sourceMap, romBlanks, rules);
+        return new RomData(rawBytes, cards, decks, texts, sourceMap, romBlanks, rules);
     }
 
     public static void verifyRom(byte[] rawBytes) {
@@ -55,7 +56,8 @@ public class RomIO {
         verifyGbHeaderChecksum(rawBytes);
     }
 
-    // The standard GB approach for the header checksum. This is not the whole rom but
+    // The standard GB approach for the header checksum. This is not the whole rom
+    // but
     // just the header stuff.
     public static void verifyGbHeaderChecksum(byte[] rawBytes) {
         int checksum = 0;
@@ -84,10 +86,11 @@ public class RomIO {
         InstructionParser parser = new InstructionParser(List.of(ptcgParser,
                 new BpsInstructionSetParser(), new GbZ80InstructionSetParser()));
 
+        Decks writeDecks = romData.modifiedDecks.copy();
         Blocks writeBlocks = romData.romBlanks.copy();
         Texts writeTexts = romData.texts.copy();
-        RomBlockAssembler.assemble(romData.modified, writeTexts, writeBlocks, romData.sourceMap,
-                parser, ptcgParser);
+        RomBlockAssembler.assemble(romData.modified, writeTexts, writeDecks, writeBlocks,
+                romData.sourceMap, parser, ptcgParser);
 
         DataManager manager = new DataManager();
         AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.rawBytes, writeBlocks);
