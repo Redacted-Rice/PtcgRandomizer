@@ -16,6 +16,7 @@ import redactedrice.ptcgr.constants.romenums.CardType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.Cards;
+import redactedrice.ptcgr.rom.Decks;
 import redactedrice.ptcgr.rules.Rules;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.randomizer.context.JavaContext;
@@ -52,8 +53,9 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
         }
 
         Rules rules = new Rules();
+        Decks emptyDecks = new Decks();
         RandomizerCore.bindRandomizeContext(context, buildData(context, originalSpecs, rules),
-                buildData(context, modifiedSpecs, rules), rules);
+                buildData(context, modifiedSpecs, rules), emptyDecks, emptyDecks.copy(), rules);
     }
 
     @Override
