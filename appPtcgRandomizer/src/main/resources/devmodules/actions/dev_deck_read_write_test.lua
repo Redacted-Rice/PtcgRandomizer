@@ -52,8 +52,8 @@ function module.adjustDeckEntry(context, args)
 		error("Unknown card id: " .. tostring(args.cardId))
 	end
 
-	local originalDeck = context.originalDecks:getDeck(deckValue)
-	local modifiedDeck = context.modifiedDecks:getDeck(deckValue)
+	local originalDeck = context.original.decks:getDeck(deckValue)
+	local modifiedDeck = context.modified.decks:getDeck(deckValue)
 
 	local before = originalDeck:getCountOfCard(cardId)
 	local after = before + args.delta

@@ -173,19 +173,20 @@ end
 
 -- Like pool_utils.sourceCards but can include trainer proxies
 function evo_line_randomize_utils.sourceCards(context, source, excludeTrainerProxies)
-	local deck = source == "CURRENT" and context.modified or context.original
+	local cardSource = source == "CURRENT" and context.modified.cards
+		or context.original.cards
 	if excludeTrainerProxies then
-		return deck:getRandomizableMonsterCards()
+		return cardSource:getRandomizableMonsterCards()
 	end
-	return deck:getRandomizableMonsterCardsWithProxies()
+	return cardSource:getRandomizableMonsterCardsWithProxies()
 end
 
 -- Can include or not include proxies based on args
 function evo_line_randomize_utils.targetCards(context, excludeTrainerProxies)
 	if excludeTrainerProxies then
-		return context.modified:getRandomizableMonsterCards()
+		return context.modified.cards:getRandomizableMonsterCards()
 	end
-	return context.modified:getRandomizableMonsterCardsWithProxies()
+	return context.modified.cards:getRandomizableMonsterCardsWithProxies()
 end
 
 function evo_line_randomize_utils.isColorlessBasic(card)
@@ -1020,7 +1021,7 @@ function evo_line_randomize_utils.finalize(context, args, targets, toModifyByNam
 	end
 	-- We need to sync all cards including proxies regardless of if included because if they are excluded
 	-- their evo data could have changed
-	local syncCards = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	local syncCards = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 	evo_line_randomize_utils.syncEvoAiData(context, syncCards)
 end
 

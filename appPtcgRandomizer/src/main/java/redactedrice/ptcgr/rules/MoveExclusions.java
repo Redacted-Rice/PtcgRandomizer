@@ -43,6 +43,14 @@ public class MoveExclusions {
         exclByMoveName.clear();
     }
 
+    public MoveExclusions copy() {
+        MoveExclusions copy = new MoveExclusions();
+        for (MoveExclusion exclusion : getAllExclusions()) {
+            copy.addExclusionOnly(exclusion);
+        }
+        return copy;
+    }
+
     private boolean anyExclusionMatches(CardId id, Move move,
             boolean checkAgainstRemovedFromPoolListInsteadOfExludedFromRandList,
             List<MoveExclusion> foundExcl) {
