@@ -10,31 +10,31 @@ import redactedrice.compiler.instructions.basic.RawBytes;
 import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CardId;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.data.romtexts.DeckName;
 import redactedrice.ptcgr.rom.Decks;
 import redactedrice.ptcgr.rom.Texts;
 
 public class Deck {
-    private final DeckValues deckValue;
+    private final DeckId deckId;
     private final EnumMap<CardId, Integer> cardCounts;
     public DeckName name;
 
-    public Deck(DeckValues deckValue) {
-        this.deckValue = deckValue;
+    public Deck(DeckId deckId) {
+        this.deckId = deckId;
         this.cardCounts = new EnumMap<>(CardId.class);
         this.name = new DeckName();
     }
 
     public Deck copy() {
-        Deck copy = new Deck(deckValue);
+        Deck copy = new Deck(deckId);
         copy.cardCounts.putAll(cardCounts);
         copy.name = new DeckName(name);
         return copy;
     }
 
-    public DeckValues getDeckValue() {
-        return deckValue;
+    public DeckId getDeckId() {
+        return deckId;
     }
 
     public Map<CardId, Integer> getCardCounts() {
@@ -73,13 +73,13 @@ public class Deck {
         name.finalizeAndAddTexts(texts);
     }
 
-    public static void addPlaceholderDeck(DeckValues deckValue, Decks toAddTo) {
-        toAddTo.put(new Deck(deckValue));
+    public static void addPlaceholderDeck(DeckId deckId, Decks toAddTo) {
+        toAddTo.put(new Deck(deckId));
     }
 
-    public static int addDeckFromBytes(byte[] rawBytes, int start, DeckValues deckValue,
+    public static int addDeckFromBytes(byte[] rawBytes, int start, DeckId deckId,
             Texts texts, Decks toAddTo) {
-        Deck deck = new Deck(deckValue);
+        Deck deck = new Deck(deckId);
         int index = start;
         while (index < rawBytes.length) {
             int count = rawBytes[index] & 0xFF;
@@ -103,7 +103,7 @@ public class Deck {
     }
 
     public CodeBlock convertToCodeBlock(CardGroup<Card> cards) {
-        CodeBlock block = new CodeBlock("internal_deck_" + deckValue.name());
+        CodeBlock block = new CodeBlock("internal_deck_" + deckId.name());
         block.appendInstruction(new RawBytes(toRomBytes(cards)));
         return block;
     }

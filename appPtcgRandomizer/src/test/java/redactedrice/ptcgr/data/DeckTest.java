@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import redactedrice.ptcgr.constants.romenums.CardId;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.rom.Decks;
 import redactedrice.ptcgr.rom.Texts;
 
@@ -22,8 +22,8 @@ class DeckTest {
         };
 
         Decks decks = new Decks();
-        Deck.addDeckFromBytes(romBlock, 0, DeckValues.FIRE_STARTER_DECK, new Texts(), decks);
-        Deck deck = decks.getDeck(DeckValues.FIRE_STARTER_DECK);
+        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, new Texts(), decks);
+        Deck deck = decks.getDeck(DeckId.FIRE_STARTER_DECK);
         assertEquals(5, deck.getCountOfCard(CardId.ENERGY_FIRE));
     }
 
@@ -40,8 +40,8 @@ class DeckTest {
         };
 
         Decks decks = new Decks();
-        Deck.addDeckFromBytes(romBlock, 0, DeckValues.FIRE_STARTER_DECK, texts, decks);
-        Deck deck = decks.getDeck(DeckValues.FIRE_STARTER_DECK);
+        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, texts, decks);
+        Deck deck = decks.getDeck(DeckId.FIRE_STARTER_DECK);
         assertEquals(24, deck.getCountOfCard(CardId.ENERGY_FIRE));
         assertEquals(4, deck.getCountOfCard(CardId.MONSTER_004));
         assertEquals("Test Deck", deck.name.toString());
@@ -50,7 +50,7 @@ class DeckTest {
 
     @Test
     void setCountOfCardUpdatesMap() {
-        Deck deck = new Deck(DeckValues.WATER_1);
+        Deck deck = new Deck(DeckId.WATER_1);
         deck.setCountOfCard(CardId.ENERGY_WATER, 2);
         deck.setCountOfCard(CardId.MONSTER_007, 2);
 
