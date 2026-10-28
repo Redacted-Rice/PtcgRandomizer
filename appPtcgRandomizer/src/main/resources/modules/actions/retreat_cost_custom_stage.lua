@@ -55,7 +55,7 @@ module = {
 }
 
 function module.randomizeRetreatCost(context, args)
-	local targets = context.modified:getRandomizableMonsterCards()
+	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
 	custom_pool_utils.retreat.buildStagePoolGroup(context, args.retreatPools, targets):useToRandomize(
 			targets, "stage", "retreatCost", options)

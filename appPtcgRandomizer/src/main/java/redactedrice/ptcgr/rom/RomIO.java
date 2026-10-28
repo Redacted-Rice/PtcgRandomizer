@@ -86,16 +86,16 @@ public class RomIO {
         InstructionParser parser = new InstructionParser(List.of(ptcgParser,
                 new BpsInstructionSetParser(), new GbZ80InstructionSetParser()));
 
-        Decks writeDecks = romData.modifiedDecks.copy();
-        Blocks writeBlocks = romData.romBlanks.copy();
-        Texts writeTexts = romData.texts.copy();
-        RomBlockAssembler.assemble(romData.modified, writeTexts, writeDecks, writeBlocks,
-                romData.sourceMap, parser, ptcgParser);
+        // Copy blocks and texts as we modify these as part of assembling
+        Blocks writeBlocks = romData.baselineRomBlanks.copy();
+        Texts writeTexts = romData.baselineTexts.copy();
+        RomBlockAssembler.assemble(romData.modified.cards, writeTexts, romData.modified.decks,
+                writeBlocks, romData.baselineSourceMap, parser, ptcgParser);
 
         DataManager manager = new DataManager();
-        AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.rawBytes, writeBlocks);
+        AssignedAddresses assignedAddresses = manager.allocateBlocks(romData.baselineRawBytes, writeBlocks);
 
-        RomIO.writeBpsPatch(patchFile, romData.rawBytes, writeBlocks, assignedAddresses);
+        RomIO.writeBpsPatch(patchFile, romData.baselineRawBytes, writeBlocks, assignedAddresses);
     }
 
     public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks,

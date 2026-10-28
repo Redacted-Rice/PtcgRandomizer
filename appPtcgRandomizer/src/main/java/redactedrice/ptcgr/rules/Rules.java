@@ -21,6 +21,15 @@ public class Rules {
         moveExclusions = new MoveExclusions();
     }
 
+    private Rules(MoveExclusions moveExclusions, MoveAssignments moveAssignments) {
+        this.moveExclusions = moveExclusions;
+        this.moveAssignments = moveAssignments;
+    }
+
+    public Rules copy() {
+        return new Rules(moveExclusions.copy(), moveAssignments.copy());
+    }
+
     public void clear() {
         moveExclusions.clear();
         moveAssignments.clear();

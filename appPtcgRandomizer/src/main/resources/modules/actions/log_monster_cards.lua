@@ -162,7 +162,7 @@ function module.logMonsterCards(context, args)
 		return
 	end
 
-	local monsterCards = context.modified:getRandomizableMonsterCards()
+	local monsterCards = context.modified.cards:getRandomizableMonsterCards()
 	local tableOutput = datatable.format(monsterCards, {
 		title = "Monster Cards",
 		headerEvery = 30,

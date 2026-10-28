@@ -41,7 +41,6 @@ import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.actions.ActionBank;
 import redactedrice.ptcgr.randomizer.gui.moduleconfig.ArgumentConstraintDescription;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
-import redactedrice.ptcgr.rom.Decks;
 import redactedrice.ptcgr.rom.RomData;
 import redactedrice.ptcgr.rom.RomIO;
 import redactedrice.ptcgr.utils.IssuePresenter;
@@ -218,8 +217,7 @@ public class RandomizerCore {
         romData.prepareForModification();
 
         JavaContext context = new JavaContext();
-        bindRandomizeContext(context, romData.original, romData.modified, romData.originalDecks,
-                romData.modifiedDecks, romData.rules);
+        bindRandomizeContext(context, romData.original, romData.modified, romData.baselineRules.copy());
 
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
@@ -288,15 +286,13 @@ public class RandomizerCore {
 
     // original/modified/rules plus change detection. Same keys live Lua modules
     // read.
-    public static void bindRandomizeContext(JavaContext context, Object original, Object modified,
-            Decks originalDecks, Decks modifiedDecks, Rules rules) {
+    public static void bindRandomizeContext(JavaContext context, RandomizationData original,
+            RandomizationData modified, Rules rules) {
         if (context == null) {
             throw new IllegalArgumentException("Context cannot be null");
         }
         context.register("original", original);
         context.register("modified", modified);
-        context.register("originalDecks", originalDecks);
-        context.register("modifiedDecks", modifiedDecks);
         context.register("rules", rules);
         context.setConfig(JavaContext.CHANGE_DETECTION_ACTIVE, true);
     }

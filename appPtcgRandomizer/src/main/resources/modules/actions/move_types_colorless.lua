@@ -19,7 +19,7 @@ module = {
 
 function module.setAllMovesColorless(context)
 	local EnergyType = context.EnergyType
-	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(mon)
+	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(mon)
 		for moveSlot = 0, mon:getNumMoves() - 1 do
 			local move = mon:getMove(moveSlot)
 			local totalCost = move:getCost(EnergyType.COLORLESS) + move:getNonColorlessEnergyCosts()

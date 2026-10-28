@@ -72,7 +72,7 @@ function module.assignLine(line, startId, assignedNames)
 end
 
 function module.fixDexNumbers(context)
-	local cards = context.modified:getRandomizableMonsterCards()
+	local cards = context.modified.cards:getRandomizableMonsterCards()
 	local nextId = 1
 	local assignedNames = {}
 

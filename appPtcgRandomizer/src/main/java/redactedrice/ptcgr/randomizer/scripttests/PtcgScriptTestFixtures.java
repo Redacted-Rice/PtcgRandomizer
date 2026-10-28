@@ -18,6 +18,7 @@ import redactedrice.ptcgr.data.MonsterCard;
 import redactedrice.ptcgr.rom.Cards;
 import redactedrice.ptcgr.rom.Decks;
 import redactedrice.ptcgr.rules.Rules;
+import redactedrice.ptcgr.randomizer.RandomizationData;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.randomizer.context.JavaContext;
 import redactedrice.randomizer.scripttests.ScriptTestCase;
@@ -54,8 +55,11 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
 
         Rules rules = new Rules();
         Decks emptyDecks = new Decks();
-        RandomizerCore.bindRandomizeContext(context, buildData(context, originalSpecs, rules),
-                buildData(context, modifiedSpecs, rules), emptyDecks, emptyDecks.copy(), rules);
+        RandomizationData original = new RandomizationData(
+                buildData(context, originalSpecs, rules), emptyDecks);
+        RandomizationData modified = new RandomizationData(
+                buildData(context, modifiedSpecs, rules), emptyDecks.copy());
+        RandomizerCore.bindRandomizeContext(context, original, modified, rules);
     }
 
     @Override
@@ -63,8 +67,8 @@ final class PtcgScriptTestFixtures implements ScriptTestFixtures {
         String label = testCase.displayName();
         List<Map<String, Object>> expect =
                 ScriptTestValues.listOfMaps(testCase.data().get("expect"), "expect");
-        Cards modified = (Cards) context.get("modified");
-        List<MonsterCard> cards = modified.getRandomizableMonsterCards();
+        RandomizationData modified = (RandomizationData) context.get("modified");
+        List<MonsterCard> cards = modified.cards.getRandomizableMonsterCards();
         List<String> mismatches = new ArrayList<>();
         Set<MonsterCard> claimed = Collections.newSetFromMap(new IdentityHashMap<>());
 

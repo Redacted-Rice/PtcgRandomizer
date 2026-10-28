@@ -50,9 +50,9 @@ end
 
 -- source moves filtered by moveKind before pooling or grouping
 function move_utils.filteredMoves(context, args)
-	local cardSource = context.original
+	local cardSource = context.original.cards
 	if args.source == "CURRENT" then
-		cardSource = context.modified
+		cardSource = context.modified.cards
 	end
 	return move_utils.filterByKind(randomizer.list(
 		cardSource:getRandomizableMoves(true, false)), args.moveKind)
@@ -86,7 +86,7 @@ end
 -- cards being randomized. uses modified set, not the ROM source pool
 function move_utils.targets(context, args)
 	return move_utils.filterByKind(
-		randomizer.list(context.modified:getRandomizableMoves(false, false)), args.moveKind)
+		randomizer.list(context.modified.cards:getRandomizableMoves(false, false)), args.moveKind)
 end
 
 return move_utils

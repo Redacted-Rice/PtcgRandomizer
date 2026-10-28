@@ -77,8 +77,8 @@ function module.setEvoLineMetadata(context)
 	})
 
 	-- Set evo line metadata for both original and modified (includes trainer proxies)
-	module.applyEvoLineMetadata(context.original:getRandomizableMonsterCardsWithProxies())
-	module.applyEvoLineMetadata(context.modified:getRandomizableMonsterCardsWithProxies())
+	module.applyEvoLineMetadata(context.original.cards:getRandomizableMonsterCardsWithProxies())
+	module.applyEvoLineMetadata(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 end
 
 function module.applyEvoLineMetadata(monsterCards)

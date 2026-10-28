@@ -25,7 +25,7 @@ function module.removeEvolutions(context)
 	local encourageEvo = context.CardAiInfo.ENCOURAGE_EVO
 	local noAiInfo = context.CardAiInfo.NONE
 
-	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
+	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(card)
 		card.stage = basicStage
 		card.prevEvoName:clear()
 		card.aiFlags:remove(hasEvolution)

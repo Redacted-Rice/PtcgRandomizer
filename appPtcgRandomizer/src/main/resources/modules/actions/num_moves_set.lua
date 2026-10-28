@@ -30,7 +30,7 @@ module = {
 }
 
 function module.setNumMoves(context, args)
-	randomizer.list(context.modified:getRandomizableMonsterCards()):each(function(card)
+	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(card)
 		-- Set the num moves not overridding assignments. This intentially does not check
 		-- locked slots first so it will be apparant in the logs if a card is skipped due
 		-- to a locked slot
