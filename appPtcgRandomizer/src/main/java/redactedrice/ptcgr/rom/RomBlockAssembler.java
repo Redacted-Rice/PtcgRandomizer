@@ -12,7 +12,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.compiler.PtcgInstructionSetParser;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.Deck;
 import redactedrice.ptcgr.data.CardEffect;
@@ -77,13 +77,13 @@ public final class RomBlockAssembler {
         // No null in this one - its just straight to decks unlike cards
 
         // Iterate in the same deck order
-        for (DeckValues deckValue : DeckValues.values()) {
-            Deck deck = decks.getDeck(deckValue);
+        for (DeckId deckId : DeckId.values()) {
+            Deck deck = decks.getDeck(deckId);
             if (deck.isPlaceholder()) {
-                AddressRange origRange = sourceMap.getDeckRange(deck.getDeckValue());
+                AddressRange origRange = sourceMap.getDeckRange(deck.getDeckId());
                 if (origRange == null) {
                     throw new IllegalStateException(
-                            "Placeholder deck has no original ROM range: " + deckValue);
+                            "Placeholder deck has no original ROM range: " + deckId);
                 }
                 int storedPtr = origRange.getStart() - PtcgRomConstants.DECK_POINTER_OFFSET;
                 deckPtrs.appendInstruction(new RawBytes(
@@ -155,7 +155,7 @@ public final class RomBlockAssembler {
 
     private static HybridBlock toDeckHybridBlock(Deck deck, Cards cards, RomSourceMap sourceMap) {
         CodeBlock code = deck.convertToCodeBlock(cards.cards());
-        AddressRange origRange = sourceMap.getDeckRange(deck.getDeckValue());
+        AddressRange origRange = sourceMap.getDeckRange(deck.getDeckId());
         if (origRange != null) {
             code.addByteSourceHint(origRange);
             return new HybridBlock(new MovableBlock(code, 0, (byte) 0xC, (byte) 0xD),

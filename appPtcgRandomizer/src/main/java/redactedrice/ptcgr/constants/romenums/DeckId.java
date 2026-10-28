@@ -1,6 +1,6 @@
 package redactedrice.ptcgr.constants.romenums;
 
-public enum DeckValues {
+public enum DeckId {
     // @formatter:off
     UNUSED_DECK_1            (0x00, false),
     UNUSED_DECK_2            (0x01, false),
@@ -62,14 +62,14 @@ public enum DeckValues {
     private byte value;
     private boolean isValidDeck;
 
-    DeckValues(int inValue) {
+    DeckId(int inValue) {
         this(inValue, true);
     }
 
-    DeckValues(int inValue, boolean inIsValidDeck) {
+    DeckId(int inValue, boolean inIsValidDeck) {
         if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE) {
             throw new IllegalArgumentException(
-                    "Invalid constant input for " + "DeckValues enum: " + inValue);
+                    "Invalid constant input for " + "DeckId enum: " + inValue);
         }
         value = (byte) inValue;
         isValidDeck = inIsValidDeck;
@@ -83,16 +83,16 @@ public enum DeckValues {
         return value;
     }
 
-    public static DeckValues getDeckWithValue(int value) {
-        for (DeckValues num : DeckValues.values()) {
+    public static DeckId getDeckWithValue(int value) {
+        for (DeckId num : DeckId.values()) {
             if (value == num.getValue()) {
                 return num;
             }
         }
-        throw new IllegalArgumentException("Invalid DeckValues value " + value + " was passed");
+        throw new IllegalArgumentException("Invalid DeckId value " + value + " was passed");
     }
 
-    public static DeckValues readFromByte(byte b) {
+    public static DeckId readFromByte(byte b) {
         return getDeckWithValue(b);
     }
 }
