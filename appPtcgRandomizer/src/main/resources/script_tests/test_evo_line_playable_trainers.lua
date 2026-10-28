@@ -29,7 +29,7 @@ return {
 			"MONSTER_121",
 			"MONSTER_140",
 		}),
-		expect = {
+		expectCards = {
 			-- Evos of this proxy become basics and there is no evos so they all are basic
 			{ id = "MONSTER_101_1", name = "1-3-basic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_101_2", name = "1-3-basic", stage = "BASIC", prevEvoName = "" },
@@ -66,7 +66,7 @@ return {
 		cards = cardsWithTrainerProxies(card_sets.EVO_LINE_CARDS_CURRENT, {
 			"MONSTER_080",
 		}),
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", name = "GrassABasic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_002", name = "GrassA2nd", stage = "STAGE_1", prevEvoName = "GrassABasic" },
 			{ id = "MONSTER_003_1", name = "GrassA3rd", stage = "STAGE_2", prevEvoName = "GrassA2nd" },

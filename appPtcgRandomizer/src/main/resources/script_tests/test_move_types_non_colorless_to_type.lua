@@ -10,7 +10,7 @@ local function caseFor(energyType)
 			energyType = energyType,
 		},
 		cards = card_sets.MIXED_COST_CARDS,
-		expect = {
+		expectCards = {
 			{
 				id = "MONSTER_001",
 				moves = fields.moves({

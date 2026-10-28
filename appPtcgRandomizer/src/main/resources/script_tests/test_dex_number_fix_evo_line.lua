@@ -7,9 +7,9 @@ return {
 		name = "reassign_sequential",
 		module = "dex_number_fix_evo_line",
 		args = {},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			-- Lines are resolved in order of their root basic's lowest current dex
 			{ id = "MONSTER_001", dexNumber = 1 },
 			{ id = "MONSTER_002", dexNumber = 2 },
@@ -43,7 +43,7 @@ return {
 		module = "dex_number_fix_evo_line",
 		args = {},
 		cards = card_sets.EVO_BRANCH_3_TO_2,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_121", dexNumber = 1 }, -- Branch3Basic
 			{ id = "MONSTER_129", dexNumber = 2 }, -- Branch3S1A (branch 1)
 			{ id = "MONSTER_138", dexNumber = 3 }, -- Branch3S2A (branch 1)
@@ -58,7 +58,7 @@ return {
 		module = "dex_number_fix_evo_line",
 		args = {},
 		cards = card_sets.EVO_BRANCH_1_TO_3,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_100", dexNumber = 1 }, -- Branch1Basic
 			{ id = "MONSTER_102", dexNumber = 2 }, -- Branch1S1B (branch 1)
 			{ id = "MONSTER_103", dexNumber = 3 }, -- Branch1S1C (branch 2)

@@ -46,14 +46,14 @@ module = {
 }
 
 function module.adjustDeckEntry(context, args)
-	local deckValue = args.deck
+	local deckId = args.deck
 	local cardId = context.CardId[args.cardId]
 	if not cardId then
 		error("Unknown card id: " .. tostring(args.cardId))
 	end
 
-	local originalDeck = context.original.decks:getDeck(deckValue)
-	local modifiedDeck = context.modified.decks:getDeck(deckValue)
+	local originalDeck = context.original.decks:getDeck(deckId)
+	local modifiedDeck = context.modified.decks:getDeck(deckId)
 
 	local before = originalDeck:getCountOfCard(cardId)
 	local after = before + args.delta
@@ -61,7 +61,7 @@ function module.adjustDeckEntry(context, args)
 		after = 0
 	end
 
-	logger.info("Deck " .. tostring(deckValue) .. " " .. args.cardId .. " count " .. before .. " -> " .. after)
+	logger.info("Deck " .. tostring(deckId) .. " " .. args.cardId .. " count " .. before .. " -> " .. after)
 	modifiedDeck:setCountOfCard(cardId, after)
 end
 
