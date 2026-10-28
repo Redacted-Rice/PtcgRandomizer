@@ -37,7 +37,7 @@ function module.randomizeEvoLines(context, args)
 	evo_line_randomize_utils.init(context)
 
 	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source))
-	local targets = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	local targets = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 	local keyContext = evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards,
 			args.grouping, args.withinType, false)
 	local evoLineData = evo_line_randomize_utils.extractAllEvoLineData(sourceCards, keyContext)

@@ -30,6 +30,14 @@ public class MoveAssignments {
         assignmentsByCardId.clear();
     }
 
+    public MoveAssignments copy() {
+        MoveAssignments copy = new MoveAssignments();
+        for (MoveAssignment assignment : getAllAssignments()) {
+            copy.add(assignment, (CardGroup<MonsterCard>) null, false);
+        }
+        return copy;
+    }
+
     public void assignSpecifiedMoves(CardGroup<MonsterCard> cards) {
         CardGroup<MonsterCard> foundCards = cards.withIds(assignmentsByCardId.keySet());
         for (MonsterCard card : foundCards.iterable()) {

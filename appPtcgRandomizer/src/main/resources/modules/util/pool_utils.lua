@@ -15,9 +15,9 @@ end
 -- monster cards from the chosen source set
 function pool_utils.sourceCards(context, source)
 	if source == "CURRENT" then
-		return context.modified:getRandomizableMonsterCards()
+		return context.modified.cards:getRandomizableMonsterCards()
 	end
-	return context.original:getRandomizableMonsterCards()
+	return context.original.cards:getRandomizableMonsterCards()
 end
 
 -- composite key for scripts that use max stages. First digit is

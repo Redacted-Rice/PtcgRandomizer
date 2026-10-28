@@ -51,7 +51,7 @@ end
 
 
 function types_util.randomizeEvoLineTypes(context, typePool, poolOptions)
-	local monsterCards = context.modified:getRandomizableMonsterCards()
+	local monsterCards = context.modified.cards:getRandomizableMonsterCards()
 	local byEvoLine = randomizer.groupBy(monsterCards, "evoLineId")
 
 	-- Get one card from each evo line to set the type of

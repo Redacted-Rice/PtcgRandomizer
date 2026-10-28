@@ -25,7 +25,7 @@ module = {
 function module.fixPlayableTrainers(context, args)
 	evo_line_randomize_utils.init(context)
 
-	local modified = randomizer.list(context.modified:getRandomizableMonsterCardsWithProxies())
+	local modified = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 	local toModifyByPrevEvo = modified:filter(function(card)
 		return not card.prevEvoName:isEmpty()
 	end):groupBy("prevEvoName:toString")
