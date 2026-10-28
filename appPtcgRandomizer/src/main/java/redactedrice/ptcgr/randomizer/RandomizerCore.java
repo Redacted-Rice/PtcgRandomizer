@@ -23,7 +23,7 @@ import redactedrice.ptcgr.constants.StageGrouping;
 import redactedrice.ptcgr.constants.RandomizationApproach;
 import redactedrice.ptcgr.constants.romenums.CardId;
 import redactedrice.ptcgr.constants.romenums.CardType;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.constants.romenums.EnergyType;
 import redactedrice.ptcgr.constants.romenums.EvolutionStage;
 import redactedrice.ptcgr.constants.romenums.MoveCategory;
@@ -333,7 +333,7 @@ public class RandomizerCore {
         wrapper.registerSharedEnum(MoveKind.class,
                 Map.of("ALL_MOVES", "All Moves", "ATTACKS", "Attacks", "POWERS", "Powers"));
         wrapper.registerSharedEnum(MoveCategory.class);
-        wrapper.registerSharedEnum(DeckValues.class);
+        wrapper.registerSharedEnum(DeckId.class);
         wrapper.registerSharedEnum(CardId.class);
     }
 }

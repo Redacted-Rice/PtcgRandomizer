@@ -17,7 +17,7 @@ module = {
 			description = "Which deck to tweak",
 			definition = {
 				type = "enum",
-				constraint = "DeckValues",
+				constraint = "DeckId",
 			},
 			default = "FIRE_STARTER_DECK",
 		},

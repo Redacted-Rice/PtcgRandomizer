@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CardId;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.data.Deck;
 import redactedrice.rompacker.Blocks;
 
@@ -43,10 +43,10 @@ class RomReaderDeckTableTest {
         AddressRange deckPtrTable = sourceMap.getDeckPointerTable();
         assertEquals(tableLoc + 8, deckPtrTable.getStopExclusive());
 
-        assertTrue(decks.getDeck(DeckValues.UNUSED_DECK_1).isPlaceholder());
-        assertTrue(decks.getDeck(DeckValues.UNUSED_DECK_2).isPlaceholder());
+        assertTrue(decks.getDeck(DeckId.UNUSED_DECK_1).isPlaceholder());
+        assertTrue(decks.getDeck(DeckId.UNUSED_DECK_2).isPlaceholder());
 
-        Deck deck = decks.getDeck(DeckValues.TUTORIAL_DECK);
+        Deck deck = decks.getDeck(DeckId.TUTORIAL_DECK);
         assertNotNull(deck);
         assertEquals(2, deck.getCountOfCard(CardId.ENERGY_FIRE));
     }

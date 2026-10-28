@@ -5,7 +5,7 @@ import java.util.Map;
 
 import redactedrice.gbcframework.addressing.AddressRange;
 import redactedrice.ptcgr.constants.romenums.CardId;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 
 public class RomSourceMap {
     private AddressRange cardPointerTable;
@@ -13,7 +13,7 @@ public class RomSourceMap {
     private AddressRange textPointerTable;
     private final Map<Short, AddressRange> textRanges;
     private final Map<CardId, AddressRange> cardRanges;
-    private final Map<DeckValues, AddressRange> deckRanges;
+    private final Map<DeckId, AddressRange> deckRanges;
 
     public RomSourceMap() {
         textRanges = new HashMap<>();
@@ -26,7 +26,7 @@ public class RomSourceMap {
         copy.deckPointerTable = deckPointerTable == null ? null : new AddressRange(deckPointerTable);
         copy.cardPointerTable = cardPointerTable == null ? null : new AddressRange(cardPointerTable);
         copy.textPointerTable = textPointerTable == null ? null : new AddressRange(textPointerTable);
-        for (Map.Entry<DeckValues, AddressRange> entry : deckRanges.entrySet()) {
+        for (Map.Entry<DeckId, AddressRange> entry : deckRanges.entrySet()) {
             AddressRange range = entry.getValue();
             copy.deckRanges.put(entry.getKey(), range == null ? null : new AddressRange(range));
         }
@@ -49,12 +49,12 @@ public class RomSourceMap {
         return deckPointerTable;
     }
 
-    public void recordDeckRange(DeckValues deckValue, AddressRange range) {
-        deckRanges.put(deckValue, range);
+    public void recordDeckRange(DeckId deckId, AddressRange range) {
+        deckRanges.put(deckId, range);
     }
 
-    public AddressRange getDeckRange(DeckValues deckValue) {
-        return deckRanges.get(deckValue);
+    public AddressRange getDeckRange(DeckId deckId) {
+        return deckRanges.get(deckId);
     }
 
     public void setCardPointerTable(AddressRange range) {

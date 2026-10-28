@@ -5,33 +5,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.data.Deck;
 
 public class Decks {
-    private final Map<DeckValues, Deck> decksByValue;
+    private final Map<DeckId, Deck> decksById;
 
     public Decks() {
-        decksByValue = new LinkedHashMap<>();
+        decksById = new LinkedHashMap<>();
     }
 
     public Decks copy() {
         Decks copy = new Decks();
-        for (Deck deck : decksByValue.values()) {
+        for (Deck deck : decksById.values()) {
             copy.put(deck.copy());
         }
         return copy;
     }
 
     public void put(Deck deck) {
-        decksByValue.put(deck.getDeckValue(), deck);
+        decksById.put(deck.getDeckId(), deck);
     }
 
-    public Deck getDeck(DeckValues deckValue) {
-        return decksByValue.get(deckValue);
+    public Deck getDeck(DeckId deckId) {
+        return decksById.get(deckId);
     }
 
     public List<Deck> getDecks() {
-        return new ArrayList<>(decksByValue.values());
+        return new ArrayList<>(decksById.values());
     }
 }

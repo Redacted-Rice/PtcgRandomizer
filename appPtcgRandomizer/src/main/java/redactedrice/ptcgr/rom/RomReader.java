@@ -5,7 +5,7 @@ import redactedrice.gbcframework.utils.ByteUtils;
 import redactedrice.ptcgr.constants.CharMapConstants;
 import redactedrice.ptcgr.constants.PtcgRomConstants;
 import redactedrice.ptcgr.constants.romenums.CharSetPrefix;
-import redactedrice.ptcgr.constants.romenums.DeckValues;
+import redactedrice.ptcgr.constants.romenums.DeckId;
 import redactedrice.ptcgr.data.Card;
 import redactedrice.ptcgr.data.Deck;
 import redactedrice.rompacker.Blocks;
@@ -134,7 +134,7 @@ public final class RomReader {
         while ((deckPtr = (int) ByteUtils.readLittleEndian(rawBytes, deckListPtr,
                 PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES)) != 0) {
             // Get the id and move the pointer
-            DeckValues deckId = DeckValues.getDeckWithValue(deckIndex);
+            DeckId deckId = DeckId.getDeckWithValue(deckIndex);
             deckListPtr += PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES;
             deckIndex++;
 

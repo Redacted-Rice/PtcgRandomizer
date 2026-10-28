@@ -241,7 +241,7 @@ public enum CardId {
     private CardId(int inValue) {
         if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE) {
             throw new IllegalArgumentException(
-                    "Invalid constant input for " + "DeckValues enum: " + inValue);
+                    "Invalid constant input for " + "CardId enum: " + inValue);
         }
         value = (byte) inValue;
         incrementNumberOfCards();
@@ -250,7 +250,7 @@ public enum CardId {
     private CardId(int inValue, boolean isValidCard) {
         if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE) {
             throw new IllegalArgumentException(
-                    "Invalid constant input for " + "DeckValues enum: " + inValue);
+                    "Invalid constant input for " + "CardId enum: " + inValue);
         }
         value = (byte) inValue;
 
