@@ -32,7 +32,7 @@ return {
 			{ id = "MONSTER_023", name = "Solo", type = "MONSTER_GRASS", stage = "BASIC" },
 			{ id = "MONSTER_024", name = "Solo", type = "MONSTER_GRASS", stage = "BASIC" },
 		},
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
 			{ id = "MONSTER_002", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
 			{ id = "MONSTER_003_1", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
@@ -49,7 +49,7 @@ return {
 		name = "assigns_branch_metadata_for_1_to_3",
 		module = "evo_line_metadata_set",
 		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_1_TO_3),
-		expect = metadataExpect(card_sets.EVO_BRANCH_1_TO_3),
+		expectCards = metadataExpect(card_sets.EVO_BRANCH_1_TO_3),
 	},
 	{
 		-- Two root basics with no prevEvo are separate evo lines under metadata_set,
@@ -57,7 +57,7 @@ return {
 		name = "assigns_branch_metadata_for_2_to_3",
 		module = "evo_line_metadata_set",
 		cards = card_sets.EVO_BRANCH_2_TO_3,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_116", evoLineId = 1, evoBranchIds = { 1, 2, 3 }, evoLineMaxStage = "STAGE_1" },
 			{ id = "MONSTER_117", evoLineId = 2, evoBranchIds = { 4 }, evoLineMaxStage = "BASIC" },
 			{ id = "MONSTER_118", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
@@ -69,13 +69,13 @@ return {
 		name = "assigns_branch_metadata_for_3_to_2",
 		module = "evo_line_metadata_set",
 		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_3_TO_2),
-		expect = metadataExpect(card_sets.EVO_BRANCH_3_TO_2),
+		expectCards = metadataExpect(card_sets.EVO_BRANCH_3_TO_2),
 	},
 	{
 		name = "assigns_branch_metadata_for_proxy_3_to_2",
 		module = "evo_line_metadata_set",
 		cards = card_sets.withoutEvoLineMetadata(card_sets.EVO_BRANCH_PROXY_3_TO_2),
-		expect = metadataExpect(card_sets.EVO_BRANCH_PROXY_3_TO_2),
+		expectCards = metadataExpect(card_sets.EVO_BRANCH_PROXY_3_TO_2),
 	},
 	{
 		name = "clears_stale_metadata_before_reapply",
@@ -88,7 +88,7 @@ return {
 				prevEvoName = "ReapplyBase",
 				evoLineId = 99, evoBranchIds = { 7 }, evoLineMaxStage = "STAGE_2" },
 		},
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
 			{ id = "MONSTER_002", evoLineId = 1, evoBranchIds = { 1 }, evoLineMaxStage = "STAGE_1" },
 		},

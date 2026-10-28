@@ -32,7 +32,7 @@ local cases = {
 		name = "default_fields",
 		module = "log_monster_cards",
 		cards = cards,
-		expect = unchanged,
+		expectCards = unchanged,
 	},
 	{
 		name = "all_fields",
@@ -41,7 +41,7 @@ local cases = {
 			fields = fieldValues,
 		},
 		cards = cards,
-		expect = unchanged,
+		expectCards = unchanged,
 	},
 }
 
@@ -53,7 +53,7 @@ for _, field in ipairs(fieldValues) do
 			fields = { field },
 		},
 		cards = cards,
-		expect = unchanged,
+		expectCards = unchanged,
 	})
 end
 

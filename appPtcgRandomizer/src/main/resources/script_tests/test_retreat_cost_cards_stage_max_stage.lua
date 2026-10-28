@@ -12,9 +12,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 1 },
 			{ id = "MONSTER_002", retreatCost = 3 },
 			{ id = "MONSTER_003_1", retreatCost = 2 },
@@ -47,9 +47,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 1 },
 			{ id = "MONSTER_002", retreatCost = 1 },
 			{ id = "MONSTER_003_1", retreatCost = 1 },
@@ -82,9 +82,9 @@ return {
 			duplicates = "REMOVE_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 2 },
 			{ id = "MONSTER_002", retreatCost = 3 },
 			{ id = "MONSTER_003_1", retreatCost = 1 },
@@ -117,9 +117,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "FULLY_RANDOM",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 1 },
 			{ id = "MONSTER_002", retreatCost = 3 },
 			{ id = "MONSTER_003_1", retreatCost = 2 },

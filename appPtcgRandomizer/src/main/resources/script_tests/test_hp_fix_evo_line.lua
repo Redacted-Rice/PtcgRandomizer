@@ -9,9 +9,9 @@ return {
 		args = {
 			mode = "Match Previous",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			-- Solo basics unchanged
 			{ id = "MONSTER_001", hp = 10 },
 			{ id = "MONSTER_002", hp = 20 },
@@ -41,9 +41,9 @@ return {
 		args = {
 			mode = "Redistribute",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			-- Solo basics unchanged
 			{ id = "MONSTER_001", hp = 10 },
 			{ id = "MONSTER_002", hp = 20 },
@@ -74,9 +74,8 @@ return {
 			mode = "Match Previous",
 			branchHandling = "Individual Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: each line raised to basic max (90)
 			{ id = "MONSTER_101_1", hp = 80 }, 	-- b
 			{ id = "MONSTER_101_2", hp = 90 }, 	-- b
@@ -115,9 +114,8 @@ return {
 			mode = "Match Previous",
 			branchHandling = "All Together",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: same as individual case
 			{ id = "MONSTER_101_1", hp = 80 },	-- b
 			{ id = "MONSTER_101_2", hp = 90 },	-- b
@@ -157,9 +155,8 @@ return {
 			mode = "Redistribute",
 			branchHandling = "Individual Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: basics swap down and are lower than all branches
 			{ id = "MONSTER_101_1", hp = 20 },	-- b
 			{ id = "MONSTER_101_2", hp = 40 },	-- b
@@ -198,9 +195,8 @@ return {
 			mode = "Redistribute",
 			branchHandling = "All Together",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: bs are lower than all 1s
 			{ id = "MONSTER_101_1", hp = 40 },	-- b
 			{ id = "MONSTER_101_2", hp = 20 },	-- b

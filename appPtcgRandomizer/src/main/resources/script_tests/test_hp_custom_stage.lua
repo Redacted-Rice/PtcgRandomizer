@@ -28,7 +28,7 @@ return {
 			hpPools = hpPools,
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", hp = 30 }, -- BASIC
 			{ id = "MONSTER_002", hp = 20 }, -- BASIC
 			{ id = "MONSTER_003_1", hp = 10 }, -- BASIC
@@ -59,7 +59,7 @@ return {
 			hpPools = hpPools,
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", hp = 10 }, -- BASIC
 			{ id = "MONSTER_002", hp = 10 }, -- BASIC
 			{ id = "MONSTER_003_1", hp = 20 }, -- BASIC

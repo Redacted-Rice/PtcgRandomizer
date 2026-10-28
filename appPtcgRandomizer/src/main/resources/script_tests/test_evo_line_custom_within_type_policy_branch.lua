@@ -27,15 +27,15 @@ local unbiasedPolicyArgs = {
 	},
 }
 
-local function caseFor(name, args, original, modified, expect, caseSeed)
+local function caseFor(name, args, originalCards, modifiedCards, expectCards, caseSeed)
 	return {
 		name = name,
 		module = "evo_line_custom_within_type",
 		seed = caseSeed or seed,
 		args = args,
-		original = original,
-		modified = modified or original,
-		expect = expect,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards or originalCards,
+		expectCards = expectCards,
 	}
 end
 

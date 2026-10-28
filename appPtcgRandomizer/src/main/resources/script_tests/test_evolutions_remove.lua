@@ -40,9 +40,8 @@ return {
 		name = "clears_evo_links_has_evolution_and_encourage_evo",
 		module = "evolutions_remove",
 		args = {},
-		original = testCards,
-		modified = testCards,
-		expect = {
+		cards = testCards,
+		expectCards = {
 			-- UNK_03 is a distinct aiInfo value, not ENCOURAGE_EVO - leave it
 			{ id = "MONSTER_001", stage = "BASIC", prevEvoName = "", aiInfo = "UNK_03", aiFlags = {} },
 			{ id = "MONSTER_002", stage = "BASIC", prevEvoName = "", aiInfo = "NONE", aiFlags = {} },

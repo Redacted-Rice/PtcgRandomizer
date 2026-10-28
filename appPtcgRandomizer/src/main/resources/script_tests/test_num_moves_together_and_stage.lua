@@ -13,10 +13,10 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
 		-- Matches ROM numbers exactly
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 0 },
 			{ id = "MONSTER_002", numMoves = 2 },
 			{ id = "MONSTER_003_1", numMoves = 2 },
@@ -46,10 +46,10 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "BY_STAGE",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
 		-- Matches ROM numbers exactly
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 2 }, -- BASIC
 			{ id = "MONSTER_002", numMoves = 2 }, -- BASIC
 			{ id = "MONSTER_003_1", numMoves = 1 }, -- BASIC
@@ -81,10 +81,10 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
 		-- Matches CURRENT numbers exactly
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 2 },
 			{ id = "MONSTER_002", numMoves = 0 },
 			{ id = "MONSTER_003_1", numMoves = 0 },
@@ -114,10 +114,10 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
 		-- Even split of all 3 values as expected
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 1 },
 			{ id = "MONSTER_002", numMoves = 2 },
 			{ id = "MONSTER_003_1", numMoves = 0 },
@@ -147,11 +147,11 @@ return {
 			approach = "FULLY_RANDOM",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
 		-- Doesn't match but keeps similar disto. Here one 0 is selected
 		-- which is "expected" for fully random
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 0 },
 			{ id = "MONSTER_002", numMoves = 1 },
 			{ id = "MONSTER_003_1", numMoves = 2 },

@@ -13,15 +13,15 @@ local defaultEvoLinePool = {
 	{ weight = 1, evoLine = { BASIC = 1, STAGE_1 = 3, STAGE_2 = 2 } },
 }
 
-local function caseFor(name, args, original, modified, expect, caseSeed)
+local function caseFor(name, args, originalCards, modifiedCards, expectCards, caseSeed)
 	return {
 		name = name,
 		module = "evo_line_custom",
 		seed = caseSeed or seed,
 		args = args,
-		original = original,
-		modified = modified or original,
-		expect = expect,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards or originalCards,
+		expectCards = expectCards,
 	}
 end
 

@@ -17,7 +17,7 @@ return {
 			retreatPool = retreatPool,
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 1 },
 			{ id = "MONSTER_002", retreatCost = 2 },
 			{ id = "MONSTER_003_1", retreatCost = 2 },
@@ -45,7 +45,7 @@ return {
 			retreatPool = retreatPool,
 		},
 		cards = card_sets.STD_TEST_CARDS_ROM,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", retreatCost = 1 },
 			{ id = "MONSTER_002", retreatCost = 1 },
 			{ id = "MONSTER_003_1", retreatCost = 1 },

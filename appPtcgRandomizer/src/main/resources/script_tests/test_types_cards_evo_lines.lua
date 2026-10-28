@@ -3,7 +3,7 @@
 local seed = 1466
 
 -- Typed evo lines with reprints plus a second FIRE line so KEEP vs REMOVE is visible.
-local original = {
+local originalCards = {
 	{ id = "MONSTER_001", name = "FireBase", type = "MONSTER_FIRE", stage = "BASIC", evoLineId = 1 },
 	{ id = "MONSTER_002", name = "FireBase", type = "MONSTER_FIRE", stage = "BASIC", evoLineId = 1 },
 	{ id = "MONSTER_003_1", name = "FireEvo", type = "MONSTER_FIRE", stage = "STAGE_1", prevEvoName = "FireBase", evoLineId = 1 },
@@ -25,7 +25,7 @@ local original = {
 }
 
 -- Same cards with different types so ROM vs CURRENT is visible.
-local modified = {
+local modifiedCards = {
 	{ id = "MONSTER_001", name = "FireBase", type = "MONSTER_COLORLESS", stage = "BASIC", evoLineId = 1 },
 	{ id = "MONSTER_002", name = "FireBase", type = "MONSTER_COLORLESS", stage = "BASIC", evoLineId = 1 },
 	{ id = "MONSTER_003_1", name = "FireEvo", type = "MONSTER_COLORLESS", stage = "STAGE_1", prevEvoName = "FireBase", evoLineId = 1 },
@@ -56,10 +56,10 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = original,
-		modified = modified,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards,
 		-- ROM has 2 FIRE lines and 1 of other types. This distro matches
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
@@ -90,10 +90,10 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = original,
-		modified = modified,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards,
 		-- CURRENT has 3 PSYCHIC lines and 1 of other types. This distro matches
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
@@ -124,10 +124,10 @@ return {
 			duplicates = "REMOVE_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = original,
-		modified = modified,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards,
 		-- Four unique CURRENT types, then two refills. COLORLESS and GRASS double up, not PSYCHIC only like keep_duplicates.
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },
@@ -158,11 +158,11 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "FULLY_RANDOM",
 		},
-		original = original,
-		modified = modified,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards,
 		-- PSYCHIC and GRASS each were selected twice. FIRE was unused
 		-- This matches expectations for fully random
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_003_1", type = "MONSTER_PSYCHIC" },

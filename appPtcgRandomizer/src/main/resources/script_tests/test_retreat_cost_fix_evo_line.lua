@@ -9,9 +9,9 @@ return {
 		args = {
 			mode = "Match Previous",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			-- Solo basics unchanged
 			{ id = "MONSTER_001", retreatCost = 0 },
 			{ id = "MONSTER_002", retreatCost = 1 },
@@ -41,9 +41,9 @@ return {
 		args = {
 			mode = "Redistribute",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			-- Solo basics unchanged
 			{ id = "MONSTER_001", retreatCost = 0 },
 			{ id = "MONSTER_002", retreatCost = 1 },
@@ -74,9 +74,8 @@ return {
 			mode = "Match Previous",
 			branchHandling = "Separate Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: Branches alone. No change or continuity
 			{ id = "MONSTER_101_1", retreatCost = 3 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 2 },	-- b
@@ -117,9 +116,8 @@ return {
 			mode = "Match Previous",
 			branchHandling = "Individual Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: All raised to basic max (3)
 			{ id = "MONSTER_101_1", retreatCost = 3 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 2 },	-- b
@@ -162,9 +160,8 @@ return {
 			mode = "Match Previous",
 			branchHandling = "All Together",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: All raised to match basic max (3)
 			{ id = "MONSTER_101_1", retreatCost = 3 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 2 },	-- b
@@ -204,9 +201,8 @@ return {
 			mode = "Redistribute",
 			branchHandling = "Individual Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: Lowest swapped to basic. 1s are >= b max (0)
 			{ id = "MONSTER_101_1", retreatCost = 0 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 1 },	-- b
@@ -245,9 +241,8 @@ return {
 			mode = "Redistribute",
 			branchHandling = "All Together",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: All basics are all <= stage 1s
 			{ id = "MONSTER_101_1", retreatCost = 0 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 1 },	-- b
@@ -286,9 +281,8 @@ return {
 			mode = "Redistribute",
 			branchHandling = "Separate Branches",
 		},
-		original = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		modified = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
+		expectCards = {
 			-- 1-3-0: Branches alone. No change or continuity
 			{ id = "MONSTER_101_1", retreatCost = 3 },	-- b
 			{ id = "MONSTER_101_2", retreatCost = 2 },	-- b
