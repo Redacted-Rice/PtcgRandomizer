@@ -57,9 +57,8 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			typeWeights = typeWeights,
 		},
-		original = cards,
-		modified = cards,
-		expect = {
+		cards = cards,
+		expectCards = {
 			-- Match type weights exactly
 			{ id = "MONSTER_001", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_002", type = "MONSTER_GRASS" },
@@ -89,9 +88,8 @@ return {
 			approach = "FULLY_RANDOM",
 			typeWeights = typeWeights,
 		},
-		original = cards,
-		modified = cards,
-		expect = {
+		cards = cards,
+		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_002", type = "MONSTER_GRASS" },
 			{ id = "MONSTER_003_1", type = "MONSTER_GRASS" },

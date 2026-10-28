@@ -202,9 +202,9 @@ local function caseFor(name, overrides)
 		module = "moves_stage_max_stage",
 		seed = seed,
 		args = args,
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = expects[name],
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = expects[name],
 	}
 end
 

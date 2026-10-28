@@ -12,9 +12,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", numMoves = 2 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", numMoves = 2 }, -- BASIC/BASIC
@@ -48,9 +48,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 2 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", numMoves = 2 }, -- BASIC/BASIC
@@ -84,9 +84,9 @@ return {
 			duplicates = "REMOVE_DUPLICATES",
 			approach = "MINIMIZE_REPEATS",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 2 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", numMoves = 1 }, -- BASIC/BASIC
@@ -120,9 +120,9 @@ return {
 			duplicates = "KEEP_DUPLICATES",
 			approach = "FULLY_RANDOM",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", numMoves = 2 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", numMoves = 2 }, -- BASIC/BASIC

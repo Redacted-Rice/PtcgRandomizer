@@ -6,7 +6,7 @@ return {
 	name = "match_card_type",
 	module = "move_types_match_type",
 	cards = card_sets.MIXED_COST_CARDS,
-	expect = {
+	expectCards = {
 		{
 			id = "MONSTER_001", type = "MONSTER_FIRE", moves = fields.moves({
 				{ name = "Burn", costs = fields.costs({ FIRE = 2, COLORLESS = 1 }) },

@@ -6,7 +6,7 @@ return {
 	name = "rewrite_to_colorless",
 	module = "move_types_colorless",
 	cards = card_sets.MIXED_COST_CARDS,
-	expect = {
+	expectCards = {
 		{
 			id = "MONSTER_001", type = "MONSTER_FIRE", moves = fields.moves({
 				{ name = "Burn", costs = fields.costs({ COLORLESS = 3 }) },

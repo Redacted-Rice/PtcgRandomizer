@@ -13,9 +13,9 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", hp = 70 },
 			{ id = "MONSTER_002", hp = 50 },
 			{ id = "MONSTER_003_1", hp = 40 },
@@ -44,9 +44,9 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "BY_STAGE",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", hp = 40 }, -- BASIC
 			{ id = "MONSTER_002", hp = 40 }, -- BASIC
 			{ id = "MONSTER_003_1", hp = 40 }, -- BASIC
@@ -77,9 +77,9 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", hp = 110 },
 			{ id = "MONSTER_002", hp = 60 },
 			{ id = "MONSTER_003_1", hp = 80 },
@@ -108,9 +108,9 @@ return {
 			approach = "MINIMIZE_REPEATS",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", hp = 60 },
 			{ id = "MONSTER_002", hp = 80 },
 			{ id = "MONSTER_003_1", hp = 90 },
@@ -139,9 +139,9 @@ return {
 			approach = "FULLY_RANDOM",
 			grouping = "ALL_TOGETHER",
 		},
-		original = card_sets.STD_TEST_CARDS_ROM,
-		modified = card_sets.STD_TEST_CARDS_CURRENT,
-		expect = {
+		originalCards = card_sets.STD_TEST_CARDS_ROM,
+		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
+		expectCards = {
 			{ id = "MONSTER_001", hp = 70 },
 			{ id = "MONSTER_002", hp = 50 },
 			{ id = "MONSTER_003_1", hp = 40 },

@@ -11,7 +11,7 @@ return {
 			{ id = "MONSTER_002", numMoves = 1 },
 			{ id = "MONSTER_003_1", numMoves = 2 },
 		},
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", numMoves = 2 },
 			{ id = "MONSTER_002", numMoves = 2 },
 			{ id = "MONSTER_003_1", numMoves = 2 },

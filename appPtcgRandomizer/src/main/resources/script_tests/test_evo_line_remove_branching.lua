@@ -6,7 +6,7 @@ return {
 		module = "evo_line_remove_branching",
 		args = {},
 		cards = card_sets.FIX_EVO_BRANCH_COMPLEX,
-		expect = {
+		expectCards = {
 			-- All evos end up as basics since there is no further evos
 			{ id = "MONSTER_101_1", name = "1-3-basic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_101_2", name = "1-3-basic", stage = "BASIC", prevEvoName = "" },
@@ -41,7 +41,7 @@ return {
 		module = "evo_line_remove_branching",
 		args = {},
 		cards = card_sets.EVO_LINE_CARDS_CURRENT,
-		expect = {
+		expectCards = {
 			{ id = "MONSTER_001", name = "GrassABasic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_002", name = "GrassA2nd", stage = "STAGE_1", prevEvoName = "GrassABasic" },
 			{ id = "MONSTER_003_1", name = "GrassA3rd", stage = "STAGE_2", prevEvoName = "GrassA2nd" },

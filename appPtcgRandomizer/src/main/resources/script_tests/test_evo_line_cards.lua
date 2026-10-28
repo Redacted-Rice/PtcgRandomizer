@@ -5,15 +5,15 @@ local romCards = card_sets.EVO_LINE_CARDS_ROM
 local currentCards = card_sets.EVO_LINE_CARDS_CURRENT
 local byStageAndMax = { withinType = "All Together", grouping = "BY_STAGE_AND_MAX_STAGE", source = "ROM" }
 
-local function caseFor(name, args, original, modified, expect, caseSeed)
+local function caseFor(name, args, originalCards, modifiedCards, expectCards, caseSeed)
 	return {
 		name = name,
 		module = "evo_line_cards",
 		seed = caseSeed or seed,
 		args = args,
-		original = original,
-		modified = modified or original,
-		expect = expect,
+		originalCards = originalCards,
+		modifiedCards = modifiedCards or originalCards,
+		expectCards = expectCards,
 	}
 end
 
