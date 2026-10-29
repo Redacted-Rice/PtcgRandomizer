@@ -11,29 +11,24 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import redactedrice.ptcgr.configs.Config;
+import redactedrice.ptcgr.configs.AddConfigSettings;
 
 /** Pick rules, actions, or general settings when importing or resetting config. */
 final class ConfigSectionsDialog {
     private ConfigSectionsDialog() {
     }
 
-    record Selection(boolean rules, boolean actions, boolean generalSettings) {
-        boolean isEmpty() {
-            return !rules && !actions && !generalSettings;
-        }
-    }
-
-    static Optional<Selection> showImport(Component parent, Config loaded) {
+    static Optional<AddConfigSettings> showImport(Component parent, Config loaded) {
         return show(parent, "Add Config", "Choose which sections to add from the file:",
                 loaded.hasRules(), loaded.hasActionsSection(), loaded.hasSeed());
     }
 
-    static Optional<Selection> showReset(Component parent) {
+    static Optional<AddConfigSettings> showReset(Component parent) {
         return show(parent, "Reset Config", "Choose which sections to reset to defaults:",
                 true, true, true);
     }
 
-    private static Optional<Selection> show(Component parent, String title, String message,
+    private static Optional<AddConfigSettings> show(Component parent, String title, String message,
             boolean rulesAvailable, boolean actionsAvailable, boolean generalSettingsAvailable) {
         JCheckBox rulesBox = new JCheckBox("Rules", rulesAvailable);
         JCheckBox actionsBox = new JCheckBox("Actions", actionsAvailable);
@@ -56,8 +51,8 @@ final class ConfigSectionsDialog {
             return Optional.empty();
         }
 
-        Selection selection = new Selection(rulesBox.isSelected(), actionsBox.isSelected(),
-                generalSettingsBox.isSelected());
+        AddConfigSettings selection = new AddConfigSettings(rulesBox.isSelected(),
+                actionsBox.isSelected(), generalSettingsBox.isSelected());
         if (selection.isEmpty()) {
             JOptionPane.showMessageDialog(parent, "Select at least one section.", title,
                     JOptionPane.INFORMATION_MESSAGE);

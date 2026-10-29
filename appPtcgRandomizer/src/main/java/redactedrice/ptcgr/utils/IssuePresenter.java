@@ -47,9 +47,11 @@ public final class IssuePresenter {
 
     private static void showDialog(Component parent, String handlingContext, List<String> messages,
             int messageType) {
-        // No parent (tests / headless consumers): skip UI; caller still clears the
-        // store
+        // No parent for tests and headless will print to the console instead
         if (parent == null) {
+            for (String message : messages) {
+                System.err.println(handlingContext + ": " + message);
+            }
             return;
         }
 
