@@ -34,7 +34,7 @@ import redactedrice.randomizer.scripttests.ScriptTestValues;
 // Deck fixture: originalDecks + modifiedDecks, or decks for both sides when they match.
 // Every card spec and expect row needs id. name is only for game fields like prevEvoName.
 // Deck rows use id (DeckId name) and a cards map of CardId name to count.
-final class PtcgScriptTestFixtures implements ScriptTestFixtures {
+public final class PtcgScriptTestFixtures implements ScriptTestFixtures {
     private static final Set<String> ALLOWED_CASE_KEYS = Set.of(
             "name",
             "module",
