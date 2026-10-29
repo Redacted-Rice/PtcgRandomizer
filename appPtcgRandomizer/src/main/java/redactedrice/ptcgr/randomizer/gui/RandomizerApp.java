@@ -1,6 +1,5 @@
 package redactedrice.ptcgr.randomizer.gui;
 
-import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
@@ -28,13 +27,14 @@ import javax.swing.JOptionPane;
 import java.awt.FlowLayout;
 
 import redactedrice.ptcgr.randomizer.RandomizerCore;
-import redactedrice.ptcgr.randomizer.scripttests.ScriptTestRunner;
+import redactedrice.ptcgr.randomizer.launch.CommandLineArgs;
+import redactedrice.ptcgr.configs.AddConfigSettings;
+import redactedrice.ptcgr.randomizer.launch.LaunchUtils;
 import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.randomizer.actions.Action;
 import redactedrice.ptcgr.randomizer.gui.dualselector.table.DualTableSelector;
 import redactedrice.ptcgr.randomizer.gui.rules.RulesPanel;
 import redactedrice.ptcgr.randomizer.gui.support.SupportPanel;
-import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.utils.FileExtensionUtils;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.ptcgr.configs.YamlIO;
@@ -44,13 +44,11 @@ import redactedrice.randomizer.utils.IssueTracker;
 import redactedrice.randomizer.utils.LogLevel;
 import redactedrice.randomizer.utils.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class RandomizerApp {
-    private static final String DEFAULT_ROM_NAME = "ptcg.gbc";
     private static final String OPEN_ROM_TEXT = "Open ROM";
     private static final String OPEN_NEW_ROM_TEXT = "Open New ROM";
 
@@ -72,62 +70,17 @@ public class RandomizerApp {
     private RulesPanel rulesPanel;
     private SupportPanel supportPanel;
 
-    // Forces PtcgBundledResources to redo the backup and reinstall of resources like on version
-    // update
-    private static final String REINSTALL_RESOURCES_FLAG = "--reinstall-resources";
-    // Forces PtcgBundledResources to backup the whole install folder, clean it and reinstall
-    // resources. Mainly intended for testing/dev
-    private static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
+    private final CommandLineArgs launchOptions;
 
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        args = consumeResourceReinstallFlags(args);
-
-        if (ScriptTestRunner.handles(args)) {
-            System.exit(ScriptTestRunner.run(args));
-        }
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    RandomizerApp window = new RandomizerApp();
-                    window.frmTradingCard.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private static String[] consumeResourceReinstallFlags(String[] args) {
-        List<String> remaining = new ArrayList<>();
-        boolean reinstall = false;
-        boolean cleanReinstall = false;
-        for (String arg : args) {
-            if (REINSTALL_RESOURCES_FLAG.equals(arg)) {
-                reinstall = true;
-            } else if (CLEAN_REINSTALL_RESOURCES_FLAG.equals(arg)) {
-                cleanReinstall = true;
-            } else {
-                remaining.add(arg);
-            }
-        }
-        if (reinstall) {
-            System.setProperty(PtcgBundledResources.REINSTALL_RESOURCES_SYSTEM_PROPERTY, "true");
-        }
-        if (cleanReinstall) {
-            System.setProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY,
-                    "true");
-        }
-        return remaining.toArray(new String[0]);
+    public void showWindow() {
+        frmTradingCard.setVisible(true);
     }
 
     /**
      * Create the application.
      */
-    public RandomizerApp() {
+    public RandomizerApp(CommandLineArgs launchOptions) {
+        this.launchOptions = launchOptions;
         initialize();
     }
 
@@ -142,7 +95,7 @@ public class RandomizerApp {
         frmTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 
         randomizer = new RandomizerCore(frmTradingCard);
-        appPreferences = loadAppPreferences();
+        appPreferences = LaunchUtils.loadAppPreferences(frmTradingCard);
         lastOpenedRomPath = appPreferences.getLastRomPath();
 
         openRomChooser = new JFileChooser();
@@ -297,7 +250,7 @@ public class RandomizerApp {
         addConfigButton
                 .setToolTipText("Adds rules and actions from the file. They are not replaced. "
                         + "Single-value settings like seed are replaced.");
-        addConfigButton.addActionListener(event -> addConfigFromFile());
+        addConfigButton.addActionListener(event -> addUserSelectedConfig());
         openRomPanel.add(addConfigButton);
 
         JButton resetConfigsButton = new JButton("Reset Configs");
@@ -337,24 +290,42 @@ public class RandomizerApp {
         });
 
         openRomIfExists();
+        loadStartupConfigIfRequested();
     }
 
-    private AppPreferences loadAppPreferences() {
+    private void loadStartupConfigIfRequested() {
+        if (!launchOptions.isLoadConfigRequested()) {
+            return;
+        }
+        File configFile = launchOptions.getStartupConfigFile(appPreferences);
+        if (configFile == null || !configFile.isFile()) {
+            JOptionPane.showMessageDialog(frmTradingCard,
+                    "Startup config file not found:\n" + configFile, "Config Load Failed",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         try {
             IssueTracker.clear();
-            AppPreferences prefs = AppPreferences.load();
-            IssuePresenter.finishPhase(frmTradingCard, "app preferences load");
-            return prefs;
-        } catch (IOException e) {
-            e.printStackTrace();
-            IssuePresenter.finishPhase(frmTradingCard, "app preferences load");
-            return AppPreferences.loadDefaults();
+            Map<String, Object> yaml = YamlIO.load(configFile);
+            Config loaded = Config.readFromLoadedYamlMap(yaml, configFile.getName());
+            if (!loaded.isValid()) {
+                IssuePresenter.finishPhase(frmTradingCard, "config load");
+                return;
+            }
+            // Import all sections on start up config
+            applyImportedConfig(loaded, new AddConfigSettings(true, true, true));
+            IssuePresenter.finishPhase(frmTradingCard, "config load");
+        } catch (IOException ioError) {
+            ioError.printStackTrace();
+            JOptionPane.showMessageDialog(frmTradingCard, ioError.getMessage(), "Config Load Failed",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void applyFileChooserPreferences() {
         applyChooserDirectory(openRomChooser, appPreferences.getOpenRomDirectory());
-        openRomChooser.setSelectedFile(appPreferences.resolveOpenRomFile(DEFAULT_ROM_NAME));
+        openRomChooser.setSelectedFile(appPreferences
+                .resolveOpenRomFile(LaunchUtils.DEFAULT_ROM_NAME));
 
         applyChooserDirectory(saveRomChooser, appPreferences.getPatchDirectory());
         saveRomChooser.setSelectedFile(appPreferences.resolvePatchFile());
@@ -381,8 +352,7 @@ public class RandomizerApp {
     }
 
     private static Rectangle clampToVisibleScreen(Rectangle bounds) {
-        Rectangle screen =
-                GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         int width = Math.min(bounds.width, screen.width);
         int height = Math.min(bounds.height, screen.height);
         int x = Math.max(screen.x, Math.min(bounds.x, screen.x + screen.width - width));
@@ -429,7 +399,7 @@ public class RandomizerApp {
         Logger.setMinLogLevel(getSelectedLogLevel());
     }
 
-    private void addConfigFromFile() {
+    private void addUserSelectedConfig() {
         int returnVal = loadConfigChooser.showOpenDialog(frmTradingCard);
         if (returnVal != JFileChooser.APPROVE_OPTION) {
             return;
@@ -453,8 +423,8 @@ public class RandomizerApp {
                 return;
             }
 
-            Optional<ConfigSectionsDialog.Selection> selection =
-                    ConfigSectionsDialog.showImport(frmTradingCard, loaded);
+            Optional<AddConfigSettings> selection = ConfigSectionsDialog.showImport(frmTradingCard,
+                    loaded);
             if (selection.isEmpty()) {
                 return;
             }
@@ -468,39 +438,38 @@ public class RandomizerApp {
         }
     }
 
-    private void applyImportedConfig(Config loaded, ConfigSectionsDialog.Selection selection) {
-        if (selection.generalSettings() && loaded.hasSeed()) {
+    private void applyImportedConfig(Config loaded, AddConfigSettings selection) {
+        if (selection.generalSettings && loaded.hasSeed()) {
             saveSetSeedVal.setText(loaded.getSeed());
         }
-        if (selection.actions() && loaded.hasAddableActions()) {
+        if (selection.actions && loaded.hasAddableActions()) {
             loaded.checkRequiredScriptFingerprints(randomizer.getActionBank());
             dualPanel.mergeSelectedActions(loaded.getActions(randomizer.getActionBank()));
         }
-        if (selection.rules() && loaded.hasRules()) {
+        if (selection.rules && loaded.hasRules()) {
             randomizer.mergeRulesFromConfig(loaded.getRulesConfig());
         }
         rulesPanel.refresh();
     }
 
     private void resetConfigsToDefaults() {
-        Optional<ConfigSectionsDialog.Selection> selection =
-                ConfigSectionsDialog.showReset(frmTradingCard);
+        Optional<AddConfigSettings> selection = ConfigSectionsDialog.showReset(frmTradingCard);
         if (selection.isEmpty()) {
             return;
         }
 
-        ConfigSectionsDialog.Selection chosen = selection.get();
-        if (chosen.generalSettings()) {
+        AddConfigSettings chosen = selection.get();
+        if (chosen.generalSettings) {
             saveSetSeedVal.setText("Random");
             logLevelCombo.setSelectedItem(LogLevel.INFO);
             saveLogDetailsBox.setSelected(true);
             saveSettingsBox.setSelected(true);
             applyLogLevelFromUi();
         }
-        if (chosen.actions()) {
+        if (chosen.actions) {
             dualPanel.setSelectedActions(List.of());
         }
-        if (chosen.rules()) {
+        if (chosen.rules) {
             randomizer.resetRulesToBundledDefaults(frmTradingCard);
         }
         rulesPanel.refresh();
@@ -508,10 +477,7 @@ public class RandomizerApp {
     }
 
     private void openRomIfExists() {
-        File rom = appPreferences.resolveLastRomFile();
-        if (rom == null) {
-            rom = new File(DEFAULT_ROM_NAME);
-        }
+        File rom = launchOptions.getStartupRomFile(appPreferences);
         if (rom.exists() && randomizer.openRom(rom, frmTradingCard)) {
             lastOpenedRomPath = rom.getAbsolutePath();
             updateRomLoadedState();

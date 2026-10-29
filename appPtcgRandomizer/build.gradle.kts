@@ -33,7 +33,7 @@ java {
 }
 
 application {
-    mainClass = "redactedrice.ptcgr.randomizer.gui.RandomizerApp"
+    mainClass = "redactedrice.ptcgr.randomizer.launch.RandomizerLaunch"
 }
 
 val runnableJarName = "PtcgRandomizer-${project.version}.jar"
