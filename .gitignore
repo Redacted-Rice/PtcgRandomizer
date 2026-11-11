@@ -36,6 +36,8 @@ appPtcgRandomizer/ptcgr-res-ver
 **/*.yaml
 **/*.yml
 !**/src/main/resources/**
+!**/src/regression_tests/**/*.yaml
+!**/src/regression_tests/**/*.yml
 
 # URC randomizer Lua is bundled by libUniversalRandomizerJava - ignore here
 appPtcgRandomizer/src/main/resources/randomizer/

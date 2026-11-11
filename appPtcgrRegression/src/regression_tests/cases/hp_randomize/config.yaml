@@ -1,0 +1,20 @@
+﻿# Minimal headless regression: randomize HP from ROM values (fixed seed).
+version: 1
+appVersion: 0.9.0
+seed: '42'
+actions:
+  - module: hp_cards_together_and_stage
+    version: '0.9'
+    arguments:
+      source: ROM
+      duplicates: KEEP_DUPLICATES
+      approach: MINIMIZE_REPEATS
+      grouping: ALL_TOGETHER
+prescripts:
+  - module: PtcgrChangeDetectorSetup
+    version: '0.9'
+  - module: PtcgrChangeDetectorSnapshot
+    version: '0.9'
+postscripts:
+  - module: PtcgrChangeDetectorDetect
+    version: '0.9'

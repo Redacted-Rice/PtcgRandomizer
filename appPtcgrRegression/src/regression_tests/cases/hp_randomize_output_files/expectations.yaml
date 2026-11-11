@@ -1,0 +1,6 @@
+﻿# Expected files listed here and log and patch checks use defaults.
+expectedFiles:
+  - ptcg_randomized.bps
+  - ptcg_randomized.seed.txt
+  - ptcg_randomized.log.txt
+  - ptcgr_randomize.yaml
