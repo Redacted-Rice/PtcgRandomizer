@@ -250,7 +250,7 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
     systemProperty("ptcgr.devModules", "true")
     systemProperty("ptcgr.cleanReinstallResources", "true")
-    finalizedBy("runScriptTests")
+    finalizedBy("runScriptTests", ":appPtcgrRegression:runRegressionTests")
 }
 
 tasks.register<JavaExec>("runScriptTests") {

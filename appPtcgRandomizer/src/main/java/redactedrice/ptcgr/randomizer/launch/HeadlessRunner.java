@@ -20,6 +20,11 @@ import redactedrice.randomizer.utils.IssueTracker;
  * logging defaults.
  */
 public final class HeadlessRunner {
+    // exit codes mirrored regression harness when running regression tests
+    public static final int SUCCESS = 0;
+    public static final int FAILURE = 1;
+    public static final int ROM_NOT_FOUND = 2;
+
     private HeadlessRunner() {
     }
 
@@ -31,7 +36,7 @@ public final class HeadlessRunner {
         File configFile = launch.getStartupConfigFile(appPreferences);
         if (configFile == null || !configFile.isFile()) {
             System.err.println("Config file not found: " + configFile);
-            return 1;
+            return FAILURE;
         }
 
         RandomizerCore randomizer = new RandomizerCore(null);
@@ -39,11 +44,11 @@ public final class HeadlessRunner {
         File rom = launch.getStartupRomFile(appPreferences);
         if (!rom.isFile()) {
             System.err.println("ROM not found: " + rom.getAbsolutePath());
-            return 1;
+            return ROM_NOT_FOUND;
         }
         if (!randomizer.openRom(rom, null)) {
             System.err.println("Failed to open ROM: " + rom.getAbsolutePath());
-            return 1;
+            return FAILURE;
         }
 
         try {
@@ -52,14 +57,14 @@ public final class HeadlessRunner {
             Config loaded = Config.readFromLoadedYamlMap(yaml, configFile.getName());
             if (!loaded.isValid()) {
                 IssuePresenter.finishPhase(null, "config load");
-                return 1;
+                return FAILURE;
             }
 
             Settings settings = LaunchUtils.settingsFrom(appPreferences, loaded);
             List<Action> actions;
             if (!loaded.hasAddableActions()) {
                 System.err.println("Config has no runnable actions.");
-                return 1;
+                return FAILURE;
             }
             loaded.checkRequiredScriptFingerprints(randomizer.getActionBank());
             actions = loaded.getActions(randomizer.getActionBank());
@@ -69,15 +74,25 @@ public final class HeadlessRunner {
 
             if (!randomizer.randomizeAndSaveRom(patchFile, settings, actions)) {
                 IssuePresenter.finishPhase(null, "randomize");
-                return 1;
+                return FAILURE;
+            }
+            // Write the output files if set to so we can verify them as needed
+            // depending on the tests
+            if (appPreferences.isSaveSettings()) {
+                File savedConfig = FileExtensionUtils.ensureExtension(
+                        appPreferences.resolveSaveConfigFile(), YamlIO.FILE_EXTENSION);
+                Config configSnapshot = Config.fromAppState(settings.getSeedString(), actions,
+                        randomizer.getActionBank(), randomizer.getRules(),
+                        randomizer.getReferenceMonsterCards());
+                YamlIO.save(savedConfig, configSnapshot.convertToYamlMap());
             }
             IssuePresenter.finishPhase(null, "randomize");
             System.out.println("Wrote patch: " + patchFile.getAbsolutePath());
-            return 0;
+            return SUCCESS;
         } catch (IOException e) {
             e.printStackTrace();
             IssuePresenter.finishPhase(null, "randomize");
-            return 1;
+            return FAILURE;
         }
     }
 }

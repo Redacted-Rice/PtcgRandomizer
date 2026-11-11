@@ -12,6 +12,7 @@ plugins {
 
 rootProject.name = "PtcgRandomizer"
 include("appPtcgRandomizer")
+include("appPtcgrRegression")
 includeBuild("../GbcFramework")
 includeBuild("../GbcRomPacker")
 includeBuild("../Gbz80Compiler")

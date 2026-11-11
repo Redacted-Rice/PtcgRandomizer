@@ -1,0 +1,5 @@
+﻿# logMustNotContain and expectedFiles use defaults
+logContains:
+  - "Wrote patch:"
+  - "hp_cards_together_and_stage"
+  - "HP"
