@@ -10,6 +10,7 @@ import java.io.File;
 import org.junit.jupiter.api.Test;
 
 import redactedrice.ptcgr.configs.AppPreferences;
+import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.utils.LogLevel;
 
 class CommandLineArgsTest {
@@ -83,6 +84,23 @@ class CommandLineArgsTest {
 
         assertTrue(launch.getUnknownArgs().isEmpty());
         assertTrue(launch.isScriptTests());
+        assertTrue(launch.isReinstallResources());
+        assertTrue(launch.isCleanReinstallResources());
+    }
+
+    @Test
+    void parseDoesNotSetReinstallPropertiesUntilApply() {
+        System.clearProperty(PtcgBundledResources.REINSTALL_RESOURCES_SYSTEM_PROPERTY);
+        System.clearProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY);
+
+        CommandLineArgs launch = CommandLineArgs.parse(
+                new String[] {CommandLineArgs.CLEAN_REINSTALL_RESOURCES_FLAG});
+        assertFalse(Boolean.getBoolean(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY));
+
+        LaunchUtils.applyBundledResourceFlags(launch);
+        assertTrue(Boolean.getBoolean(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY));
+
+        System.clearProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY);
     }
 
     @Test
