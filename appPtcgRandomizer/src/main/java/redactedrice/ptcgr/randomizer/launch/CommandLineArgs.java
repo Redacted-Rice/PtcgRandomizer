@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redactedrice.ptcgr.configs.AppPreferences;
+import redactedrice.ptcgr.configs.YamlIO;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.utils.LogLevel;
 
@@ -16,10 +17,10 @@ public final class CommandLineArgs {
     public static final String SCRIPT_TESTS_FLAG = "--script-tests";
     public static final String LOG_LEVEL_FLAG = "--log-level";
     // Forces PtcgBundledResources to redo the backup and reinstall of resources
-    // like on version update
+    // like on version updates
     public static final String REINSTALL_RESOURCES_FLAG = "--reinstall-resources";
-    // Forces PtcgBundledResources to backup the whole install folder, clean it and
-    // reinstall resources. Mainly intended for testing/dev
+    // Forces PtcgBundledResources to redo the backup and reinstall of resources
+    // like on version updates, but also deletes the existing backup
     public static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
     public static final LogLevel DEFAULT_LOG_LEVEL = LogLevel.WARN;
 
@@ -27,18 +28,22 @@ public final class CommandLineArgs {
     private final boolean loadConfigRequested;
     private final String loadConfigCustomPath;
     private final String loadRomCustomPath;
+    private final String outputDirPath;
+    private final boolean saveConfigRequested;
     private final boolean scriptTests;
     private final LogLevel logLevel;
     private final String scriptTestCase;
     private final List<String> unknownArgs;
 
     private CommandLineArgs(boolean headless, boolean loadConfigRequested, String loadConfigCustomPath,
-            String loadRomCustomPath, boolean scriptTests, LogLevel logLevel, String scriptTestCase,
-            List<String> unknownArgs) {
+            String loadRomCustomPath, String outputDirPath, boolean saveConfigRequested,
+            boolean scriptTests, LogLevel logLevel, String scriptTestCase, List<String> unknownArgs) {
         this.headless = headless;
         this.loadConfigRequested = loadConfigRequested;
         this.loadConfigCustomPath = loadConfigCustomPath;
         this.loadRomCustomPath = loadRomCustomPath;
+        this.outputDirPath = outputDirPath;
+        this.saveConfigRequested = saveConfigRequested;
         this.scriptTests = scriptTests;
         this.logLevel = logLevel;
         this.scriptTestCase = scriptTestCase;
@@ -54,6 +59,8 @@ public final class CommandLineArgs {
         boolean loadConfigRequested = false;
         String loadConfigCustomPath = null;
         String loadRomCustomPath = null;
+        String outputDirPath = null;
+        boolean saveConfigRequested = false;
         LogLevel logLevel = DEFAULT_LOG_LEVEL;
         String scriptTestCase = null;
         List<String> unknown = new ArrayList<>();
@@ -90,6 +97,16 @@ public final class CommandLineArgs {
                 }
                 continue;
             }
+            if (HeadlessRunner.OUTPUT_DIR_FLAG.equals(arg)) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    outputDirPath = args[++i];
+                }
+                continue;
+            }
+            if (HeadlessRunner.SAVE_CONFIG_FLAG.equals(arg)) {
+                saveConfigRequested = true;
+                continue;
+            }
             if (LOG_LEVEL_FLAG.equals(arg)) {
                 if (i + 1 >= args.length) {
                     unknown.add(arg);
@@ -110,7 +127,8 @@ public final class CommandLineArgs {
         }
 
         return new CommandLineArgs(headless, loadConfigRequested, loadConfigCustomPath,
-                loadRomCustomPath, scriptTests, logLevel, scriptTestCase, unknown);
+                loadRomCustomPath, outputDirPath, saveConfigRequested, scriptTests,
+                logLevel, scriptTestCase, unknown);
     }
 
     public boolean isHeadless() {
@@ -127,6 +145,14 @@ public final class CommandLineArgs {
 
     public String getLoadRomCustomPath() {
         return loadRomCustomPath;
+    }
+
+    public String getOutputDirPath() {
+        return outputDirPath;
+    }
+
+    public boolean isSaveConfigRequested() {
+        return saveConfigRequested;
     }
 
     public boolean isScriptTests() {
