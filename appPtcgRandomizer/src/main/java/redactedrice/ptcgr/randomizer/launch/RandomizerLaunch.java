@@ -12,8 +12,10 @@ public final class RandomizerLaunch {
 
     public static void main(String[] args) {
         CommandLineArgs launch = CommandLineArgs.parse(args);
+        LaunchUtils.applyBundledResourceFlags(launch);
         Logger.setMinLogLevel(launch.getLogLevel());
 
+        // Unknown arguments exit before any mode runs
         if (LaunchUtils.hasUnknownArgs(launch)) {
             LaunchUtils.printUnknownArgs(launch);
             System.exit(HeadlessRunner.USAGE_ERROR);

@@ -29,7 +29,8 @@ val regressionMainClass = "redactedrice.ptcgr.regression.RegressionSuiteRunner"
 tasks.register<JavaExec>("runRegressionTests") {
     group = "verification"
     description =
-        "Headless ROM regression cases. Optional: -Prom=path (requires :appPtcgRandomizer:fatJar)"
+        "Headless ROM regression cases. Optional: -Prom=path, -PregressionCase=name, " +
+            "-PregressionCleanReinstall=first|every|never (requires :appPtcgRandomizer:fatJar)"
     dependsOn("classes", randomizerProject.tasks.named("fatJar"))
     mustRunAfter(
         randomizerProject.tasks.named("test"),
@@ -46,6 +47,16 @@ tasks.register<JavaExec>("runRegressionTests") {
     val romPath = project.findProperty("rom") as String?
     if (romPath != null) {
         args("--rom", romPath)
+    }
+
+    val regressionCase = project.findProperty("regressionCase") as String?
+    if (regressionCase != null) {
+        args("--case", regressionCase)
+    }
+
+    val regressionCleanReinstall = project.findProperty("regressionCleanReinstall") as String?
+    if (regressionCleanReinstall != null) {
+        args("--clean-reinstall", regressionCleanReinstall)
     }
 
     isIgnoreExitValue = true

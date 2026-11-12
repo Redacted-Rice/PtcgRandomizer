@@ -37,9 +37,16 @@ public final class HeadlessRunner {
 
     public static int run(CommandLineArgs launch) {
         System.setProperty("java.awt.headless", "true");
+        LaunchUtils.applyBundledResourceFlags(launch);
 
         if (LaunchUtils.hasUnknownArgs(launch)) {
             LaunchUtils.printUnknownArgs(launch);
+            return USAGE_ERROR;
+        }
+
+        // Guard against callers that bypass RandomizerLaunch routing
+        if (!launch.isHeadless()) {
+            System.err.println(CommandLineArgs.HEADLESS_FLAG + " is required for headless batch mode");
             return USAGE_ERROR;
         }
 

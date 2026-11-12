@@ -17,6 +17,13 @@ import redactedrice.randomizer.utils.LogLevel;
 class HeadlessRunnerTest {
 
     @Test
+    void runRequiresHeadlessFlag() {
+        CommandLineArgs launch = CommandLineArgs.parse(
+                new String[] {CommandLineArgs.CONFIG_FLAG, "batch.yaml"});
+        assertEquals(HeadlessRunner.USAGE_ERROR, HeadlessRunner.run(launch));
+    }
+
+    @Test
     void headlessConfigWithoutPathReturnsUsageError() {
         CommandLineArgs launch = CommandLineArgs.parse(new String[] {CommandLineArgs.HEADLESS_FLAG,
                 CommandLineArgs.CONFIG_FLAG});
