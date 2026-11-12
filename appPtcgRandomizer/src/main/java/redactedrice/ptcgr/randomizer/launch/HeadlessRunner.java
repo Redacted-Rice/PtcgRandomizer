@@ -23,6 +23,7 @@ import redactedrice.randomizer.utils.Logger;
 public final class HeadlessRunner {
     public static final String OUTPUT_DIR_FLAG = "--output-dir";
     public static final String SAVE_CONFIG_FLAG = "--save-config";
+    public static final String WROTE_PATCH_LOG_PREFIX = "Wrote patch:";
 
     static final boolean DEFAULT_HEADLESS_LOG_DETAILS = true;
 
@@ -108,7 +109,7 @@ public final class HeadlessRunner {
                 YamlIO.save(savedConfig, configSnapshot.convertToYamlMap());
             }
             IssuePresenter.finishPhase(null, "randomize");
-            System.out.println("Wrote patch: " + patchFile.getAbsolutePath());
+            System.out.println(WROTE_PATCH_LOG_PREFIX + " " + patchFile.getAbsolutePath());
             return SUCCESS;
         } catch (IOException e) {
             e.printStackTrace();

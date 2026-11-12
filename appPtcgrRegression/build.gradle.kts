@@ -11,12 +11,6 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation(libs.snakeyaml)
-    testImplementation(libs.junit.jupiter)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(20)
@@ -25,6 +19,14 @@ java {
 
 val randomizerProject = project(":appPtcgRandomizer")
 val regressionMainClass = "redactedrice.ptcgr.regression.RegressionSuiteRunner"
+
+dependencies {
+    compileOnly(project(":appPtcgRandomizer"))
+    // YamlIO and other app helpers used at runtime by the harness (not only constants).
+    runtimeOnly(project(":appPtcgRandomizer"))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
 
 tasks.register<JavaExec>("runRegressionTests") {
     group = "verification"
