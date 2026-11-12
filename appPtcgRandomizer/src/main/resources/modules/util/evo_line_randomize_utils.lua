@@ -39,6 +39,7 @@ end
 function evo_line_randomize_utils.extractLineData(sourceLine, keyContext)
 	local nameToIdx = {}
 	local entries = {}
+	local stageCounts = {}
 
 	-- first sort by stage. This just makes it so we can know the prev evo should have been processed
 	-- making the logic a bit simpler
@@ -55,7 +56,8 @@ function evo_line_randomize_utils.extractLineData(sourceLine, keyContext)
 			prevEvoIdx = nameToIdx[prevName]
 		end
 
-		entries[card.stage:getName()] = (entries[card.stage:getName()] or 0) + 1
+		local stageName = card.stage:getName()
+		stageCounts[stageName] = (stageCounts[stageName] or 0) + 1
 		table.insert(entries, {
 			typeGroupKey = pool_utils.getTypeGroupingKey(card, keyContext.withinType),
 			stage = card.stage,
@@ -66,17 +68,19 @@ function evo_line_randomize_utils.extractLineData(sourceLine, keyContext)
 		nameToIdx[name] = #entries
 	end)
 
-	return entries
+	return { entries = entries, stageCounts = stageCounts }
 end
 
 -- Extract the evo line data from the cards
 function evo_line_randomize_utils.extractAllEvoLineData(sourceCards, keyContext)
 	-- For each evo line, map it to the evo line data
 	return randomizer.groupBy(sourceCards, "evoLineId"):mapToList(function(evoLineId, sourceLine)
+		local lineData = evo_line_randomize_utils.extractLineData(sourceLine, keyContext)
 		return {
 			-- We don't need original evo line id but keep it for debugging
 			evoLineId = evoLineId,
-			entries = evo_line_randomize_utils.extractLineData(sourceLine, keyContext),
+			entries = lineData.entries,
+			stageCounts = lineData.stageCounts,
 		}
 	end)
 end
@@ -86,11 +90,12 @@ function evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
 	local stage1Count = evoLine.STAGE_1 or 0
 	local stage2Count = evoLine.STAGE_2 or 0
 	local lineMaxStage = evolutionStage.BASIC
-	local entries = {
+	local stageCounts = {
 		[evolutionStage.BASIC:getName()] = 1,
 		[evolutionStage.STAGE_1:getName()] = stage1Count,
-		[evolutionStage.STAGE_2:getName()] = stage2Count
+		[evolutionStage.STAGE_2:getName()] = stage2Count,
 	}
+	local entries = {}
 
 	table.insert(entries, {
 		stage = evolutionStage.BASIC,
@@ -126,7 +131,7 @@ function evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
 
 	-- Update the base entry with the max stage
 	entries[1].maxStage = lineMaxStage
-	return entries
+	return { entries = entries, stageCounts = stageCounts }
 end
 
 
@@ -569,10 +574,13 @@ function evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
 			.. (evoLine.STAGE_2 or 0) .. "]"
 end
 
-function evo_line_randomize_utils.formatEntriesStagesCounts(evoLine)
-	return "[" .. (evoLine[evo_line_randomize_utils.evolutionStage.BASIC:getName()] or 1) .. ", "
-			.. (evoLine[evo_line_randomize_utils.evolutionStage.STAGE_1:getName()] or 0) .. ", "
-			.. (evoLine[evo_line_randomize_utils.evolutionStage.STAGE_2:getName()] or 0) .. "]"
+function evo_line_randomize_utils.formatEntriesStagesCounts(stageCounts)
+	if stageCounts == nil then
+		return "[?, ?, ?]"
+	end
+	return "[" .. (stageCounts[evo_line_randomize_utils.evolutionStage.BASIC:getName()] or 1) .. ", "
+			.. (stageCounts[evo_line_randomize_utils.evolutionStage.STAGE_1:getName()] or 0) .. ", "
+			.. (stageCounts[evo_line_randomize_utils.evolutionStage.STAGE_2:getName()] or 0) .. "]"
 end
 
 function evo_line_randomize_utils.formatSlots(slots)
@@ -732,11 +740,11 @@ end
 
 -- Errors if a name cannot be drawn from the pool.
 function evo_line_randomize_utils.assignEvoLineList(evoLineId, entries, namePools, keyContext,
-		toModifyByName)
+		toModifyByName, stageCounts)
 	local branched = evo_line_randomize_utils.lineEntriesHasBranch(entries)
 	if branched and evoLineId ~= nil then
 		logger.info("evo_line_cards filling lineId=" .. tostring(evoLineId) .. " "
-				.. "evoLine = " .. evo_line_randomize_utils.formatEntriesStagesCounts(entries))
+				.. "evoLine = " .. evo_line_randomize_utils.formatEntriesStagesCounts(stageCounts))
 	end
 
 	local idxToName = {}
@@ -769,7 +777,8 @@ end
 function evo_line_randomize_utils.tryAssignDrawnLine(evoLine, namePools, keyContext, toModifyByName,
 		choicePools)
 	-- Convert the evo line to the entries data
-	local entries = evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
+	local built = evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
+	local entries = built.entries
 	local shapeLabel = evo_line_randomize_utils.formatEvoLineStagesCounts(evoLine)
 	-- If we have type policy pools, randomize with that
 	if choicePools ~= nil then
