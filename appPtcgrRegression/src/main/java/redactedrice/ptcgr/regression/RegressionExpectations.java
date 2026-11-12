@@ -1,8 +1,13 @@
 package redactedrice.ptcgr.regression;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import redactedrice.ptcgr.randomizer.RandomizerCore;
+import redactedrice.ptcgr.randomizer.launch.HeadlessRunner;
+import redactedrice.ptcgr.utils.FileExtensionUtils;
 
 /** Parsed regression case expectations YAML. */
 public final class RegressionExpectations {
@@ -10,10 +15,17 @@ public final class RegressionExpectations {
     static final String LOG_MUST_NOT_CONTAIN_KEY = "logMustNotContain";
     static final String EXPECTED_FILES_KEY = "expectedFiles";
 
-    static final List<String> DEFAULT_LOG_CONTAINS = List.of("Wrote patch:");
+    static final List<String> DEFAULT_LOG_CONTAINS = List.of(HeadlessRunner.WROTE_PATCH_LOG_PREFIX);
     static final List<String> DEFAULT_LOG_MUST_NOT_CONTAIN =
             List.of("[ERROR ]", "Exception", " FAIL");
-    static final List<String> DEFAULT_EXPECTED_FILES = List.of("ptcg_randomized.bps");
+    static final List<String> DEFAULT_EXPECTED_FILES = List.of(defaultPatchFileName());
+
+    private static String defaultPatchFileName() {
+        return FileExtensionUtils
+                .ensureExtension(new File(RandomizerCore.DEFAULT_PATCH_BASE_NAME),
+                        RandomizerCore.PATCH_FILE_EXTENSION)
+                .getName();
+    }
 
     private final List<String> logContains;
     private final List<String> logMustNotContain;

@@ -39,7 +39,8 @@ application {
 val runnableJarName = "PtcgRandomizer-${project.version}.jar"
 
 tasks.named<Jar>("jar") {
-    enabled = false
+    // Thin jar is not shipped; fatJar is the release artifact. Keep enabled so sibling modules
+    // can compileOnly against this project.
 }
 
 val generateAppVersion = tasks.register("generateAppVersion") {

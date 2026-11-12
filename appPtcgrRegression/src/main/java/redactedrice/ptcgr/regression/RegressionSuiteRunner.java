@@ -9,29 +9,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import redactedrice.ptcgr.configs.YamlIO;
+import redactedrice.ptcgr.randomizer.launch.CommandLineArgs;
+import redactedrice.ptcgr.randomizer.launch.HeadlessRunner;
+
 /**
  * Regression harness application. Spawns PtcgRandomizer fat JAR in headless CLI mode per case.
+ * Child argv uses {@link CommandLineArgs} and {@link HeadlessRunner} flag constants.
  * Run from appPtcgrRegression module root (Gradle {@code runRegressionTests} does this).
  */
 public final class RegressionSuiteRunner {
-    public static final int SUCCESS = 0;
-    public static final int FAILURE = 1;
-    // matches HeadlessRunner exit code
-    public static final int ROM_NOT_FOUND = 2;
-    public static final int USAGE_ERROR = 3;
-
-    // CLI flags and child exit codes must match CommandLineArgs/HeadlessRunner
-    // in PTCGR app
-    private static final String HEADLESS_FLAG = "--headless";
-    private static final String CONFIG_FLAG = "--config";
-    private static final String ROM_FLAG = "--rom";
-    private static final String LOG_LEVEL_FLAG = "--log-level";
-    private static final String OUTPUT_DIR_FLAG = "--output-dir";
-    private static final String SAVE_CONFIG_FLAG = "--save-config";
-    private static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
-
-    private static final String DEFAULT_SAVE_CONFIG_NAME = "ptcgr_randomize.yaml";
-    private static final int HEADLESS_EXIT_SUCCESS = 0;
+    public static final int SUCCESS = HeadlessRunner.SUCCESS;
+    public static final int FAILURE = HeadlessRunner.FAILURE;
+    public static final int ROM_NOT_FOUND = HeadlessRunner.ROM_NOT_FOUND;
+    public static final int USAGE_ERROR = HeadlessRunner.USAGE_ERROR;
 
     private static final String CASES_REL = "src/regression_tests/cases";
     private static final String RANDOMIZER_JAR_PREFIX = "PtcgRandomizer-";
@@ -115,7 +106,7 @@ public final class RegressionSuiteRunner {
 
             int headlessExit = runHeadlessCli(javaBin, randomizerJar, config, options.rom, workDir,
                     log, expectations, useCleanReinstall);
-            if (headlessExit != HEADLESS_EXIT_SUCCESS) {
+            if (headlessExit != HeadlessRunner.SUCCESS) {
                 System.err.println("Headless run failed for case " + caseName + " (exit "
                         + headlessExit + "). Log: " + log);
                 Files.lines(log.toPath()).forEach(System.err::println);
@@ -148,19 +139,19 @@ public final class RegressionSuiteRunner {
         command.add("-jar");
         command.add(randomizerJar.getAbsolutePath());
         if (useCleanReinstall) {
-            command.add(CLEAN_REINSTALL_RESOURCES_FLAG);
+            command.add(CommandLineArgs.CLEAN_REINSTALL_RESOURCES_FLAG);
         }
-        command.add(HEADLESS_FLAG);
-        command.add(CONFIG_FLAG);
+        command.add(CommandLineArgs.HEADLESS_FLAG);
+        command.add(CommandLineArgs.CONFIG_FLAG);
         command.add(config.getAbsolutePath());
-        command.add(ROM_FLAG);
+        command.add(CommandLineArgs.ROM_FLAG);
         command.add(rom.getAbsolutePath());
-        command.add(OUTPUT_DIR_FLAG);
+        command.add(HeadlessRunner.OUTPUT_DIR_FLAG);
         command.add(workDir.getAbsolutePath());
-        command.add(LOG_LEVEL_FLAG);
+        command.add(CommandLineArgs.LOG_LEVEL_FLAG);
         command.add("INFO");
         if (caseExpectsSavedConfig(expectations)) {
-            command.add(SAVE_CONFIG_FLAG);
+            command.add(HeadlessRunner.SAVE_CONFIG_FLAG);
         }
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(workDir);
@@ -258,7 +249,7 @@ public final class RegressionSuiteRunner {
 
     private static boolean caseExpectsSavedConfig(File expectationsFile) throws IOException {
         RegressionExpectations expectations = RegressionExpectations
-                .fromYamlMap(RegressionYaml.load(expectationsFile));
-        return expectations.getExpectedFiles().contains(DEFAULT_SAVE_CONFIG_NAME);
+                .fromYamlMap(YamlIO.load(expectationsFile));
+        return expectations.getExpectedFiles().contains(YamlIO.DEFAULT_FILE_NAME);
     }
 }

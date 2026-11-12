@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import redactedrice.ptcgr.configs.YamlIO;
+
 /** Checks headless log and work dir against expectations.yaml. */
 public final class RegressionCaseVerifier {
     private RegressionCaseVerifier() {
@@ -27,7 +29,7 @@ public final class RegressionCaseVerifier {
         }
 
         RegressionExpectations expectations =
-                RegressionExpectations.fromYamlMap(RegressionYaml.load(expectationsFile));
+                RegressionExpectations.fromYamlMap(YamlIO.load(expectationsFile));
         String logText = Files.readString(logFile.toPath(), StandardCharsets.UTF_8);
 
         List<String> failures = new ArrayList<>();

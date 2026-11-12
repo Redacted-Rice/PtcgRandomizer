@@ -2,13 +2,14 @@ package redactedrice.ptcgr.regression;
 
 import java.io.File;
 
+import redactedrice.ptcgr.randomizer.launch.CommandLineArgs;
+import redactedrice.ptcgr.randomizer.launch.LaunchUtils;
+
 /** Options supported for regression test runs */
 public final class RegressionOptions {
     public static final String PTCGR_ROM_ENV = "PTCGR_ROM";
-    private static final String ROM_FLAG = "--rom";
     private static final String CASE_FLAG = "--case";
     private static final String CLEAN_REINSTALL_FLAG = "--clean-reinstall";
-    private static final String DEFAULT_ROM_FILE_NAME = "ptcg.gbc";
 
     public final File regressionModuleDir;
     public final File appDir;
@@ -42,9 +43,9 @@ public final class RegressionOptions {
         RegressionCleanReinstall cleanReinstall = RegressionCleanReinstall.FIRST_CASE;
         for (int i = 1; i < args.length; i++) {
             String arg = args[i];
-            if (ROM_FLAG.equals(arg)) {
+            if (CommandLineArgs.ROM_FLAG.equals(arg)) {
                 if (i + 1 >= args.length) {
-                    throw new IllegalArgumentException(ROM_FLAG + " requires a path");
+                    throw new IllegalArgumentException(CommandLineArgs.ROM_FLAG + " requires a path");
                 }
                 romPath = args[++i];
                 continue;
@@ -72,7 +73,7 @@ public final class RegressionOptions {
     }
 
     private static String usageMessage() {
-        return "Usage: RegressionSuiteRunner <appPtcgRandomizerDir> [" + ROM_FLAG
+        return "Usage: RegressionSuiteRunner <appPtcgRandomizerDir> [" + CommandLineArgs.ROM_FLAG
                 + " path] [--case name] [--clean-reinstall first|every|never]";
     }
 
@@ -87,7 +88,7 @@ public final class RegressionOptions {
         if (romPath != null && !romPath.isBlank()) {
             rom = new File(romPath);
         } else {
-            rom = new File(appDir, DEFAULT_ROM_FILE_NAME);
+            rom = new File(appDir, LaunchUtils.DEFAULT_ROM_NAME);
         }
         return rom.getAbsoluteFile();
     }
