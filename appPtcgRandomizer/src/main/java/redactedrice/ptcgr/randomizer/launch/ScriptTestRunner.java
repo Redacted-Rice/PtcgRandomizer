@@ -42,6 +42,10 @@ public final class ScriptTestRunner {
 
     private static int runCases(CommandLineArgs launch, Path testsDir,
             ScriptTestWrapperFactory wrapperFactory, ScriptTestFixtures fixtures) {
+        if (LaunchUtils.hasUnknownArgs(launch)) {
+            LaunchUtils.printUnknownArgs(launch);
+            return HeadlessRunner.USAGE_ERROR;
+        }
         if (!launch.isScriptTests()) {
             throw new IllegalArgumentException("Missing " + CommandLineArgs.SCRIPT_TESTS_FLAG);
         }

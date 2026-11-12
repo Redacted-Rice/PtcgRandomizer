@@ -38,12 +38,12 @@ public final class HeadlessRunner {
     public static int run(CommandLineArgs launch) {
         System.setProperty("java.awt.headless", "true");
 
-        File configFile = resolveConfigFile(launch);
-        if (configFile == null) {
-            System.err.println(CommandLineArgs.CONFIG_FLAG + " needs a yaml path, or omit the flag to use "
-                    + YamlIO.DEFAULT_FILE_NAME + " in the working directory");
+        if (LaunchUtils.hasUnknownArgs(launch)) {
+            LaunchUtils.printUnknownArgs(launch);
             return USAGE_ERROR;
         }
+
+        File configFile = resolveConfigFile(launch);
         if (!configFile.isFile()) {
             System.err.println("Config file not found: " + configFile);
             return FAILURE;
@@ -121,12 +121,7 @@ public final class HeadlessRunner {
     }
 
     static File resolveConfigFile(CommandLineArgs launch) {
-        if (launch.isLoadConfigRequested()
-                && (launch.getLoadConfigCustomPath() == null
-                        || launch.getLoadConfigCustomPath().isBlank())) {
-            return null;
-        }
-        if (launch.getLoadConfigCustomPath() != null && !launch.getLoadConfigCustomPath().isBlank()) {
+        if (launch.isLoadConfigRequested()) {
             return new File(launch.getLoadConfigCustomPath()).getAbsoluteFile();
         }
         return new File(YamlIO.DEFAULT_FILE_NAME).getAbsoluteFile();

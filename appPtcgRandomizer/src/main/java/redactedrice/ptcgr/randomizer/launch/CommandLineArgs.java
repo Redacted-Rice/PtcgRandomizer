@@ -85,8 +85,10 @@ public final class CommandLineArgs {
                 continue;
             }
             if (CONFIG_FLAG.equals(arg)) {
-                loadConfigRequested = true;
-                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+                    unknown.add(arg);
+                } else {
+                    loadConfigRequested = true;
                     loadConfigCustomPath = args[++i];
                 }
                 continue;
@@ -172,13 +174,10 @@ public final class CommandLineArgs {
     }
 
     public File getStartupConfigFile(AppPreferences appPreferences) {
-        if (!loadConfigRequested) {
+        if (!loadConfigRequested || loadConfigCustomPath == null || loadConfigCustomPath.isBlank()) {
             return null;
         }
-        if (loadConfigCustomPath != null && !loadConfigCustomPath.isBlank()) {
-            return new File(loadConfigCustomPath).getAbsoluteFile();
-        }
-        return appPreferences.resolveLoadConfigFile();
+        return new File(loadConfigCustomPath).getAbsoluteFile();
     }
 
     public File getStartupRomFile(AppPreferences appPreferences) {

@@ -14,9 +14,9 @@ public final class RandomizerLaunch {
         CommandLineArgs launch = CommandLineArgs.parse(args);
         Logger.setMinLogLevel(launch.getLogLevel());
 
-        // Check for an warn of unknown arguements
-        if (!launch.getUnknownArgs().isEmpty()) {
-            System.err.println("Unknown argument(s): " + String.join(" ", launch.getUnknownArgs()));
+        if (LaunchUtils.hasUnknownArgs(launch)) {
+            LaunchUtils.printUnknownArgs(launch);
+            System.exit(HeadlessRunner.USAGE_ERROR);
         }
 
         // If its script tests, it implies headless. Run and exit
