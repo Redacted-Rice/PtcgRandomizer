@@ -9,7 +9,7 @@ import redactedrice.randomizer.utils.LogLevel;
 
 /**
  * CLI flags for GUI, headless batch, and Lua script tests.
- * RegressionSuiteRunner copies the flags it passes to the fat JAR. Keep those strings in sync.
+ * Regression harness reuses these constants via a compileOnly dependency on the app module.
  */
 public final class CommandLineArgs {
     public static final String HEADLESS_FLAG = "--headless";
@@ -101,7 +101,9 @@ public final class CommandLineArgs {
                 continue;
             }
             if (ROM_FLAG.equals(arg)) {
-                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+                    unknown.add(arg);
+                } else {
                     loadRomCustomPath = args[++i];
                 }
                 continue;

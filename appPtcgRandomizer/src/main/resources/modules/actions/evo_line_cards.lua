@@ -51,7 +51,7 @@ function module.randomizeEvoLines(context, args)
 
 	evoLineData:each(function(line)
 		evo_line_randomize_utils.assignEvoLineList(line.evoLineId, line.entries, namePools,
-				keyContext, toModifyByName)
+				keyContext, toModifyByName, line.stageCounts)
 	end)
 	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
 end

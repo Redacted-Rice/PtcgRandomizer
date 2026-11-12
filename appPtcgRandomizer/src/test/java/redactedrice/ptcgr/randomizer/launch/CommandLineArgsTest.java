@@ -70,9 +70,9 @@ class CommandLineArgsTest {
     }
 
     @Test
-    void romFlagWithoutPathIsAllowed() {
+    void romFlagWithoutPathIsUnknownArg() {
         CommandLineArgs launch = CommandLineArgs.parse(new String[] {CommandLineArgs.ROM_FLAG});
-        assertTrue(launch.getUnknownArgs().isEmpty());
+        assertEquals(CommandLineArgs.ROM_FLAG, launch.getUnknownArgs().get(0));
         assertNull(launch.getLoadRomCustomPath());
     }
 

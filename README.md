@@ -6,6 +6,15 @@ I recently got into randomizers for Pokemon mainline games. I've always loved th
 
 Its a project of love for me so I'm not sure when updates and fixes will come out.
 
+## Command line
+
+The runnable JAR entry point is `RandomizerLaunch`. Useful flags:
+
+- `--headless` with `--config path/to/ptcgr_randomize.yaml` runs a batch randomization without the GUI.
+- `--rom path.gbc` selects the input ROM (GUI or headless). Like `--config`, the flag must be followed by a path
+- `--output-dir dir` and `--save-config` apply to headless runs.
+- `--script-tests` runs bundled Lua module tests.
+
 ## Planned and Completed Features (in rough priority order)
 Some notes on terminology:
 
@@ -40,7 +49,7 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     🟡 Update/Replace specific effects (e.g. call for family))
     🟡 Update/Replace boyfriends with random, same type, 3rd stage evo
     🟡 Randomize trainer effects with powers?
-⚪ HP, Retreat Cost 
+⚪ HP, Retreat Cost
     ⚪ Fully random/shuffle
     ⚪ Evo chain progressing - swap stats to make higher evos more powerful/higher retreat cost
     ⚪ Evo chain consistent - some chains have generally higher HP, others have generally lower HP)
@@ -75,14 +84,14 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     ⚪ User specifyable "types" - weakness/resistance pairs
     ⚪ User specified HP & retreat cost ranges
     ⚪ Per energy percentage based, user inputtable Card types distributions
-    ⚪ Per stage percentage based, user input-able evolutions distributions 
-    ⚪ Per stage/evos left & per HP value percentage based, user input-able HP distributions 
-    ⚪ Per stage/evos left & per retreat cost percentage based, user input-able retreat cost distributions 
+    ⚪ Per stage percentage based, user input-able evolutions distributions
+    ⚪ Per stage/evos left & per HP value percentage based, user input-able HP distributions
+    ⚪ Per stage/evos left & per retreat cost percentage based, user input-able retreat cost distributions
     ⚪ Per stage/evos left percentage based, user input-able number of attacks/Powers distributions
     ⚪ Per "type" percentage based, user inputtable weakness/resistance distributions
     ⚪ Percentage based/user inputtable decks (knobs TBD)
 ⚪ Move Generation
-    ⚪ Generate moves based on power levels	
+    ⚪ Generate moves based on power levels
 		⚪ User tweakable power scaling
     ⚪ Smart name generation
         ⚪ User inputtable names optionally type specific
