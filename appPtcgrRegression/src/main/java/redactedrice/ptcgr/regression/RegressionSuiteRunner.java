@@ -28,7 +28,10 @@ public final class RegressionSuiteRunner {
     private static final String CONFIG_FLAG = "--config";
     private static final String ROM_FLAG = "--rom";
     private static final String LOG_LEVEL_FLAG = "--log-level";
+    private static final String OUTPUT_DIR_FLAG = "--output-dir";
+    private static final String SAVE_CONFIG_FLAG = "--save-config";
     private static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
+    private static final String DEFAULT_SAVE_CONFIG_NAME = "ptcgr_randomize.yaml";
     private static final int HEADLESS_EXIT_SUCCESS = 0;
 
     private static final String CASES_REL = "src/regression_tests/cases";
@@ -102,8 +105,8 @@ public final class RegressionSuiteRunner {
             System.out.println("Running regression case " + caseName + " (ROM: "
                     + options.rom.getAbsolutePath() + ")");
 
-            int headlessExit =
-                    runHeadlessCli(javaBin, randomizerJar, config, options.rom, workDir, log);
+            int headlessExit = runHeadlessCli(javaBin, randomizerJar, config, options.rom, workDir,
+                    log, expectations);
             if (headlessExit != HEADLESS_EXIT_SUCCESS) {
                 System.err.println("Headless run failed for case " + caseName + " (exit "
                         + headlessExit + "). Log: " + log);
@@ -122,11 +125,26 @@ public final class RegressionSuiteRunner {
     }
 
     private static int runHeadlessCli(String javaBin, File randomizerJar, File config, File rom,
-            File workDir, File log) throws IOException {
-        ProcessBuilder builder = new ProcessBuilder(javaBin, "-Dfile.encoding=UTF-8", "-jar",
-                randomizerJar.getAbsolutePath(), CLEAN_REINSTALL_RESOURCES_FLAG, HEADLESS_FLAG,
-                CONFIG_FLAG, config.getAbsolutePath(), ROM_FLAG, rom.getAbsolutePath(),
-                LOG_LEVEL_FLAG, "INFO");
+            File workDir, File log, File expectations) throws IOException {
+        List<String> command = new ArrayList<>();
+        command.add(javaBin);
+        command.add("-Dfile.encoding=UTF-8");
+        command.add("-jar");
+        command.add(randomizerJar.getAbsolutePath());
+        command.add(CLEAN_REINSTALL_RESOURCES_FLAG);
+        command.add(HEADLESS_FLAG);
+        command.add(CONFIG_FLAG);
+        command.add(config.getAbsolutePath());
+        command.add(ROM_FLAG);
+        command.add(rom.getAbsolutePath());
+        command.add(OUTPUT_DIR_FLAG);
+        command.add(workDir.getAbsolutePath());
+        command.add(LOG_LEVEL_FLAG);
+        command.add("INFO");
+        if (caseExpectsSavedConfig(expectations)) {
+            command.add(SAVE_CONFIG_FLAG);
+        }
+        ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(workDir);
         builder.redirectOutput(log);
         builder.redirectError(ProcessBuilder.Redirect.appendTo(log));
@@ -159,8 +177,56 @@ public final class RegressionSuiteRunner {
             return jars.filter(path -> {
                 String name = path.getFileName().toString();
                 return name.startsWith(RANDOMIZER_JAR_PREFIX) && name.endsWith(".jar");
-            }).max(Comparator.comparing(path -> path.getFileName().toString()))
+            }).max(Comparator.comparing(RegressionSuiteRunner::jarVersionKey,
+                    RegressionSuiteRunner::compareVersionStrings)
+                    .thenComparing(path -> path.getFileName().toString()))
                     .map(path -> path.toFile().getAbsoluteFile()).orElse(null);
         }
+    }
+
+    static String jarVersionKey(Path jarPath) {
+        String name = jarPath.getFileName().toString();
+        if (!name.startsWith(RANDOMIZER_JAR_PREFIX) || !name.endsWith(".jar")) {
+            return "";
+        }
+        return name.substring(RANDOMIZER_JAR_PREFIX.length(), name.length() - ".jar".length());
+    }
+
+    static int compareVersionStrings(String left, String right) {
+        if (left.equals(right)) {
+            return 0;
+        }
+        String[] leftParts = left.split("\\.");
+        String[] rightParts = right.split("\\.");
+        int max = Math.max(leftParts.length, rightParts.length);
+        for (int i = 0; i < max; i++) {
+            int l = i < leftParts.length ? parseVersionPart(leftParts[i]) : 0;
+            int r = i < rightParts.length ? parseVersionPart(rightParts[i]) : 0;
+            if (l != r) {
+                return Integer.compare(l, r);
+            }
+        }
+        return left.compareTo(right);
+    }
+
+    private static int parseVersionPart(String part) {
+        int end = 0;
+        while (end < part.length() && Character.isDigit(part.charAt(end))) {
+            end++;
+        }
+        if (end == 0) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(part.substring(0, end));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static boolean caseExpectsSavedConfig(File expectationsFile) throws IOException {
+        RegressionExpectations expectations = RegressionExpectations
+                .fromYamlMap(RegressionYaml.load(expectationsFile));
+        return expectations.getExpectedFiles().contains(DEFAULT_SAVE_CONFIG_NAME);
     }
 }

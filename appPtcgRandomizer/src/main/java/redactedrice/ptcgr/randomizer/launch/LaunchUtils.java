@@ -5,12 +5,8 @@ import java.io.File;
 import java.io.IOException;
 
 import redactedrice.ptcgr.configs.AppPreferences;
-import redactedrice.ptcgr.configs.Config;
-import redactedrice.ptcgr.randomizer.Settings;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.randomizer.utils.IssueTracker;
-import redactedrice.randomizer.utils.LogLevel;
-import redactedrice.randomizer.utils.Logger;
 
 /** Shared ROM, config, and settings setup for GUI and headless runs. */
 public final class LaunchUtils {
@@ -40,15 +36,4 @@ public final class LaunchUtils {
         return rom;
     }
 
-    public static Settings settingsFrom(AppPreferences appPreferences, Config loaded) {
-        Settings settings = new Settings();
-        settings.setLogDetails(appPreferences.isLogDetails());
-        LogLevel logLevel = appPreferences.getLogLevel();
-        settings.setLogLevel(logLevel);
-        Logger.setMinLogLevel(logLevel);
-        if (loaded.hasSeed()) {
-            settings.setSeed(loaded.getSeed());
-        }
-        return settings;
-    }
 }
