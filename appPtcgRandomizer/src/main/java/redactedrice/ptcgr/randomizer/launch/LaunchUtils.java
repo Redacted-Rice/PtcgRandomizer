@@ -15,6 +15,15 @@ public final class LaunchUtils {
     private LaunchUtils() {
     }
 
+    public static boolean hasUnknownArgs(CommandLineArgs launch) {
+        return launch != null && !launch.getUnknownArgs().isEmpty();
+    }
+
+    public static void printUnknownArgs(CommandLineArgs launch) {
+        System.err.println(
+                "Unknown argument(s): " + String.join(" ", launch.getUnknownArgs()));
+    }
+
     public static AppPreferences loadAppPreferences(Component parent) {
         try {
             IssueTracker.clear();

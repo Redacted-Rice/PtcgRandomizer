@@ -25,12 +25,13 @@ class CommandLineArgsTest {
     }
 
     @Test
-    void loadConfigWithoutPathSetsRequestedOnly() {
+    void loadConfigWithoutPathIsUnknownArg() {
         CommandLineArgs launch =
                 CommandLineArgs.parse(new String[] {CommandLineArgs.CONFIG_FLAG});
 
-        assertTrue(launch.isLoadConfigRequested());
+        assertFalse(launch.isLoadConfigRequested());
         assertNull(launch.getLoadConfigCustomPath());
+        assertEquals(CommandLineArgs.CONFIG_FLAG, launch.getUnknownArgs().get(0));
     }
 
     @Test
