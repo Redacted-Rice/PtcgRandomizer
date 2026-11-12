@@ -1,6 +1,7 @@
 package redactedrice.ptcgr.randomizer.launch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +21,7 @@ class HeadlessRunnerTest {
         CommandLineArgs launch = CommandLineArgs.parse(new String[] {CommandLineArgs.HEADLESS_FLAG,
                 CommandLineArgs.CONFIG_FLAG});
         assertEquals(HeadlessRunner.USAGE_ERROR, HeadlessRunner.run(launch));
+        assertFalse(launch.getUnknownArgs().isEmpty());
     }
 
     @Test
@@ -66,6 +68,8 @@ class HeadlessRunnerTest {
                 HeadlessRunner.resolveConfigFile(withPath));
         assertEquals(new File(YamlIO.DEFAULT_FILE_NAME).getAbsoluteFile(),
                 HeadlessRunner.resolveConfigFile(noFlag));
-        assertNull(HeadlessRunner.resolveConfigFile(pathOnly));
+        assertEquals(new File(YamlIO.DEFAULT_FILE_NAME).getAbsoluteFile(),
+                HeadlessRunner.resolveConfigFile(pathOnly));
+        assertFalse(pathOnly.isLoadConfigRequested());
     }
 }
