@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -13,15 +15,18 @@ import org.junit.jupiter.api.io.TempDir;
 class RegressionSuiteRunnerTest {
 
     @Test
-    void findRandomizerJarPrefersLexicographicallyLatestName(@TempDir Path tempDir)
-            throws IOException {
+    void findRandomizerJarPrefersHighestVersion(@TempDir Path tempDir) throws IOException {
         Path app = tempDir.resolve("app");
         Files.createDirectories(app);
-        Path versioned = app.resolve("PtcgRandomizer-0.9.0.jar");
-        Files.writeString(versioned, "jar");
-        Files.writeString(app.resolve("PtcgRandomizer-0.1.0.jar"), "jar");
+        Path lowerVersion = app.resolve("PtcgRandomizer-0.9.0.jar");
+        Path higherVersion = app.resolve("PtcgRandomizer-0.10.0.jar");
+        Files.writeString(lowerVersion, "jar");
+        Files.writeString(higherVersion, "jar");
+        // newer mtime on the older version should not win
+        Files.setLastModifiedTime(lowerVersion, FileTime.from(Instant.parse("2025-01-01T00:00:00Z")));
+        Files.setLastModifiedTime(higherVersion, FileTime.from(Instant.parse("2020-01-01T00:00:00Z")));
 
-        assertEquals(versioned.toFile(), RegressionSuiteRunner.findRandomizerJar(app.toFile()));
+        assertEquals(higherVersion.toFile(), RegressionSuiteRunner.findRandomizerJar(app.toFile()));
     }
 
     @Test
