@@ -18,7 +18,7 @@ import redactedrice.randomizer.scripttests.ScriptTestRunResult;
 import redactedrice.randomizer.scripttests.ScriptTestWrapperFactory;
 import redactedrice.randomizer.utils.Logger;
 
-// PTCG host for URJ script tests.
+// PTCG host for URJ script tests
 public final class ScriptTestRunner {
     private ScriptTestRunner() {
     }
@@ -35,6 +35,7 @@ public final class ScriptTestRunner {
         if (appDir == null) {
             throw new IllegalArgumentException("App dir cannot be null");
         }
+        LaunchUtils.applyBundledResourceFlags(launch);
         PtcgBundledResources resources = prepare(appDir);
         return runCases(launch, resources.getScriptTestsDir().toPath(),
                 () -> loadWrapper(new PtcgBundledResources(appDir)), new PtcgScriptTestFixtures());

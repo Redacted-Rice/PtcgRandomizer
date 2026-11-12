@@ -12,8 +12,6 @@ import java.util.stream.Stream;
 /**
  * Regression harness application. Spawns PtcgRandomizer fat JAR in headless CLI mode per case.
  * Run from appPtcgrRegression module root (Gradle {@code runRegressionTests} does this).
- *
- * Usage: RegressionSuiteRunner &lt;appPtcgRandomizerDir&gt; [--rom path]
  */
 public final class RegressionSuiteRunner {
     public static final int SUCCESS = 0;
@@ -31,6 +29,7 @@ public final class RegressionSuiteRunner {
     private static final String OUTPUT_DIR_FLAG = "--output-dir";
     private static final String SAVE_CONFIG_FLAG = "--save-config";
     private static final String CLEAN_REINSTALL_RESOURCES_FLAG = "--clean-reinstall-resources";
+
     private static final String DEFAULT_SAVE_CONFIG_NAME = "ptcgr_randomize.yaml";
     private static final int HEADLESS_EXIT_SUCCESS = 0;
 
@@ -79,14 +78,20 @@ public final class RegressionSuiteRunner {
             return FAILURE;
         }
 
-        List<File> caseDirs = listCaseDirectories(casesDir);
+        List<File> caseDirs = selectCaseDirectories(casesDir, options.caseFilter);
         if (caseDirs.isEmpty()) {
-            System.err.println("No regression cases under " + casesDir);
+            if (options.caseFilter != null) {
+                System.err.println("No regression case named " + options.caseFilter + " under "
+                        + casesDir);
+            } else {
+                System.err.println("No regression cases under " + casesDir);
+            }
             return FAILURE;
         }
         File regressionBuild = new File(options.regressionModuleDir, "build/regression");
         String javaBin = Path.of(System.getProperty("java.home"), "bin", "java").toString();
 
+        boolean firstCase = true;
         // Go through and execute each case
         for (File caseDir : caseDirs) {
             String caseName = caseDir.getName();
@@ -102,11 +107,14 @@ public final class RegressionSuiteRunner {
             Files.createDirectories(workDir.toPath());
             Files.writeString(log.toPath(), "");
 
+            boolean useCleanReinstall = shouldCleanReinstall(options.cleanReinstall, firstCase);
+            firstCase = false;
+
             System.out.println("Running regression case " + caseName + " (ROM: "
                     + options.rom.getAbsolutePath() + ")");
 
             int headlessExit = runHeadlessCli(javaBin, randomizerJar, config, options.rom, workDir,
-                    log, expectations);
+                    log, expectations, useCleanReinstall);
             if (headlessExit != HEADLESS_EXIT_SUCCESS) {
                 System.err.println("Headless run failed for case " + caseName + " (exit "
                         + headlessExit + "). Log: " + log);
@@ -124,14 +132,24 @@ public final class RegressionSuiteRunner {
         return SUCCESS;
     }
 
+    static boolean shouldCleanReinstall(RegressionCleanReinstall policy, boolean firstCase) {
+        return switch (policy) {
+            case EVERY_CASE -> true;
+            case NEVER -> false;
+            case FIRST_CASE -> firstCase;
+        };
+    }
+
     private static int runHeadlessCli(String javaBin, File randomizerJar, File config, File rom,
-            File workDir, File log, File expectations) throws IOException {
+            File workDir, File log, File expectations, boolean useCleanReinstall) throws IOException {
         List<String> command = new ArrayList<>();
         command.add(javaBin);
         command.add("-Dfile.encoding=UTF-8");
         command.add("-jar");
         command.add(randomizerJar.getAbsolutePath());
-        command.add(CLEAN_REINSTALL_RESOURCES_FLAG);
+        if (useCleanReinstall) {
+            command.add(CLEAN_REINSTALL_RESOURCES_FLAG);
+        }
         command.add(HEADLESS_FLAG);
         command.add(CONFIG_FLAG);
         command.add(config.getAbsolutePath());
@@ -155,6 +173,20 @@ public final class RegressionSuiteRunner {
             Thread.currentThread().interrupt();
             throw new IOException("Headless run interrupted", e);
         }
+    }
+
+    static List<File> selectCaseDirectories(File casesDir, String caseFilter) {
+        List<File> dirs = listCaseDirectories(casesDir);
+        if (caseFilter == null || caseFilter.isBlank()) {
+            return dirs;
+        }
+        List<File> filtered = new ArrayList<>();
+        for (File dir : dirs) {
+            if (caseFilter.equals(dir.getName())) {
+                filtered.add(dir);
+            }
+        }
+        return filtered;
     }
 
     private static List<File> listCaseDirectories(File casesDir) {

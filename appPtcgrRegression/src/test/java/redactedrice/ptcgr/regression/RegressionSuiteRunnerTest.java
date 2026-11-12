@@ -1,7 +1,9 @@
 package redactedrice.ptcgr.regression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,5 +40,29 @@ class RegressionSuiteRunnerTest {
     void rejectsUnknownArgs() {
         assertEquals(RegressionSuiteRunner.USAGE_ERROR,
                 RegressionSuiteRunner.run(new String[] {"--nope"}));
+    }
+
+    @Test
+    void shouldCleanReinstallFollowsPolicy() {
+        assertTrue(RegressionSuiteRunner.shouldCleanReinstall(
+                RegressionCleanReinstall.FIRST_CASE, true));
+        assertFalse(RegressionSuiteRunner.shouldCleanReinstall(
+                RegressionCleanReinstall.FIRST_CASE, false));
+        assertTrue(RegressionSuiteRunner.shouldCleanReinstall(
+                RegressionCleanReinstall.EVERY_CASE, false));
+        assertFalse(RegressionSuiteRunner.shouldCleanReinstall(
+                RegressionCleanReinstall.NEVER, true));
+    }
+
+    @Test
+    void selectCaseDirectoriesFiltersByName(@TempDir Path tempDir) throws IOException {
+        Path cases = tempDir.resolve("cases");
+        Files.createDirectories(cases.resolve("alpha"));
+        Files.createDirectories(cases.resolve("beta"));
+
+        assertEquals(2, RegressionSuiteRunner.selectCaseDirectories(cases.toFile(), null).size());
+        assertEquals(1, RegressionSuiteRunner.selectCaseDirectories(cases.toFile(), "beta").size());
+        assertEquals("beta", RegressionSuiteRunner
+                .selectCaseDirectories(cases.toFile(), "beta").get(0).getName());
     }
 }

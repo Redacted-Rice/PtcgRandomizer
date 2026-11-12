@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redactedrice.ptcgr.configs.AppPreferences;
-import redactedrice.ptcgr.configs.YamlIO;
-import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.utils.LogLevel;
 
-/** CLI flags for GUI, headless batch, and Lua script tests. */
+/**
+ * CLI flags for GUI, headless batch, and Lua script tests.
+ * RegressionSuiteRunner copies the flags it passes to the fat JAR. Keep those strings in sync.
+ */
 public final class CommandLineArgs {
     public static final String HEADLESS_FLAG = "--headless";
     public static final String CONFIG_FLAG = "--config";
@@ -33,11 +34,14 @@ public final class CommandLineArgs {
     private final boolean scriptTests;
     private final LogLevel logLevel;
     private final String scriptTestCase;
+    private final boolean reinstallResources;
+    private final boolean cleanReinstallResources;
     private final List<String> unknownArgs;
 
     private CommandLineArgs(boolean headless, boolean loadConfigRequested, String loadConfigCustomPath,
             String loadRomCustomPath, String outputDirPath, boolean saveConfigRequested,
-            boolean scriptTests, LogLevel logLevel, String scriptTestCase, List<String> unknownArgs) {
+            boolean scriptTests, LogLevel logLevel, String scriptTestCase,
+            boolean reinstallResources, boolean cleanReinstallResources, List<String> unknownArgs) {
         this.headless = headless;
         this.loadConfigRequested = loadConfigRequested;
         this.loadConfigCustomPath = loadConfigCustomPath;
@@ -47,6 +51,8 @@ public final class CommandLineArgs {
         this.scriptTests = scriptTests;
         this.logLevel = logLevel;
         this.scriptTestCase = scriptTestCase;
+        this.reinstallResources = reinstallResources;
+        this.cleanReinstallResources = cleanReinstallResources;
         this.unknownArgs = List.copyOf(unknownArgs);
     }
 
@@ -63,17 +69,18 @@ public final class CommandLineArgs {
         boolean saveConfigRequested = false;
         LogLevel logLevel = DEFAULT_LOG_LEVEL;
         String scriptTestCase = null;
+        boolean reinstallResources = false;
+        boolean cleanReinstallResources = false;
         List<String> unknown = new ArrayList<>();
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if (REINSTALL_RESOURCES_FLAG.equals(arg)) {
-                System.setProperty(PtcgBundledResources.REINSTALL_RESOURCES_SYSTEM_PROPERTY, "true");
+                reinstallResources = true;
                 continue;
             }
             if (CLEAN_REINSTALL_RESOURCES_FLAG.equals(arg)) {
-                System.setProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY,
-                        "true");
+                cleanReinstallResources = true;
                 continue;
             }
             if (SCRIPT_TESTS_FLAG.equals(arg)) {
@@ -130,7 +137,7 @@ public final class CommandLineArgs {
 
         return new CommandLineArgs(headless, loadConfigRequested, loadConfigCustomPath,
                 loadRomCustomPath, outputDirPath, saveConfigRequested, scriptTests,
-                logLevel, scriptTestCase, unknown);
+                logLevel, scriptTestCase, reinstallResources, cleanReinstallResources, unknown);
     }
 
     public boolean isHeadless() {
@@ -167,6 +174,14 @@ public final class CommandLineArgs {
 
     public String getScriptTestCase() {
         return scriptTestCase;
+    }
+
+    public boolean isReinstallResources() {
+        return reinstallResources;
+    }
+
+    public boolean isCleanReinstallResources() {
+        return cleanReinstallResources;
     }
 
     public List<String> getUnknownArgs() {

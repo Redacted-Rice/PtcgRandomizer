@@ -47,7 +47,7 @@ public final class IssuePresenter {
 
     private static void showDialog(Component parent, String handlingContext, List<String> messages,
             int messageType) {
-        // No parent for tests and headless will print to the console instead
+        // No parent for tests and headless runs print to stderr instead of a dialog
         if (parent == null) {
             for (String message : messages) {
                 System.err.println(handlingContext + ": " + message);

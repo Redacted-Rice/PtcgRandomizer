@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 
 import redactedrice.ptcgr.configs.AppPreferences;
+import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.randomizer.utils.IssueTracker;
 
@@ -22,6 +23,20 @@ public final class LaunchUtils {
     public static void printUnknownArgs(CommandLineArgs launch) {
         System.err.println(
                 "Unknown argument(s): " + String.join(" ", launch.getUnknownArgs()));
+    }
+
+    // Apply after parse so repeated parsing does not stack system properties
+    public static void applyBundledResourceFlags(CommandLineArgs launch) {
+        if (launch == null) {
+            return;
+        }
+        if (launch.isReinstallResources()) {
+            System.setProperty(PtcgBundledResources.REINSTALL_RESOURCES_SYSTEM_PROPERTY, "true");
+        }
+        if (launch.isCleanReinstallResources()) {
+            System.setProperty(PtcgBundledResources.CLEAN_REINSTALL_RESOURCES_SYSTEM_PROPERTY,
+                    "true");
+        }
     }
 
     public static AppPreferences loadAppPreferences(Component parent) {
