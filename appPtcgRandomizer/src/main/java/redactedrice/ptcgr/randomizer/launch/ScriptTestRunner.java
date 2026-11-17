@@ -11,7 +11,7 @@ import redactedrice.ptcgr.randomizer.scripttests.PtcgScriptTestFixtures;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.scripttests.ScriptTestBatchRunner;
-import redactedrice.randomizer.scripttests.ScriptTestCaseFiles;
+import redactedrice.ptcgr.randomizer.scripttests.ScriptTestCaseFiles;
 import redactedrice.randomizer.scripttests.ScriptTestFailure;
 import redactedrice.randomizer.scripttests.ScriptTestFixtures;
 import redactedrice.randomizer.scripttests.ScriptTestRunResult;
