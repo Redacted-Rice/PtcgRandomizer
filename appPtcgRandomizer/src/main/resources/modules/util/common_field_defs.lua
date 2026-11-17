@@ -77,6 +77,16 @@ common_field_defs.ARG_DEF_DUPLICATES = {
 	default = "KEEP_DUPLICATES",
 }
 
+common_field_defs.ARG_DEF_NO_DUPLICATE_MOVE_NAMES = {
+	name = "noDuplicateMoveNames",
+	displayName = "Prevent Duplicate Move Names per Card",
+	description = "When enabled, a monster card will not receive the same move name on two different slots",
+	definition = {
+		type = "boolean",
+	},
+	default = true,
+}
+
 -- default ALL_TOGETHER. use ARG_DEF_STAGE_GROUPING_BY_STAGE when BY_STAGE is the module default
 common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER = {
 	name = "grouping",

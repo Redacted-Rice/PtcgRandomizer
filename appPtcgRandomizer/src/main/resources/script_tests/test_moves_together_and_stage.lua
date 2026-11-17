@@ -1,5 +1,7 @@
 -- Use the same seed on every case
 local seed = 42
+-- Fully random and fully random no dupes use the same different seed to show differences
+local fullyRandomSeed = 16
 local card_sets = require("support.card_sets")
 local fields = require("support.fields")
 
@@ -10,6 +12,8 @@ local baseline = {
 	grouping = "ALL_TOGETHER",
 	moveKind = "ALL_MOVES",
 	withinType = "All Together",
+	-- module default is true. tests force false so constraintFn is nil
+	noDuplicateMoveNames = false,
 }
 
 local expects = {
@@ -50,7 +54,7 @@ local expects = {
 		{ id = "MONSTER_017", moves = fields.moves() }, -- STAGE_1
 
 		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "LeafStorm" } }) }, -- STAGE_2
-		{ id = "MONSTER_019", moves = fields.moves({ { name = "FrenzyPlant" }, { name = "FrenzyPlant" } }) }, -- STAGE_2
+		{ id = "MONSTER_019", moves = fields.moves({ { name = "FrenzyPlant" }, { name = "LeafStorm" } }) }, -- STAGE_2
 	},
 	from_current = {
 		{ id = "MONSTER_001", moves = fields.moves({ { name = "CurInferno" } }) },
@@ -88,23 +92,48 @@ local expects = {
 		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "LeechSeed" } }) },
 		{ id = "MONSTER_019", moves = fields.moves({ { name = "Ember" }, { name = "Wave" } }) },
 	},
+	-- seed fullyRandomSeed, noDuplicateMoveNames off
 	fully_random = {
-		{ id = "MONSTER_001", moves = fields.moves({ { name = "FirePower" } }) },
-		{ id = "MONSTER_002", moves = fields.moves({ { name = "SolarBeam" }, { name = "LeafStorm" } }) },
+		{ id = "MONSTER_001", moves = fields.moves({ { name = "VineWhip" } }) },
+		{ id = "MONSTER_002", moves = fields.moves({ { name = "FirePower" }, { name = "Ember" } }) },
 		{ id = "MONSTER_003_1", moves = fields.moves() },
-		{ id = "MONSTER_004", moves = fields.moves({ { name = "Flare" }, { name = "Tide" } }) },
-		{ id = "MONSTER_005", moves = fields.moves({ { name = "SoakPower" } }) },
-		{ id = "MONSTER_006", moves = fields.moves({ { name = "Wave" }, { name = "VineWhip" } }) },
-		{ id = "MONSTER_010", moves = fields.moves({ { name = "FrenzyPlant" } }) },
-		{ id = "MONSTER_011", moves = fields.moves({ { name = "Absorb" }, { name = "LeafStorm" } }) },
+		{ id = "MONSTER_004", moves = fields.moves({ { name = "Ember" }, { name = "Burn" } }) },
+		{ id = "MONSTER_005", moves = fields.moves({ { name = "VineWhip" } }) },
+		{ id = "MONSTER_006", moves = fields.moves({ { name = "Ember" }, { name = "Burn" } }) },
+		{ id = "MONSTER_010", moves = fields.moves({ { name = "RazorLeaf" } }) },
+		{ id = "MONSTER_011", moves = fields.moves({ { name = "Pollen" }, { name = "FirePower" } }) },
 		{ id = "MONSTER_012", moves = fields.moves() },
 		{ id = "MONSTER_013", moves = fields.moves({ { name = "FrenzyPlant" } }) },
-		{ id = "MONSTER_014", moves = fields.moves({ { name = "Surf" }, { name = "WaterPower" } }) },
-		{ id = "MONSTER_015", moves = fields.moves({ { name = "Splash" } }) },
-		{ id = "MONSTER_016", moves = fields.moves({ { name = "WaterPower" }, { name = "FrenzyPlant" } }) },
+		{ id = "MONSTER_014", moves = fields.moves({ { name = "Bubble" }, { name = "SolarBeam" } }) },
+		{ id = "MONSTER_015", moves = fields.moves({ { name = "Absorb" } }) },
+		{ id = "MONSTER_016", moves = fields.moves({ { name = "Pollen" }, { name = "Inferno" } }) },
 		{ id = "MONSTER_017", moves = fields.moves() },
-		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "Splash" } }) },
-		{ id = "MONSTER_019", moves = fields.moves({ { name = "Ember" }, { name = "Tide" } }) },
+		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "FirePower" } }) },
+		-- Duplicated value which is expected here
+		-- also reuses frenzy plant multiple times while some are not used once (e.g. Wave)
+		{ id = "MONSTER_019", moves = fields.moves({ { name = "FrenzyPlant" }, { name = "FrenzyPlant" } }) },
+	},
+	-- same seed. constraint rejects duplicates
+	-- Note that once a duplicate is rejected, it will throw off all other cards after as it results in an
+	-- extra roll (or several) so the randomization will be "offset" from there on
+	fully_random_no_dupes = {
+		{ id = "MONSTER_001", moves = fields.moves({ { name = "VineWhip" } }) },
+		{ id = "MONSTER_002", moves = fields.moves({ { name = "FirePower" }, { name = "Ember" } }) },
+		{ id = "MONSTER_003_1", moves = fields.moves() },
+		{ id = "MONSTER_004", moves = fields.moves({ { name = "Ember" }, { name = "Burn" } }) },
+		{ id = "MONSTER_005", moves = fields.moves({ { name = "VineWhip" } }) },
+		{ id = "MONSTER_006", moves = fields.moves({ { name = "Ember" }, { name = "Burn" } }) },
+		{ id = "MONSTER_010", moves = fields.moves({ { name = "RazorLeaf" } }) },
+		{ id = "MONSTER_011", moves = fields.moves({ { name = "Pollen" }, { name = "FirePower" } }) },
+		{ id = "MONSTER_012", moves = fields.moves() },
+		{ id = "MONSTER_013", moves = fields.moves({ { name = "FrenzyPlant" } }) },
+		{ id = "MONSTER_014", moves = fields.moves({ { name = "Bubble" }, { name = "SolarBeam" } }) },
+		{ id = "MONSTER_015", moves = fields.moves({ { name = "Absorb" } }) },
+		{ id = "MONSTER_016", moves = fields.moves({ { name = "Pollen" }, { name = "Inferno" } }) },
+		{ id = "MONSTER_017", moves = fields.moves() },
+		{ id = "MONSTER_018_1", moves = fields.moves({ { name = "FirePower" } }) },
+		-- No longer duplicates as expected. Wave still is not used while frenzy plant is used multiple times
+		{ id = "MONSTER_019", moves = fields.moves({ { name = "FrenzyPlant" }, { name = "SolarBeam" } }) },
 	},
 	attacks = {
 		{ id = "MONSTER_001", moves = fields.moves({ { name = "Ember" } }) },
@@ -185,17 +214,20 @@ local expects = {
 }
 
 local function caseFor(name, overrides)
+	local caseSeed = overrides.seed or seed
 	local args = {}
 	for key, value in pairs(baseline) do
 		args[key] = value
 	end
 	for key, value in pairs(overrides) do
-		args[key] = value
+		if key ~= "seed" then
+			args[key] = value
+		end
 	end
 	return {
 		name = name,
 		module = "moves_together_and_stage",
-		seed = seed,
+		seed = caseSeed,
 		args = args,
 		originalCards = card_sets.STD_TEST_CARDS_ROM,
 		modifiedCards = card_sets.STD_TEST_CARDS_CURRENT,
@@ -208,7 +240,12 @@ return {
 	caseFor("by_stage", { grouping = "BY_STAGE" }),
 	caseFor("from_current", { source = "CURRENT" }),
 	caseFor("remove_duplicates", { duplicates = "REMOVE_DUPLICATES" }),
-	caseFor("fully_random", { approach = "FULLY_RANDOM" }),
+	caseFor("fully_random", { approach = "FULLY_RANDOM", seed = fullyRandomSeed }),
+	caseFor("fully_random_no_dupes", {
+		approach = "FULLY_RANDOM",
+		seed = fullyRandomSeed,
+		noDuplicateMoveNames = true,
+	}),
 	caseFor("attacks", { moveKind = "ATTACKS" }),
 	caseFor("powers", { moveKind = "POWERS" }),
 	caseFor("within_type", { withinType = "Within Type" }),

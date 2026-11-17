@@ -7,9 +7,9 @@ local pool_utils = {}
 -- maps approach to URC useToRandomize pool options. minimize repeats always regenerates
 function pool_utils.poolOptions(approach)
 	if approach == "MINIMIZE_REPEATS" then
-		return { consumable = true, regenerate = true }
+		return { consumesSelected = true, autoRegenerates = true }
 	end
-	return { consumable = false }
+	return { consumesSelected = false }
 end
 
 -- monster cards from the chosen source set
