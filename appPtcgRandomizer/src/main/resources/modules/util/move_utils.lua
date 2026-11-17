@@ -6,6 +6,14 @@ local pool_utils = require("modules.util.pool_utils")
 
 local move_utils = {}
 
+move_utils.maxNumMoveSlots = 2
+
+function move_utils.init(context)
+	if context.MonsterCard ~= nil and context.MonsterCard.MAX_NUM_MOVES ~= nil then
+		move_utils.maxNumMoveSlots = context.MonsterCard.MAX_NUM_MOVES
+	end
+end
+
 -- one representative move per name. same name can appear on many cards
 -- TODO later: Check if they are all the same or if they can have the same
 -- name but be different (I think the latter is the case)
@@ -87,6 +95,53 @@ end
 function move_utils.targets(context, args)
 	return move_utils.filterByKind(
 		randomizer.list(context.modified.cards:getRandomizableMoves(false, false)), args.moveKind)
+end
+
+function move_utils.clearRandomizedMoveTracking(moveTargets)
+	-- We just always set this up for simplicity so we don't have to track
+	-- the args and if we are using it or not
+	moveTargets:each(function(moveTarget)
+		local card = moveTarget:getSourceCard()
+		card._randomizedMoves = {}
+	end)
+end
+
+function move_utils.assignChosenMove(moveTarget, chosenMove)
+	if chosenMove == nil then
+		return
+	end
+	local card = moveTarget:getSourceCard()
+	local moveIndex = moveTarget:getSourceMoveIndex()
+	card:setMove(chosenMove, moveIndex)
+	-- We setup the _randomizerMoves values before starting so
+	-- they already won't be nil and be tables
+	card._randomizedMoves[moveIndex] = true
+end
+
+-- only compare against slots we already randomized this module run (see markMoveSlotRandomized)
+function move_utils.constraintUniqueMoveOnCard(moveTarget, candidateMove)
+	local card = moveTarget:getSourceCard()
+	local moveIndex = moveTarget:getSourceMoveIndex()
+	local candidateName = candidateMove.name:toString()
+	local maxSlots = move_utils.maxNumMoveSlots
+	-- Check each slot that we have already assigned that is not this slot
+	-- to see if we already have that name
+	for slotIndex = 0, maxSlots - 1 do
+		if slotIndex ~= moveIndex and card._randomizedMoves[slotIndex] then
+			local otherMove = card:getMove(slotIndex)
+			if otherMove ~= nil and otherMove.name:toString() == candidateName then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function move_utils.constraintFnForArgs(args)
+	if args.noDuplicateMoveNames == false then
+		return nil
+	end
+	return move_utils.constraintUniqueMoveOnCard
 end
 
 return move_utils

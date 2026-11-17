@@ -32,7 +32,7 @@ function evo_line_randomize_utils.buildNamePools(sourceCards, keyContext)
 						pool_utils.getTypeGroupingKey(card, keyContext.withinType),
 						card.stage, card.evoLineMaxStage, keyContext)
 			end, "name:toString"):applyToEachList("removeDuplicates")
-	return randomizer.KeyedPools.new(lists, { consumable = true, regenerate = false })
+	return randomizer.KeyedPools.new(lists, { consumesSelected = true, autoRegenerates = false })
 end
 
 -- Creates an array of each cards' data (stage, maxStage, prevEvoIdx, typeGroupKey) in the line
@@ -483,7 +483,7 @@ end
 function evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(typeCandidates, slots, namePools,
 		keyContext, reservedCounts, exhaustedLabel, triedTypes)
 	while #typeCandidates > 0 do
-		local cardType = utils.consumeRandomElement(typeCandidates)
+		local cardType = utils.randomElement(typeCandidates, { consumesSelected = true })
 		if evo_line_randomize_utils.tryReserveTypeForSlots(slots, cardType, namePools, keyContext,
 				reservedCounts)
 		then
@@ -811,7 +811,7 @@ function evo_line_randomize_utils.assignOneCustomLineFromPool(poolState, namePoo
 		toModifyByName, choicePools)
 	while true do
 		-- Try to get an evo line
-		local evoLine = poolState:draw(true)
+		local evoLine = poolState:draw()
 		if evoLine == nil then
 			-- We have exhausted everything, abort
 			return false
@@ -976,7 +976,10 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, toModifyB
 	local colorlessOnly = keyContext.splitsIntoPools
 	local potentialSwapTargets = evo_line_randomize_utils.potentialNonProxySwapTargets(toModifyCards,
 			colorlessOnly)
-	local swapPool = randomizer.Pool.new(potentialSwapTargets, { consumable = true, regenerate = false })
+	local swapPool = randomizer.Pool.new(potentialSwapTargets, {
+		consumesSelected = true,
+		autoRegenerates = false,
+	})
 	local cardsByPrev = evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
 
 	toModifyCards:each(function(proxy)

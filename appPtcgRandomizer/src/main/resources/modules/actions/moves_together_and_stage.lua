@@ -22,6 +22,7 @@ module = {
 		common_field_defs.ARG_DEF_MOVE_KIND,
 		common_field_defs.ARG_DEF_WITHIN_TYPE,
 		common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER,
+		common_field_defs.ARG_DEF_NO_DUPLICATE_MOVE_NAMES,
 	},
 	execute = function(context, args)
 		return module.randomizeMoves(context, args)
@@ -30,6 +31,7 @@ module = {
 
 function module.randomizeMoves(context, args)
 	pool_utils.init(context)
+	move_utils.init(context)
 	if args.moveKind == "POWERS" then
 		randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 	else
@@ -37,19 +39,18 @@ function module.randomizeMoves(context, args)
 	end
 
 	local moveTargets = move_utils.targets(context, args)
+	move_utils.clearRandomizedMoveTracking(moveTargets)
 	local options = pool_utils.poolOptions(args.approach)
-
-	local setter = function(target, move)
-		target:getSourceCard():setMove(move, target:getSourceMoveIndex())
-	end
+	options.constraintFn = move_utils.constraintFnForArgs(args)
 
 	if pool_utils.stageGroupingSplitsIntoPools(args.grouping)
 			or pool_utils.typeGroupingSplitsIntoPools(args.withinType) then
 		local key = move_utils.groupKey(args)
-		move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key, setter,
-			options)
+		move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key,
+			move_utils.assignChosenMove, options)
 	else
-		move_utils.buildPool(context, args):useToRandomize(moveTargets, setter, options)
+		move_utils.buildPool(context, args):useToRandomize(moveTargets, move_utils.assignChosenMove,
+			options)
 	end
 end
 
