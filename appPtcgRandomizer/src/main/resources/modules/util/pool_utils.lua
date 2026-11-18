@@ -12,6 +12,27 @@ function pool_utils.poolOptions(approach)
 	return { consumesSelected = false }
 end
 
+-- Card sourced pools with full duplicate weight and MINIMIZE_REPEATS should not run dry run out of items
+function pool_utils.shouldErrorOnExhausted(args)
+	if args == nil then
+		return false
+	end
+	if args.approach ~= "MINIMIZE_REPEATS" then
+		return false
+	end
+	if args.duplicates ~= "KEEP_DUPLICATES" then
+		return false
+	end
+	return args.source == "ROM" or args.source == "CURRENT"
+end
+
+-- Only for modules that randomize values from ROM/CURRENT card pools (source + duplicates on args)
+function pool_utils.poolOptionsForCardSource(args)
+	local options = pool_utils.poolOptions(args.approach)
+	options.errorOnExhausted = pool_utils.shouldErrorOnExhausted(args)
+	return options
+end
+
 -- monster cards from the chosen source set
 function pool_utils.sourceCards(context, source)
 	if source == "CURRENT" then

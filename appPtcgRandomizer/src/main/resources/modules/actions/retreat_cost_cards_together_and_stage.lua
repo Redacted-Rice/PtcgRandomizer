@@ -27,7 +27,7 @@ module = {
 function module.randomizeRetreatCost(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
-	local options = pool_utils.poolOptions(args.approach)
+	local options = pool_utils.poolOptionsForCardSource(args)
 
 	if args.grouping == "BY_STAGE" then
 		pool_utils.buildGroupedPool(sourceCards, "stage", "retreatCost", args.duplicates):

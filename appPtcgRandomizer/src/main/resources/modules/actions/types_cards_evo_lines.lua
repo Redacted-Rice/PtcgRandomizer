@@ -30,7 +30,7 @@ module = {
 function module.randomizeEvoLineTypes(context, args)
 	types_util.randomizeEvoLineTypes(context,
 			types_util.buildEvoLineTypePoolFromCards(context, args),
-			pool_utils.poolOptions(args.approach))
+			pool_utils.poolOptionsForCardSource(args))
 end
 
 return module

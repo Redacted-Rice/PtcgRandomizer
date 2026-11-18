@@ -28,7 +28,7 @@ module = {
 function module.randomizeNumMoves(context, args)
 	local sourceCards = pool_utils.sourceCards(context, args.source)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
-	local options = pool_utils.poolOptions(args.approach)
+	local options = pool_utils.poolOptionsForCardSource(args)
 	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey, "getNumMoves",
 		args.duplicates):useToRandomize(targets, pool_utils.stageAndMaxStageKey, "setNumMoves",
 		options)

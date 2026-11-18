@@ -97,12 +97,12 @@ function move_utils.targets(context, args)
 		randomizer.list(context.modified.cards:getRandomizableMoves(false, false)), args.moveKind)
 end
 
-function move_utils.clearRandomizedMoveTracking(moveTargets)
+function move_utils.clearTempMoveRandTracking(moveTargets)
 	-- We just always set this up for simplicity so we don't have to track
 	-- the args and if we are using it or not
 	moveTargets:each(function(moveTarget)
 		local card = moveTarget:getSourceCard()
-		card._randomizedMoves = {}
+		card._tempMoveRandTracking = {}
 	end)
 end
 
@@ -115,21 +115,44 @@ function move_utils.assignChosenMove(moveTarget, chosenMove)
 	card:setMove(chosenMove, moveIndex)
 	-- We setup the _randomizerMoves values before starting so
 	-- they already won't be nil and be tables
-	card._randomizedMoves[moveIndex] = true
+	card._tempMoveRandTracking[moveIndex] = true
 end
 
--- only compare against slots we already randomized this module run (see markMoveSlotRandomized)
-function move_utils.constraintUniqueMoveOnCard(moveTarget, candidateMove)
+-- whether this slot is in scope for the current moveKind filter
+function move_utils.slotRandomizedThisRun(move, moveKind)
+	if moveKind == "ATTACKS" then
+		return move:isAttack()
+	end
+	if moveKind == "POWERS" then
+		return move:isPokePower()
+	end
+	return true
+end
+
+-- tracked slots always compared. untracked slots of a different kind are compared too
+function move_utils.shouldCompareMoveSlot(card, slotIndex, moveKind)
+	if card._tempMoveRandTracking[slotIndex] then
+		return true
+	end
+	local otherMove = card:getMove(slotIndex)
+	if otherMove == nil or otherMove:isEmpty() then
+		return false
+	end
+	return not move_utils.slotRandomizedThisRun(otherMove, moveKind)
+end
+
+function move_utils.constraintUniqueMoveOnCard(moveTarget, candidateMove, moveKind)
 	local card = moveTarget:getSourceCard()
 	local moveIndex = moveTarget:getSourceMoveIndex()
 	local candidateName = candidateMove.name:toString()
 	local maxSlots = move_utils.maxNumMoveSlots
-	-- Check each slot that we have already assigned that is not this slot
+	-- Check each slot that we have already assigned or that will not be assigned this run
 	-- to see if we already have that name
 	for slotIndex = 0, maxSlots - 1 do
-		if slotIndex ~= moveIndex and card._randomizedMoves[slotIndex] then
+		if slotIndex ~= moveIndex and move_utils.shouldCompareMoveSlot(card, slotIndex, moveKind) then
 			local otherMove = card:getMove(slotIndex)
-			if otherMove ~= nil and otherMove.name:toString() == candidateName then
+			if otherMove ~= nil and not otherMove:isEmpty()
+					and otherMove.name:toString() == candidateName then
 				return false
 			end
 		end
@@ -141,7 +164,9 @@ function move_utils.constraintFnForArgs(args)
 	if args.noDuplicateMoveNames == false then
 		return nil
 	end
-	return move_utils.constraintUniqueMoveOnCard
+	return function(moveTarget, candidateMove)
+		return move_utils.constraintUniqueMoveOnCard(moveTarget, candidateMove, args.moveKind)
+	end
 end
 
 return move_utils
