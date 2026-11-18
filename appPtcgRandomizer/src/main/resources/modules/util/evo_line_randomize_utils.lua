@@ -482,23 +482,26 @@ end
 -- Assumes typeCandidates is safe to mutate - callers should copy if needed
 function evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(typeCandidates, slots, namePools,
 		keyContext, reservedCounts, exhaustedLabel, triedTypes)
-	while #typeCandidates > 0 do
-		local cardType = utils.randomElement(typeCandidates, { consumesSelected = true })
-		if evo_line_randomize_utils.tryReserveTypeForSlots(slots, cardType, namePools, keyContext,
-				reservedCounts)
-		then
-			return cardType
-		end
-		if triedTypes ~= nil then
-			table.insert(triedTypes, cardType)
-		end
-	end
-	if exhaustedLabel ~= nil then
+	local typePool = randomizer.Pool.backedBy(typeCandidates, {
+		consumesSelected = true,
+		constraintRemovesFailures = true,
+		constraintFn = function(_, cardType)
+			local ok = evo_line_randomize_utils.tryReserveTypeForSlots(slots, cardType, namePools,
+					keyContext, reservedCounts)
+			-- Add it to our tried if it doesn't work for higher level optimization
+			if not ok and triedTypes ~= nil then
+				table.insert(triedTypes, cardType)
+			end
+			return ok
+		end,
+	})
+	local chosenType = typePool:drawWithConstraint()
+	if chosenType == nil and exhaustedLabel ~= nil then
 		logger.debug("evo_line_custom " .. exhaustedLabel .. " slots=["
 				.. evo_line_randomize_utils.formatSlots(slots) .. "] pools="
 				.. tostring(namePools))
 	end
-	return nil
+	return chosenType
 end
 
 function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, keyContext,
@@ -510,6 +513,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	if isBranchNode and choicePools:get("branchingBasesColorless"):draw()
 			== common_field_defs.BRANCHING_BASE_COLORLESS
 			and keyContext.colorlessTypes ~= nil then
+		logger.debug("evo_line_custom selecting branch root colorless type")
 		chosenType = evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(
 				keyContext.colorlessTypes:toTable(), slots, namePools, keyContext,
 				reservedCounts, nil, triedTypes)
@@ -519,6 +523,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	if chosenType == nil and branchContext ~= nil
 			and branchContext.branchRootConsistency == common_field_defs.BRANCH_ROOT_MATCH
 			and not branchContext.matchRootFilled then
+		logger.debug("evo_line_custom selecting branch root match type=" .. tostring(branchContext.rootType))
 		chosenType = branchContext.rootType
 		if not evo_line_randomize_utils.tryReserveTypeForSlots(slots, chosenType, namePools, keyContext,
 					reservedCounts) then
@@ -538,6 +543,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	if chosenType == nil then
 		if branchContext ~= nil then
 			-- If its part of a branching line, build preference groups and use that for randomization
+			logger.debug("evo_line_custom selecting based on branch context")
 			for index, group in ipairs(evo_line_randomize_utils.buildTypePreferenceGroups(keyContext.cardTypes,
 					branchContext, choicePools, triedTypes)) do
 				local exhaustedLabel = nil
@@ -552,9 +558,14 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 			end
 		else
 			-- otherwise just choose any type
+			logger.debug("evo_line_custom selecting any type")
 			chosenType = evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(keyContext.cardTypes:toTable(),
 					slots, namePools, keyContext, reservedCounts)
 		end
+	end
+
+	if chosenType ~= nil then
+		logger.debug("evo_line_custom selected type=" .. tostring(chosenType))
 	end
 
 	-- If we choose a type for a branch, add it to the context

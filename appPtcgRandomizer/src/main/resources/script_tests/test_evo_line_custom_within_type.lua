@@ -288,28 +288,27 @@ return {
 			-- shape: [1-3-2]
 			{ id = "MONSTER_018_1", name = "FireEBasic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_018_2", name = "FireEBasic", stage = "BASIC", prevEvoName = "" },
-			{ id = "MONSTER_081_1", name = "FireB3rd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
-			{ id = "MONSTER_081_2", name = "FireB3rd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
-			{ id = "MONSTER_080", name = "FireDBasic", stage = "STAGE_2", prevEvoName = "FireB3rd" },
-			{ id = "MONSTER_038_1", name = "FireA2nd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
-			{ id = "MONSTER_038_2", name = "FireA2nd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
-			{ id = "MONSTER_003_1", name = "FireABasic", stage = "STAGE_2", prevEvoName = "FireA2nd" },
-			{ id = "MONSTER_003_2", name = "FireABasic", stage = "STAGE_2", prevEvoName = "FireA2nd" },
-			{ id = "MONSTER_105_1", name = "WaterC2nd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
-			{ id = "MONSTER_105_2", name = "WaterC2nd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
+			{ id = "MONSTER_059_1", name = "FireA3rd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
+			{ id = "MONSTER_059_2", name = "FireA3rd", stage = "STAGE_1", prevEvoName = "FireEBasic" },
+			{ id = "MONSTER_038_1", name = "FireA2nd", stage = "STAGE_2", prevEvoName = "FireA3rd" },
+			{ id = "MONSTER_038_2", name = "FireA2nd", stage = "STAGE_2", prevEvoName = "FireA3rd" },
+			{ id = "MONSTER_094", name = "WaterDBasic", stage = "STAGE_1", prevEvoName = "FireEBasic" },
+			{ id = "MONSTER_079_1", name = "WaterC3rd", stage = "STAGE_2", prevEvoName = "WaterDBasic" },
+			{ id = "MONSTER_079_2", name = "WaterC3rd", stage = "STAGE_2", prevEvoName = "WaterDBasic" },
+			{ id = "MONSTER_003_1", name = "FireABasic", stage = "STAGE_1", prevEvoName = "FireEBasic" },
+			{ id = "MONSTER_003_2", name = "FireABasic", stage = "STAGE_1", prevEvoName = "FireEBasic" },
 
 			-- shape: [1-3-0]
 			{ id = "MONSTER_039_1", name = "WaterABasic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_039_2", name = "WaterABasic", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_039_3", name = "WaterABasic", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_081_1", name = "FireB3rd", stage = "STAGE_1", prevEvoName = "WaterABasic" },
+			{ id = "MONSTER_081_2", name = "FireB3rd", stage = "STAGE_1", prevEvoName = "WaterABasic" },
 			{ id = "MONSTER_092_1", name = "FireCBasic", stage = "STAGE_1", prevEvoName = "WaterABasic" },
 			{ id = "MONSTER_092_2", name = "FireCBasic", stage = "STAGE_1", prevEvoName = "WaterABasic" },
-			{ id = "MONSTER_135_1", name = "WaterBBasic", stage = "STAGE_1", prevEvoName = "WaterABasic" },
-			{ id = "MONSTER_135_2", name = "WaterBBasic", stage = "STAGE_1", prevEvoName = "WaterABasic" },
-			{ id = "MONSTER_052_1", name = "WaterA2nd", stage = "STAGE_1", prevEvoName = "WaterABasic" },
-			{ id = "MONSTER_052_2", name = "WaterA2nd", stage = "STAGE_1", prevEvoName = "WaterABasic" },
+			{ id = "MONSTER_080", name = "FireDBasic", stage = "STAGE_1", prevEvoName = "WaterABasic" },
 
-			-- This shape was choosen 2 times while [1-1-0] was not used at all
+			-- This shape was choosen 3 times while [1-1-0] and [1-0-0] was not used at all
 			-- shape: [1-1-1]
 			{ id = "MONSTER_026_1", name = "FireB2nd", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_026_2", name = "FireB2nd", stage = "BASIC", prevEvoName = "" },
@@ -320,24 +319,21 @@ return {
 			{ id = "MONSTER_093_2", name = "FireC2nd", stage = "STAGE_2", prevEvoName = "FireBBasic" },
 
 			-- shape: [1-1-1]
-			{ id = "MONSTER_079_1", name = "WaterC3rd", stage = "BASIC", prevEvoName = "" },
-			{ id = "MONSTER_079_2", name = "WaterC3rd", stage = "BASIC", prevEvoName = "" },
-			{ id = "MONSTER_149_1", name = "WaterA3rd", stage = "STAGE_1", prevEvoName = "WaterC3rd" },
-			{ id = "MONSTER_149_2", name = "WaterA3rd", stage = "STAGE_1", prevEvoName = "WaterC3rd" },
-			{ id = "MONSTER_151_1", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
-			{ id = "MONSTER_151_2", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
-			{ id = "MONSTER_151_3", name = "WaterCBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
+			{ id = "MONSTER_052_1", name = "WaterA2nd", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_052_2", name = "WaterA2nd", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_151_1", name = "WaterCBasic", stage = "STAGE_1", prevEvoName = "WaterA2nd" },
+			{ id = "MONSTER_151_2", name = "WaterCBasic", stage = "STAGE_1", prevEvoName = "WaterA2nd" },
+			{ id = "MONSTER_151_3", name = "WaterCBasic", stage = "STAGE_1", prevEvoName = "WaterA2nd" },
+			{ id = "MONSTER_105_1", name = "WaterC2nd", stage = "STAGE_2", prevEvoName = "WaterCBasic" },
+			{ id = "MONSTER_105_2", name = "WaterC2nd", stage = "STAGE_2", prevEvoName = "WaterCBasic" },
 
-			-- shape: [1-0-0]
-			{ id = "MONSTER_059_1", name = "FireA3rd", stage = "BASIC", prevEvoName = "" },
-			{ id = "MONSTER_059_2", name = "FireA3rd", stage = "BASIC", prevEvoName = "" },
-
-			-- shape: [1-0-0]
+			-- shape: [1-1-1]
 			{ id = "MONSTER_145_1", name = "WaterB2nd", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_145_2", name = "WaterB2nd", stage = "BASIC", prevEvoName = "" },
-
-			-- shape: [1-0-0]
-			{ id = "MONSTER_094", name = "WaterDBasic", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_149_1", name = "WaterA3rd", stage = "STAGE_1", prevEvoName = "WaterB2nd" },
+			{ id = "MONSTER_149_2", name = "WaterA3rd", stage = "STAGE_1", prevEvoName = "WaterB2nd" },
+			{ id = "MONSTER_135_1", name = "WaterBBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
+			{ id = "MONSTER_135_2", name = "WaterBBasic", stage = "STAGE_2", prevEvoName = "WaterA3rd" },
 		},
 		31 + SEED_OFFSET_ADJUST
 	),
