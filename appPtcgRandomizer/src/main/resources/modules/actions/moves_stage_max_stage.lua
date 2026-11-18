@@ -41,8 +41,8 @@ function module.randomizeMoves(context, args)
 	end
 
 	local moveTargets = move_utils.targets(context, args)
-	move_utils.clearRandomizedMoveTracking(moveTargets)
-	local options = pool_utils.poolOptions(args.approach)
+	move_utils.clearTempMoveRandTracking(moveTargets)
+	local options = pool_utils.poolOptionsForCardSource(args)
 	options.constraintFn = move_utils.constraintFnForArgs(args)
 	local key = move_utils.stageAndMaxStageGroupKey(args)
 
