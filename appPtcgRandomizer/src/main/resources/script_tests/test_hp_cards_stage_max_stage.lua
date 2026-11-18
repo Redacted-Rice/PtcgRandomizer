@@ -90,7 +90,7 @@ return {
 			{ id = "MONSTER_003_1", hp = 50 }, -- BASIC/BASIC
 			{ id = "MONSTER_004", hp = 40 }, -- BASIC/BASIC
 			{ id = "MONSTER_005", hp = 70 }, -- BASIC/BASIC
-			{ id = "MONSTER_006", hp = 70 }, -- BASIC/BASIC
+			{ id = "MONSTER_006", hp = 40 }, -- BASIC/BASIC
 
 			{ id = "MONSTER_010", hp = 30 }, -- BASIC/STAGE_1
 			{ id = "MONSTER_012", hp = 40 }, -- BASIC/STAGE_1

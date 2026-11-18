@@ -88,9 +88,9 @@ return {
 			{ id = "MONSTER_001", retreatCost = 2 },
 			{ id = "MONSTER_002", retreatCost = 3 },
 			{ id = "MONSTER_003_1", retreatCost = 1 },
-			{ id = "MONSTER_004", retreatCost = 3 },
-			{ id = "MONSTER_005", retreatCost = 2 },
-			{ id = "MONSTER_006", retreatCost = 1 },
+			{ id = "MONSTER_004", retreatCost = 1 },
+			{ id = "MONSTER_005", retreatCost = 3 },
+			{ id = "MONSTER_006", retreatCost = 2 },
 
 			{ id = "MONSTER_010", retreatCost = 1 },
 			{ id = "MONSTER_012", retreatCost = 1 },

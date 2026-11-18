@@ -91,8 +91,8 @@ return {
 			{ id = "MONSTER_002", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", numMoves = 1 }, -- BASIC/BASIC
 			{ id = "MONSTER_004", numMoves = 2 }, -- BASIC/BASIC
-			{ id = "MONSTER_005", numMoves = 1 }, -- BASIC/BASIC
-			{ id = "MONSTER_006", numMoves = 2 }, -- BASIC/BASIC
+			{ id = "MONSTER_005", numMoves = 2 }, -- BASIC/BASIC
+			{ id = "MONSTER_006", numMoves = 1 }, -- BASIC/BASIC
 
 			{ id = "MONSTER_010", numMoves = 2 }, -- BASIC/STAGE_1
 			{ id = "MONSTER_012", numMoves = 2 }, -- BASIC/STAGE_1
