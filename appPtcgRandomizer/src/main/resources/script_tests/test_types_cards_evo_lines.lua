@@ -126,7 +126,7 @@ return {
 		},
 		originalCards = originalCards,
 		modifiedCards = modifiedCards,
-		-- Four unique CURRENT types, then two refills. COLORLESS and GRASS double up, not PSYCHIC only like keep_duplicates.
+		-- Four unique current types, then two refills. PSYCHIC and GRASS double up, not PSYCHIC only like keep_duplicates.
 		expectCards = {
 			{ id = "MONSTER_001", type = "MONSTER_PSYCHIC" },
 			{ id = "MONSTER_002", type = "MONSTER_PSYCHIC" },
@@ -144,8 +144,8 @@ return {
 
 			{ id = "MONSTER_024", type = "MONSTER_GRASS" },
 
-			{ id = "MONSTER_031", type = "MONSTER_COLORLESS" },
-			{ id = "MONSTER_032", type = "MONSTER_COLORLESS" },
+			{ id = "MONSTER_031", type = "MONSTER_PSYCHIC" },
+			{ id = "MONSTER_032", type = "MONSTER_PSYCHIC" },
 		},
 
 	},

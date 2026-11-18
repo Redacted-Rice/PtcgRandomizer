@@ -32,18 +32,18 @@ return {
 			{ id = "MONSTER_001", hp = 30 }, -- BASIC
 			{ id = "MONSTER_002", hp = 20 }, -- BASIC
 			{ id = "MONSTER_003_1", hp = 10 }, -- BASIC
-			{ id = "MONSTER_004", hp = 30 }, -- BASIC
+			{ id = "MONSTER_004", hp = 20 }, -- BASIC
 			{ id = "MONSTER_005", hp = 10 }, -- BASIC
 			{ id = "MONSTER_006", hp = 20 }, -- BASIC
-			{ id = "MONSTER_010", hp = 30 }, -- BASIC
-			{ id = "MONSTER_012", hp = 10 }, -- BASIC
+			{ id = "MONSTER_010", hp = 10 }, -- BASIC
+			{ id = "MONSTER_012", hp = 30 }, -- BASIC
 			{ id = "MONSTER_014", hp = 20 }, -- BASIC
-			{ id = "MONSTER_015", hp = 20 }, -- BASIC
+			{ id = "MONSTER_015", hp = 30 }, -- BASIC
 
 			{ id = "MONSTER_011", hp = 50 }, -- STAGE_1
 			{ id = "MONSTER_013", hp = 40 }, -- STAGE_1
 			{ id = "MONSTER_016", hp = 60 }, -- STAGE_1
-			{ id = "MONSTER_017", hp = 40 }, -- STAGE_1
+			{ id = "MONSTER_017", hp = 50 }, -- STAGE_1
 
 			{ id = "MONSTER_018_1", hp = 80 }, -- STAGE_2
 			{ id = "MONSTER_019", hp = 90 }, -- STAGE_2

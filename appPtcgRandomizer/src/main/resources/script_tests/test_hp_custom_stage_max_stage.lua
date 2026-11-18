@@ -55,9 +55,9 @@ return {
 			{ id = "MONSTER_001", hp = 30 }, -- BASIC/BASIC
 			{ id = "MONSTER_002", hp = 10 }, -- BASIC/BASIC
 			{ id = "MONSTER_003_1", hp = 20 }, -- BASIC/BASIC
-			{ id = "MONSTER_004", hp = 30 }, -- BASIC/BASIC
-			{ id = "MONSTER_005", hp = 20 }, -- BASIC/BASIC
-			{ id = "MONSTER_006", hp = 10 }, -- BASIC/BASIC
+			{ id = "MONSTER_004", hp = 20 }, -- BASIC/BASIC
+			{ id = "MONSTER_005", hp = 10 }, -- BASIC/BASIC
+			{ id = "MONSTER_006", hp = 30 }, -- BASIC/BASIC
 
 			{ id = "MONSTER_010", hp = 50 }, -- BASIC/STAGE_1
 			{ id = "MONSTER_012", hp = 60 }, -- BASIC/STAGE_1
