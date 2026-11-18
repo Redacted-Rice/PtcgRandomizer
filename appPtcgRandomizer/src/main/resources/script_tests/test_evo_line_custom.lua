@@ -137,13 +137,16 @@ return {
 			{ id = "MONSTER_052_1", name = "WaterA2nd", stage = "STAGE_1", prevEvoName = "FireB3rd" },
 			{ id = "MONSTER_052_2", name = "WaterA2nd", stage = "STAGE_1", prevEvoName = "FireB3rd" },
 
-			-- shape: [1-3-0]
+			-- We use this one a bunch too when we don't need to and don't use [1-1-1] or [1-3-0]
+			-- shape: [1-1-0]
+			{ id = "MONSTER_059_1", name = "FireA3rd", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_059_2", name = "FireA3rd", stage = "BASIC", prevEvoName = "" },
+			{ id = "MONSTER_003_1", name = "FireABasic", stage = "STAGE_1", prevEvoName = "FireA3rd" },
+			{ id = "MONSTER_003_2", name = "FireABasic", stage = "STAGE_1", prevEvoName = "FireA3rd" },
+
+			-- shape: [1-1-0]
 			{ id = "MONSTER_105_1", name = "WaterC2nd", stage = "BASIC", prevEvoName = "" },
 			{ id = "MONSTER_105_2", name = "WaterC2nd", stage = "BASIC", prevEvoName = "" },
-			{ id = "MONSTER_059_1", name = "FireA3rd", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
-			{ id = "MONSTER_059_2", name = "FireA3rd", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
-			{ id = "MONSTER_003_1", name = "FireABasic", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
-			{ id = "MONSTER_003_2", name = "FireABasic", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
 			{ id = "MONSTER_079_1", name = "WaterC3rd", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
 			{ id = "MONSTER_079_2", name = "WaterC3rd", stage = "STAGE_1", prevEvoName = "WaterC2nd" },
 
