@@ -38,7 +38,7 @@ class RomReaderDeckTableTest {
         rom[tutorialBlob + 4] = 0;
 
         RomSourceMap sourceMap = new RomSourceMap();
-        Decks decks = RomReader.readDecksFromData(rom, new Texts(), new Blocks(), sourceMap);
+        Decks decks = RomReader.readDecksFromData(rom, new Blocks(), sourceMap, new Texts());
 
         AddressRange deckPtrTable = sourceMap.getDeckPointerTable();
         assertEquals(tableLoc + 8, deckPtrTable.getStopExclusive());

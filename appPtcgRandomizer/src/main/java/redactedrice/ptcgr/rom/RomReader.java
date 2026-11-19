@@ -81,8 +81,8 @@ public final class RomReader {
         return texts;
     }
 
-    public static Cards readCardsFromData(byte[] rawBytes, Texts allText, Blocks toBlankSpaceIn,
-            RomSourceMap sourceMap) {
+    public static Cards readCardsFromData(byte[] rawBytes, Blocks toBlankSpaceIn,
+            RomSourceMap sourceMap, Texts texts) {
         // TODO: Optimize address range adding since they will mostly be in order
 
         Cards cards = new Cards();
@@ -99,7 +99,7 @@ public final class RomReader {
         while ((cardIndex = (short) ByteUtils.readLittleEndian(rawBytes, ptrIndex,
                 PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES)) != 0) {
             cardIndex += PtcgRomConstants.CARD_POINTER_OFFSET;
-            Card card = Card.addCardFromBytes(rawBytes, cardIndex, allText, cards.cards());
+            Card card = Card.addCardFromBytes(rawBytes, cardIndex, cards.cards(), texts);
             AddressRange cardRange = new AddressRange(cardIndex, cardIndex + card.getSize());
             sourceMap.recordCardRange(card.id, cardRange);
 
@@ -122,8 +122,8 @@ public final class RomReader {
         return cards;
     }
 
-    public static Decks readDecksFromData(byte[] rawBytes, Texts texts, Blocks toBlankSpaceIn,
-            RomSourceMap sourceMap) {
+    public static Decks readDecksFromData(byte[] rawBytes, Blocks toBlankSpaceIn,
+            RomSourceMap sourceMap, Texts texts) {
         Decks decks = new Decks();
 
         int deckListPtr = PtcgRomConstants.DECK_POINTERS_LOC;
@@ -145,7 +145,7 @@ public final class RomReader {
                 Deck.addPlaceholderDeck(deckId, decks);
                 sourceMap.recordDeckRange(deckId, new AddressRange(deckPtr, deckPtr));
             } else {
-                int deckSize = Deck.addDeckFromBytes(rawBytes, deckPtr, deckId, texts, decks);
+                int deckSize = Deck.addDeckFromBytes(rawBytes, deckPtr, deckId, decks, texts);
                 AddressRange deckRange = new AddressRange(deckPtr, deckPtr + deckSize);
                 sourceMap.recordDeckRange(deckId, deckRange);
                 toBlankSpaceIn.addBlankedBlock(deckRange);

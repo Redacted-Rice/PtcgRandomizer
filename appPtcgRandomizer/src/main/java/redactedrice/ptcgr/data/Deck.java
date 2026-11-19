@@ -77,8 +77,8 @@ public class Deck {
         toAddTo.put(new Deck(deckId));
     }
 
-    public static int addDeckFromBytes(byte[] rawBytes, int start, DeckId deckId,
-            Texts texts, Decks toAddTo) {
+    public static int addDeckFromBytes(byte[] rawBytes, int start, DeckId deckId, Decks decks,
+            Texts texts) {
         Deck deck = new Deck(deckId);
         int index = start;
         while (index < rawBytes.length) {
@@ -98,7 +98,7 @@ public class Deck {
         deck.name.readDataAndConvertIds(rawBytes, index, texts);
         index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
 
-        toAddTo.put(deck);
+        decks.put(deck);
         return index - start;
     }
 

@@ -31,8 +31,8 @@ public class RomIO {
         RomSourceMap sourceMap = new RomSourceMap();
         Blocks romBlanks = new Blocks();
         Texts texts = RomReader.readTextsFromData(rawBytes, romBlanks, sourceMap);
-        Decks decks = RomReader.readDecksFromData(rawBytes, texts, romBlanks, sourceMap);
-        Cards cards = RomReader.readCardsFromData(rawBytes, texts, romBlanks, sourceMap);
+        Cards cards = RomReader.readCardsFromData(rawBytes, romBlanks, sourceMap, texts);
+        Decks decks = RomReader.readDecksFromData(rawBytes, romBlanks, sourceMap, texts);
         TrainerMonsterProxyFactory.attachProxies(cards);
 
         return new RomData(rawBytes, cards, decks, texts, sourceMap, romBlanks, rules);
@@ -89,7 +89,7 @@ public class RomIO {
         // Copy blocks and texts as we modify these as part of assembling
         Blocks writeBlocks = romData.baselineRomBlanks.copy();
         Texts writeTexts = romData.baselineTexts.copy();
-        RomBlockAssembler.assemble(romData.modified.cards, writeTexts, romData.modified.decks,
+        RomBlockAssembler.assemble(romData.modified.cards, romData.modified.decks, writeTexts,
                 writeBlocks, romData.baselineSourceMap, parser, ptcgParser);
 
         DataManager manager = new DataManager();

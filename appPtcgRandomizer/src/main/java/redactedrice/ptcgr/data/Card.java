@@ -51,8 +51,8 @@ public abstract class Card {
         id = toCopy.id;
     }
 
-    public static Card addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText,
-            CardGroup<Card> toAddTo) {
+    public static Card addCardFromBytes(byte[] cardBytes, int startIndex, CardGroup<Card> toAddTo,
+            Texts texts) {
         CardType type = CardType.readFromByte(cardBytes[startIndex]);
 
         Card card;
@@ -67,7 +67,7 @@ public abstract class Card {
                     + startIndex + " that is of type " + type);
         }
 
-        card.readAndConvertIds(cardBytes, startIndex, idToText);
+        card.readAndConvertIds(cardBytes, startIndex, texts);
         toAddTo.add(card);
         return card;
     }

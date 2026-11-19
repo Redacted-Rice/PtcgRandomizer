@@ -22,7 +22,7 @@ class DeckTest {
         };
 
         Decks decks = new Decks();
-        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, new Texts(), decks);
+        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, decks, new Texts());
         Deck deck = decks.getDeck(DeckId.FIRE_STARTER_DECK);
         assertEquals(5, deck.getCountOfCard(CardId.ENERGY_FIRE));
     }
@@ -40,7 +40,7 @@ class DeckTest {
         };
 
         Decks decks = new Decks();
-        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, texts, decks);
+        Deck.addDeckFromBytes(romBlock, 0, DeckId.FIRE_STARTER_DECK, decks, texts);
         Deck deck = decks.getDeck(DeckId.FIRE_STARTER_DECK);
         assertEquals(24, deck.getCountOfCard(CardId.ENERGY_FIRE));
         assertEquals(4, deck.getCountOfCard(CardId.MONSTER_004));

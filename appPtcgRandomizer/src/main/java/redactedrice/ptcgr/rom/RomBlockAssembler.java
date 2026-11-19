@@ -28,20 +28,24 @@ public final class RomBlockAssembler {
     private RomBlockAssembler() {
     }
 
-    public static void assemble(Cards cards, Texts texts, Decks decks, Blocks blocks,
+    public static void assemble(Cards cards, Decks decks, Texts texts, Blocks blocks,
             RomSourceMap sourceMap, InstructionParser parser, PtcgInstructionSetParser ptcgParser) {
-        finalizeAndAddAllTexts(cards, decks, texts);
+        finalizeCardTexts(cards, texts);
         addEffectBlocks(cards, blocks, parser);
-        addDeckBlocks(cards, decks, blocks, sourceMap);
         addCardBlocks(cards, blocks, sourceMap);
+        finalizeDeckTexts(decks, texts);
+        addDeckBlocks(cards, decks, blocks, sourceMap);
         ptcgParser.finalizeAndAddTexts(texts);
         addTextBlocks(texts, blocks, sourceMap);
     }
 
-    private static void finalizeAndAddAllTexts(Cards cards, Decks decks, Texts texts) {
+    private static void finalizeCardTexts(Cards cards, Texts texts) {
         for (Card card : cards.cards().listOrderedByCardId()) {
             card.finalizeAndAddTexts(texts);
         }
+    }
+
+    private static void finalizeDeckTexts(Decks decks, Texts texts) {
         for (Deck deck : decks.getDecks()) {
             deck.finalizeAndAddTexts(texts);
         }
