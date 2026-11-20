@@ -14,6 +14,8 @@ The runnable JAR entry point is `RandomizerLaunch`. Useful flags:
 - `--rom path.gbc` selects the input ROM (GUI or headless). Like `--config`, the flag must be followed by a path
 - `--output-dir dir` and `--save-config` apply to headless runs.
 - `--script-tests` runs bundled Lua module tests.
+- `--log-level LEVEL` sets minimum log level (e.g. `info`, `debug`).
+- `--popup-warnings` surfaces `IssueTracker` warnings on stderr (headless) in addition to the log (default off).
 
 ## Planned and Completed Features (in rough priority order)
 Some notes on terminology:

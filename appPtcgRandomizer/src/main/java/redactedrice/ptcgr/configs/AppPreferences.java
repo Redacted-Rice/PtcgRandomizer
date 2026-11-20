@@ -20,6 +20,7 @@ public final class AppPreferences {
     static final String FORMAT_VERSION_KEY = "version";
     static final String LOG_LEVEL_KEY = "logLevel";
     static final String LOG_DETAILS_KEY = "logDetails";
+    static final String POPUP_WARNINGS_KEY = "popupWarnings";
     static final String SAVE_SETTINGS_KEY = "saveSettings";
     static final String WINDOW_X_KEY = "windowX";
     static final String WINDOW_Y_KEY = "windowY";
@@ -44,6 +45,7 @@ public final class AppPreferences {
     private int formatVersion = CURRENT_FORMAT_VERSION;
     private LogLevel logLevel = LogLevel.INFO;
     private boolean logDetails = true;
+    private boolean popupWarnings;
     private boolean saveSettings = true;
     private Integer windowX;
     private Integer windowY;
@@ -118,7 +120,8 @@ public final class AppPreferences {
     }
 
     public static AppPreferences fromAppState(LogLevel logLevel, boolean logDetails,
-            boolean saveSettings, int windowX, int windowY, int windowWidth, int windowHeight,
+            boolean popupWarnings, boolean saveSettings, int windowX, int windowY, int windowWidth,
+            int windowHeight,
             String lastRomPath, File openRomDirectory, File openRomFile, File patchDirectory,
             File patchFile, File saveConfigDirectory, File saveConfigFile, File loadConfigDirectory,
             File loadConfigFile, File exportUserRulesDirectory, File exportUserRulesFile,
@@ -126,6 +129,7 @@ public final class AppPreferences {
         AppPreferences prefs = new AppPreferences();
         prefs.setLogLevel(logLevel);
         prefs.setLogDetails(logDetails);
+        prefs.setPopupWarnings(popupWarnings);
         prefs.setSaveSettings(saveSettings);
         prefs.setWindowX(windowX);
         prefs.setWindowY(windowY);
@@ -158,6 +162,8 @@ public final class AppPreferences {
         prefs.logLevel = parseLogLevel(root.get(LOG_LEVEL_KEY));
         prefs.logDetails = ParserHelpers.parseBoolean(root.get(LOG_DETAILS_KEY), true,
                 LOG_DETAILS_KEY, "app preferences");
+        prefs.popupWarnings = ParserHelpers.parseBoolean(root.get(POPUP_WARNINGS_KEY), false,
+                POPUP_WARNINGS_KEY, "app preferences");
         prefs.saveSettings = ParserHelpers.parseBoolean(root.get(SAVE_SETTINGS_KEY), true,
                 SAVE_SETTINGS_KEY, "app preferences");
         prefs.windowX = ParserHelpers.parseInteger(root.get(WINDOW_X_KEY));
@@ -198,6 +204,7 @@ public final class AppPreferences {
         root.put(FORMAT_VERSION_KEY, formatVersion);
         root.put(LOG_LEVEL_KEY, logLevel.name());
         root.put(LOG_DETAILS_KEY, logDetails);
+        root.put(POPUP_WARNINGS_KEY, popupWarnings);
         root.put(SAVE_SETTINGS_KEY, saveSettings);
         putIfNotNull(root, WINDOW_X_KEY, windowX);
         putIfNotNull(root, WINDOW_Y_KEY, windowY);
@@ -283,6 +290,14 @@ public final class AppPreferences {
 
     public void setLogDetails(boolean logDetails) {
         this.logDetails = logDetails;
+    }
+
+    public boolean isPopupWarnings() {
+        return popupWarnings;
+    }
+
+    public void setPopupWarnings(boolean popupWarnings) {
+        this.popupWarnings = popupWarnings;
     }
 
     public boolean isSaveSettings() {

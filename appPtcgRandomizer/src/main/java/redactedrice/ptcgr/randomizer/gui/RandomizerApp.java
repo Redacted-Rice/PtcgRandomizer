@@ -18,7 +18,6 @@ import java.io.IOException;
 import javax.swing.JTabbedPane;
 import javax.swing.JLabel;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -62,7 +61,6 @@ public class RandomizerApp {
     private RandomizerCore randomizer;
     private AppPreferences appPreferences;
     private String lastOpenedRomPath;
-    private JComboBox<LogLevel> logLevelCombo;
     private JCheckBox saveLogDetailsBox;
     private JCheckBox saveSettingsBox;
     private JTextField saveSetSeedVal;
@@ -96,6 +94,7 @@ public class RandomizerApp {
 
         randomizer = new RandomizerCore(frmTradingCard);
         appPreferences = LaunchUtils.loadAppPreferences(frmTradingCard);
+        applyDebugOptionsFromPreferences();
         lastOpenedRomPath = appPreferences.getLastRomPath();
 
         openRomChooser = new JFileChooser();
@@ -112,21 +111,6 @@ public class RandomizerApp {
         saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
         frmTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
         saveRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
-
-        JPanel logLevelPanel = new JPanel(new BorderLayout(0, 0));
-        saveRomPanel.add(logLevelPanel);
-        JLabel logLevelLbl = new JLabel("Log level: ");
-        logLevelPanel.add(logLevelLbl, BorderLayout.WEST);
-        logLevelCombo = new JComboBox<>(LogLevel.values());
-        logLevelCombo.setSelectedItem(appPreferences.getLogLevel());
-        logLevelCombo.setToolTipText(
-                "Minimum log level for console and detail log file. DEBUG includes verbose module output.");
-        logLevelCombo.addActionListener(e -> {
-            applyLogLevelFromUi();
-            saveAppPreferencesQuietly();
-        });
-        logLevelPanel.add(logLevelCombo, BorderLayout.CENTER);
-        applyLogLevelFromUi();
 
         saveLogDetailsBox = new JCheckBox("Log Randomizations");
         saveLogDetailsBox.setToolTipText(
@@ -225,9 +209,10 @@ public class RandomizerApp {
             }
         });
 
-        JPanel openRomPanel = new JPanel();
+        JPanel openRomPanel = new JPanel(new BorderLayout());
         frmTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
-        openRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
+        JPanel openRomButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 7, 0));
+        openRomPanel.add(openRomButtons, BorderLayout.CENTER);
 
         openRomButton = new JButton(OPEN_ROM_TEXT);
         openRomButton.addActionListener(event -> {
@@ -244,20 +229,28 @@ public class RandomizerApp {
                 }
             }
         });
-        openRomPanel.add(openRomButton);
+        openRomButtons.add(openRomButton);
 
         JButton addConfigButton = new JButton("Add Config");
         addConfigButton
                 .setToolTipText("Adds rules and actions from the file. They are not replaced. "
                         + "Single-value settings like seed are replaced.");
         addConfigButton.addActionListener(event -> addUserSelectedConfig());
-        openRomPanel.add(addConfigButton);
+        openRomButtons.add(addConfigButton);
 
         JButton resetConfigsButton = new JButton("Reset Configs");
         resetConfigsButton
                 .setToolTipText("Reset selected config sections back to their default values.");
         resetConfigsButton.addActionListener(event -> resetConfigsToDefaults());
-        openRomPanel.add(resetConfigsButton);
+        openRomButtons.add(resetConfigsButton);
+
+        JButton debugOptionsButton = new JButton("Debug");
+        debugOptionsButton.setToolTipText("Log level and warning popup options");
+        debugOptionsButton.addActionListener(e -> DebugOptionsDialog.show(frmTradingCard,
+                appPreferences, this::saveAppPreferencesQuietly));
+        JPanel debugPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 0));
+        debugPanel.add(debugOptionsButton);
+        openRomPanel.add(debugPanel, BorderLayout.EAST);
 
         JTabbedPane actionsTab = new JTabbedPane(JTabbedPane.TOP);
         frmTradingCard.getContentPane().add(actionsTab, BorderLayout.CENTER);
@@ -370,8 +363,9 @@ public class RandomizerApp {
 
     private AppPreferences captureAppPreferencesFromUi() {
         Rectangle bounds = clampToVisibleScreen(frmTradingCard.getBounds());
-        return AppPreferences.fromAppState(getSelectedLogLevel(), saveLogDetailsBox.isSelected(),
-                saveSettingsBox.isSelected(), bounds.x, bounds.y, bounds.width, bounds.height,
+        return AppPreferences.fromAppState(appPreferences.getLogLevel(), saveLogDetailsBox.isSelected(),
+                appPreferences.isPopupWarnings(), saveSettingsBox.isSelected(), bounds.x, bounds.y,
+                bounds.width, bounds.height,
                 lastOpenedRomPath, openRomChooser.getCurrentDirectory(),
                 openRomChooser.getSelectedFile(), saveRomChooser.getCurrentDirectory(),
                 saveRomChooser.getSelectedFile(), saveConfigChooser.getCurrentDirectory(),
@@ -385,18 +379,13 @@ public class RandomizerApp {
         Settings settings = new Settings();
         settings.setSeed(saveSetSeedVal.getText());
         settings.setLogDetails(saveLogDetailsBox.isSelected());
-        settings.setLogLevel(getSelectedLogLevel());
-        applyLogLevelFromUi();
+        settings.setLogLevel(appPreferences.getLogLevel());
         return settings;
     }
 
-    private LogLevel getSelectedLogLevel() {
-        Object selected = logLevelCombo.getSelectedItem();
-        return selected instanceof LogLevel level ? level : LogLevel.INFO;
-    }
-
-    private void applyLogLevelFromUi() {
-        Logger.setMinLogLevel(getSelectedLogLevel());
+    private void applyDebugOptionsFromPreferences() {
+        Logger.setMinLogLevel(appPreferences.getLogLevel());
+        IssuePresenter.setPopupWarningsEnabled(appPreferences.isPopupWarnings());
     }
 
     private void addUserSelectedConfig() {
@@ -461,10 +450,11 @@ public class RandomizerApp {
         AddConfigSettings chosen = selection.get();
         if (chosen.generalSettings) {
             saveSetSeedVal.setText("Random");
-            logLevelCombo.setSelectedItem(LogLevel.INFO);
+            appPreferences.setLogLevel(LogLevel.INFO);
+            appPreferences.setPopupWarnings(false);
             saveLogDetailsBox.setSelected(true);
             saveSettingsBox.setSelected(true);
-            applyLogLevelFromUi();
+            applyDebugOptionsFromPreferences();
         }
         if (chosen.actions) {
             dualPanel.setSelectedActions(List.of());

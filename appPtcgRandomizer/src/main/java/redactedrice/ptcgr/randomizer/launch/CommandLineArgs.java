@@ -17,6 +17,7 @@ public final class CommandLineArgs {
     public static final String ROM_FLAG = "--rom";
     public static final String SCRIPT_TESTS_FLAG = "--script-tests";
     public static final String LOG_LEVEL_FLAG = "--log-level";
+    public static final String POPUP_WARNINGS_FLAG = "--popup-warnings";
     // Forces PtcgBundledResources to redo the backup and reinstall of resources
     // like on version updates
     public static final String REINSTALL_RESOURCES_FLAG = "--reinstall-resources";
@@ -36,12 +37,14 @@ public final class CommandLineArgs {
     private final String scriptTestCase;
     private final boolean reinstallResources;
     private final boolean cleanReinstallResources;
+    private final boolean popupWarnings;
     private final List<String> unknownArgs;
 
     private CommandLineArgs(boolean headless, boolean loadConfigRequested, String loadConfigCustomPath,
             String loadRomCustomPath, String outputDirPath, boolean saveConfigRequested,
             boolean scriptTests, LogLevel logLevel, String scriptTestCase,
-            boolean reinstallResources, boolean cleanReinstallResources, List<String> unknownArgs) {
+            boolean reinstallResources, boolean cleanReinstallResources, boolean popupWarnings,
+            List<String> unknownArgs) {
         this.headless = headless;
         this.loadConfigRequested = loadConfigRequested;
         this.loadConfigCustomPath = loadConfigCustomPath;
@@ -53,6 +56,7 @@ public final class CommandLineArgs {
         this.scriptTestCase = scriptTestCase;
         this.reinstallResources = reinstallResources;
         this.cleanReinstallResources = cleanReinstallResources;
+        this.popupWarnings = popupWarnings;
         this.unknownArgs = List.copyOf(unknownArgs);
     }
 
@@ -71,6 +75,7 @@ public final class CommandLineArgs {
         String scriptTestCase = null;
         boolean reinstallResources = false;
         boolean cleanReinstallResources = false;
+        boolean popupWarnings = false;
         List<String> unknown = new ArrayList<>();
 
         for (int i = 0; i < args.length; i++) {
@@ -126,6 +131,10 @@ public final class CommandLineArgs {
                 }
                 continue;
             }
+            if (POPUP_WARNINGS_FLAG.equals(arg)) {
+                popupWarnings = true;
+                continue;
+            }
             if (arg.startsWith("--")) {
                 unknown.add(arg);
                 continue;
@@ -139,7 +148,8 @@ public final class CommandLineArgs {
 
         return new CommandLineArgs(headless, loadConfigRequested, loadConfigCustomPath,
                 loadRomCustomPath, outputDirPath, saveConfigRequested, scriptTests,
-                logLevel, scriptTestCase, reinstallResources, cleanReinstallResources, unknown);
+                logLevel, scriptTestCase, reinstallResources, cleanReinstallResources, popupWarnings,
+                unknown);
     }
 
     public boolean isHeadless() {
@@ -184,6 +194,10 @@ public final class CommandLineArgs {
 
     public boolean isCleanReinstallResources() {
         return cleanReinstallResources;
+    }
+
+    public boolean isPopupWarnings() {
+        return popupWarnings;
     }
 
     public List<String> getUnknownArgs() {

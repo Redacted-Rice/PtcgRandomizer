@@ -40,6 +40,7 @@ class AppPreferencesTest {
 
         assertEquals(LogLevel.INFO, prefs.getLogLevel());
         assertTrue(prefs.isLogDetails());
+        assertFalse(prefs.isPopupWarnings());
         assertTrue(prefs.isSaveSettings());
     }
 
@@ -68,7 +69,8 @@ class AppPreferencesTest {
         File saveConfigFile = cfgDir.resolve("ptcg_randomize.yaml").toFile();
         File loadConfigFile = loadDir.resolve("last.yaml").toFile();
 
-        AppPreferences original = AppPreferences.fromAppState(LogLevel.DEBUG, false, false, 10, 20,
+        AppPreferences original = AppPreferences.fromAppState(LogLevel.DEBUG, false, true, false, 10,
+                20,
                 800, 600, romFile.getAbsolutePath(), romDir.toFile(), romFile, outDir.toFile(),
                 patchFile, cfgDir.toFile(), saveConfigFile, loadDir.toFile(), loadConfigFile,
                 cfgDir.toFile(), new File("user_config.yaml"), cfgDir.toFile(),
@@ -85,6 +87,7 @@ class AppPreferencesTest {
         AppPreferences reloaded = AppPreferences.load(output);
         assertEquals(LogLevel.DEBUG, reloaded.getLogLevel());
         assertFalse(reloaded.isLogDetails());
+        assertTrue(reloaded.isPopupWarnings());
         assertFalse(reloaded.isSaveSettings());
         assertEquals(Integer.valueOf(10), reloaded.getWindowX());
         assertEquals(Integer.valueOf(20), reloaded.getWindowY());

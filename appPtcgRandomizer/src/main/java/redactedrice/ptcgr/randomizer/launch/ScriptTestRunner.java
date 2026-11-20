@@ -9,6 +9,7 @@ import redactedrice.ptcgr.configs.AppPreferences;
 import redactedrice.ptcgr.randomizer.RandomizerCore;
 import redactedrice.ptcgr.randomizer.scripttests.PtcgScriptTestFixtures;
 import redactedrice.ptcgr.resources.PtcgBundledResources;
+import redactedrice.ptcgr.utils.IssuePresenter;
 import redactedrice.randomizer.LuaRandomizerWrapper;
 import redactedrice.randomizer.scripttests.ScriptTestBatchRunner;
 import redactedrice.ptcgr.randomizer.scripttests.ScriptTestCaseFiles;
@@ -36,6 +37,7 @@ public final class ScriptTestRunner {
             throw new IllegalArgumentException("App dir cannot be null");
         }
         LaunchUtils.applyBundledResourceFlags(launch);
+        IssuePresenter.setPopupWarningsEnabled(launch.isPopupWarnings());
         PtcgBundledResources resources = prepare(appDir);
         return runCases(launch, resources.getScriptTestsDir().toPath(),
                 () -> loadWrapper(new PtcgBundledResources(appDir)), new PtcgScriptTestFixtures());

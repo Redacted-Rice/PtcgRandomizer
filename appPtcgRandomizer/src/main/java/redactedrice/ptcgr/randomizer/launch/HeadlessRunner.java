@@ -39,6 +39,7 @@ public final class HeadlessRunner {
     public static int run(CommandLineArgs launch) {
         System.setProperty("java.awt.headless", "true");
         LaunchUtils.applyBundledResourceFlags(launch);
+        IssuePresenter.setPopupWarningsEnabled(launch.isPopupWarnings());
 
         if (LaunchUtils.hasUnknownArgs(launch)) {
             LaunchUtils.printUnknownArgs(launch);

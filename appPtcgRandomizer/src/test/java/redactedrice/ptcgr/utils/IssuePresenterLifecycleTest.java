@@ -46,7 +46,7 @@ class IssuePresenterLifecycleTest {
     }
 
     @Test
-    void displayWarningsClearsOnlyWarnings() {
+    void displayWarningsClearsOnlyWarningsWithoutUi() {
         IssueTracker.addWarning("soft");
         IssueTracker.addError("hard");
 
@@ -55,5 +55,26 @@ class IssuePresenterLifecycleTest {
         assertFalse(IssueTracker.hasWarnings());
         assertTrue(IssueTracker.hasErrors());
         assertEquals(List.of("hard"), IssueTracker.getErrors());
+    }
+
+    @Test
+    void finishPhaseDoesNotSurfaceWarningsInStore() {
+        IssueTracker.addWarning("soft only");
+
+        IssuePresenter.finishPhase(null, "randomize");
+
+        assertFalse(IssueTracker.hasIssues());
+    }
+
+    @Test
+    void finishPhaseClearsWarningsWhenPopupWarningsEnabled() {
+        IssuePresenter.setPopupWarningsEnabled(true);
+        try {
+            IssueTracker.addWarning("soft only");
+            IssuePresenter.finishPhase(null, "randomize");
+            assertFalse(IssueTracker.hasIssues());
+        } finally {
+            IssuePresenter.setPopupWarningsEnabled(false);
+        }
     }
 }

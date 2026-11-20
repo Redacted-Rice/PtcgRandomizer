@@ -77,6 +77,15 @@ class CommandLineArgsTest {
     }
 
     @Test
+    void parsesPopupWarningsFlag() {
+        CommandLineArgs launch = CommandLineArgs.parse(new String[] {CommandLineArgs.HEADLESS_FLAG,
+                CommandLineArgs.POPUP_WARNINGS_FLAG});
+
+        assertTrue(launch.isPopupWarnings());
+        assertTrue(launch.getUnknownArgs().isEmpty());
+    }
+
+    @Test
     void resourceReinstallFlagsAreNotUnknownArgs() {
         CommandLineArgs launch = CommandLineArgs.parse(new String[] {
                 CommandLineArgs.REINSTALL_RESOURCES_FLAG, CommandLineArgs.CLEAN_REINSTALL_RESOURCES_FLAG,

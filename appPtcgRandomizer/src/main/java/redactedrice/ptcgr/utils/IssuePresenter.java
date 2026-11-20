@@ -8,16 +8,26 @@ import javax.swing.JOptionPane;
 import redactedrice.gbcframework.utils.IOUtils;
 import redactedrice.randomizer.utils.IssueTracker;
 
-// Swing presentation for issues already logged into IssueTracker.
-// Does not log - IssueTracker logs immediately on add. After display, the phase store is cleared.
+// Swing presentation for errors collected in IssueTracker.
+// Does not log - IssueTracker logs immediately on add. Warnings are optional UI (see popup setting).
 public final class IssuePresenter {
+    private static boolean popupWarningsEnabled;
+
     private IssuePresenter() {
     }
 
-    // Show collected warnings (if any), then clear warnings.
+    public static void setPopupWarningsEnabled(boolean enabled) {
+        popupWarningsEnabled = enabled;
+    }
+
+    public static boolean isPopupWarningsEnabled() {
+        return popupWarningsEnabled;
+    }
+
+    // Show collected warnings when popup is enabled, then clear warnings.
     public static void displayWarnings(Component parent, String handlingContext) {
         List<String> warnings = IssueTracker.getWarnings();
-        if (!warnings.isEmpty()) {
+        if (popupWarningsEnabled && !warnings.isEmpty()) {
             showDialog(parent, handlingContext, warnings, JOptionPane.WARNING_MESSAGE);
         }
         IssueTracker.clearWarnings();
@@ -32,14 +42,14 @@ public final class IssuePresenter {
         IssueTracker.clearErrors();
     }
 
-    // Show errors then warnings for a finished phase, then clear the whole store.
+    // Show errors for a finished phase (if any), optional warning popup, then clear the store.
     public static void finishPhase(Component parent, String handlingContext) {
         List<String> errors = IssueTracker.getErrors();
         List<String> warnings = IssueTracker.getWarnings();
         if (!errors.isEmpty()) {
             showDialog(parent, handlingContext, errors, JOptionPane.ERROR_MESSAGE);
         }
-        if (!warnings.isEmpty()) {
+        if (popupWarningsEnabled && !warnings.isEmpty()) {
             showDialog(parent, handlingContext, warnings, JOptionPane.WARNING_MESSAGE);
         }
         IssueTracker.clear();
