@@ -1,0 +1,77 @@
+# Headless smoke: every bundled action module (default args) in dependency-safe order.
+version: 1
+appVersion: 0.9.0
+seed: '42'
+actions:
+  - module: evo_line_metadata_set
+    version: '0.9'
+  - module: evo_line_remove_branching
+    version: '0.9'
+  - module: evo_line_playable_trainers
+    version: '0.9'
+  - module: evo_line_custom_within_type
+    version: '0.9'
+  - module: evo_line_custom
+    version: '0.9'
+  - module: evo_line_cards
+    version: '0.9'
+  - module: evo_line_metadata_set
+    version: '0.9'
+  - module: types_custom_evo_lines
+    version: '0.9'
+  - module: types_cards_evo_lines
+    version: '0.9'
+  - module: dex_number_fix_evo_line
+    version: '0.9'
+  - module: hp_fix_evo_line
+    version: '0.9'
+  - module: hp_cards_together_and_stage
+    version: '0.9'
+  - module: hp_cards_stage_max_stage
+    version: '0.9'
+  - module: hp_custom_together
+    version: '0.9'
+  - module: hp_custom_stage
+    version: '0.9'
+  - module: hp_custom_stage_max_stage
+    version: '0.9'
+  - module: moves_together_and_stage
+    version: '0.9'
+  - module: moves_stage_max_stage
+    version: '0.9'
+  - module: num_moves_set
+    version: '0.9'
+  - module: num_moves_together_and_stage
+    version: '0.9'
+  - module: num_moves_stage_max_stage
+    version: '0.9'
+  - module: retreat_cost_cards_together_and_stage
+    version: '0.9'
+  - module: retreat_cost_cards_stage_max_stage
+    version: '0.9'
+  - module: retreat_cost_custom_together
+    version: '0.9'
+  - module: retreat_cost_custom_stage
+    version: '0.9'
+  - module: retreat_cost_custom_stage_max_stage
+    version: '0.9'
+  - module: retreat_cost_fix_evo_line
+    version: '0.9'
+  - module: move_types_colorless
+    version: '0.9'
+  - module: move_types_match_type
+    version: '0.9'
+  - module: move_types_non_colorless_to_type
+    version: '0.9'
+  - module: evolutions_remove
+    version: '0.9'
+  - module: log_monster_cards
+    version: '0.9'
+prescripts:
+  - module: PtcgrChangeDetectorSetup
+    version: '0.9'
+  - module: PtcgrChangeDetectorSnapshot
+    version: '0.9'
+postscripts:
+  - module: PtcgrChangeDetectorDetect
+    version: '0.9'

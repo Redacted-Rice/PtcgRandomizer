@@ -1,0 +1,5 @@
+# Just make sure nothing failed
+logContains:
+  - "Wrote patch:"
+  - "log_monster_cards"
+
