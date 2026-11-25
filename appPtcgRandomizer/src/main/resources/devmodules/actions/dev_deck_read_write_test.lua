@@ -40,12 +40,12 @@ module = {
 			default = 1,
 		},
 	},
-	execute = function(context, args)
-		return module.adjustDeckEntry(context, args)
+	execute = function(args)
+		return module.adjustDeckEntry(args)
 	end,
 }
 
-function module.adjustDeckEntry(context, args)
+function module.adjustDeckEntry(args)
 	local deckId = args.deck
 	local cardId = context.CardId[args.cardId]
 	if not cardId then

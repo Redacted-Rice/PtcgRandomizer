@@ -13,12 +13,12 @@ script = {
 		PtcgRandomizer = "0.9.0",
 		PtcgrChangeDetectorSetup = "0.9",
 	},
-	execute = function(context, args)
-		return script.takeSnapshots(context, args)
+	execute = function(args)
+		return script.takeSnapshots(args)
 	end,
 }
 
-function script.takeSnapshots(context)
+function script.takeSnapshots()
 	randomizer.changedetector.takeSnapshots()
 end
 

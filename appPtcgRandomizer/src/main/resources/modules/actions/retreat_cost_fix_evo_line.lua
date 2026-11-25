@@ -25,8 +25,8 @@ module = {
 		fix_evo_line_utils.modeArg("retreat cost", "retreat costs"),
 		fix_evo_line_utils.branchHandlingArg(fix_evo_line_utils.BRANCH_TOGETHER),
 	},
-	execute = function(context, args)
-		return fixUtils.fixEvoLines(context, args)
+	execute = function(args)
+		return fixUtils.fixEvoLines(args)
 	end,
 }
 

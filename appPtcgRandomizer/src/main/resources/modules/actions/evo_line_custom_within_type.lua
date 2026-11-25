@@ -36,13 +36,13 @@ module = {
 		common_field_defs.ARG_DEF_EVO_LINE_POOL,
 		common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES,
 	},
-	execute = function(context, args)
-		return module.randomizeEvoLinesWithinType(context, args)
+	execute = function(args)
+		return module.randomizeEvoLinesWithinType(args)
 	end,
 }
 
-function module.randomizeEvoLinesWithinType(context, args)
-	evo_line_randomize_utils.init(context)
+function module.randomizeEvoLinesWithinType(args)
+
 	for attempt = 1, MAX_ASSIGN_ATTEMPTS do
 		local choicePools = evo_line_randomize_utils.buildTypePolicyPools(
 				args.branchingBasesColorless,
@@ -50,7 +50,7 @@ function module.randomizeEvoLinesWithinType(context, args)
 				args.interBranchTypes,
 				args.approach)
 		local lastPass = attempt == MAX_ASSIGN_ATTEMPTS
-		if evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choicePools, lastPass) then
+		if evo_line_randomize_utils.randomizeCustomEvoLines(args, choicePools, lastPass) then
 			return true
 		end
 		if not lastPass then

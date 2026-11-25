@@ -6,7 +6,7 @@ local pool_utils = {}
 
 -- maps approach to URC useToRandomize pool options. minimize repeats always regenerates
 function pool_utils.poolOptions(approach)
-	if approach == "MINIMIZE_REPEATS" then
+	if approach == common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
 		return { consumesSelected = true, autoRegenerates = true }
 	end
 	return { consumesSelected = false }
@@ -17,13 +17,14 @@ function pool_utils.shouldErrorOnExhausted(args)
 	if args == nil then
 		return false
 	end
-	if args.approach ~= "MINIMIZE_REPEATS" then
+	if args.approach ~= common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
 		return false
 	end
-	if args.duplicates ~= "KEEP_DUPLICATES" then
+	if args.duplicates ~= common_field_defs.DUPLICATE_HANDLING_KEEP then
 		return false
 	end
-	return args.source == "ROM" or args.source == "CURRENT"
+	return args.source == common_field_defs.DATA_SOURCE_ROM
+		or args.source == common_field_defs.DATA_SOURCE_CURRENT
 end
 
 -- Only for modules that randomize values from ROM/CURRENT card pools (source + duplicates on args)
@@ -34,8 +35,8 @@ function pool_utils.poolOptionsForCardSource(args)
 end
 
 -- monster cards from the chosen source set
-function pool_utils.sourceCards(context, source)
-	if source == "CURRENT" then
+function pool_utils.sourceCards(source)
+	if source == common_field_defs.DATA_SOURCE_CURRENT then
 		return context.modified.cards:getRandomizableMonsterCards()
 	end
 	return context.original.cards:getRandomizableMonsterCards()
@@ -49,12 +50,6 @@ end
 
 function pool_utils.stageAndMaxStageKey(mc)
 	return pool_utils.stageMaxStageKeyFromValues(mc.evoLineMaxStage, mc.stage)
-end
-
-function pool_utils.init(context)
-	pool_utils.weaknessResistanceAbbreviationKey = function(flagSet)
-		return context.WeaknessResistanceFlags.abbreviationKey(flagSet)
-	end
 end
 
 function pool_utils.combineKeys(...)
@@ -86,11 +81,11 @@ function pool_utils.getTypeGroupingKey(card, scope)
 		return card.type:convertToEnergyType():getAbbreviation()
 	end
 	if scope == common_field_defs.TYPE_POOL_WITHIN_SUBTYPE then
-		local abbrevKey = pool_utils.weaknessResistanceAbbreviationKey
+		local weaknessResistanceFlags = context.WeaknessResistanceFlags
 		return pool_utils.combineKeys(
 				card.type:convertToEnergyType():getAbbreviation(),
-				abbrevKey(card.weakness),
-				abbrevKey(card.resistance))
+				weaknessResistanceFlags.abbreviationKey(card.weakness),
+				weaknessResistanceFlags.abbreviationKey(card.resistance))
 	end
 	return nil
 end
@@ -98,7 +93,7 @@ end
 -- flat pool of values pulled from source cards
 function pool_utils.buildValuePool(sourceCards, valueGetter, duplicates)
 	local values = randomizer.list(sourceCards):select(valueGetter)
-	if duplicates == "REMOVE_DUPLICATES" then
+	if duplicates == common_field_defs.DUPLICATE_HANDLING_REMOVE then
 		return values:removeDuplicates()
 	end
 	return values
@@ -107,7 +102,7 @@ end
 -- values grouped by stage or stageAndMaxStageKey, with optional dedup per bucket
 function pool_utils.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	local grouped = randomizer.groupFromField(sourceCards, groupKey, valueGetter)
-	if duplicates == "KEEP_DUPLICATES" then
+	if duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
 		return grouped
 	end
 

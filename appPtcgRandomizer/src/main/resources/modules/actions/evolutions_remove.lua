@@ -14,12 +14,12 @@ module = {
 		PtcgRandomizer = "0.9.0",
 	},
 	seeded = false,
-	execute = function(context, args)
-		return module.removeEvolutions(context, args)
+	execute = function(args)
+		return module.removeEvolutions(args)
 	end,
 }
 
-function module.removeEvolutions(context)
+function module.removeEvolutions()
 	local basicStage = context.EvolutionStage.BASIC
 	local hasEvolution = context.CardAiFlags.HAS_EVOLUTION
 	local encourageEvo = context.CardAiInfo.ENCOURAGE_EVO

@@ -14,12 +14,12 @@ script = {
 		PtcgrChangeDetectorSetup = "0.9",
 		PtcgrChangeDetectorSnapshot = "0.9",
 	},
-	execute = function(context, args)
-		return script.detectAndLogChanges(context, args)
+	execute = function(args)
+		return script.detectAndLogChanges(args)
 	end,
 }
 
-function script.detectAndLogChanges(context)
+function script.detectAndLogChanges()
 	local changedetector = randomizer.changedetector
 	local entryName = changedetector.monsterCardsEntry
 

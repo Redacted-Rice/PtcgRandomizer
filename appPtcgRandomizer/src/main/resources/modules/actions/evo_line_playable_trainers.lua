@@ -17,14 +17,12 @@ module = {
 	},
 	arguments = {},
 	seeded = false,
-	execute = function(context, args)
-		return module.fixPlayableTrainers(context, args)
+	execute = function(args)
+		return module.fixPlayableTrainers(args)
 	end,
 }
 
-function module.fixPlayableTrainers(context, args)
-	evo_line_randomize_utils.init(context)
-
+function module.fixPlayableTrainers(args)
 	local modified = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 	local toModifyByPrevEvo = modified:filter(function(card)
 		return not card.prevEvoName:isEmpty()
@@ -40,7 +38,7 @@ function module.fixPlayableTrainers(context, args)
 				"evo_line_playable_trainers", " of proxy " .. modifiedProxyName)
 	end)
 
-	evo_line_randomize_utils.syncEvoAiData(context, modified)
+	evo_line_randomize_utils.syncEvoAiData(modified)
 end
 
 return module

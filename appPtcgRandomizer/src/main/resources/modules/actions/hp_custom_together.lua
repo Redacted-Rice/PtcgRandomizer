@@ -37,12 +37,12 @@ module = {
 			},
 		},
 	},
-	execute = function(context, args)
-		return module.randomizeHp(context, args)
+	execute = function(args)
+		return module.randomizeHp(args)
 	end,
 }
 
-function module.randomizeHp(context, args)
+function module.randomizeHp(args)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptions(args.approach)
 	custom_pool_utils.hp.expandWeightedList(args.hpPool):useToRandomize(targets, "hp", options)

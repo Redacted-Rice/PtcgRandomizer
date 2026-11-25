@@ -20,8 +20,8 @@ module = {
 		{ name = "evoLineMaxStage", type = "EvolutionStage" },
 	},
 	seeded = false,
-	execute = function(context, args)
-		return module.setEvoLineMetadata(context, args)
+	execute = function(args)
+		return module.setEvoLineMetadata(args)
 	end,
 }
 
@@ -68,7 +68,7 @@ function module.applyAndPropagateBranchId(lineCardsByName, cards, branchId, bran
 	module.applyAndPropagateBranchId(lineCardsByName, prevCards, branchId, branchMaxStage)
 end
 
-function module.setEvoLineMetadata(context)
+function module.setEvoLineMetadata()
 	-- Add the fields to the change detector first so it will log what is assigned
 	randomizer.changedetector.addFields("Monster Cards", {
 		{ field = "evoLineId", header = "Evo Line", align = "right" },

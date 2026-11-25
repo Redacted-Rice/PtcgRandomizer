@@ -33,8 +33,8 @@ function fix_evo_line_utils.create(fieldName)
 		fixLine = function(line, args)
 			fix_evo_line_utils.fixLine(fieldName, line, args)
 		end,
-		fixEvoLines = function(context, args)
-			fix_evo_line_utils.fixEvoLines(fieldName, context, args)
+		fixEvoLines = function(args)
+			fix_evo_line_utils.fixEvoLines(fieldName, args)
 		end,
 	}
 end
@@ -165,7 +165,7 @@ function fix_evo_line_utils.fixLine(fieldName, line, args)
 end
 
 -- run the chosen mode on every evo line in the modified set
-function fix_evo_line_utils.fixEvoLines(fieldName, context, args)
+function fix_evo_line_utils.fixEvoLines(fieldName, args)
 	local byEvoLine = randomizer.groupBy(context.modified.cards:getRandomizableMonsterCards(),
 			"evoLineId")
 	byEvoLine:each(function(_, line)

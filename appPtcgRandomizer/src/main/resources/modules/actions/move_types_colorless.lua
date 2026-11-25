@@ -12,12 +12,12 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
-	execute = function(context, args)
-		return module.setAllMovesColorless(context, args)
+	execute = function(args)
+		return module.setAllMovesColorless(args)
 	end,
 }
 
-function module.setAllMovesColorless(context)
+function module.setAllMovesColorless()
 	local EnergyType = context.EnergyType
 	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(mon)
 		for moveSlot = 0, mon:getNumMoves() - 1 do

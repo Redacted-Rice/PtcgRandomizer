@@ -25,12 +25,12 @@ module = {
 			default = "FIRE",
 		},
 	},
-	execute = function(context, args)
-		return module.setNonColorlessToType(context, args)
+	execute = function(args)
+		return module.setNonColorlessToType(args)
 	end,
 }
 
-function module.setNonColorlessToType(context, args)
+function module.setNonColorlessToType(args)
 	local EnergyType = context.EnergyType
 	local targetType = EnergyType[args.energyType]
 	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(mon)

@@ -24,12 +24,12 @@ module = {
 			default = 2,
 		},
 	},
-	execute = function(context, args)
-		return module.setNumMoves(context, args)
+	execute = function(args)
+		return module.setNumMoves(args)
 	end,
 }
 
-function module.setNumMoves(context, args)
+function module.setNumMoves(args)
 	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(card)
 		-- Set the num moves not overridding assignments. This intentially does not check
 		-- locked slots first so it will be apparant in the logs if a card is skipped due

@@ -18,13 +18,13 @@ module = {
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 		common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER,
 	},
-	execute = function(context, args)
-		return module.randomizeNumMoves(context, args)
+	execute = function(args)
+		return module.randomizeNumMoves(args)
 	end,
 }
 
-function module.randomizeNumMoves(context, args)
-	local sourceCards = pool_utils.sourceCards(context, args.source)
+function module.randomizeNumMoves(args)
+	local sourceCards = pool_utils.sourceCards(args.source)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptionsForCardSource(args)
 

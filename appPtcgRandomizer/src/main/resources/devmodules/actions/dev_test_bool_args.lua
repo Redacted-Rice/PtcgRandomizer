@@ -21,13 +21,13 @@ module = {
 			default = true,
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
 -- Log the args to show they are being passed correctly to lua
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(string.format("dev_test_bool_args received anyBool=%s enumBool=%s",
 		tostring(args.anyBool), tostring(args.enumBool)))
 end

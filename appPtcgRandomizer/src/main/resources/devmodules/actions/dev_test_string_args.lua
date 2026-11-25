@@ -31,13 +31,13 @@ module = {
 			default = "green",
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
 -- Log the args to show they are being passed correctly to lua
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(string.format("dev_test_string_args received anyString=%s enumString=%s",
 		args.anyString, args.enumString))
 end

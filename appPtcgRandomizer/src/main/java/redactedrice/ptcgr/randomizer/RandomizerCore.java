@@ -335,5 +335,6 @@ public class RandomizerCore {
         wrapper.registerSharedEnum(MoveCategory.class);
         wrapper.registerSharedEnum(DeckId.class);
         wrapper.registerSharedEnum(CardId.class);
+        wrapper.registerSharedObject("MonsterCard", MonsterCard.class);
     }
 }

@@ -12,13 +12,13 @@ module = {
 	requires = {
 		PtcgRandomizer = "0.9.0",
 	},
-	execute = function(context, args)
-		return module.setMoveCostsToMatchType(context, args)
+	execute = function(args)
+		return module.setMoveCostsToMatchType(args)
 	end,
 }
 
 -- Keeps colorless costs as is and only change non colorless energy to the card's type
-function module.setMoveCostsToMatchType(context)
+function module.setMoveCostsToMatchType()
 	local EnergyType = context.EnergyType
 	randomizer.list(context.modified.cards:getRandomizableMonsterCards()):each(function(mon)
 		local energyType = mon.type:convertToEnergyType()

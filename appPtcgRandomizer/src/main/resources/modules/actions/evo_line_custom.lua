@@ -29,16 +29,16 @@ module = {
 		common_field_defs.ARG_DEF_EVO_LINE_POOL,
 		common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES,
 	},
-	execute = function(context, args)
-		return module.randomizeCustomEvoLines(context, args)
+	execute = function(args)
+		return module.randomizeCustomEvoLines(args)
 	end,
 }
 
-function module.randomizeCustomEvoLines(context, args)
-	evo_line_randomize_utils.init(context)
+function module.randomizeCustomEvoLines(args)
+
 	for attempt = 1, MAX_ASSIGN_ATTEMPTS do
 		local lastPass = attempt == MAX_ASSIGN_ATTEMPTS
-		if evo_line_randomize_utils.randomizeCustomEvoLines(context, args, nil, lastPass) then
+		if evo_line_randomize_utils.randomizeCustomEvoLines(args, nil, lastPass) then
 			return true
 		end
 		if not lastPass then

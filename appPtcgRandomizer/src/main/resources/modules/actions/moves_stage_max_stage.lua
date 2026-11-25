@@ -26,27 +26,25 @@ module = {
 		common_field_defs.ARG_DEF_WITHIN_TYPE,
 		common_field_defs.ARG_DEF_NO_DUPLICATE_MOVE_NAMES,
 	},
-	execute = function(context, args)
-		return module.randomizeMoves(context, args)
+	execute = function(args)
+		return module.randomizeMoves(args)
 	end,
 }
 
-function module.randomizeMoves(context, args)
-	pool_utils.init(context)
-	move_utils.init(context)
+function module.randomizeMoves(args)
 	if args.moveKind == "POWERS" then
 		randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 	else
 		randomizer.changedetector.pushMoveChangeDisplay({ "name", "energyCost", "damage" })
 	end
 
-	local moveTargets = move_utils.targets(context, args)
+	local moveTargets = move_utils.targets(args)
 	move_utils.clearTempMoveRandTracking(moveTargets)
 	local options = pool_utils.poolOptionsForCardSource(args)
 	options.constraintFn = move_utils.constraintFnForArgs(args)
 	local key = move_utils.stageAndMaxStageGroupKey(args)
 
-	move_utils.buildGroupedPool(context, args, key):useToRandomize(moveTargets, key,
+	move_utils.buildGroupedPool(args, key):useToRandomize(moveTargets, key,
 		move_utils.assignChosenMove, options)
 end
 

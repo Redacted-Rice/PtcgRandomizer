@@ -9,8 +9,8 @@ local types_util = {}
 ----------------------- Bulding Pools -----------------------------
 
 
-function types_util.buildEvoLineTypePoolFromCards(context, args)
-	local sourceCards = pool_utils.sourceCards(context, args.source)
+function types_util.buildEvoLineTypePoolFromCards(args)
+	local sourceCards = pool_utils.sourceCards(args.source)
 	-- One type per evo line to keep the evo line numbers the same for each type
 	-- This won't exactly capture branching evos but its the best we can do per
 	-- evo line
@@ -19,7 +19,7 @@ function types_util.buildEvoLineTypePoolFromCards(context, args)
 		return line:get(1).type
 	end)
 
-	if args.duplicates == "KEEP_DUPLICATES" then
+	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
 		-- Keep source multiplicity so common types stay more common
 		return types
 	end
@@ -27,7 +27,7 @@ function types_util.buildEvoLineTypePoolFromCards(context, args)
 	return types:removeDuplicates()
 end
 
-function types_util.buildTypePoolFromWeights(context, typeWeights)
+function types_util.buildTypePoolFromWeights(typeWeights)
 	local energyType = context.EnergyType
 	local entries = {}
 	-- Convert energy types to card types
@@ -50,7 +50,7 @@ end
 ----------------------- Randomizations -----------------------------
 
 
-function types_util.randomizeEvoLineTypes(context, typePool, poolOptions)
+function types_util.randomizeEvoLineTypes(typePool, poolOptions)
 	local monsterCards = context.modified.cards:getRandomizableMonsterCards()
 	local byEvoLine = randomizer.groupBy(monsterCards, "evoLineId")
 

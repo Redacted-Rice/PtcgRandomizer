@@ -49,13 +49,13 @@ module = {
 			default = 1.0,
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
 -- Log the args to show they are being passed correctly to lua
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(string.format(
 		"dev_test_double_args received anyDouble=%.3f rangeDouble=%.3f discreteDouble=%.3f enumDouble=%.3f",
 		args.anyDouble, args.rangeDouble, args.discreteDouble, args.enumDouble))

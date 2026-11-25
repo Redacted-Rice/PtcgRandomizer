@@ -26,8 +26,8 @@ module = {
 		fix_evo_line_utils.branchHandlingArg(fix_evo_line_utils.BRANCH_TOGETHER,
 				{ fix_evo_line_utils.BRANCH_SEPARATE }),
 	},
-	execute = function(context, args)
-		return fixUtils.fixEvoLines(context, args)
+	execute = function(args)
+		return fixUtils.fixEvoLines(args)
 	end,
 }
 

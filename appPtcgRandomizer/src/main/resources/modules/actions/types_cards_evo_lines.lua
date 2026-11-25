@@ -22,14 +22,14 @@ module = {
 		common_field_defs.ARG_DEF_DUPLICATES,
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 	},
-	execute = function(context, args)
-		return module.randomizeEvoLineTypes(context, args)
+	execute = function(args)
+		return module.randomizeEvoLineTypes(args)
 	end,
 }
 
-function module.randomizeEvoLineTypes(context, args)
-	types_util.randomizeEvoLineTypes(context,
-			types_util.buildEvoLineTypePoolFromCards(context, args),
+function module.randomizeEvoLineTypes(args)
+	types_util.randomizeEvoLineTypes(
+			types_util.buildEvoLineTypePoolFromCards(args),
 			pool_utils.poolOptionsForCardSource(args))
 end
 

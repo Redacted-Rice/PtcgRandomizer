@@ -7,19 +7,12 @@ local logger = require("randomizer.logger")
 
 local evo_line_randomize_utils = {
 	ALL_TOGETHER_POOL_KEY = 0,
-}
-
-function evo_line_randomize_utils.init(context)
-	pool_utils.init(context)
-	evo_line_randomize_utils.evolutionStage = context.EvolutionStage
-	evo_line_randomize_utils.cardType = context.CardType
-	evo_line_randomize_utils.EVO_STAGES = {
+	EVO_STAGES = {
 		context.EvolutionStage.BASIC,
 		context.EvolutionStage.STAGE_1,
 		context.EvolutionStage.STAGE_2,
-	}
-end
-
+	},
+}
 
 -------- Builder functions to extract or form pools from data ----------------
 
@@ -86,7 +79,7 @@ function evo_line_randomize_utils.extractAllEvoLineData(sourceCards, keyContext)
 end
 
 function evo_line_randomize_utils.buildEntriesFromEvoLine(evoLine)
-	local evolutionStage = evo_line_randomize_utils.evolutionStage
+	local evolutionStage = context.EvolutionStage
 	local stage1Count = evoLine.STAGE_1 or 0
 	local stage2Count = evoLine.STAGE_2 or 0
 	local lineMaxStage = evolutionStage.BASIC
@@ -168,7 +161,7 @@ function evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards, grouping,
 		end):removeDuplicates()
 
 		keyContext.colorlessTypes = randomizer.list(sourceCards):filter(function(card)
-			return card.type == evo_line_randomize_utils.cardType.MONSTER_COLORLESS
+			return card.type == context.CardType.MONSTER_COLORLESS
 		end):select(function(card)
 			return pool_utils.getTypeGroupingKey(card, withinType)
 		end):removeDuplicates()
@@ -177,8 +170,8 @@ function evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards, grouping,
 end
 
 -- Like pool_utils.sourceCards but can include trainer proxies
-function evo_line_randomize_utils.sourceCards(context, source, excludeTrainerProxies)
-	local cardSource = source == "CURRENT" and context.modified.cards
+function evo_line_randomize_utils.sourceCards(source, excludeTrainerProxies)
+	local cardSource = source == common_field_defs.DATA_SOURCE_CURRENT and context.modified.cards
 		or context.original.cards
 	if excludeTrainerProxies then
 		return cardSource:getRandomizableMonsterCards()
@@ -187,7 +180,7 @@ function evo_line_randomize_utils.sourceCards(context, source, excludeTrainerPro
 end
 
 -- Can include or not include proxies based on args
-function evo_line_randomize_utils.targetCards(context, excludeTrainerProxies)
+function evo_line_randomize_utils.targetCards(excludeTrainerProxies)
 	if excludeTrainerProxies then
 		return context.modified.cards:getRandomizableMonsterCards()
 	end
@@ -195,8 +188,8 @@ function evo_line_randomize_utils.targetCards(context, excludeTrainerProxies)
 end
 
 function evo_line_randomize_utils.isColorlessBasic(card)
-	return card.type == evo_line_randomize_utils.cardType.MONSTER_COLORLESS
-		and card.stage:getValue() == evo_line_randomize_utils.evolutionStage.BASIC:getValue()
+	return card.type == context.CardType.MONSTER_COLORLESS
+		and card.stage:getValue() == context.EvolutionStage.BASIC:getValue()
 end
 
 --- Used for fixing proxies to make sure they are basics
@@ -204,7 +197,7 @@ end
 function evo_line_randomize_utils.nonBasicNonProxyByPrevEvo(toModifyCards)
 	return toModifyCards:filter(function(card)
 			return not card.isTrainerProxy
-					and card.stage:getValue() ~= evo_line_randomize_utils.evolutionStage.BASIC
+					and card.stage:getValue() ~= context.EvolutionStage.BASIC
 							:getValue()
 					and not card.prevEvoName:isEmpty()
 		end):groupBy("prevEvoName:toString")
@@ -219,12 +212,12 @@ end
 -- Returns the max stage from the counts of the evo line
 function evo_line_randomize_utils.lineMaxStageFromCounts(evoLine)
 	if evoLine.STAGE_2 and evoLine.STAGE_2 > 0 then
-		return evo_line_randomize_utils.evolutionStage.STAGE_2
+		return context.EvolutionStage.STAGE_2
 	end
 	if evoLine.STAGE_1 and evoLine.STAGE_1 > 0 then
-		return evo_line_randomize_utils.evolutionStage.STAGE_1
+		return context.EvolutionStage.STAGE_1
 	end
-	return evo_line_randomize_utils.evolutionStage.BASIC
+	return context.EvolutionStage.BASIC
 end
 
 -- Constructs the pool key for an entry based on the args. They key is
@@ -265,9 +258,8 @@ function evo_line_randomize_utils.poolKeysForDraw(cardType, stage, maxStage, key
 	if keyContext.allowStageFallback and keyContext.grouping == "BY_STAGE_AND_MAX_STAGE" then
 		-- Add any remaining valid bucket for this stage (maxStage >= stage) preferring higher max evo
 		-- stages first by reverse iterating
-		local evoStages = evo_line_randomize_utils.EVO_STAGES
-		for stageIndex = #evoStages, 1, -1 do
-			local otherMaxStage = evoStages[stageIndex]
+		for stageIndex = #evo_line_randomize_utils.EVO_STAGES, 1, -1 do
+			local otherMaxStage = evo_line_randomize_utils.EVO_STAGES[stageIndex]
 			-- We already add the desired max stage first
 			if otherMaxStage:getValue() >= stage:getValue() and otherMaxStage ~= maxStage then
 				table.insert(keys, evo_line_randomize_utils.poolKey(cardType, stage, otherMaxStage,
@@ -589,9 +581,9 @@ function evo_line_randomize_utils.formatEntriesStagesCounts(stageCounts)
 	if stageCounts == nil then
 		return "[?, ?, ?]"
 	end
-	return "[" .. (stageCounts[evo_line_randomize_utils.evolutionStage.BASIC:getName()] or 1) .. ", "
-			.. (stageCounts[evo_line_randomize_utils.evolutionStage.STAGE_1:getName()] or 0) .. ", "
-			.. (stageCounts[evo_line_randomize_utils.evolutionStage.STAGE_2:getName()] or 0) .. "]"
+	return "[" .. (stageCounts[context.EvolutionStage.BASIC:getName()] or 1) .. ", "
+			.. (stageCounts[context.EvolutionStage.STAGE_1:getName()] or 0) .. ", "
+			.. (stageCounts[context.EvolutionStage.STAGE_2:getName()] or 0) .. "]"
 end
 
 function evo_line_randomize_utils.formatSlots(slots)
@@ -686,7 +678,7 @@ end
 -- Walk evos by depth under rootName. Level 1 is forced to BASIC then any of its evos are updated appropriately
 function evo_line_randomize_utils.demoteEvosOf(rootName, cardsByPrev, logPrefix,
 		logSuffix)
-	local evolutionStage = evo_line_randomize_utils.evolutionStage
+	local evolutionStage = context.EvolutionStage
 	local stageForLevel = evolutionStage.BASIC
 	local currentLevel = {}
 	evo_line_randomize_utils.addEvoNamesToLine(rootName, cardsByPrev, currentLevel)
@@ -893,11 +885,11 @@ end
 
 -- choicePools nil means ignore energy types when drawing names. Non nil enables within type
 -- pools and uses the weighted branch type rules from those pools.
-function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choicePools,
+function evo_line_randomize_utils.randomizeCustomEvoLines(args, choicePools,
 	warnOnFailure)
-	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source,
+	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(args.source,
 			args.excludeTrainerProxies))
-	local targets = randomizer.list(evo_line_randomize_utils.targetCards(context, args.excludeTrainerProxies))
+	local targets = randomizer.list(evo_line_randomize_utils.targetCards(args.excludeTrainerProxies))
 	local toModifyByName = randomizer.groupBy(targets, "name")
 
 	-- Form name pools from source cards and line pools from script args
@@ -925,9 +917,8 @@ function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choiceP
 		end)
 
 		-- Go one stage at a time in reverse order to ensure we don't leave any orphans
-		local evoStages = evo_line_randomize_utils.EVO_STAGES
-		for stageIndex = #evoStages, 1, -1 do
-			local stage = evoStages[stageIndex]
+		for stageIndex = #evo_line_randomize_utils.EVO_STAGES, 1, -1 do
+			local stage = evo_line_randomize_utils.EVO_STAGES[stageIndex]
 			evo_line_randomize_utils.processCustomStagePass(stage, linePoolByMaxStage, namePools,
 					keyContext, toModifyByName, args.approach, choicePools, warnOnFailure)
 		end
@@ -937,7 +928,7 @@ function evo_line_randomize_utils.randomizeCustomEvoLines(context, args, choiceP
 	-- update ai data)
 	local success = namePools:itemCount() == 0
 	if success then
-		evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
+		evo_line_randomize_utils.finalize(args, targets, toModifyByName, keyContext)
 	end
 	return success
 end
@@ -962,7 +953,7 @@ function evo_line_randomize_utils.potentialNonProxySwapTargets(toModifyCards, co
 			if card.isTrainerProxy then
 				return false
 			end
-			if card.stage:getValue() ~= evo_line_randomize_utils.evolutionStage.BASIC:getValue() then
+			if card.stage:getValue() ~= context.EvolutionStage.BASIC:getValue() then
 				return false
 			end
 			if proxyPrevNames[card.name:toString()] then
@@ -998,7 +989,7 @@ function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, toModifyB
 		if not proxy.isTrainerProxy then
 			return
 		end
-		if proxy.stage:getValue() == evo_line_randomize_utils.evolutionStage.BASIC:getValue() then
+		if proxy.stage:getValue() == context.EvolutionStage.BASIC:getValue() then
 			return
 		end
 
@@ -1014,7 +1005,7 @@ end
 
 -- After we have randomized evo lines, set HAS_EVOLUTION as appropriate and
 -- clear ENCOURAGE_EVO when the name cannot evolve.
-function evo_line_randomize_utils.syncEvoAiData(context, cards)
+function evo_line_randomize_utils.syncEvoAiData(cards)
 	local hasEvolution = context.CardAiFlags.HAS_EVOLUTION
 	local encourageEvo = context.CardAiInfo.ENCOURAGE_EVO
 	local noAiInfo = context.CardAiInfo.NONE
@@ -1038,14 +1029,14 @@ function evo_line_randomize_utils.syncEvoAiData(context, cards)
 	end)
 end
 
-function evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
+function evo_line_randomize_utils.finalize(args, targets, toModifyByName, keyContext)
 	if not args.excludeTrainerProxies then
 		evo_line_randomize_utils.fixAllTogetherProxies(targets, toModifyByName, keyContext)
 	end
 	-- We need to sync all cards including proxies regardless of if included because if they are excluded
 	-- their evo data could have changed
 	local syncCards = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
-	evo_line_randomize_utils.syncEvoAiData(context, syncCards)
+	evo_line_randomize_utils.syncEvoAiData(syncCards)
 end
 
 

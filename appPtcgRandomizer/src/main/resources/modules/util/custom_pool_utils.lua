@@ -15,7 +15,7 @@ function custom_pool_utils.displayName(enumTable, canonical)
 end
 
 -- unknown stages sort last so BASIC / STAGE_1 / STAGE_2 stay in evo order
-function custom_pool_utils.stageSortValue(context, stageName)
+function custom_pool_utils.stageSortValue(stageName)
 	local stage = context.EvolutionStage[stageName]
 	if stage == nil then
 		return 1000
@@ -24,14 +24,14 @@ function custom_pool_utils.stageSortValue(context, stageName)
 end
 
 -- stable evo order for error messages and validation walks
-function custom_pool_utils.sortedStageNames(context, nameSet)
+function custom_pool_utils.sortedStageNames(nameSet)
 	local names = {}
 	for name in pairs(nameSet) do
 		table.insert(names, name)
 	end
 	table.sort(names, function(a, b)
-		local va = custom_pool_utils.stageSortValue(context, a)
-		local vb = custom_pool_utils.stageSortValue(context, b)
+		local va = custom_pool_utils.stageSortValue(a)
+		local vb = custom_pool_utils.stageSortValue(b)
 		if va ~= vb then
 			return va < vb
 		end
@@ -53,7 +53,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	local utils = {}
 
 	-- numeric enum value for a stage or max stage key string
-	function utils.stageValue(context, stageName)
+	function utils.stageValue(stageName)
 		local stage = context.EvolutionStage[stageName]
 		if stage == nil then
 			error("Unknown EvolutionStage in " .. poolsName .. ": " .. tostring(stageName))
@@ -94,7 +94,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	end
 
 	-- cards look up pools by stage. missing keys abort, extra keys just warn
-	function utils.validateStagePools(context, pools, cards)
+	function utils.validateStagePools(pools, cards)
 		local provided = {}
 		for stageName in pairs(pools or {}) do
 			provided[tostring(stageName)] = true
@@ -106,7 +106,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		end)
 
 		local missingLabels = {}
-		for _, name in ipairs(custom_pool_utils.sortedStageNames(context, used)) do
+		for _, name in ipairs(custom_pool_utils.sortedStageNames(used)) do
 			if not provided[name] then
 				table.insert(missingLabels,
 					custom_pool_utils.displayName(context.EvoStage, name))
@@ -114,7 +114,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		end
 
 		local extraLabels = {}
-		for _, name in ipairs(custom_pool_utils.sortedStageNames(context, provided)) do
+		for _, name in ipairs(custom_pool_utils.sortedStageNames(provided)) do
 			if not used[name] then
 				table.insert(extraLabels,
 					custom_pool_utils.displayName(context.EvoStage, name))
@@ -125,7 +125,7 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	end
 
 	-- same as validateStagePools but nested by evo-line max stage then card stage
-	function utils.validateStageMaxStagePools(context, pools, cards)
+	function utils.validateStageMaxStagePools(pools, cards)
 		local used = {}
 		randomizer.list(cards):each(function(mc)
 			local maxName = tostring(mc.evoLineMaxStage)
@@ -146,10 +146,10 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		end
 
 		local missingLabels = {}
-		for _, maxName in ipairs(custom_pool_utils.sortedStageNames(context, used)) do
+		for _, maxName in ipairs(custom_pool_utils.sortedStageNames(used)) do
 			local usedInner = used[maxName]
 			local providedInner = provided[maxName] or {}
-			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(context, usedInner)) do
+			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(usedInner)) do
 				if not providedInner[stageName] then
 					table.insert(missingLabels,
 						custom_pool_utils.displayName(context.NumEvoStages, maxName)
@@ -160,10 +160,10 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 		end
 
 		local extraLabels = {}
-		for _, maxName in ipairs(custom_pool_utils.sortedStageNames(context, provided)) do
+		for _, maxName in ipairs(custom_pool_utils.sortedStageNames(provided)) do
 			local providedInner = provided[maxName]
 			local usedInner = used[maxName] or {}
-			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(context, providedInner)) do
+			for _, stageName in ipairs(custom_pool_utils.sortedStageNames(providedInner)) do
 				if not usedInner[stageName] then
 					table.insert(extraLabels,
 						custom_pool_utils.displayName(context.NumEvoStages, maxName)
@@ -177,8 +177,8 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	end
 
 	-- validate then build a group keyed by stage name (matches card.stage lookup)
-	function utils.buildStagePoolGroup(context, pools, cards)
-		utils.validateStagePools(context, pools, cards)
+	function utils.buildStagePoolGroup(pools, cards)
+		utils.validateStagePools(pools, cards)
 
 		local selected = {}
 		local keyOrder = {}
@@ -196,16 +196,16 @@ function custom_pool_utils.create(poolsName, listPoolName, valueKind)
 	end
 
 	-- validate then build a group keyed by maxStage*10+stage (matches pool_utils.stageAndMaxStageKey)
-	function utils.buildStageMaxStagePoolGroup(context, pools, cards)
-		utils.validateStageMaxStagePools(context, pools, cards)
+	function utils.buildStageMaxStagePoolGroup(pools, cards)
+		utils.validateStageMaxStagePools(pools, cards)
 
 		local selected = {}
 		local keyOrder = {}
 
 		for maxStageName, byStage in pairs(pools or {}) do
-			local maxStageValue = utils.stageValue(context, maxStageName)
+			local maxStageValue = utils.stageValue(maxStageName)
 			for stageName, weightedValues in pairs(byStage or {}) do
-				local key = maxStageValue * 10 + utils.stageValue(context, stageName)
+				local key = maxStageValue * 10 + utils.stageValue(stageName)
 				selected[key] = utils.expandWeightedList(weightedValues,
 					string.format("%s[%s][%s]", poolsName, tostring(maxStageName),
 						tostring(stageName)))

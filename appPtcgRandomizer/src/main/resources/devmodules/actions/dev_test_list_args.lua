@@ -64,8 +64,8 @@ module = {
 			default = { { 1, 2, 3 }, { 4, 5 } },
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
@@ -84,7 +84,7 @@ function module.formatList(list)
 	return "{" .. table.concat(parts, ", ") .. "}"
 end
 
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(string.format(
 		"dev_test_list_args received anyStringList=%s rangeIntList=%s enumStringList=%s nestedIntLists=%s",
 		module.formatList(args.anyStringList),

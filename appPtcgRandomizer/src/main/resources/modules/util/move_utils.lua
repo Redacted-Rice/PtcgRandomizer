@@ -6,14 +6,6 @@ local pool_utils = require("modules.util.pool_utils")
 
 local move_utils = {}
 
-move_utils.maxNumMoveSlots = 2
-
-function move_utils.init(context)
-	if context.MonsterCard ~= nil and context.MonsterCard.MAX_NUM_MOVES ~= nil then
-		move_utils.maxNumMoveSlots = context.MonsterCard.MAX_NUM_MOVES
-	end
-end
-
 -- one representative move per name. same name can appear on many cards
 -- TODO later: Check if they are all the same or if they can have the same
 -- name but be different (I think the latter is the case)
@@ -27,9 +19,9 @@ end
 
 -- narrow a move list to attacks, powers, or leave both
 function move_utils.filterByKind(moveList, moveKind)
-	if moveKind == "ATTACKS" then
+	if moveKind == common_field_defs.MOVE_KIND_ATTACKS then
 		return moveList:filter("isAttack")
-	elseif moveKind == "POWERS" then
+	elseif moveKind == common_field_defs.MOVE_KIND_POWERS then
 		return moveList:filter("isPokePower")
 	end
 	return moveList
@@ -57,9 +49,9 @@ function move_utils.stageAndMaxStageGroupKey(args)
 end
 
 -- source moves filtered by moveKind before pooling or grouping
-function move_utils.filteredMoves(context, args)
+function move_utils.filteredMoves(args)
 	local cardSource = context.original.cards
-	if args.source == "CURRENT" then
+	if args.source == common_field_defs.DATA_SOURCE_CURRENT then
 		cardSource = context.modified.cards
 	end
 	return move_utils.filterByKind(randomizer.list(
@@ -67,18 +59,18 @@ function move_utils.filteredMoves(context, args)
 end
 
 -- flat move pool from source, with optional unique-by-name dedup
-function move_utils.buildPool(context, args)
-	local movePool = move_utils.filteredMoves(context, args)
-	if args.duplicates == "REMOVE_DUPLICATES" then
+function move_utils.buildPool(args)
+	local movePool = move_utils.filteredMoves(args)
+	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_REMOVE then
 		return move_utils.uniqueMoves(movePool)
 	end
 	return movePool
 end
 
 -- group first, then uniquify inside each bucket
-function move_utils.buildGroupedPool(context, args, groupKey)
-	local grouped = move_utils.filteredMoves(context, args):groupBy(groupKey)
-	if args.duplicates == "KEEP_DUPLICATES" then
+function move_utils.buildGroupedPool(args, groupKey)
+	local grouped = move_utils.filteredMoves(args):groupBy(groupKey)
+	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
 		return grouped
 	end
 
@@ -92,7 +84,7 @@ function move_utils.buildGroupedPool(context, args, groupKey)
 end
 
 -- cards being randomized. uses modified set, not the ROM source pool
-function move_utils.targets(context, args)
+function move_utils.targets(args)
 	return move_utils.filterByKind(
 		randomizer.list(context.modified.cards:getRandomizableMoves(false, false)), args.moveKind)
 end
@@ -120,10 +112,10 @@ end
 
 -- whether this slot is in scope for the current moveKind filter
 function move_utils.slotRandomizedThisRun(move, moveKind)
-	if moveKind == "ATTACKS" then
+	if moveKind == common_field_defs.MOVE_KIND_ATTACKS then
 		return move:isAttack()
 	end
-	if moveKind == "POWERS" then
+	if moveKind == common_field_defs.MOVE_KIND_POWERS then
 		return move:isPokePower()
 	end
 	return true
@@ -145,7 +137,7 @@ function move_utils.constraintUniqueMoveOnCard(moveTarget, candidateMove, moveKi
 	local card = moveTarget:getSourceCard()
 	local moveIndex = moveTarget:getSourceMoveIndex()
 	local candidateName = candidateMove.name:toString()
-	local maxSlots = move_utils.maxNumMoveSlots
+	local maxSlots = context.MonsterCard.MAX_NUM_MOVES
 	-- Check each slot that we have already assigned or that will not be assigned this run
 	-- to see if we already have that name
 	for slotIndex = 0, maxSlots - 1 do

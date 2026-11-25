@@ -49,13 +49,13 @@ module = {
 			default = 3,
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
 -- Log the args to show they are being passed correctly to lua
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(string.format(
 		"dev_test_int_args received anyInt=%d rangeInt=%d discreteInt=%d enumInt=%d",
 		args.anyInt, args.rangeInt, args.discreteInt, args.enumInt))

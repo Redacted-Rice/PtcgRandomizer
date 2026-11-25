@@ -38,8 +38,8 @@ module = {
 			},
 		},
 	},
-	execute = function(context, args)
-		return module.logMonsterCards(context, args)
+	execute = function(args)
+		return module.logMonsterCards(args)
 	end,
 }
 
@@ -157,7 +157,7 @@ function module.buildFields(fieldNames)
 	return fields
 end
 
-function module.logMonsterCards(context, args)
+function module.logMonsterCards(args)
 	if not context.modified then
 		return
 	end

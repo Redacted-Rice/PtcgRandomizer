@@ -23,8 +23,8 @@ module = {
 		{ name = "evoBranchIds", type = "List<integer>" },
 	},
 	seeded = false,
-	execute = function(context, args)
-		return module.fixDexNumbers(context, args)
+	execute = function(args)
+		return module.fixDexNumbers(args)
 	end,
 }
 
@@ -71,7 +71,7 @@ function module.assignLine(line, startId, assignedNames)
 	return dexId
 end
 
-function module.fixDexNumbers(context)
+function module.fixDexNumbers()
 	local cards = context.modified.cards:getRandomizableMonsterCards()
 	local nextId = 1
 	local assignedNames = {}

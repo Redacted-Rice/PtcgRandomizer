@@ -143,6 +143,19 @@ common_field_defs.STAGE_GROUPING_ALL_TOGETHER = "ALL_TOGETHER"
 common_field_defs.STAGE_GROUPING_BY_STAGE = "BY_STAGE"
 common_field_defs.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE = "BY_STAGE_AND_MAX_STAGE"
 
+common_field_defs.DATA_SOURCE_ROM = "ROM"
+common_field_defs.DATA_SOURCE_CURRENT = "CURRENT"
+
+common_field_defs.DUPLICATE_HANDLING_REMOVE = "REMOVE_DUPLICATES"
+common_field_defs.DUPLICATE_HANDLING_KEEP = "KEEP_DUPLICATES"
+
+common_field_defs.RANDOMIZATION_APPROACH_FULLY_RANDOM = "FULLY_RANDOM"
+common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS = "MINIMIZE_REPEATS"
+
+common_field_defs.MOVE_KIND_ALL_MOVES = "ALL_MOVES"
+common_field_defs.MOVE_KIND_ATTACKS = "ATTACKS"
+common_field_defs.MOVE_KIND_POWERS = "POWERS"
+
 common_field_defs.ARG_DEF_WITHIN_TYPE = {
 	name = "withinType",
 	displayName = "Type Pool Scope",

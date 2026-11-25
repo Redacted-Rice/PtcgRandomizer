@@ -31,8 +31,8 @@ script = {
 		"animation",
 	},
 
-	execute = function(context, args)
-		return script.setupChangeDetection(context, args)
+	execute = function(args)
+		return script.setupChangeDetection(args)
 	end,
 }
 
@@ -262,7 +262,7 @@ function script.buildMonsterCardFields()
 	return fields
 end
 
-function script.setupChangeDetection(context)
+function script.setupChangeDetection()
 	local changedetector = randomizer.changedetector
 
 	-- Make sure change detector is in a clear/reset state

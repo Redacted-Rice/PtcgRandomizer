@@ -22,14 +22,14 @@ module = {
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 		common_field_defs.ARG_DEF_TYPE_WEIGHTS,
 	},
-	execute = function(context, args)
-		return module.randomizeEvoLineTypes(context, args)
+	execute = function(args)
+		return module.randomizeEvoLineTypes(args)
 	end,
 }
 
-function module.randomizeEvoLineTypes(context, args)
-	types_util.randomizeEvoLineTypes(context,
-			types_util.buildTypePoolFromWeights(context, args.typeWeights),
+function module.randomizeEvoLineTypes(args)
+	types_util.randomizeEvoLineTypes(
+			types_util.buildTypePoolFromWeights(args.typeWeights),
 			pool_utils.poolOptions(args.approach))
 end
 

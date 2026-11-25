@@ -19,13 +19,13 @@ module = {
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 		common_field_defs.ARG_DEF_STAGE_GROUPING_BY_STAGE,
 	},
-	execute = function(context, args)
-		return module.randomizeRetreatCost(context, args)
+	execute = function(args)
+		return module.randomizeRetreatCost(args)
 	end,
 }
 
-function module.randomizeRetreatCost(context, args)
-	local sourceCards = pool_utils.sourceCards(context, args.source)
+function module.randomizeRetreatCost(args)
+	local sourceCards = pool_utils.sourceCards(args.source)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptionsForCardSource(args)
 

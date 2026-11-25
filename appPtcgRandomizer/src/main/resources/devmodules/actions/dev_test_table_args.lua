@@ -142,8 +142,8 @@ module = {
 			},
 		},
 	},
-	execute = function(context, args)
-		return module.logArgs(context, args)
+	execute = function(args)
+		return module.logArgs(args)
 	end,
 }
 
@@ -201,7 +201,7 @@ function module.formatTable(map)
 	return "{" .. table.concat(parts, ", ") .. "}"
 end
 
-function module.logArgs(context, args)
+function module.logArgs(args)
 	logger.info(
 		string.format(
 			"dev_test_table_args received caps=%s poolsByType=%s typeWeights=%s nestedGroups=%s"

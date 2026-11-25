@@ -20,13 +20,13 @@ module = {
 		common_field_defs.ARG_DEF_DUPLICATES,
 		common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH,
 	},
-	execute = function(context, args)
-		return module.randomizeHp(context, args)
+	execute = function(args)
+		return module.randomizeHp(args)
 	end,
 }
 
-function module.randomizeHp(context, args)
-	local sourceCards = pool_utils.sourceCards(context, args.source)
+function module.randomizeHp(args)
+	local sourceCards = pool_utils.sourceCards(args.source)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptionsForCardSource(args)
 	pool_utils.buildGroupedPool(sourceCards, pool_utils.stageAndMaxStageKey,

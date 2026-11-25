@@ -28,15 +28,13 @@ module = {
 		common_field_defs.ARG_DEF_WITHIN_TYPE,
 		common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING,
 	},
-	execute = function(context, args)
-		return module.randomizeEvoLines(context, args)
+	execute = function(args)
+		return module.randomizeEvoLines(args)
 	end,
 }
 
-function module.randomizeEvoLines(context, args)
-	evo_line_randomize_utils.init(context)
-
-	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(context, args.source))
+function module.randomizeEvoLines(args)
+	local sourceCards = randomizer.list(evo_line_randomize_utils.sourceCards(args.source))
 	local targets = randomizer.list(context.modified.cards:getRandomizableMonsterCardsWithProxies())
 	local keyContext = evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards,
 			args.grouping, args.withinType, false)
@@ -53,7 +51,7 @@ function module.randomizeEvoLines(context, args)
 		evo_line_randomize_utils.assignEvoLineList(line.evoLineId, line.entries, namePools,
 				keyContext, toModifyByName, line.stageCounts)
 	end)
-	evo_line_randomize_utils.finalize(context, args, targets, toModifyByName, keyContext)
+	evo_line_randomize_utils.finalize(args, targets, toModifyByName, keyContext)
 end
 
 return module
