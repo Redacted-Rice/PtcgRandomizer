@@ -216,8 +216,9 @@ public class RandomizerCore {
         IssueTracker.clear();
         romData.prepareForModification();
 
-        JavaContext context = new JavaContext();
-        bindRandomizeContext(context, romData.original, romData.modified, romData.baselineRules.copy());
+        JavaContext executionContext = new JavaContext();
+        bindRandomizeContext(executionContext, romData.original, romData.modified,
+                romData.baselineRules.copy());
 
         // Prepare execution requests for each module using GUI config values
         List<ExecutionRequest> executionRequests = new LinkedList<>();
@@ -236,7 +237,7 @@ public class RandomizerCore {
         }
 
         // Execute modules - failures are logged immediately via IssueTracker.addError
-        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, context, seed);
+        List<ExecutionResult> results = luaRandomizer.executeModules(executionRequests, executionContext, seed);
 
         for (ExecutionResult result : results) {
             if (result.isSuccess()) {
@@ -261,7 +262,7 @@ public class RandomizerCore {
         return actions != null && !actions.isEmpty();
     }
 
-    // Same wrapper live setup and tests use. Registers PTCG enums then loads
+    // Same wrapper live setup and tests use. Registers shared context, then loads
     // modules.
     public static LuaRandomizerWrapper createLuaRandomizer(PtcgBundledResources resources) {
         if (resources == null) {
@@ -274,27 +275,24 @@ public class RandomizerCore {
                 PtcgRandomizerVersion.VERSION, true);
         LuaRandomizerWrapper wrapper = LuaRandomizerWrapper.forApp(resources.getRandomizerDir(),
                 resources.getModulesDir(), requirements);
-        // Register built in PTCGR enums in the shared enum context instead of in the
-        // runtime context so they're merged into every execution context the same way
-        // module registered (onLoad) enums are, and so they're resolvable by name for
-        // the config UI's ENUM argument dropdowns even before a randomization has run.
+        // Register the shared context values for the wrapper
         registerSharedEnums(wrapper);
+        registerSharedObjects(wrapper);
+        registerSharedConfig(wrapper);
         IssueTracker.clear();
         wrapper.loadModules();
         return wrapper;
     }
 
-    // original/modified/rules plus change detection. Same keys live Lua modules
-    // read.
-    public static void bindRandomizeContext(JavaContext context, RandomizationData original,
+    // Binds the executionContext. Merged later with the shared context.
+    public static void bindRandomizeContext(JavaContext executionContext, RandomizationData original,
             RandomizationData modified, Rules rules) {
-        if (context == null) {
-            throw new IllegalArgumentException("Context cannot be null");
+        if (executionContext == null) {
+            throw new IllegalArgumentException("Execution context cannot be null");
         }
-        context.register("original", original);
-        context.register("modified", modified);
-        context.register("rules", rules);
-        context.setConfig(JavaContext.CHANGE_DETECTION_ACTIVE, true);
+        executionContext.register("original", original);
+        executionContext.register("modified", modified);
+        executionContext.register("rules", rules);
     }
 
     // Shared by setup and tests so the curated register list lives in one place
@@ -335,6 +333,19 @@ public class RandomizerCore {
         wrapper.registerSharedEnum(MoveCategory.class);
         wrapper.registerSharedEnum(DeckId.class);
         wrapper.registerSharedEnum(CardId.class);
+    }
+
+    /**
+     * Non enum types published on shared context for Lua static fields/methods
+     */
+    public static void registerSharedObjects(LuaRandomizerWrapper wrapper) {
         wrapper.registerSharedObject("MonsterCard", MonsterCard.class);
+    }
+
+    /**
+     * Configs that we use for the entire batch
+     */
+    public static void registerSharedConfig(LuaRandomizerWrapper wrapper) {
+        wrapper.setSharedConfig(JavaContext.CHANGE_DETECTION_ACTIVE, true);
     }
 }
