@@ -1,9 +1,9 @@
 -- Shared argument and type defs
 -- Require as modules.util.common_field_defs
+local enums_def = require("modules.util.enums_def")
 local common_field_defs = {}
 
 -- TODO: Rename remaining KEY_DEF to TYPE_DEF
--- TODO: Think about how to organize these better
 -- TODO: Look for opportunities to consolidate similar ones
 common_field_defs.TYPE_DEF_WEIGHT = {
 	type = "int",
@@ -52,7 +52,7 @@ common_field_defs.ARG_DEF_RANDOMIZATION_APPROACH = {
 		type = "enum",
 		constraint = "RandomizationApproach",
 	},
-	default = "MINIMIZE_REPEATS",
+	default = enums_def.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS,
 }
 
 common_field_defs.ARG_DEF_SOURCE = {
@@ -63,7 +63,7 @@ common_field_defs.ARG_DEF_SOURCE = {
 		type = "enum",
 		constraint = "DataSource",
 	},
-	default = "ROM",
+	default = enums_def.DATA_SOURCE_ROM,
 }
 
 common_field_defs.ARG_DEF_DUPLICATES = {
@@ -74,7 +74,7 @@ common_field_defs.ARG_DEF_DUPLICATES = {
 		type = "enum",
 		constraint = "DuplicateHandling",
 	},
-	default = "KEEP_DUPLICATES",
+	default = enums_def.DUPLICATE_HANDLING_KEEP,
 }
 
 common_field_defs.ARG_DEF_NO_DUPLICATE_MOVE_NAMES = {
@@ -96,9 +96,9 @@ common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER = {
 	definition = {
 		type = "enum",
 		constraint = "StageGrouping",
-		exclude = { "BY_STAGE_AND_MAX_STAGE" },
+		exclude = { enums_def.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE },
 	},
-	default = "ALL_TOGETHER",
+	default = enums_def.STAGE_GROUPING_ALL_TOGETHER,
 }
 
 common_field_defs.ARG_DEF_STAGE_GROUPING_BY_STAGE = {
@@ -106,7 +106,7 @@ common_field_defs.ARG_DEF_STAGE_GROUPING_BY_STAGE = {
 	displayName = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.displayName,
 	description = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.description,
 	definition = common_field_defs.ARG_DEF_STAGE_GROUPING_ALL_TOGETHER.definition,
-	default = "BY_STAGE",
+	default = enums_def.STAGE_GROUPING_BY_STAGE,
 }
 
 common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING = {
@@ -120,7 +120,7 @@ common_field_defs.ARG_DEF_EVO_LINE_STAGE_GROUPING = {
 		type = "enum",
 		constraint = "StageGrouping",
 	},
-	default = "BY_STAGE_AND_MAX_STAGE",
+	default = enums_def.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE,
 }
 
 common_field_defs.ARG_DEF_MOVE_KIND = {
@@ -132,29 +132,8 @@ common_field_defs.ARG_DEF_MOVE_KIND = {
 		type = "enum",
 		constraint = "MoveKind",
 	},
-	default = "ALL_MOVES",
+	default = enums_def.MOVE_KIND_ALL_MOVES,
 }
-
-common_field_defs.TYPE_POOL_ALL_TOGETHER = "All Together"
-common_field_defs.TYPE_POOL_WITHIN_TYPE = "Within Type"
-common_field_defs.TYPE_POOL_WITHIN_SUBTYPE = "Within Subtype"
-
-common_field_defs.STAGE_GROUPING_ALL_TOGETHER = "ALL_TOGETHER"
-common_field_defs.STAGE_GROUPING_BY_STAGE = "BY_STAGE"
-common_field_defs.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE = "BY_STAGE_AND_MAX_STAGE"
-
-common_field_defs.DATA_SOURCE_ROM = "ROM"
-common_field_defs.DATA_SOURCE_CURRENT = "CURRENT"
-
-common_field_defs.DUPLICATE_HANDLING_REMOVE = "REMOVE_DUPLICATES"
-common_field_defs.DUPLICATE_HANDLING_KEEP = "KEEP_DUPLICATES"
-
-common_field_defs.RANDOMIZATION_APPROACH_FULLY_RANDOM = "FULLY_RANDOM"
-common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS = "MINIMIZE_REPEATS"
-
-common_field_defs.MOVE_KIND_ALL_MOVES = "ALL_MOVES"
-common_field_defs.MOVE_KIND_ATTACKS = "ATTACKS"
-common_field_defs.MOVE_KIND_POWERS = "POWERS"
 
 common_field_defs.ARG_DEF_WITHIN_TYPE = {
 	name = "withinType",
@@ -167,13 +146,13 @@ common_field_defs.ARG_DEF_WITHIN_TYPE = {
 		constraint = {
 			type = "enum",
 			values = {
-				common_field_defs.TYPE_POOL_ALL_TOGETHER,
-				common_field_defs.TYPE_POOL_WITHIN_TYPE,
-				common_field_defs.TYPE_POOL_WITHIN_SUBTYPE,
+				enums_def.TYPE_POOL_ALL_TOGETHER,
+				enums_def.TYPE_POOL_WITHIN_TYPE,
+				enums_def.TYPE_POOL_WITHIN_SUBTYPE,
 			},
 		},
 	},
-	default = common_field_defs.TYPE_POOL_ALL_TOGETHER,
+	default = enums_def.TYPE_POOL_ALL_TOGETHER,
 }
 
 -- Custom within-type evo lines always pool by type. Subtype adds weakness/resistance to the bucket.
@@ -187,12 +166,12 @@ common_field_defs.ARG_DEF_WITHIN_TYPE_NO_ALL_TOGETHER = {
 		constraint = {
 			type = "enum",
 			values = {
-				common_field_defs.TYPE_POOL_WITHIN_TYPE,
-				common_field_defs.TYPE_POOL_WITHIN_SUBTYPE,
+				enums_def.TYPE_POOL_WITHIN_TYPE,
+				enums_def.TYPE_POOL_WITHIN_SUBTYPE,
 			},
 		},
 	},
-	default = common_field_defs.TYPE_POOL_WITHIN_TYPE,
+	default = enums_def.TYPE_POOL_WITHIN_TYPE,
 }
 
 common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES = {
@@ -209,23 +188,13 @@ common_field_defs.ARG_DEF_EXCLUDE_TRAINERS_FROM_EVO_LINES = {
 common_field_defs.KEY_DEF_EVO_STAGE = {
 	type = "enum",
 	constraint = "EvoStage",
-	exclude = { "STAGE_2_WITHOUT_STAGE_1" },
+	exclude = { enums_def.EVO_STAGE_STAGE_2_WITHOUT_STAGE_1 },
 }
 
 common_field_defs.KEY_DEF_EVO_LINE_STAGES = {
 	type = "enum",
 	constraint = "NumEvoStages",
-	exclude = { "STAGE_2_WITHOUT_STAGE_1" },
-}
-
-common_field_defs.ENERGY_TYPE_KEYS = {
-	"FIRE",
-	"GRASS",
-	"LIGHTNING",
-	"WATER",
-	"FIGHTING",
-	"PSYCHIC",
-	"COLORLESS",
+	exclude = { enums_def.EVO_STAGE_STAGE_2_WITHOUT_STAGE_1 },
 }
 
 common_field_defs.ARG_DEF_TYPE_WEIGHTS = {
@@ -237,25 +206,23 @@ common_field_defs.ARG_DEF_TYPE_WEIGHTS = {
 		keyDefinition = {
 			type = "enum",
 			constraint = "EnergyType",
-			exclude = { "UNUSED_TYPE" },
+			exclude = { enums_def.ENERGY_TYPE_UNUSED },
 		},
 		valueDefinition = common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT,
-		fixedKeys = common_field_defs.ENERGY_TYPE_KEYS,
+		fixedKeys = enums_def.ENERGY_TYPE_KEYS,
 	},
 	-- even spread except colorless a bit higher. not 2:3 so minimize reuse has room to vary
 	default = {
-		FIRE = 4,
-		GRASS = 4,
-		LIGHTNING = 4,
-		WATER = 4,
-		FIGHTING = 4,
-		PSYCHIC = 4,
-		COLORLESS = 6,
+		[enums_def.ENERGY_TYPE_FIRE] = 4,
+		[enums_def.ENERGY_TYPE_GRASS] = 4,
+		[enums_def.ENERGY_TYPE_LIGHTNING] = 4,
+		[enums_def.ENERGY_TYPE_WATER] = 4,
+		[enums_def.ENERGY_TYPE_FIGHTING] = 4,
+		[enums_def.ENERGY_TYPE_PSYCHIC] = 4,
+		[enums_def.ENERGY_TYPE_COLORLESS] = 6,
 	},
 }
 
-common_field_defs.BRANCHING_BASE_COLORLESS = "Colorless"
-common_field_defs.BRANCHING_BASE_ANY_TYPE = "Any Type"
 common_field_defs.ARG_DEF_EVO_LINE_BRANCHING_BASES_COLORLESS = {
 	name = "branchingBasesColorless",
 	displayName = "Branching Base Type",
@@ -268,27 +235,24 @@ common_field_defs.ARG_DEF_EVO_LINE_BRANCHING_BASES_COLORLESS = {
 			constraint = {
 				type = "enum",
 				values = {
-					common_field_defs.BRANCHING_BASE_COLORLESS,
-					common_field_defs.BRANCHING_BASE_ANY_TYPE,
+					enums_def.BRANCHING_BASE_COLORLESS,
+					enums_def.BRANCHING_BASE_ANY_TYPE,
 				},
 			},
 		},
 		valueDefinition = common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT,
 		fixedKeys = {
-			common_field_defs.BRANCHING_BASE_COLORLESS,
-			common_field_defs.BRANCHING_BASE_ANY_TYPE,
+			enums_def.BRANCHING_BASE_COLORLESS,
+			enums_def.BRANCHING_BASE_ANY_TYPE,
 		},
 	},
 	default = {
-		[common_field_defs.BRANCHING_BASE_COLORLESS] = 3,
-		[common_field_defs.BRANCHING_BASE_ANY_TYPE] = 1,
+		[enums_def.BRANCHING_BASE_COLORLESS] = 3,
+		[enums_def.BRANCHING_BASE_ANY_TYPE] = 1,
 	},
 }
 
 
-common_field_defs.BRANCH_ROOT_UNBIASED = "Unbiased"
-common_field_defs.BRANCH_ROOT_MATCH = "Match Branch Root"
-common_field_defs.BRANCH_ROOT_AVOID = "Avoid Branch Root"
 common_field_defs.ARG_DEF_EVO_LINE_BRANCH_ROOT_CONSISTENCY = {
 	name = "branchRootConsistency",
 	displayName = "Branch Root Type Consistency",
@@ -303,30 +267,27 @@ common_field_defs.ARG_DEF_EVO_LINE_BRANCH_ROOT_CONSISTENCY = {
 			constraint = {
 				type = "enum",
 				values = {
-					common_field_defs.BRANCH_ROOT_UNBIASED,
-					common_field_defs.BRANCH_ROOT_MATCH,
-					common_field_defs.BRANCH_ROOT_AVOID,
+					enums_def.BRANCH_ROOT_UNBIASED,
+					enums_def.BRANCH_ROOT_MATCH,
+					enums_def.BRANCH_ROOT_AVOID,
 				},
 			},
 		},
 		valueDefinition = common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT,
 		fixedKeys = {
-			common_field_defs.BRANCH_ROOT_UNBIASED,
-			common_field_defs.BRANCH_ROOT_MATCH,
-			common_field_defs.BRANCH_ROOT_AVOID,
+			enums_def.BRANCH_ROOT_UNBIASED,
+			enums_def.BRANCH_ROOT_MATCH,
+			enums_def.BRANCH_ROOT_AVOID,
 		},
 	},
 	default = {
-		[common_field_defs.BRANCH_ROOT_UNBIASED] = 2,
-		[common_field_defs.BRANCH_ROOT_MATCH] = 7,
-		[common_field_defs.BRANCH_ROOT_AVOID] = 1,
+		[enums_def.BRANCH_ROOT_UNBIASED] = 2,
+		[enums_def.BRANCH_ROOT_MATCH] = 7,
+		[enums_def.BRANCH_ROOT_AVOID] = 1,
 	},
 }
 
 
-common_field_defs.INTER_BRANCH_UNBIASED = "Unbiased"
-common_field_defs.INTER_BRANCH_MATCH = "Match"
-common_field_defs.INTER_BRANCH_DIFFER = "Different"
 common_field_defs.ARG_DEF_EVO_LINE_INTER_BRANCH_TYPES = {
 	name = "interBranchTypes",
 	displayName = "Inter Branch Types",
@@ -342,23 +303,23 @@ common_field_defs.ARG_DEF_EVO_LINE_INTER_BRANCH_TYPES = {
 			constraint = {
 				type = "enum",
 				values = {
-					common_field_defs.INTER_BRANCH_UNBIASED,
-					common_field_defs.INTER_BRANCH_MATCH,
-					common_field_defs.INTER_BRANCH_DIFFER,
+					enums_def.INTER_BRANCH_UNBIASED,
+					enums_def.INTER_BRANCH_MATCH,
+					enums_def.INTER_BRANCH_DIFFER,
 				},
 			},
 		},
 		valueDefinition = common_field_defs.TYPE_DEF_ZEROABLE_WEIGHT,
 		fixedKeys = {
-			common_field_defs.INTER_BRANCH_UNBIASED,
-			common_field_defs.INTER_BRANCH_MATCH,
-			common_field_defs.INTER_BRANCH_DIFFER,
+			enums_def.INTER_BRANCH_UNBIASED,
+			enums_def.INTER_BRANCH_MATCH,
+			enums_def.INTER_BRANCH_DIFFER,
 		},
 	},
 	default = {
-		[common_field_defs.INTER_BRANCH_UNBIASED] = 2,
-		[common_field_defs.INTER_BRANCH_MATCH] = 1,
-		[common_field_defs.INTER_BRANCH_DIFFER] = 7,
+		[enums_def.INTER_BRANCH_UNBIASED] = 2,
+		[enums_def.INTER_BRANCH_MATCH] = 1,
+		[enums_def.INTER_BRANCH_DIFFER] = 7,
 	},
 }
 
@@ -374,8 +335,12 @@ common_field_defs.TYPE_DEF_CUSTOM_EVO_LINE_COUNTS = {
 		type = "int",
 		constraint = { type = "range", min = 0, max = 100 },
 	},
-	fixedKeys = { "BASIC", "STAGE_1", "STAGE_2" },
-	fixedValues = { BASIC = 1 },
+	fixedKeys = {
+		enums_def.EVO_STAGE_BASIC,
+		enums_def.EVO_STAGE_STAGE_1,
+		enums_def.EVO_STAGE_STAGE_2,
+	},
+	fixedValues = { [enums_def.EVO_STAGE_BASIC] = 1 },
 }
 
 -- Single weighted evo line entry
@@ -418,7 +383,11 @@ common_field_defs.ARG_DEF_EVO_LINE_POOL = {
 			-- here too
 			-- 80 - (11 + 1 + 1 + 1)(14) - (30 + 1 + 3)(34) = 32
 			weight = 32,
-			evoLine = { BASIC = 1, STAGE_1 = 0, STAGE_2 = 0 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 0,
+				[enums_def.EVO_STAGE_STAGE_2] = 0,
+			},
 		},
 		{
 			-- first stage will prefer intermediates for 3 chain evos,
@@ -426,38 +395,66 @@ common_field_defs.ARG_DEF_EVO_LINE_POOL = {
 			-- account for as well
 			-- 57 - (11 + 1 + 1 + 1)(14) - 3 - (2 * 4)(8) = 32
 			weight = 34,
-			evoLine = { BASIC = 1, STAGE_1 = 1, STAGE_2 = 0 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 1,
+				[enums_def.EVO_STAGE_STAGE_2] = 0,
+			},
 		},
 		{
 			-- 2 stage will fill nicely
 			-- 18 - 2 - 2 -3 = 11
 			weight = 11,
-			evoLine = { BASIC = 1, STAGE_1 = 1, STAGE_2 = 1 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 1,
+				[enums_def.EVO_STAGE_STAGE_2] = 1,
+			},
 		},
 		{
 			-- Energy type stone based evo line
 			weight = 1,
-			evoLine = { BASIC = 1, STAGE_1 = 3, STAGE_2 = 0 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 3,
+				[enums_def.EVO_STAGE_STAGE_2] = 0,
+			},
 		},
 		{
 			-- Fossil evo line
 			weight = 1,
-			evoLine = { BASIC = 1, STAGE_1 = 3, STAGE_2 = 2 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 3,
+				[enums_def.EVO_STAGE_STAGE_2] = 2,
+			},
 		},
 		{
 			-- Just one for fun
 			weight = 1,
-			evoLine = { BASIC = 1, STAGE_1 = 1, STAGE_2 = 2 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 1,
+				[enums_def.EVO_STAGE_STAGE_2] = 2,
+			},
 		},
 		{
 			-- Getting a bit crazy with this one
 			weight = 1,
-			evoLine = { BASIC = 1, STAGE_1 = 2, STAGE_2 = 3 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 2,
+				[enums_def.EVO_STAGE_STAGE_2] = 3,
+			},
 		},
 		{
 			-- Just to make things a bit more interesting for others too
 			weight = 4,
-			evoLine = { BASIC = 1, STAGE_1 = 2, STAGE_2 = 0 },
+			evoLine = {
+				[enums_def.EVO_STAGE_BASIC] = 1,
+				[enums_def.EVO_STAGE_STAGE_1] = 2,
+				[enums_def.EVO_STAGE_STAGE_2] = 0,
+			},
 		},
 	},
 }

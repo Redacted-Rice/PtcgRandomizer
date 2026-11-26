@@ -1,7 +1,7 @@
 -- Shared pieces for existing-move randomizers: kind/type args, filters, group keys.
 -- Require as modules.util.move_utils
 local randomizer = require("randomizer")
-local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local pool_utils = require("modules.util.pool_utils")
 
 local move_utils = {}
@@ -19,9 +19,9 @@ end
 
 -- narrow a move list to attacks, powers, or leave both
 function move_utils.filterByKind(moveList, moveKind)
-	if moveKind == common_field_defs.MOVE_KIND_ATTACKS then
+	if moveKind == enums_def.MOVE_KIND_ATTACKS then
 		return moveList:filter("isAttack")
-	elseif moveKind == common_field_defs.MOVE_KIND_POWERS then
+	elseif moveKind == enums_def.MOVE_KIND_POWERS then
 		return moveList:filter("isPokePower")
 	end
 	return moveList
@@ -31,7 +31,7 @@ end
 function move_utils.groupKey(args)
 	return function(move)
 		local card = move:getSourceCard()
-		if args.grouping == common_field_defs.STAGE_GROUPING_BY_STAGE then
+		if args.grouping == enums_def.STAGE_GROUPING_BY_STAGE then
 			return pool_utils.combineKeys(pool_utils.getTypeGroupingKey(card, args.withinType),
 					card.stage)
 		end
@@ -51,7 +51,7 @@ end
 -- source moves filtered by moveKind before pooling or grouping
 function move_utils.filteredMoves(args)
 	local cardSource = context.original.cards
-	if args.source == common_field_defs.DATA_SOURCE_CURRENT then
+	if args.source == enums_def.DATA_SOURCE_CURRENT then
 		cardSource = context.modified.cards
 	end
 	return move_utils.filterByKind(randomizer.list(
@@ -61,7 +61,7 @@ end
 -- flat move pool from source, with optional unique-by-name dedup
 function move_utils.buildPool(args)
 	local movePool = move_utils.filteredMoves(args)
-	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_REMOVE then
+	if args.duplicates == enums_def.DUPLICATE_HANDLING_REMOVE then
 		return move_utils.uniqueMoves(movePool)
 	end
 	return movePool
@@ -70,7 +70,7 @@ end
 -- group first, then uniquify inside each bucket
 function move_utils.buildGroupedPool(args, groupKey)
 	local grouped = move_utils.filteredMoves(args):groupBy(groupKey)
-	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
+	if args.duplicates == enums_def.DUPLICATE_HANDLING_KEEP then
 		return grouped
 	end
 
@@ -112,10 +112,10 @@ end
 
 -- whether this slot is in scope for the current moveKind filter
 function move_utils.slotRandomizedThisRun(move, moveKind)
-	if moveKind == common_field_defs.MOVE_KIND_ATTACKS then
+	if moveKind == enums_def.MOVE_KIND_ATTACKS then
 		return move:isAttack()
 	end
-	if moveKind == common_field_defs.MOVE_KIND_POWERS then
+	if moveKind == enums_def.MOVE_KIND_POWERS then
 		return move:isPokePower()
 	end
 	return true

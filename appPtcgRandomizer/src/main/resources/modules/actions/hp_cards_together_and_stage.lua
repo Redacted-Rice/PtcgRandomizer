@@ -1,4 +1,5 @@
 local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local pool_utils = require("modules.util.pool_utils")
 
 local module
@@ -28,7 +29,7 @@ function module.randomizeHp(args)
 	local targets = context.modified.cards:getRandomizableMonsterCards()
 	local options = pool_utils.poolOptionsForCardSource(args)
 
-	if args.grouping == "BY_STAGE" then
+	if args.grouping == enums_def.STAGE_GROUPING_BY_STAGE then
 		pool_utils.buildGroupedPool(sourceCards, "stage", "hp", args.duplicates):useToRandomize(
 				targets, "stage", "hp", options)
 	else

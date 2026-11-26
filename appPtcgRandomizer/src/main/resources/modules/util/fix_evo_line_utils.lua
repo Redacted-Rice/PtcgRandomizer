@@ -2,6 +2,7 @@
 -- Supports branch aware grouping so branching lines can be fixed together,
 -- per branch path, or with no continuity between shared roots and branch tips.
 local branch_utils = require("modules.util.branch_utils")
+local enums_def = require("modules.util.enums_def")
 local randomizer = require("randomizer")
 
 local fix_evo_line_utils = {}
@@ -109,7 +110,7 @@ function fix_evo_line_utils.applyMode(fieldName, cards, args)
 	if cards == nil or cards:isEmpty() then
 		return false
 	end
-	if args.mode == "Redistribute" then
+	if args.mode == enums_def.FIX_EVO_LINE_MODE_REDISTRIBUTE then
 		return fix_evo_line_utils.redistribute(fieldName, cards)
 	end
 	fix_evo_line_utils.matchPrevious(fieldName, cards)
@@ -192,29 +193,32 @@ function fix_evo_line_utils.modeArg(fieldDisplayName, fieldDisplayPlural)
 			type = "string",
 			constraint = {
 				type = "enum",
-				values = { "Match Previous", "Redistribute" },
+				values = {
+					enums_def.FIX_EVO_LINE_MODE_MATCH_PREVIOUS,
+					enums_def.FIX_EVO_LINE_MODE_REDISTRIBUTE,
+				},
 			},
 		},
-		default = "Redistribute",
+		default = enums_def.FIX_EVO_LINE_MODE_REDISTRIBUTE,
 	}
 end
 
 
-fix_evo_line_utils.BRANCH_SEPARATE = "Separate Branches"
-fix_evo_line_utils.BRANCH_INDIVIDUAL = "Individual Branches"
-fix_evo_line_utils.BRANCH_TOGETHER = "All Together"
+fix_evo_line_utils.BRANCH_SEPARATE = enums_def.BRANCH_HANDLING_SEPARATE
+fix_evo_line_utils.BRANCH_INDIVIDUAL = enums_def.BRANCH_HANDLING_INDIVIDUAL
+fix_evo_line_utils.BRANCH_TOGETHER = enums_def.BRANCH_HANDLING_ALL_TOGETHER
 
 fix_evo_line_utils.BRANCH_HANDLING_ORDER = {
-	fix_evo_line_utils.BRANCH_TOGETHER,
-	fix_evo_line_utils.BRANCH_INDIVIDUAL,
-	fix_evo_line_utils.BRANCH_SEPARATE,
+	enums_def.BRANCH_HANDLING_ALL_TOGETHER,
+	enums_def.BRANCH_HANDLING_INDIVIDUAL,
+	enums_def.BRANCH_HANDLING_SEPARATE,
 }
 
 fix_evo_line_utils.BRANCH_HANDLING_DESCRIPTIONS = {
-	[fix_evo_line_utils.BRANCH_TOGETHER] = "'All Together' orders by stage across the whole line",
-	[fix_evo_line_utils.BRANCH_INDIVIDUAL] = "'Individual Branches' makes each branch path "
+	[enums_def.BRANCH_HANDLING_ALL_TOGETHER] = "'All Together' orders by stage across the whole line",
+	[enums_def.BRANCH_HANDLING_INDIVIDUAL] = "'Individual Branches' makes each branch path "
 			.. " consistent (shared root plus that branch) without comparing across branches",
-	[fix_evo_line_utils.BRANCH_SEPARATE] = "'Separate Branches' fixes shared roots and each branch"
+	[enums_def.BRANCH_HANDLING_SEPARATE] = "'Separate Branches' fixes shared roots and each branch"
 			.. " tips with no continuity between them",
 }
 

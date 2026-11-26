@@ -1,5 +1,6 @@
 -- Enforces non-decreasing HP up each evolution line by stage.
 -- Run after HP randomization. Needs evoLineId and evoBranchIds on each card.
+local enums_def = require("modules.util.enums_def")
 local fix_evo_line_utils = require("modules.util.fix_evo_line_utils")
 
 local fixUtils = fix_evo_line_utils.create("hp")
@@ -23,8 +24,8 @@ module = {
 	},
 	arguments = {
 		fix_evo_line_utils.modeArg("HP", "HPs"),
-		fix_evo_line_utils.branchHandlingArg(fix_evo_line_utils.BRANCH_TOGETHER,
-				{ fix_evo_line_utils.BRANCH_SEPARATE }),
+		fix_evo_line_utils.branchHandlingArg(enums_def.BRANCH_HANDLING_ALL_TOGETHER,
+				{ enums_def.BRANCH_HANDLING_SEPARATE }),
 	},
 	execute = function(args)
 		return fixUtils.fixEvoLines(args)

@@ -1,5 +1,6 @@
 local randomizer = require("randomizer")
 local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local pool_utils = require("modules.util.pool_utils")
 local move_utils = require("modules.util.move_utils")
 
@@ -30,7 +31,7 @@ module = {
 }
 
 function module.randomizeMoves(args)
-	if args.moveKind == "POWERS" then
+	if args.moveKind == enums_def.MOVE_KIND_POWERS then
 		randomizer.changedetector.pushMoveChangeDisplay({ "name" })
 	else
 		randomizer.changedetector.pushMoveChangeDisplay({ "name", "energyCost", "damage" })

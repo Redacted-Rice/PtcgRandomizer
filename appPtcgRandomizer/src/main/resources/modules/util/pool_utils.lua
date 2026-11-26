@@ -1,12 +1,12 @@
 -- Shared pieces for building pools from ROM/CURRENT card data.
-local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local randomizer = require("randomizer")
 
 local pool_utils = {}
 
 -- maps approach to URC useToRandomize pool options. minimize repeats always regenerates
 function pool_utils.poolOptions(approach)
-	if approach == common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
+	if approach == enums_def.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
 		return { consumesSelected = true, autoRegenerates = true }
 	end
 	return { consumesSelected = false }
@@ -17,14 +17,14 @@ function pool_utils.shouldErrorOnExhausted(args)
 	if args == nil then
 		return false
 	end
-	if args.approach ~= common_field_defs.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
+	if args.approach ~= enums_def.RANDOMIZATION_APPROACH_MINIMIZE_REPEATS then
 		return false
 	end
-	if args.duplicates ~= common_field_defs.DUPLICATE_HANDLING_KEEP then
+	if args.duplicates ~= enums_def.DUPLICATE_HANDLING_KEEP then
 		return false
 	end
-	return args.source == common_field_defs.DATA_SOURCE_ROM
-		or args.source == common_field_defs.DATA_SOURCE_CURRENT
+	return args.source == enums_def.DATA_SOURCE_ROM
+		or args.source == enums_def.DATA_SOURCE_CURRENT
 end
 
 -- Only for modules that randomize values from ROM/CURRENT card pools (source + duplicates on args)
@@ -36,7 +36,7 @@ end
 
 -- monster cards from the chosen source set
 function pool_utils.sourceCards(source)
-	if source == common_field_defs.DATA_SOURCE_CURRENT then
+	if source == enums_def.DATA_SOURCE_CURRENT then
 		return context.modified.cards:getRandomizableMonsterCards()
 	end
 	return context.original.cards:getRandomizableMonsterCards()
@@ -67,20 +67,20 @@ function pool_utils.combineKeys(...)
 end
 
 function pool_utils.typeGroupingSplitsIntoPools(scope)
-	return scope == common_field_defs.TYPE_POOL_WITHIN_TYPE
-			or scope == common_field_defs.TYPE_POOL_WITHIN_SUBTYPE
+	return scope == enums_def.TYPE_POOL_WITHIN_TYPE
+			or scope == enums_def.TYPE_POOL_WITHIN_SUBTYPE
 end
 
 function pool_utils.stageGroupingSplitsIntoPools(grouping)
-	return grouping == common_field_defs.STAGE_GROUPING_BY_STAGE
-			or grouping == common_field_defs.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE
+	return grouping == enums_def.STAGE_GROUPING_BY_STAGE
+			or grouping == enums_def.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE
 end
 
 function pool_utils.getTypeGroupingKey(card, scope)
-	if scope == common_field_defs.TYPE_POOL_WITHIN_TYPE then
+	if scope == enums_def.TYPE_POOL_WITHIN_TYPE then
 		return card.type:convertToEnergyType():getAbbreviation()
 	end
-	if scope == common_field_defs.TYPE_POOL_WITHIN_SUBTYPE then
+	if scope == enums_def.TYPE_POOL_WITHIN_SUBTYPE then
 		local weaknessResistanceFlags = context.WeaknessResistanceFlags
 		return pool_utils.combineKeys(
 				card.type:convertToEnergyType():getAbbreviation(),
@@ -93,7 +93,7 @@ end
 -- flat pool of values pulled from source cards
 function pool_utils.buildValuePool(sourceCards, valueGetter, duplicates)
 	local values = randomizer.list(sourceCards):select(valueGetter)
-	if duplicates == common_field_defs.DUPLICATE_HANDLING_REMOVE then
+	if duplicates == enums_def.DUPLICATE_HANDLING_REMOVE then
 		return values:removeDuplicates()
 	end
 	return values
@@ -102,7 +102,7 @@ end
 -- values grouped by stage or stageAndMaxStageKey, with optional dedup per bucket
 function pool_utils.buildGroupedPool(sourceCards, groupKey, valueGetter, duplicates)
 	local grouped = randomizer.groupFromField(sourceCards, groupKey, valueGetter)
-	if duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
+	if duplicates == enums_def.DUPLICATE_HANDLING_KEEP then
 		return grouped
 	end
 

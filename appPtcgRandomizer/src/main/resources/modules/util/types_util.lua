@@ -1,5 +1,5 @@
 -- Shared type randomization helpers for evo line type modules.
-local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local pool_utils = require("modules.util.pool_utils")
 local randomizer = require("randomizer")
 
@@ -19,7 +19,7 @@ function types_util.buildEvoLineTypePoolFromCards(args)
 		return line:get(1).type
 	end)
 
-	if args.duplicates == common_field_defs.DUPLICATE_HANDLING_KEEP then
+	if args.duplicates == enums_def.DUPLICATE_HANDLING_KEEP then
 		-- Keep source multiplicity so common types stay more common
 		return types
 	end
@@ -31,7 +31,7 @@ function types_util.buildTypePoolFromWeights(typeWeights)
 	local energyType = context.EnergyType
 	local entries = {}
 	-- Convert energy types to card types
-	for _, typeKey in ipairs(common_field_defs.ENERGY_TYPE_KEYS) do
+	for _, typeKey in ipairs(enums_def.ENERGY_TYPE_KEYS) do
 		local weight = typeWeights[typeKey]
 		if weight ~= nil and weight > 0 then
 			table.insert(entries, { type = energyType[typeKey]:convertToCardType(), weight = weight })

@@ -1,3 +1,4 @@
+local enums_def = require("modules.util.enums_def")
 local randomizer = require("randomizer")
 
 local module
@@ -20,9 +21,9 @@ module = {
 			definition = {
 				type = "enum",
 				constraint = "EnergyType",
-				exclude = { "COLORLESS", "UNUSED_TYPE" },
+				exclude = { enums_def.ENERGY_TYPE_COLORLESS, enums_def.ENERGY_TYPE_UNUSED },
 			},
-			default = "FIRE",
+			default = enums_def.ENERGY_TYPE_FIRE,
 		},
 	},
 	execute = function(args)

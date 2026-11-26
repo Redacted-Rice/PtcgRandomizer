@@ -1,5 +1,6 @@
 -- Randomizes evo lines from extracted line/branch data: shuffle name pools, apply stage/prevEvo, fix proxies.
 local common_field_defs = require("modules.util.common_field_defs")
+local enums_def = require("modules.util.enums_def")
 local pool_utils = require("modules.util.pool_utils")
 local randomizer = require("randomizer")
 local utils = require("randomizer.utils")
@@ -133,9 +134,9 @@ end
 -- Standardize input across module usage to the correct withinTYpe args
 function evo_line_randomize_utils.namePoolTypeScope(args, choicePools)
 	if choicePools == nil then
-		return common_field_defs.TYPE_POOL_ALL_TOGETHER
+		return enums_def.TYPE_POOL_ALL_TOGETHER
 	end
-	return args.withinType or common_field_defs.TYPE_POOL_WITHIN_TYPE
+	return args.withinType or enums_def.TYPE_POOL_WITHIN_TYPE
 end
 
 -- Build the static key context info for our randomization that will help determine how we
@@ -144,7 +145,7 @@ end
 function evo_line_randomize_utils.buildNamePoolKeyContext(sourceCards, grouping, withinType,
 		allowStageFallback)
 	if allowStageFallback == nil then
-		allowStageFallback = grouping == "BY_STAGE_AND_MAX_STAGE"
+		allowStageFallback = grouping == enums_def.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE
 	end
 	local keyContext = {
 		grouping = grouping,
@@ -171,7 +172,7 @@ end
 
 -- Like pool_utils.sourceCards but can include trainer proxies
 function evo_line_randomize_utils.sourceCards(source, excludeTrainerProxies)
-	local cardSource = source == common_field_defs.DATA_SOURCE_CURRENT and context.modified.cards
+	local cardSource = source == enums_def.DATA_SOURCE_CURRENT and context.modified.cards
 		or context.original.cards
 	if excludeTrainerProxies then
 		return cardSource:getRandomizableMonsterCards()
@@ -224,7 +225,7 @@ end
 -- variable and will reflect the args to effectively create separate
 -- subpools for any permutation of the args
 function evo_line_randomize_utils.poolKey(cardTypeArg, stage, maxStage, keyContext)
-	if keyContext.grouping == "ALL_TOGETHER" then
+	if keyContext.grouping == enums_def.STAGE_GROUPING_ALL_TOGETHER then
 		if not keyContext.splitsIntoPools then
 			-- No key - eveything is in one pool. Just return an arbitrary
 			-- key so we can treat all cases as keyed for simplicity
@@ -233,7 +234,7 @@ function evo_line_randomize_utils.poolKey(cardTypeArg, stage, maxStage, keyConte
 		-- Key is just type
 		return cardTypeArg
 	end
-	if keyContext.grouping == "BY_STAGE" then
+	if keyContext.grouping == enums_def.STAGE_GROUPING_BY_STAGE then
 		if keyContext.splitsIntoPools then
 			-- key is a combo of type and stage
 			return pool_utils.combineKeys(cardTypeArg, stage)
@@ -255,7 +256,8 @@ function evo_line_randomize_utils.poolKeysForDraw(cardType, stage, maxStage, key
 	-- Start with the full key for the passed args - always prefer the asked key
 	local keys = { evo_line_randomize_utils.poolKey(cardType, stage, maxStage, keyContext) }
 	-- This only makes sense if we are grouping by stage and max stage
-	if keyContext.allowStageFallback and keyContext.grouping == "BY_STAGE_AND_MAX_STAGE" then
+	if keyContext.allowStageFallback
+			and keyContext.grouping == enums_def.STAGE_GROUPING_BY_STAGE_AND_MAX_STAGE then
 		-- Add any remaining valid bucket for this stage (maxStage >= stage) preferring higher max evo
 		-- stages first by reverse iterating
 		for stageIndex = #evo_line_randomize_utils.EVO_STAGES, 1, -1 do
@@ -435,7 +437,7 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 	-- If we have other branches selected already, pull inter branch policy and apply it here
 	if #branchContext.branchTypes > 0 then
 		local interBranchTypes = choicePools:get("interBranchTypes"):draw()
-		if interBranchTypes == common_field_defs.INTER_BRANCH_MATCH then
+		if interBranchTypes == enums_def.INTER_BRANCH_MATCH then
 			for _, cardType in ipairs(branchContext.branchTypes) do
 				table.insert(preferred, cardType)
 				uncheckedTypes[cardType] = nil
@@ -448,7 +450,7 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 				logger.debug("evo_line_custom inter_branch_match preferred types="
 						.. table.concat(preferredLabels, ","))
 			end
-		elseif interBranchTypes == common_field_defs.INTER_BRANCH_DIFFER then
+		elseif interBranchTypes == enums_def.INTER_BRANCH_DIFFER then
 			for _, cardType in ipairs(branchContext.branchTypes) do
 				table.insert(avoided, cardType)
 				uncheckedTypes[cardType] = nil
@@ -457,7 +459,7 @@ function evo_line_randomize_utils.buildTypePreferenceGroups(cardTypes, branchCon
 	end
 
 	-- Check the match root value in the branch context and avoid it if it's set
-	if branchContext.branchRootConsistency == common_field_defs.BRANCH_ROOT_AVOID then
+	if branchContext.branchRootConsistency == enums_def.BRANCH_ROOT_AVOID then
 		table.insert(avoided, branchContext.rootType)
 		uncheckedTypes[branchContext.rootType] = nil
 	end
@@ -503,7 +505,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 
 	-- First see if we are a branch node and should be colorless and try that
 	if isBranchNode and choicePools:get("branchingBasesColorless"):draw()
-			== common_field_defs.BRANCHING_BASE_COLORLESS
+			== enums_def.BRANCHING_BASE_COLORLESS
 			and keyContext.colorlessTypes ~= nil then
 		logger.debug("evo_line_custom selecting branch root colorless type")
 		chosenType = evo_line_randomize_utils.tryPickAndAssignTypeFromGroup(
@@ -513,7 +515,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 
 	-- If we did not choose a type and we are part of a branch, See if we should try and match the root
 	if chosenType == nil and branchContext ~= nil
-			and branchContext.branchRootConsistency == common_field_defs.BRANCH_ROOT_MATCH
+			and branchContext.branchRootConsistency == enums_def.BRANCH_ROOT_MATCH
 			and not branchContext.matchRootFilled then
 		logger.debug("evo_line_custom selecting branch root match type=" .. tostring(branchContext.rootType))
 		chosenType = branchContext.rootType
@@ -563,7 +565,7 @@ function evo_line_randomize_utils.pickAndAssignTypeToSlots(slots, namePools, key
 	-- If we choose a type for a branch, add it to the context
 	if chosenType ~= nil and branchContext ~= nil then
 		table.insert(branchContext.branchTypes, chosenType)
-		if branchContext.branchRootConsistency == common_field_defs.BRANCH_ROOT_AVOID then
+		if branchContext.branchRootConsistency == enums_def.BRANCH_ROOT_AVOID then
 			logger.debug("evo_line_custom branch_root_avoid assigned type=" .. tostring(chosenType)
 					.. " avoidRootType=" .. tostring(branchContext.rootType) .. " slots=["
 					.. evo_line_randomize_utils.formatSlots(slots) .. "]")
@@ -629,7 +631,7 @@ function evo_line_randomize_utils.assignTypesFromEntry(entries, baseIndex, nameP
 		branchTypes = {},
 		branchRootConsistency = branchRootConsistency,
 		-- Only used for BRANCH_ROOT_MATCH and for that case it should be set to false
-		matchRootFilled = branchRootConsistency ~= common_field_defs.BRANCH_ROOT_MATCH,
+		matchRootFilled = branchRootConsistency ~= enums_def.BRANCH_ROOT_MATCH,
 	}
 
 	-- Recurse to all evos using this new branch context returning false if any fail (which will
@@ -906,7 +908,7 @@ function evo_line_randomize_utils.randomizeCustomEvoLines(args, choicePools,
 			.. tostring(withinType) .. " grouping=" .. tostring(args.grouping) .. " approach="
 			.. tostring(args.approach) .. " cards=" .. sourceCards:size())
 
-	if args.grouping == "ALL_TOGETHER" then
+	if args.grouping == enums_def.STAGE_GROUPING_ALL_TOGETHER then
 		-- IN a single pass, keep drawing lines while any names are left to assign
 		evo_line_randomize_utils.processCustomAllTogetherPass(linePool, namePools, keyContext,
 				toModifyByName, args.approach, choicePools, warnOnFailure)
@@ -970,7 +972,7 @@ end
 
 -- ALL_TOGETHER only. Proxies must stay basic. Search by name, not evo line groups.
 function evo_line_randomize_utils.fixAllTogetherProxies(toModifyCards, toModifyByName, keyContext)
-	if keyContext.grouping ~= "ALL_TOGETHER" then
+	if keyContext.grouping ~= enums_def.STAGE_GROUPING_ALL_TOGETHER then
 		return
 	end
 
